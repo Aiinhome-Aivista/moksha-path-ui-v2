@@ -401,7 +401,7 @@ const ParentLearningPlanner: React.FC = () => {
                 {stats.board_name} | {stats.class_name}
               </p>
               <p className="text-sm text-primary m-0  break-words max-w-xl">
-                Subject: {(stats?.subject_names || []).join(", ")}{" "}
+                Subject: {(stats?.subject_name || []).join(", ")}{" "}
               </p>
             </div>
           )}
