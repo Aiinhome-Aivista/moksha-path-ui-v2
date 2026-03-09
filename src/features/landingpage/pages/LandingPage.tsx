@@ -1,0 +1,408 @@
+import React, { useEffect, useState } from "react";
+// import HeroImg from "../../../assets/icon/herosection.svg";
+import GuyImg from "../../../assets/icon/guy.svg";
+import IcoSearch from "../../../assets/icon/ico_search.svg";
+import IcoMenu from "../../../assets/icon/ico_menu.svg";
+import CbseIcon from "../../../assets/icon/cbsc.svg";
+import IcseIcon from "../../../assets/icon/icse.svg";
+import NiosIcon from "../../../assets/icon/nios.svg";
+import WbseIcon from "../../../assets/icon/wbse.svg";
+import CaieIcon from "../../../assets/icon/caie.svg";
+import IconPlan from "../../../assets/icon/group4.svg";
+import IconChat from "../../../assets/icon/chat2.svg";
+import Chat from "../../auth/modal/chat";
+import Layer_school from "../../../assets/icon/Layer_school.svg";
+// import HeroRobot from "../../../assets/icon/hero.svg";
+import Frame from "../../../assets/icon/Frame.svg";
+
+interface FeatureCardProps {
+  icon: string;
+  title: string;
+  working: boolean;
+  desc: string;
+}
+
+const FeatureCard: React.FC<FeatureCardProps> = ({
+  icon,
+  title,
+  working,
+  desc,
+}) => {
+  return (
+    <div
+      className={`flex flex-col items-center text-center px-0 py-0${working ? "" : "opacity-50 grayscale"
+        }`}
+    >
+      {/* Icon Container with specific spacing */}
+      <div className="mb-1 flex justify-center">
+        <img
+          src={icon}
+          alt={title}
+          className="w-16 h-auto object-contain mx-auto"
+        />
+      </div>
+      <h4 className="font-['Montserrat'] font-bold text-[18px] leading-[20px] tracking-[.02em] text-center max-w-[160px] min-h-[56px] text-primary mb-1 mx-auto flex items-center justify-center">
+        {title}
+      </h4>
+      <p className="font-['Montserrat'] font-normal text-base leading-[20px] tracking-[.02em] text-center max-w-[200px] text-primary mx-auto">
+        {desc}
+      </p>
+    </div>
+  );
+};
+
+const features = [
+  {
+    id: 1,
+    title: "AI powered Self Evaluation",
+    working: true,
+    icon: IconPlan,
+    desc: "Skills added, AI evaluates via adaptive parameters.",
+  },
+  {
+    id: 2,
+    title: "Smart Learning Plans",
+    working: true,
+    icon: IconPlan,
+    desc: "Auto-generates daily, structured, achievable study plans.",
+  },
+  {
+    id: 3,
+    title: "Progress & Completion Tracking",
+    working: true,
+    icon: IconPlan,
+    desc: "Track topics, tests, progress—know your standing.",
+  },
+  {
+    id: 4,
+    title: "AI Learning Assistant",
+    working: true,
+    icon: IconPlan,
+    desc: "Proactive AI guide: reminders, answers, priority focus.",
+  },
+  {
+    id: 5,
+    title: "Board-Specific Curriculum",
+    working: true,
+    icon: IconPlan,
+    desc: "Clear explanatory text for feature understanding.",
+  },
+  {
+    id: 6,
+    title: "Role-Based Dashboards",
+    working: true,
+    icon: IconPlan,
+    desc: "Role-based dashboards: students, parents, teachers, institutions.",
+  },
+];
+
+export default function LandingPage() {
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const sections = ["section1", "section2", "section3", "section4"];
+  const [active, setActive] = useState(0);
+
+  // 2️⃣ Scroll to section when dot clicked
+  const scrollToSection = (index: number) => {
+    const element = document.getElementById(sections[index]);
+    if (element) {
+      window.scrollTo({
+        top: element.getBoundingClientRect().top + window.pageYOffset - 100,
+        behavior: "smooth",
+      });
+    }
+    setActive(index);
+  };
+
+  // 3️⃣ Detect active section while scrolling
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPos = window.scrollY;
+
+
+      sections.forEach((id, index) => {
+        const element = document.getElementById(id);
+
+        if (element) {
+          const offsetTop = element.offsetTop - 200;
+          const height = element.offsetHeight;
+
+          if (scrollPos >= offsetTop && scrollPos < offsetTop + height) {
+            setActive(index);
+          }
+        }
+      });
+    };
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <div className="overflow-x-hidden bg-gray-100">
+      {/* 4️⃣ Right Side Navigation Dots */}
+      <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-4">
+        {sections.map((_, index) => (
+          <div
+            key={index}
+            onClick={() => scrollToSection(index)}
+            className={`w-3 h-3 rounded-full cursor-pointer transition-all ${active === index ? "bg-lime-500 scale-125" : "bg-gray-400"
+              } `}
+          />
+        ))}
+      </div>
+
+      {/* CHAT ICON BUTTON */}
+      <div
+        className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100] cursor-pointer hover:scale-105 transition-transform"
+        onClick={() => setIsChatOpen(true)}
+      >
+        <img src={IconChat} alt="Chat" className="w-[95px]" />
+      </div>
+
+      {/* RENDER MODAL CONDITIONALLY */}
+      {isChatOpen && <Chat onClose={() => setIsChatOpen(false)} />}
+
+      {/* ════════════════════════════════════════════════════════════════════
+          1. HEADER / HERO SECTION (SPLIT LAYOUT WITH GRAY BACKGROUND)
+      ════════════════════════════════════════════════════════════════════ */}
+      <header
+        id="section1"
+        /* REMOVED overflow-hidden so the robot's head doesn't get cut off */
+        // ADDED pt-12 (padding-top) here 👇
+        className="relative font-['Montserrat'] w-full max-w-full mx-auto "
+      >
+        {/* Large Gray Rounded Container - Added back bg color and rounded corners */}
+        {/* Main content area acting as a stacking context */}
+        <div className="relative w-full h-[750px]"> {/* Reduced height for the visual area */}
+          {/* HeroImg as background, covering the entire area */}
+          <img
+            src={Frame}
+            alt="From Learning Facts to Leading Minds"
+            className="absolute inset-0 w-full h-100% object-cover z-0" // Covers the entire div
+          />
+        </div>
+
+      </header>
+
+      {/* 2. DEMO BUTTON, SEARCH BAR & FEATURES GRID CONTAINER */}
+      <section
+        id="section2"
+        className="relative mb-20 scroll-mt-24 z-20 -mt-[60px] md:-mt-[140px] lg:-mt-[260px] xl:-mt-[340px] flex flex-col items-center"
+      >
+        {/* Demo Button & Search Bar Row */}
+        <div className="w-auto flex flex-col md:flex-row items-center justify-center gap-4 px-4 mb-16 lg:mb-20">
+          {/* <button className="bg-[#BADA55] hover:bg-lime-500 text-gray-800 px-8 py-3 rounded-full text-base lg:text-lg font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap">
+            Try a Demo
+          </button> */}
+
+          <div className="relative w-full md:w-[500px] lg:w-[600px] h-[55px] lg:h-[60px]">
+            <img
+              src={IcoMenu}
+              alt="Menu"
+              className="absolute left-6 top-1/2 -translate-y-1/2 w-[18px] cursor-pointer opacity-60 z-20"
+            />
+            <input
+              type="text"
+              placeholder="Search by Learning Videos, Tests, Study Notes, Assessments, etc ..."
+              className="w-full h-full pr-[60px] pl-[55px] rounded-full border-none shadow-[0_4px_25px_rgba(0,0,0,0.08)] outline-none text-sm text-gray-700 focus:ring-2 focus:ring-[#BADA55]/40 transition-all bg-white"
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 border-gray-100 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors bg-white shadow-sm rounded-full">
+              <img
+                src={IcoSearch}
+                alt="Search"
+                className="w-5 h-5 opacity-70"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Features Area Wrapper to contain the background line properly */}
+        <div className="w-full max-w-[1400px] mx-auto px-6 lg:px-20">
+          <div className="relative">
+            {/* Dashed Line Background for Features Grid (positioned relative to the grid now) */}
+            <div className="absolute top-[35px] left-[8.33%] right-[8.33%] border-t-2 border-dashed border-[#d1d5db] z-0 hidden lg:block" />
+
+            {/* Features Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-2 lg:gap-4 relative z-10">
+              {features.map((f) => (
+                <FeatureCard key={f.id} {...f} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="section3" className="w-full bg-gray-100 py-20">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-20 xl:gap-32 items-center">
+
+          {/* LEFT IMAGE */}
+          <div className="flex justify-center lg:justify-start">
+            <img
+              src={Layer_school}
+              alt="School Illustration"
+              className="w-[420px] max-w-full"
+            />
+          </div>
+
+          {/* RIGHT CONTENT */}
+          <div className="relative col-span-2">
+
+            <div className="relative">
+              {/* LEFT QUOTE */}
+              <span className="hidden lg:block absolute left-[-15%] top-[-20%] text-yellow-400 text-[180px] xl:text-[240px] font-black leading-none opacity-50">
+                “
+              </span>
+
+              {/* TITLE */}
+              <span className="text-center text-4xl md:text-5xl lg:text-[60px] font-bold text-gray-700 leading-tight">
+                Why MokshPath
+              </span>
+              <br />
+              <span className="text-center text-4xl md:text-5xl lg:text-[60px] font-bold text-gray-700 leading-tight">
+                for Your School?
+              </span>
+
+              {/* RIGHT QUOTE */}
+              <span className="hidden lg:block absolute top-4 right-0 xl:right-44 text-yellow-400 text-[100px] xl:text-[140px] font-black leading-none opacity-50">
+                ”
+              </span>
+            </div>
+
+            {/* DESCRIPTION */}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mt-6 text-gray-600">
+              <p className="font-bold col-span-2 leading-7 tracking-widest track">
+                Educational excellence is not just about grades, it’s about
+                understanding how students think.
+              </p>
+
+              <p className="text-sm col-span-2 leading-relaxed">
+                This platform enables personalised evaluation, structured
+                feedback, and supports future-ready subsidiary programmes as
+                schools grow.
+              </p>
+            </div>
+
+            {/* FEATURES GRID */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 mt-10 text-sm">
+              <div>
+                <h4 className="font-semibold text-gray-700">Eliminate Malpractice</h4>
+                <p className="text-gray-500 mt-1">
+                  The AI engine delivers a unique question sequence for every
+                  student.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-700">Identify “Hidden” Gaps</h4>
+                <p className="text-gray-500 mt-1">
+                  Analytics classify errors as conceptual, careless, or
+                  time-management issues.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-700">Empower Teachers</h4>
+                <p className="text-gray-500 mt-1">
+                  Guide AI with instructional hints to generate concept-driven
+                  questions.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-700">Automated Remediation</h4>
+                <p className="text-gray-500 mt-1">
+                  Create targeted remedial tests from each student's error
+                  patterns.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-700">Global Standards</h4>
+                <p className="text-gray-500 mt-1">
+                  Assessments aligned to Bloom’s Taxonomy for academic rigor.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. BOTTOM SECTION: TEXT + COLORED BUBBLES + GUY */}
+      <section
+        id="section4"
+        className="flex flex-col lg:flex-row items-center justify-center w-full pb-[50px] gap-10 mt-[50px] scroll-mt-24"
+      >
+        {/* Left Content */}
+        <div className="flex-1 text-center lg:text-left pt-2 pl-4 lg:pl-[50px]">
+          <h2 className="relative font-['Montserrat'] font-bold text-[55px] leading-[55px] tracking-[0.02em] text-primary ml-12">
+            {/* Opening Quote */}
+            <span className="absolute -left-[100px] -top-[-25px] font-['Montagu_Slab'] font-bold text-[200px] leading-[66px] tracking-[0.04em] opacity-80 select-none">
+              “
+            </span>
+
+            <span className="block">Built</span>
+            <span className="block">around your</span>
+            <span className="block">school</span>
+            {/* Closing Quote Wrapper */}
+            <span className="block relative w-max">
+              curriculum
+              <span className="absolute left-[100%] -top-[-25px] font-['Montagu_Slab'] font-bold text-[200px] leading-[66px] tracking-[0.04em] opacity-80 select-none">
+                ”
+              </span>
+            </span>
+          </h2>
+          <p className="mt-2 font-['Montserrat'] font-normal text-[18px] leading-[30px] tracking-[0.10em] text-primary max-w-[350px] mx-auto lg:ml-[50px]">
+            Our learning plans are intelligently mapped to official academic
+            calendars, ensuring the right pace and structure for each education
+            board.
+          </p>
+        </div>
+
+        {/* Middle: Colored Board Bubbles */}
+        <div className="relative w-[350px] h-[350px] flex-shrink-0">
+          <div className="absolute left-[8%] bottom-[58%] w-[80px]">
+            <img src={CbseIcon} alt="CBSE" className="w-full h-auto " />
+          </div>
+
+          <div className="absolute left-[26%] bottom-[45%] w-[120px]">
+            <img src={IcseIcon} alt="ICSE" className="w-full h-auto" />
+          </div>
+
+          <div className="absolute bottom-[68%] left-[55%] w-[70px]">
+            <img src={NiosIcon} alt="NIOS" className="w-full h-auto" />
+          </div>
+
+          <div className="absolute bottom-[60%] left-[80%] w-[85px]">
+            <img src={WbseIcon} alt="WBSE" className="w-full h-auto" />
+          </div>
+
+          <div className="absolute bottom-[45%] left-[58%] w-[100px]">
+            <img src={CaieIcon} alt="CAIE" className="w-full h-auto" />
+          </div>
+
+          {/* BOTTOM TEXT */}
+          <div className="relative w-[550px] h-[320px] mx-auto mt-10">
+            <div className="absolute pt-14 left-1/2 -translate-x-1/2 w-full flex justify-center p-0 m-0">
+              <div className="text-left pt-40">
+                <p className="font-['Montserrat'] font-bold text-[20px] leading-[32px] tracking-[0.14em] text-primary">
+                  <span className="block">Different boards.</span>
+                  <span className="block">Different timelines.</span>
+                  <span className="block">One intelligent system.</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Guy with Orange Background */}
+        <div className="flex-1 flex justify-end relative lg:mt-0 items-end">
+          <img
+            src={GuyImg}
+            alt="Student"
+            className="relative z-20 w-[800px] max-w-full h-auto"
+          />
+        </div>
+      </section>
+    </div>
+  );
+}

@@ -1,0 +1,255 @@
+// import React, { useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import { useModal } from "../../features/auth/context/AuthContext";
+// import { useAuth } from "../../app/providers/AuthProvider";
+// import { LogoutConfirmationModal } from "../../features/auth/modal/LogoutConfirmationModal";
+// import ApiServices from "../../services/ApiServices";
+// import { useToast } from "../../app/providers/ToastProvider";
+// import { UserCircle } from "lucide-react";
+// import { RoleSwitchModal } from "../../features/auth/modal/RoleSwitchModal";
+
+// interface HeaderProps {
+//   isSidebarOpen: boolean;
+// }
+
+// export const Header: React.FC<HeaderProps> = ({ isSidebarOpen }) => {
+//   const { openSignIn, clearMenu } = useModal();
+//   const { isAuthenticated, logout } = useAuth();
+//   const navigate = useNavigate();
+//   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+//   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+//   const { showToast } = useToast();
+
+//   const handleLogout = () => {
+//     setIsLogoutModalOpen(true);
+//   };
+
+//   // const confirmLogout = () => {
+//   //     localStorage.removeItem("auth_token");
+//   //     logout();
+//   //     navigate("/");
+//   //     setIsLogoutModalOpen(false);
+//   // };
+
+//   const confirmLogout = async () => {
+//     try {
+//       // Call backend signout API
+//       await ApiServices.signOut();
+//     } catch (error) {
+//       console.error("Header signout API failed", error);
+//       //  Still continue logout even if API fails
+//     } finally {
+//       clearMenu();
+//       //  Clear frontend session
+//       localStorage.removeItem("auth_token");
+//       logout();
+//       showToast("Signed out successfully", "success");
+//       navigate("/");
+//       setIsLogoutModalOpen(false);
+//     }
+//   };
+
+//   return (
+//     <>
+//       <header className="sticky top-0 z-40 h-16 bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-700 shadow-sm">
+//         <div className="h-full px-4 lg:px-6 flex items-center justify-between">
+//           {/* Logo & App Name - Only show when sidebar is CLOSED (mini) */}
+//           <div className="flex items-center gap-4">
+//             {!isSidebarOpen && (
+//               <div className="flex items-center animate-fade-in">
+//                 <img src="/Logo.svg" alt="App Logo" className="h-25, w-25" />
+//               </div>
+//             )}
+//           </div>
+//           <div className="flex-1 flex justify-center">
+// <div className="flex items-center absolute left-80 z-10 bg-yellow-400 rounded-b-full px-6  gap-6">
+//               <button className="text-sm font-semibold text-black">
+//                 Request a Demo
+//               </button>
+//               <button className="text-sm font-semibold text-black">FAQs</button>
+//               <button className="text-sm font-semibold text-black">
+//                 Help Center
+//               </button>
+//             </div>
+//         <div className="flex items-center relative top-0 bg-[#E9E9E9] rounded-b-full  pt-5 pb-6 pl-72 pr-6 gap-6">
+//               {/* Yellow Highlight Section */}
+
+//               {/* Other Menu Items */}
+//               <button className="text-sm font-semibold text-gray-700">
+//                 About us
+//               </button>
+//               <button className="text-sm font-semibold text-gray-700">
+//                 Vidya Kosh
+//               </button>
+//               <button className="text-sm font-semibold text-gray-700">
+//                 Success Stories
+//               </button>
+//               <button className="text-sm font-semibold text-gray-700">
+//                 Institutional Access
+//               </button>
+//               {/* <button
+//                 onClick={openSignIn}
+//                 className="px-5 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-lime-600 transition-colors shadow-md hover:shadow-lg"
+//               >
+//                 Sign In
+//               </button> */}
+//               <button
+//                 onClick={isAuthenticated ? handleLogout : openSignIn}
+//                 className={`text-sm font-semibold text-gray-700 hover:text-gray-900 ${isAuthenticated ? "bg-red-500 hover:bg-red-600 rounded-full px-4" : ""}`}
+//               >
+//                 {isAuthenticated ? "Sign Out" : "Sign In"}
+//               </button>
+//             </div>
+//             <div className="flex items-center gap-4">
+//               {isAuthenticated && (
+//                 <button
+//                   onClick={() => setIsRoleModalOpen(true)}
+//                   className="p-2 rounded-full hover:bg-gray-100 transition"
+//                   title="Switch Role"
+//                 >
+//                   <UserCircle size={28} className="text-gray-700" />
+//                 </button>
+//               )}
+//             </div>
+//           </div>
+//         </div>
+//       </header>
+
+//       <LogoutConfirmationModal
+//         isOpen={isLogoutModalOpen}
+//         onClose={() => setIsLogoutModalOpen(false)}
+//         onConfirm={confirmLogout}
+//       />
+
+//       <RoleSwitchModal
+//         isOpen={isRoleModalOpen}
+//         onClose={() => setIsRoleModalOpen(false)}
+//       />
+//     </>
+//   );
+// };
+
+// export default Header;
+
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useModal } from "../../features/auth/context/AuthContext";
+import { useAuth } from "../../app/providers/AuthProvider";
+import { LogoutConfirmationModal } from "../../features/auth/modal/LogoutConfirmationModal";
+import ApiServices from "../../services/ApiServices";
+import { useToast } from "../../app/providers/ToastProvider";
+import { UserCircle } from "lucide-react";
+import { ProfileDropdown } from "../../features/auth/modal/ProfileDropdown";
+
+interface HeaderProps {
+  isSidebarOpen: boolean;
+}
+
+export const Header: React.FC<HeaderProps> = ({ }) => {
+  const { openSignIn, clearMenu } = useModal();
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const { showToast } = useToast();
+
+  // const handleLogout = () => {
+  //   setIsLogoutModalOpen(true);
+  // };
+
+  const confirmLogout = async () => {
+    try {
+      await ApiServices.signOut();
+    } catch (error) {
+      // console.error("Header signout API failed", error);
+    } finally {
+      clearMenu();
+      localStorage.removeItem("auth_token");
+      logout();
+      showToast("Signed out successfully", "success");
+      navigate("/");
+      setIsLogoutModalOpen(false);
+    }
+  };
+
+  return (
+    <>
+      <header className="sticky top-0 z-40 h-14 bg-gray-100 dark:bg-secondary-900 border-secondary-200 dark:border-secondary-700 shadow-sm">
+        <div className="h-full px-4 lg:px-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center animate-fade-in">
+              <img src="/Logo.svg" alt="App Logo" className="h-[90%] w-[80%]" />
+            </div>
+            {/* {!isSidebarOpen && (
+              
+            )} */}
+          </div>
+          <div className="flex-1 flex justify-center">
+            <div className="flex items-center absolute left-1/2 -translate-x-full z-10 bg-yellow-500 rounded-b-full pl-10 pr-12 gap-3">
+              <button className="text-sm font-semibold text-black">
+                Request a Demo
+              </button>
+              <button className="text-sm font-semibold text-black">FAQs</button>
+              <button className="text-sm font-semibold text-black">
+                Help Center
+              </button>
+            </div>
+            <div className="flex items-center relative top-0 bg-[#E9E9E9] rounded-b-full pt-5 pb-4 pl-72 pr-6 gap-6">
+              <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                About us
+              </button>
+              <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                Vidya Kosh
+              </button>
+              <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                Success Stories
+              </button>
+              <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                Institutional Access
+              </button>
+              {!isAuthenticated && (
+                <button
+                  onClick={openSignIn}
+                  className="text-sm font-semibold text-gray-700 hover:text-gray-900"
+                >
+                  Sign In
+                </button>
+              )}
+            </div>
+
+            {/* THIS IS THE ONLY CHANGE: Wrapper made relative, Dropdown moved inside */}
+            {/* Outer container can keep gap if you have other items, but remove relative from here */}
+            <div className="flex items-center justify-end ml-4">
+              {isAuthenticated && (
+                <div className="relative flex items-center justify-center">
+                  <button
+                    onClick={() =>
+                      setIsProfileDropdownOpen(!isProfileDropdownOpen)
+                    }
+                    className="p-2 rounded-full hover:bg-gray-100 transition"
+                    title="Profile Menu"
+                  >
+                    <UserCircle size={28} className="text-gray-700" />
+                  </button>
+
+                  <ProfileDropdown
+                    isOpen={isProfileDropdownOpen}
+                    onClose={() => setIsProfileDropdownOpen(false)}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <LogoutConfirmationModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={confirmLogout}
+      />
+    </>
+  );
+};
+
+export default Header;
