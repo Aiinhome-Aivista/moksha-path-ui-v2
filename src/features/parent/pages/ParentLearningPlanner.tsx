@@ -15,7 +15,7 @@ const navigateToStudentMaterials = (
     state: {
       boardName: stats.board_name,
       className: stats.class_name,
-      subjects: subjects.map((s) => s.subject_name),
+      subjects: (subjects || []).map((s) => s.subject_name),
       subjectWisePlan: subjects,
       stats: stats,
       selectedChapterId: selectedChapterId,
@@ -70,11 +70,11 @@ const navigateToTests = (
   selectedChapterId: number,
   selectedSubjectName: string,
 ) => {
-  const selectedSubject = subjects.find(
+  const selectedSubject = (subjects || []).find(
     (s) => s.subject_name === selectedSubjectName,
   );
 
-  const selectedChapter = selectedSubject?.chapters.find(
+  const selectedChapter = selectedSubject?.chapters?.find(
     (ch: any) => ch.chapter_id === selectedChapterId,
   );
 
@@ -87,7 +87,7 @@ const navigateToTests = (
     state: {
       boardName: stats.board_name,
       className: stats.class_name,
-      subjects: subjects.map((s) => s.subject_name),
+      subjects: (subjects || []).map((s) => s.subject_name),
       subjectWisePlan: subjects,
       stats: stats,
       selectedChapterId: selectedChapterId,
@@ -260,11 +260,11 @@ const ParentLearningPlanner: React.FC = () => {
       setSubjects((prev) =>
         prev.map((sub) => ({
           ...sub,
-          chapters: sub.chapters.map((ch) =>
+          chapters: (sub.chapters || []).map((ch) =>
             ch.chapter_id === chapterId
               ? {
                   ...ch,
-                  topics: ch.topics.map((t) =>
+                  topics: (ch.topics || []).map((t) =>
                     t.topic_id === topicId
                       ? { ...t, is_completed: !isCompleted }
                       : t,
@@ -401,7 +401,7 @@ const ParentLearningPlanner: React.FC = () => {
                 {stats.board_name} | {stats.class_name}
               </p>
               <p className="text-sm text-primary m-0  break-words max-w-xl">
-                Subject: {stats.subject_names?.join(", ")}
+                Subject: {(stats?.subject_names || []).join(", ")}{" "}
               </p>
             </div>
           )}
@@ -468,7 +468,7 @@ const ParentLearningPlanner: React.FC = () => {
         </div>
       </header>
       <div className="flex flex-wrap gap-3 items-center justify-center mb-6">
-        {subjects.map((subject) => (
+        {(subjects || []).map((subject) => (
           <button
             key={subject.subject_name}
             onClick={() => setActiveSubject(subject.subject_name)}
@@ -521,9 +521,9 @@ const ParentLearningPlanner: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {subjects
+            {(subjects || [])
               .filter((sub) => sub.subject_name === activeSubject)
-              .flatMap((sub) => sub.chapters)
+              .flatMap((sub) => sub.chapters || [])
               .map((chapter, index) => (
                 <React.Fragment key={chapter.chapter_id}>
                   <tr className="border-b border-gray-200 hover:bg-gray-50">
@@ -679,7 +679,7 @@ const ParentLearningPlanner: React.FC = () => {
                             Topics in {chapter.chapter_name}
                           </h4>
                           <div className="flex flex-wrap gap-2">
-                            {chapter.topics.map((topic) => (
+                            {(chapter.topics || []).map((topic) => (
                               <div
                                 key={topic.topic_id}
                                 onClick={() =>
