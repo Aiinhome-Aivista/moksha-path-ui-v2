@@ -383,8 +383,8 @@ const ParentLearningPlanner: React.FC = () => {
               </span>
               <h1 className="text-3xl font-bold text-primary m-0">
                 Hi{" "}
-                {stats.student_name
-                  ? stats.student_name
+                {stats.teacher_name
+                  ? stats.teacher_name
                       .split(" ")
                       .map(
                         (word: string) =>
