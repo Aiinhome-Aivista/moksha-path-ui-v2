@@ -21,7 +21,7 @@ type TestStatus = "Pending" | "Completed";
 
 interface TestNotification {
   assignment_id: number;
-  test_name: string;
+  set_name: string;
   subject_name: string;
   teacher_name: string;
   assigned_date: string;
@@ -815,7 +815,7 @@ const Notifications: React.FC = () => {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-sm font-bold text-gray-800 line-clamp-2">
-                          {test.test_name}
+                          {test.set_name}
                         </p>
                         <p className="text-xs text-gray-500">
                           {test.subject_name} • {test.teacher_name}
