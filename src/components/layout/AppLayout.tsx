@@ -17,19 +17,20 @@ export const AppLayout: React.FC = () => {
   const { isLoading, isAuthenticated } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
-  const isLandingPage = location.pathname === "/";
+  // Any path starting with /blogs is considered public, as is the root path.
+  const isPublicPage = location.pathname === "/" || location.pathname.startsWith("/blogs");
 
   // Show loading state while checking auth
   if (isLoading) {
     return <PageLoader text="Loading your workspace..." />;
   }
 
-  if (!isAuthenticated && location.pathname !== "/") {
+  if (!isAuthenticated && !isPublicPage) {
     return <Navigate to="/" replace />;
   }
 
-  // Render a simpler layout for the landing page (no sidebar, no main padding)
-  if (isLandingPage) {
+  // Render a simpler layout for public pages (no sidebar, no main padding)
+  if (isPublicPage) {
     return (
       <div className="min-h-screen bg-gray-100 dark:bg-background-dark flex flex-col">
         <Header isSidebarOpen={isSidebarOpen} />

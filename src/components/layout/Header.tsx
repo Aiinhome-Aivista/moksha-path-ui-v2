@@ -207,6 +207,12 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
               <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
                 Institutional Access
               </button>
+                            <button
+                onClick={() => navigate("/blogs")}
+                className="text-sm font-semibold text-gray-700 hover:text-gray-900"
+              >
+                Blogs
+              </button>
               {!isAuthenticated && (
                 <button
                   onClick={openSignIn}

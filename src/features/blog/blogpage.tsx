@@ -1,0 +1,243 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+
+export const BlogPage = () => {
+  // 1. Reference to the top of the page for smooth scrolling
+  const topRef = useRef<HTMLDivElement>(null);
+
+  // 2. Class 1 to 12 Study Data
+  const allStudyMaterials = [
+    {
+      id: 1,
+      image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      category: "CLASS 1 • MATHEMATICS",
+      title: "Foundational Math: Playing with Numbers",
+      meta: "Chapter 1 / Basic Arithmetic / Study Guide",
+      excerpt: "An interactive introduction to counting, recognizing shapes, and understanding basic addition and subtraction through visual play...",
+    },
+    {
+      id: 2,
+      image: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      category: "CLASS 2 • SCIENCE",
+      title: "Exploring Our World: Plants and Animals",
+      meta: "Chapter 3 / Environmental Science / Study Guide",
+      excerpt: "Discover the amazing world around us! Learn how plants grow, the different types of animals, and what they need to survive...",
+    },
+    {
+      id: 3,
+      image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      category: "CLASS 3 • ENGLISH",
+      title: "Building Vocabulary and Reading Comprehension",
+      meta: "Chapter 2 / Language Arts / Practice Set",
+      excerpt: "Step up your reading skills! This module covers new vocabulary words, sentence construction, and understanding short stories...",
+    },
+    {
+      id: 4,
+      image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      category: "CLASS 4 • GEOGRAPHY",
+      title: "Understanding Maps and Earth's Landforms",
+      meta: "Chapter 4 / Social Studies / Interactive Map",
+      excerpt: "Learn how to read maps, understand directions, and explore the different landforms like mountains, valleys, and oceans on our planet...",
+    },
+    {
+      id: 6,
+      image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      category: "CLASS 6 • PHYSICS",
+      title: "Middle School Physics: Force and Motion",
+      meta: "Chapter 1 / General Science / Lab Experiment",
+      excerpt: "What makes things move? Dive into the basics of physics, exploring gravity, friction, force, and motion with real-world examples...",
+    },
+    {
+      id: 7,
+      image: "https://images.unsplash.com/photo-1461360370896-922624d12aa1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      category: "CLASS 7 • HISTORY",
+      title: "Ancient Civilizations and Global Cultures",
+      meta: "Chapter 6 / World History / Study Notes",
+      excerpt: "Travel back in time to study the rise and fall of ancient empires, significant historical events, and how they shaped the modern world...",
+    },
+    {
+      id: 8,
+      image: "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      category: "CLASS 8 • CHEMISTRY",
+      title: "Introduction to Elements and the Periodic Table",
+      meta: "Chapter 3 / Chemistry / Study Guide",
+      excerpt: "Uncover the building blocks of the universe. Learn about atoms, molecules, chemical reactions, and how to read the periodic table...",
+    },
+    {
+      id: 9,
+      image: "https://images.unsplash.com/photo-1596495578065-6e0763fa1178?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      category: "CLASS 9 • MATHEMATICS",
+      title: "Algebraic Expressions and Geometry Basics",
+      meta: "Chapter 4 / Advanced Math / Formula Sheet",
+      excerpt: "Preparing for board exams starts here. Master linear equations, polynomials, and the fundamental theorems of geometry...",
+    },
+    {
+      id: 10,
+      image: "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      category: "CLASS 10 • BIOLOGY",
+      title: "Life Processes: Human Anatomy and Genetics",
+      meta: "Chapter 8 / Life Sciences / Diagram Notes",
+      excerpt: "A deep dive into biological systems. Study human anatomy, plant reproduction, heredity, and evolution for your final board preparations...",
+    },
+    {
+      id: 11,
+      image: "https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      category: "CLASS 11 • PHYSICS",
+      title: "Advanced Mechanics and Thermodynamics",
+      meta: "Chapter 2 / Senior Secondary Physics / derivations",
+      excerpt: "Stepping into higher-level physics. Understand kinematics, the laws of motion, work, energy, and complex thermodynamic principles...",
+    },
+    {
+      id: 12,
+      image: "https://images.unsplash.com/photo-1509228468518-180dd4864904?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      category: "CLASS 12 • MATHEMATICS",
+      title: "Calculus, Integration, and Data Analysis",
+      meta: "Chapter 7 / Board Prep / Practice Exams",
+      excerpt: "The final frontier of school mathematics. Master limits, derivatives, integrals, matrices, and probability for competitive exams...",
+    }
+  ];
+
+  // 3. Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 6; // Set to 6 so there are exactly 2 pages for 12 classes
+
+  // 4. Scroll to top whenever the page changes
+  useEffect(() => {
+    if (topRef.current) {
+      // scrollIntoView works perfectly even inside scrollable divs (like your AppLayout)
+      topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [currentPage]); // This effect runs every time currentPage updates
+
+  // 5. Pagination Logic
+  const totalPosts = allStudyMaterials.length;
+  const totalPages = Math.ceil(totalPosts / postsPerPage);
+  
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const endIndex = Math.min(startIndex + postsPerPage, totalPosts);
+  const currentPosts = allStudyMaterials.slice(startIndex, endIndex);
+
+  // 6. Handlers for buttons
+  const goToPage = (page: React.SetStateAction<number>) => setCurrentPage(page);
+  const goToNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  const goToPrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const goToFirstPage = () => setCurrentPage(1);
+  const goToLastPage = () => setCurrentPage(totalPages);
+
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  return (
+    <div className="bg-gray-50 font-sans min-h-screen">
+      {/* Invisible div acting as our scroll anchor */}
+      <div ref={topRef} className="h-0 w-0" />
+
+      <div className="max-w-7xl mx-auto px-4 py-8 md:px-8">
+
+        {/* Blog Grid */}
+        <div className="flex justify-center">
+          <div className="inline-grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {currentPosts.map((post) => (
+              <div key={post.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+              {/* Card Image */}
+              <div className="h-52 bg-gray-200 overflow-hidden p-3 rounded-t-xl">
+                 <div className="w-full h-full rounded-lg overflow-hidden relative">
+                    <img 
+                      src={post.image} 
+                      alt={post.title} 
+                      className="w-full h-full object-cover"
+                    />
+                 </div>
+              </div>
+
+              {/* Card Content */}
+              <div className="p-6 flex flex-col flex-grow">
+                <p className="text-xs font-bold text-blue-700 uppercase tracking-wide mb-3">
+                  {post.category}
+                </p>
+                <h2 className="text-lg font-semibold text-gray-800 leading-snug mb-3 line-clamp-2">
+                  {post.title}
+                </h2>
+                <p className="text-xs text-gray-500 italic mb-4">
+                  {post.meta}
+                </p>
+                <p className="text-sm text-gray-600 mb-6 flex-grow line-clamp-3">
+                  {post.excerpt}
+                </p>
+                
+                {/* Button pinned to bottom */}
+{/* Link pinned to bottom */}
+<Link 
+  to={`/blogs/${post.id}`} 
+  className="w-full py-2.5 bg-[#ffed00] hover:bg-yellow-400 text-black font-medium text-sm rounded transition-colors mt-auto text-center block shadow-sm"
+>
+  Read More
+</Link>
+              </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Dynamic Pagination */}
+        <div className="mt-12 flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-8 text-sm text-gray-600">
+          <div className="flex space-x-1">
+            
+            <button 
+              onClick={goToFirstPage}
+              disabled={currentPage === 1}
+              className="px-3 md:px-4 py-2 border border-gray-200 bg-white text-gray-600 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              First
+            </button>
+            
+            <button 
+              onClick={goToPrevPage}
+              disabled={currentPage === 1}
+              className="px-3 md:px-4 py-2 border border-gray-200 bg-white text-gray-600 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Previous
+            </button>
+            
+            {pageNumbers.map(number => (
+              <button 
+                key={number}
+                onClick={() => goToPage(number)}
+                className={`px-3 md:px-4 py-2 font-medium rounded shadow-sm transition-all duration-200 ${
+                  currentPage === number 
+                    ? "bg-[#ffed00] text-black" 
+                    : "bg-white border border-gray-200 text-gray-600 hover:bg-[#fef08a]" 
+                }`}
+              >
+                {number}
+              </button>
+            ))}
+            
+            <button 
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+              className="px-3 md:px-4 py-2 bg-[#ffed00] text-black font-medium rounded shadow-sm hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Next
+            </button>
+            
+            <button 
+              onClick={goToLastPage}
+              disabled={currentPage === totalPages}
+              className="px-3 md:px-4 py-2 bg-[#ffed00] text-black font-medium rounded shadow-sm hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Last
+            </button>
+
+          </div>
+          
+          <div className="font-medium text-gray-500">
+            Showing {startIndex + 1}-{endIndex} of {totalPosts} classes
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  );
+};
+
+export default BlogPage;

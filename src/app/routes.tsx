@@ -20,6 +20,8 @@ import { TeacherDashboard } from "../features/teacher/pages/TeacherDashboard";
 import ParentLearningPlanner from "../features/parent/pages/ParentLearningPlanner";
 import TeacherLearningPlanner from "../features/teacher/pages/TeacherLearningPlanner";
 
+import Blogs from "../features/blog/blogpage";
+import BlogDetail from "../features/blog/blogdetail";
 const routes: RouteObject[] = [
   // Standalone Routes
   { path: "/login", element: <Login /> },
@@ -31,6 +33,8 @@ const routes: RouteObject[] = [
     children: [
       // Public / Landing
       { path: "/", element: <LandingPage /> },
+      { path: "blogs", element: <Blogs /> },
+      { path: "blogs/:id", element: <BlogDetail /> },
 
       // Student Routes
       { path: "dashboard", element: <StudentDashboard /> },
