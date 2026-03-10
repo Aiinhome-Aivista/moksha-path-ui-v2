@@ -82,7 +82,7 @@ const TestDetailsFormModal: React.FC<TestDetailsFormModalProps> = ({
     }
 
     const match = suggestions.find((s) =>
-      s.toLowerCase().startsWith(form.testName.toLowerCase()),
+      s.toLowerCase().includes(form.testName.toLowerCase()),
     );
 
     setSuggestion(match || "");
