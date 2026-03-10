@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ApiServices from "../../../services/ApiServices";
 import { Loader2 } from "lucide-react";
+import SearchableSelect from "../../../components/common/SearchableSelect";
 
 interface Board {
     id: number;
@@ -235,47 +236,39 @@ const SubscriptionSetupModal: React.FC<SubscriptionSetupModalProps> = ({
                                     <label className="block text-sm font-medium text-primary mb-2">
                                         Choose Your Board <span className="text-red-500">*</span>
                                     </label>
-                                    <select
+                                    <SearchableSelect
                                         value={selectedBoard}
-                                        onChange={(e) =>
-                                            setSelectedBoard(Number(e.target.value))
+                                        onChange={(val) =>
+                                            setSelectedBoard(val === "" ? "" : Number(val))
                                         }
+                                        options={boards.map((b) => ({ value: b.id, label: b.name }))}
+                                        placeholder="Select Board"
                                         className="w-full py-2 border-b border-gray-300 text-primary bg-transparent focus:outline-none focus:border-gray-500 text-base"
-                                    >
-                                        <option value="">Select Board</option>
-                                        {boards.map((b) => (
-                                            <option key={b.id} value={b.id}>
-                                                {b.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    />
                                 </div>
 
                                 <div>
                                     <label className="block text-sm font-medium text-primary mb-2">
                                         Choose Your School
                                     </label>
-                                    <select
+                                    <SearchableSelect
                                         value={selectedSchool}
-                                        onChange={(e) => {
-                                            if (e.target.value === "ADD_NEW") {
+                                        onChange={(val) => {
+                                            if (val === "ADD_NEW") {
                                                 setShowAddSchoolInput(true);
                                                 setSelectedSchool("");
                                             } else {
-                                                setSelectedSchool(Number(e.target.value));
+                                                setSelectedSchool(val === "" ? "" : Number(val));
                                                 setShowAddSchoolInput(false);
                                             }
                                         }}
+                                        options={[
+                                            ...schools.map((s) => ({ value: s.id, label: s.name })),
+                                            { value: "ADD_NEW", label: "➕ Add New School" }
+                                        ]}
+                                        placeholder="Select School"
                                         className="w-full py-2 border-b border-gray-300 text-primary bg-transparent focus:outline-none focus:border-gray-500 text-base"
-                                    >
-                                        <option value="">Select School</option>
-                                        {schools.map((s) => (
-                                            <option key={s.id} value={s.id}>
-                                                {s.name}
-                                            </option>
-                                        ))}
-                                        <option value="ADD_NEW">➕ Add New School</option>
-                                    </select>
+                                    />
 
                                     {showAddSchoolInput && (
                                         <div className="mt-3 flex gap-2">
@@ -303,20 +296,15 @@ const SubscriptionSetupModal: React.FC<SubscriptionSetupModalProps> = ({
                                     <label className="block text-sm font-medium text-primary mb-2">
                                         Class / Standard <span className="text-red-500">*</span>
                                     </label>
-                                    <select
+                                    <SearchableSelect
                                         value={selectedClass}
-                                        onChange={(e) =>
-                                            setSelectedClass(Number(e.target.value))
+                                        onChange={(val) =>
+                                            setSelectedClass(val === "" ? "" : Number(val))
                                         }
+                                        options={classes.map((c) => ({ value: c.id, label: c.name }))}
+                                        placeholder="Select Class"
                                         className="w-full py-2 border-b border-gray-300 text-primary bg-transparent focus:outline-none focus:border-gray-500 text-base"
-                                    >
-                                        <option value="">Select Class</option>
-                                        {classes.map((c) => (
-                                            <option key={c.id} value={c.id}>
-                                                {c.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    />
                                 </div>
 
                                 <div>
@@ -338,7 +326,7 @@ const SubscriptionSetupModal: React.FC<SubscriptionSetupModalProps> = ({
                                 </div>
                             </div>
 
-                           
+
                             {/* Seats Row */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-[10px] tracking-widest text-gray-400 font-semibold px-1">

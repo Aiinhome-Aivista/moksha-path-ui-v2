@@ -4,6 +4,7 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { useNavigate } from "react-router-dom";
 import ApiServices from "../../../services/ApiServices";
 import { useAuth } from "../../../app/providers/AuthProvider";
+import SearchableSelect from "../../../components/common/SearchableSelect";
 import type { Role as GlobalRole } from "../../../config/roles";
 import { DEFAULT_ROLE } from "../../../config/roles";
 
@@ -526,20 +527,16 @@ export const SelectRoleModal: React.FC = () => {
                       <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                         Board
                       </label>
-                      <select
+                      <SearchableSelect
                         value={selectedBoardId}
-                        onChange={(e) =>
-                          setSelectedBoardId(Number(e.target.value))
+                        onChange={(val) =>
+                          setSelectedBoardId(val === "" ? "" : Number(val))
                         }
-                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-blue-50/30 text-gray-900 outline-none focus:border-blue-400 transition-all text-sm appearance-none cursor-pointer"
-                      >
-                        <option value="">Select Board</option>
-                        {filteredBoards.map((b) => (
-                          <option key={b.id} value={b.id}>
-                            {b.name}
-                          </option>
-                        ))}
-                      </select>
+                        options={filteredBoards.map((b) => ({ value: b.id, label: b.name }))}
+                        placeholder="Select Board"
+                        className="w-full py-2.5 rounded-xl border border-gray-200 bg-blue-50/30 text-gray-900 outline-none focus:border-blue-400 transition-all text-sm appearance-none cursor-pointer px-4"
+                        dropdownClassName="w-full"
+                      />
                     </div>
 
                     {/* School/College */}
@@ -547,20 +544,16 @@ export const SelectRoleModal: React.FC = () => {
                       <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                         School/Institute
                       </label>
-                      <select
+                      <SearchableSelect
                         value={selectedInstituteId}
-                        onChange={(e) =>
-                          setSelectedInstituteId(Number(e.target.value))
+                        onChange={(val) =>
+                          setSelectedInstituteId(val === "" ? "" : Number(val))
                         }
-                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-blue-50/30 text-gray-900 outline-none focus:border-blue-400 transition-all text-sm appearance-none cursor-pointer"
-                      >
-                        <option value="">Select Institute</option>
-                        {filteredSchools.map((i) => (
-                          <option key={i.id} value={i.id}>
-                            {i.name}
-                          </option>
-                        ))}
-                      </select>
+                        options={filteredSchools.map((i) => ({ value: i.id, label: i.name }))}
+                        placeholder="Select Institute"
+                        className="w-full py-2.5 rounded-xl border border-gray-200 bg-blue-50/30 text-gray-900 outline-none focus:border-blue-400 transition-all text-sm appearance-none cursor-pointer px-4"
+                        dropdownClassName="w-full"
+                      />
                     </div>
 
                     {/* Class/Standard */}
@@ -568,20 +561,16 @@ export const SelectRoleModal: React.FC = () => {
                       <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                         Class/Standard
                       </label>
-                      <select
+                      <SearchableSelect
                         value={selectedClassId}
-                        onChange={(e) =>
-                          setSelectedClassId(Number(e.target.value))
+                        onChange={(val) =>
+                          setSelectedClassId(val === "" ? "" : Number(val))
                         }
-                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-blue-50/30 text-gray-900 outline-none focus:border-blue-400 transition-all text-sm appearance-none cursor-pointer"
-                      >
-                        <option value="">Select Class</option>
-                        {filteredClasses.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name}
-                          </option>
-                        ))}
-                      </select>
+                        options={filteredClasses.map((c) => ({ value: c.id, label: c.name }))}
+                        placeholder="Select Class"
+                        className="w-full py-2.5 rounded-xl border border-gray-200 bg-blue-50/30 text-gray-900 outline-none focus:border-blue-400 transition-all text-sm appearance-none cursor-pointer px-4"
+                        dropdownClassName="w-full"
+                      />
                     </div>
                   </div>
                 );
