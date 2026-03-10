@@ -69,7 +69,7 @@ const TeacherMaterials = () => {
   const [chapters, setChapters] = useState<ChapterItem[]>([]);
   const [coreTopics, setCoreTopics] = useState<TopicItem[]>([]);
   const [apiSubjectWisePlan, setApiSubjectWisePlan] = useState<any[] | null>(null);
-const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   // ── Resource data from API ──
   const [youtubeLinks, setYoutubeLinks] = useState<YouTubeLink[]>([]);
   const [notesData, setNotesData] = useState<NoteData[]>([]);
@@ -322,14 +322,25 @@ const [isChatOpen, setIsChatOpen] = useState(false);
       }
     } else {
       // otherwise start with no chapters selected – user will choose in sidebar
-      setSelectedChapters([]);
-      setSelectedTopics([]);
+      setSelectedChapters([0]);
+      // Also default select all topics for the first chapter on initial load
+      const firstChapterTopics = transformedChapters[0]?.topics || [];
+      setSelectedTopics(firstChapterTopics.map((_, i) => i));
     }
   }, [
     activeSubject,
     effectiveSubjectWisePlan,
     locationState?.selectedChapterId,
   ]);
+
+  // Auto-select first chapter and its topics when switching resource tabs (Videos, Tests, Notes) if none are selected
+  useEffect(() => {
+    if (activeResourceType && chapters.length > 0 && selectedChapters.length === 0) {
+      setSelectedChapters([0]);
+      const firstChapterTopics = chapters[0]?.topics || [];
+      setSelectedTopics(firstChapterTopics.map((_, i) => i));
+    }
+  }, [activeResourceType]);
 
   // whenever the chapter selection changes (or the chapter list itself), compute the core topic list
   useEffect(() => {
@@ -597,7 +608,7 @@ const [isChatOpen, setIsChatOpen] = useState(false);
         </button>
       </div>
       {isChatOpen && <Chat onClose={() => setIsChatOpen(false)} />}
-  
+
     </div>
   );
 };
