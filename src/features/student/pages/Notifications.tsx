@@ -23,13 +23,13 @@ interface TestNotification {
   assignment_id: number;
   set_name: string;
   subject_name: string;
-  teacher_name: string;
+  assigned_by_name: string;
   assigned_date: string;
   due_date: string;
   duration_minutes: number;
   total_marks: number;
-  total_questions: number;
-  score_obtained: number;
+  number_of_questions: number;
+  marks_obtained: number;
   status: TestStatus;
 }
 
@@ -818,7 +818,7 @@ const Notifications: React.FC = () => {
                           {test.set_name}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {test.subject_name} • {test.teacher_name}
+                          {test.subject_name} • {test.assigned_by_name}
                         </p>
                       </div>
 
@@ -859,7 +859,7 @@ const Notifications: React.FC = () => {
                           Questions
                         </p>
                         <p className="text-gray-700 font-semibold">
-                          {test.total_questions}
+                          {test.number_of_questions}
                         </p>
                       </div>
 
@@ -868,7 +868,7 @@ const Notifications: React.FC = () => {
                           Marks
                         </p>
                         <p className="text-gray-700 font-semibold">
-                          {test.score_obtained}/{test.total_marks}
+                          {test.marks_obtained}/{test.total_marks}
                         </p>
                       </div>
                     </div>
