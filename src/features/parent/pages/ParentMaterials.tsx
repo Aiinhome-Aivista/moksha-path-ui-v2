@@ -80,6 +80,15 @@ const ParentMaterials = () => {
   const effectiveSubjectWisePlan =
     locationState?.subjectWisePlan || apiSubjectWisePlan || null;
 
+  useEffect(() => {
+    if (location.pathname.includes("parent-videos")) {
+      setActiveResourceType("Videos");
+    } else if (location.pathname.includes("parent-tests")) {
+      setActiveResourceType("Tests");
+    } else if (location.pathname.includes("parent-notes")) {
+      setActiveResourceType("Notes");
+    }
+  }, [location.pathname]);
 
   // whenever selected board or hierarchy changes, update class options
   useEffect(() => {
@@ -135,15 +144,15 @@ const ParentMaterials = () => {
     (effectiveSubjectWisePlan && Array.isArray(effectiveSubjectWisePlan)
       ? effectiveSubjectWisePlan.map((p: any) => p.subject_name || p.subject)
       : [
-          "Math",
-          "Science",
-          "History",
-          "Civics",
-          "Geography",
-          "English Literature",
-          "English Grammar",
-          "Hindi Sahitya",
-        ]);
+        "Math",
+        "Science",
+        "History",
+        "Civics",
+        "Geography",
+        "English Literature",
+        "English Grammar",
+        "Hindi Sahitya",
+      ]);
 
   // When API plan loads and no activeSubject selected, pick first subject
   useEffect(() => {
@@ -312,14 +321,27 @@ const ParentMaterials = () => {
       }
     } else {
       // otherwise start with no chapters selected – user will choose in sidebar
-      setSelectedChapters([]);
-      setSelectedTopics([]);
+      // Wait, let's just default to the first chapter if none are selected, especially for Tests/Notes
+      setSelectedChapters([0]);
+      // Also default select all topics for the first chapter on initial load
+      const firstChapterTopics = transformedChapters[0]?.topics || [];
+      setSelectedTopics(firstChapterTopics.map((_, i) => i));
     }
   }, [
     activeSubject,
     effectiveSubjectWisePlan,
     locationState?.selectedChapterId,
   ]);
+
+  // Auto-select first chapter and its topics when switching resource tabs (Videos, Tests, Notes) if none are selected
+  useEffect(() => {
+    if (activeResourceType && chapters.length > 0 && selectedChapters.length === 0) {
+      setSelectedChapters([0]);
+      // Also select all core topics of the first chapter
+      const firstChapterTopics = chapters[0]?.topics || [];
+      setSelectedTopics(firstChapterTopics.map((_, i) => i));
+    }
+  }, [activeResourceType]);
 
   // whenever the chapter selection changes (or the chapter list itself), compute the core topic list
   useEffect(() => {
@@ -457,8 +479,8 @@ const ParentMaterials = () => {
                 topic_title:
                   item.topic_title ||
                   (parsedContent &&
-                  typeof parsedContent === "object" &&
-                  !Array.isArray(parsedContent)
+                    typeof parsedContent === "object" &&
+                    !Array.isArray(parsedContent)
                     ? parsedContent.title || parsedContent.topic
                     : `Topic ${item.topic_id}`),
                 content: parsedContent,
@@ -579,7 +601,7 @@ const ParentMaterials = () => {
         </button>
       </div>
       {isChatOpen && <Chat onClose={() => setIsChatOpen(false)} />}
-  
+
     </div>
   );
 };
