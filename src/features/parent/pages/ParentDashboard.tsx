@@ -475,12 +475,12 @@ const ParentDashboard: React.FC = () => {
     
 
         {/* Score Badges */}
-        <div className="flex items-center pr-7 ml-auto mr-4 mt-11">
-          <div className="flex gap-20">
+        <div className="flex items-center pr-2 ml-auto mr-4 mt-11">
+          <div className="flex gap-24">
             {studentData.subjectsArray.map((subject: any, index: number) => {
               const subjectScore = analyticsData.subjectScores.find((s: any) => s.subject_name === subject.subject_name)?.average_percentage || 0;
               return (
-                <div key={index} className="flex flex-col items-center justify-end text-center min-h-[120px]">
+                <div key={index} className="flex flex-col items-center justify-end text-center min-h-[120px] w-[100px]">
                   <div className="flex items-center justify-center bg-highlighter w-[70px] h-[70px] rounded-full mb-2">
                     <span className="text-xl font-bold text-red-500">
                       {Math.round(subjectScore)}%

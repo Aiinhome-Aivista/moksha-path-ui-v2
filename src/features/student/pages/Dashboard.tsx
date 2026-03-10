@@ -347,28 +347,40 @@ const StudentDashboard: React.FC = () => {
         </div>
 
         {/* Score Badges */}
-        <div className="flex items-center pr-7 ml-auto mr-4 mt-10">
-          <div className="flex gap-28 items-end">
-            {studentData.subjectsArray.map((subject: any, index: number) => {
-              const subjectScore = analyticsData.subjectScores.find((s: any) => s.subject_name === subject.subject_name)?.average_percentage || 0;
-              return (
-                <div key={index} className="flex flex-col items-center justify-end text-center min-h-[120px]">
-                  <div className="flex items-center justify-center bg-highlighter w-[70px] h-[70px] rounded-full mb-2">
-                    <span className="text-xl font-bold text-red-500">
-                      {Math.round(subjectScore)}%
-                    </span>
-                  </div>
-                  <span
-                    className="block text-xs font-bold text-primary mt-1 uppercase tracking-wider max-w-[100px] break-words whitespace-normal text-center"
-                    style={{ wordBreak: 'break-word', lineHeight: '1.2', minHeight: '38px', display: 'inline-block' }}
-                  >
-                    {subject.subject_name}
-                  </span>
-                </div>
-              );
-            })}
+<div className="flex items-center pr-3 ml-auto mr-4 mt-10">
+  <div className="flex gap-24 items-end">
+    {studentData.subjectsArray.map((subject: any, index: number) => {
+      const subjectScore =
+        analyticsData.subjectScores.find(
+          (s: any) => s.subject_name === subject.subject_name
+        )?.average_percentage || 0;
+
+      return (
+        <div
+          key={subject.subject_name || index} 
+          className="flex flex-col items-center justify-end text-center min-h-[120px] w-[100px]"
+        >
+          <div className="flex items-center justify-center bg-highlighter w-[70px] h-[70px] rounded-full mb-2">
+            <span className="text-xl font-bold text-red-500">
+              {Math.round(subjectScore)}%
+            </span>
           </div>
+          <span
+            className="text-xs font-bold text-primary mt-1 uppercase tracking-wider max-w-[100px] break-words whitespace-normal text-center"
+            style={{
+              wordBreak: "break-word",
+              lineHeight: "1.2",
+              minHeight: "38px",
+              display: "inline-block",
+            }}
+          >
+            {subject.subject_name}
+          </span>
         </div>
+      );
+    })}
+  </div>
+</div>
       </header>
 
       {/* Main Content Grid */}
