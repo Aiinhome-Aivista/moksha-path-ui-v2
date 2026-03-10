@@ -147,7 +147,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ }) => {
   const { openSignIn, clearMenu } = useModal();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const navigate = useNavigate();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -172,17 +172,30 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
     }
   };
 
+  const handleLogoClick = () => {
+    if (isAuthenticated) {
+      const role = user?.role?.toLowerCase();
+      if (role === "teacher") {
+        navigate("/teacher/dashboard");
+      } else if (role === "parent") {
+        navigate("/parent/dashboard");
+      } else {
+        // Default for student and other roles
+        navigate("/dashboard");
+      }
+    } else {
+      navigate("/");
+    }
+  };
+
   return (
     <>
       <header className="sticky top-0 z-40 h-14 bg-gray-100 dark:bg-secondary-900 border-secondary-200 dark:border-secondary-700 shadow-sm">
         <div className="h-full px-4 lg:px-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex items-center animate-fade-in">
+            <button onClick={handleLogoClick} className="flex items-center animate-fade-in cursor-pointer">
               <img src="/Logo.svg" alt="App Logo" className="h-[90%] w-[80%]" />
-            </div>
-            {/* {!isSidebarOpen && (
-              
-            )} */}
+            </button>
           </div>
           <div className="flex-1 flex justify-center">
             <div className="flex items-center absolute left-1/2 -translate-x-full z-10 bg-yellow-500 rounded-b-full pl-10 pr-12 gap-3">

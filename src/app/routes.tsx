@@ -34,7 +34,7 @@ const routes: RouteObject[] = [
       // Public / Landing
       { path: "/", element: <LandingPage /> },
       { path: "blogs", element: <Blogs /> },
-      { path: "blogs/:id", element: <BlogDetail /> },
+      { path: "blogs/:title", element: <BlogDetail /> },
 
       // Student Routes
       { path: "dashboard", element: <StudentDashboard /> },
