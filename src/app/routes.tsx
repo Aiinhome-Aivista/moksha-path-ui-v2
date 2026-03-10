@@ -68,9 +68,9 @@ const routes: RouteObject[] = [
       { path: "parent/dashboard", element: <ParentDashboard /> },
       { path: "parent/parentlearning-planner", element: <ParentLearningPlanner /> },
       { path: "parent-material", element: <ParentMaterials /> },
-      { path: "parent-tests", element: <TeacherMaterials /> },
-      { path: "parent-videos", element: <TeacherMaterials /> },
-      { path: "parent-notes", element: <TeacherMaterials /> },
+      { path: "parent-tests", element: <ParentMaterials /> },
+      { path: "parent-videos", element: <ParentMaterials /> },
+      { path: "parent-notes", element: <ParentMaterials /> },
       {
         path: "principal/",
         element: <PlaceholderPage title="Principal Portal - Coming Soon" />,

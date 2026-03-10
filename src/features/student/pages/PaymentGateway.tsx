@@ -34,6 +34,7 @@ const PaymentGateway: React.FC = () => {
 
     setIsProcessing(true);
     try {
+      // console.log("Received paymentData:", paymentData);
       // Construct the final payload for complete_subscription
       const finalPayload = {
         plan_id: paymentData.plan_id,
@@ -43,7 +44,7 @@ const PaymentGateway: React.FC = () => {
         institute_id: paymentData.institute_id,
         subject_ids: paymentData.subject_ids,
         total_licenses: paymentData.total_licences,
-        licences_used: paymentData.licenses_used,
+        licences_used: paymentData.licences_used,
         transaction_id: "TXN-RAZORPAY-" + Math.floor(Math.random() * 100000000),
         subscription_name: paymentData.subscription_name,
         ui_total_amount: paymentData.ui_total_amount,

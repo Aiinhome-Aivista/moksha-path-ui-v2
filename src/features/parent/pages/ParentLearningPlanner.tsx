@@ -263,13 +263,13 @@ const ParentLearningPlanner: React.FC = () => {
           chapters: (sub.chapters || []).map((ch) =>
             ch.chapter_id === chapterId
               ? {
-                  ...ch,
-                  topics: (ch.topics || []).map((t) =>
-                    t.topic_id === topicId
-                      ? { ...t, is_completed: !isCompleted }
-                      : t,
-                  ),
-                }
+                ...ch,
+                topics: (ch.topics || []).map((t) =>
+                  t.topic_id === topicId
+                    ? { ...t, is_completed: !isCompleted }
+                    : t,
+                ),
+              }
               : ch,
           ),
         })),
@@ -340,7 +340,7 @@ const ParentLearningPlanner: React.FC = () => {
 
   // Get first letter of name for avatar fallback
   const getInitial = () => {
-    return stats?.student_name?.charAt(0).toUpperCase();
+    return stats?.teacher_name?.charAt(0).toUpperCase() || stats?.student_name?.charAt(0).toUpperCase() || "";
   };
 
   return (
@@ -385,12 +385,12 @@ const ParentLearningPlanner: React.FC = () => {
                 Hi{" "}
                 {stats.teacher_name
                   ? stats.teacher_name
-                      .split(" ")
-                      .map(
-                        (word: string) =>
-                          word.charAt(0).toUpperCase() + word.slice(1),
-                      )
-                      .join(" ")
+                    .split(" ")
+                    .map(
+                      (word: string) =>
+                        word.charAt(0).toUpperCase() + word.slice(1),
+                    )
+                    .join(" ")
                   : ""}{" "}
                 !
               </h1>
@@ -473,11 +473,10 @@ const ParentLearningPlanner: React.FC = () => {
             key={subject.subject_name}
             onClick={() => setActiveSubject(subject.subject_name)}
             className={`px-6 py-2.5 rounded-full text-sm font-medium cursor-pointer transition-all duration-300 border-none
-      ${
-        activeSubject === subject.subject_name
-          ? "bg-button-primary text-primary font-semibold"
-          : "bg-primary text-white font-semibold"
-      }`}
+      ${activeSubject === subject.subject_name
+                ? "bg-button-primary text-primary font-semibold"
+                : "bg-primary text-white font-semibold"
+              }`}
           >
             {subject.subject_name}
           </button>
@@ -557,9 +556,9 @@ const ParentLearningPlanner: React.FC = () => {
                       {expandedChapters.has(chapter.chapter_id)
                         ? `${chapter.topics?.length || 0} topics`
                         : (chapter.topics || [])
-                            .slice(0, 2)
-                            .map((t) => t.topic_name)
-                            .join(", ")}
+                          .slice(0, 2)
+                          .map((t) => t.topic_name)
+                          .join(", ")}
 
                       {!expandedChapters.has(chapter.chapter_id) &&
                         (chapter.topics?.length || 0) > 2 &&
@@ -650,11 +649,10 @@ const ParentLearningPlanner: React.FC = () => {
                               activeSubject,
                             )
                           }
-                          className={`inline-block px-3 py-1 rounded-full text-xs font-semibold cursor-pointer select-none transition-opacity hover:opacity-80 ${
-                            chapter.status === "Completed"
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-semibold cursor-pointer select-none transition-opacity hover:opacity-80 ${chapter.status === "Completed"
                               ? "bg-green-500 text-white"
                               : "bg-green-500 text-white"
-                          }`}
+                            }`}
                           title="Click to take tests"
                         >
                           {chapter.status === "Completed"
@@ -700,11 +698,10 @@ const ParentLearningPlanner: React.FC = () => {
                                 )}
                                 <div className="flex-1">
                                   <p
-                                    className={`text-sm font-medium ${
-                                      topic.is_completed
+                                    className={`text-sm font-medium ${topic.is_completed
                                         ? "line-through text-gray-400"
                                         : "text-primary"
-                                    }`}
+                                      }`}
                                   >
                                     {topic.topic_name}
                                   </p>

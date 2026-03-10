@@ -12,6 +12,14 @@ const ParentDashboard: React.FC = () => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [profileImage, setProfileImage] = useState<string>("");
+  // Parent profile state
+  const [parentProfile, setParentProfile] = useState<{ class_name: string; parent_name: string; school_name: string;board_name: string; subjects: string[] }>({
+    class_name: "",
+    parent_name: "",
+    school_name: "",
+    board_name: "",
+    subjects: [],
+  });
   const [uploading, setUploading] = useState(false);
 
   // Children dropdown
@@ -117,6 +125,25 @@ const ParentDashboard: React.FC = () => {
     };
     fetchChildren();
     fetchProfileImage();
+    // Fetch parent profile details
+    ApiServices.getParentProfile()
+      .then((res) => {
+        if (res.data?.status === "success" && res.data?.code === 200) {
+          const data = res.data.data;
+          setParentProfile({
+            class_name: data.class_name || "",
+            parent_name: data.parent_name || "",
+            school_name: data.school_name || "",
+            board_name: data.board_name || "",
+            subjects: data.subjects || [],
+          });
+        } else {
+          console.error("Failed to fetch parent profile", res);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching parent profile", err);
+      });
   }, []);
 
   useEffect(() => {
@@ -364,20 +391,20 @@ const ParentDashboard: React.FC = () => {
             </span>
             <h1 className="text-3xl font-bold text-primary m-0">
               Hi{" "}
-              {studentData.name
+              {parentProfile.parent_name
                 .split(" ")
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                 .join(" ")}{" "}
               !
             </h1>
             <p className="text-sm text-primary font-medium m-0">
-              {studentData.school}
+              {parentProfile.school_name}
             </p>
             <p className="text-sm text-primary m-0">
-              {studentData.board} | {studentData.class}
+              {parentProfile.board_name} | {parentProfile.class_name}
             </p>
             <p className="text-sm text-primary m-0 break-words max-w-xl">
-              Subjects: {studentData.subjects}
+              Subjects: {parentProfile.subjects}
             </p>
                 <div className="flex flex-col gap-1 mt-4 lg:mt-0 text-left">
           <label className="text-sm text-primary tracking-wider">
