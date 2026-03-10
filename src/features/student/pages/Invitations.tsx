@@ -964,9 +964,14 @@ const Invitations: React.FC = () => {
                           <span className="block text-sm font-medium text-gray-800 truncate">
                             {user.fullName}
                           </span>
-                          <span className="block text-xs text-gray-400">
+                          <span className="block text-xs text-gray-500 truncate">
                             @{user.username}
                           </span>
+                          {(user.email || user.mobile) && (
+                            <span className="block text-[11px] text-gray-400 truncate mt-0.5">
+                              {[user.email, user.mobile].filter(Boolean).join(" • ")}
+                            </span>
+                          )}
                         </span>
                       </button>
                     ))}
@@ -1009,6 +1014,11 @@ const Invitations: React.FC = () => {
                           <p className="text-xs text-gray-500 truncate">
                             @{u.username}
                           </p>
+                          {(u.email || u.mobile) && (
+                            <p className="text-[11px] text-gray-400 truncate mt-0.5">
+                              {[u.email, u.mobile].filter(Boolean).join(" • ")}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <button
