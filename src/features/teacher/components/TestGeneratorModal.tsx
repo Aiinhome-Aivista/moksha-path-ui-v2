@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Plus, X } from "lucide-react";
 import { useToast } from "../../../app/providers/ToastProvider";
 import ApiServices from "../../../services/ApiServices";
@@ -48,9 +48,12 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
   });
 
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showTestNameSuggestions, setShowTestNameSuggestions] = useState(true);
 
   const [selectedChapters, setSelectedChapters] = useState<number[]>([]);
-  const [availableTopics, setAvailableTopics] = useState<{ topic_id?: number; name: string }[]>([]);
+  const [availableTopics, setAvailableTopics] = useState<
+    { topic_id?: number; name: string }[]
+  >([]);
   const [students, setStudents] = useState<any[]>([]);
 
   // reset when opened
@@ -61,7 +64,9 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
       now.setDate(now.getDate() + 1);
       // Adjust for local time offset to correctly display in datetime-local input
       const tzOffset = now.getTimezoneOffset() * 60000;
-      const localISOTime = new Date(now.getTime() - tzOffset).toISOString().slice(0, 16);
+      const localISOTime = new Date(now.getTime() - tzOffset)
+        .toISOString()
+        .slice(0, 16);
 
       setForm({
         test_name: "",
@@ -91,50 +96,95 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
     }
   }, [isOpen, subjectName]);
 
+  const testNameSuggestions = useMemo(() => {
+    if (!form.test_name) return [];
+
+    const search = form.test_name.toLowerCase();
+
+    const baseNames = [subjectName, ...allChapters.map((c) => c.name)].filter(
+      Boolean,
+    );
+
+    const testTypes = [
+      "Test",
+      "Practice Test",
+      "MCQ Test",
+      "Assessment",
+      "Quiz",
+      "Mock Test",
+    ];
+
+    const results: string[] = [];
+
+    baseNames.forEach((name) => {
+      testTypes.forEach((type) => {
+        const suggestion = `${name} ${type}`;
+
+        if (suggestion.toLowerCase().includes(search)) {
+          results.push(suggestion);
+        }
+      });
+    });
+
+    return results.slice(0, 8);
+  }, [form.test_name, subjectName, allChapters]);
+
   // Update available topics when chapters are selected
   useEffect(() => {
     if (selectedChapters.length === 0) {
       setAvailableTopics([]);
-      setForm(prev => ({ ...prev, topic_ids: [] }));
+      setForm((prev) => ({ ...prev, topic_ids: [] }));
     } else {
       const topics = selectedChapters.flatMap((chapterId) => {
-        const chapter = allChapters.find(ch => ch.chapter_id === chapterId);
+        const chapter = allChapters.find((ch) => ch.chapter_id === chapterId);
         const chapterTopics = chapter?.topics || [];
         // Normalize topic structure to ensure 'name' property exists
         return chapterTopics.map((topic: any) => ({
           topic_id: topic.topic_id,
-          name: topic.topic_name || topic.name || 'Unnamed Topic'
+          name: topic.topic_name || topic.name || "Unnamed Topic",
         }));
       });
       setAvailableTopics(topics);
       // Reset topic selection when chapters change
-      setForm(prev => ({ ...prev, topic_ids: [] }));
+      setForm((prev) => ({ ...prev, topic_ids: [] }));
     }
   }, [selectedChapters, allChapters]);
+
+  const handleTestNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (
+      e.key === "Tab" &&
+      showTestNameSuggestions &&
+      testNameSuggestions.length > 0
+    ) {
+      e.preventDefault();
+      setForm((p) => ({ ...p, test_name: testNameSuggestions[0] }));
+      setShowTestNameSuggestions(false);
+    }
+  };
 
   const handleChapterToggle = (chapterId: number) => {
     const isSelected = selectedChapters.includes(chapterId);
     const newSelection = isSelected
-      ? selectedChapters.filter(id => id !== chapterId)
+      ? selectedChapters.filter((id) => id !== chapterId)
       : [...selectedChapters, chapterId];
     setSelectedChapters(newSelection);
-    setForm(prev => ({ ...prev, chapter_ids: newSelection }));
+    setForm((prev) => ({ ...prev, chapter_ids: newSelection }));
   };
 
   const handleTopicToggle = (topicId: number) => {
     const isSelected = form.topic_ids.includes(topicId);
     const newSelection = isSelected
-      ? form.topic_ids.filter(id => id !== topicId)
+      ? form.topic_ids.filter((id) => id !== topicId)
       : [...form.topic_ids, topicId];
-    setForm(prev => ({ ...prev, topic_ids: newSelection }));
+    setForm((prev) => ({ ...prev, topic_ids: newSelection }));
   };
 
   const handleStudentToggle = (studentId: number) => {
     const isSelected = form.student_ids.includes(studentId);
     const newSelection = isSelected
-      ? form.student_ids.filter(id => id !== studentId)
+      ? form.student_ids.filter((id) => id !== studentId)
       : [...form.student_ids, studentId];
-    setForm(prev => ({ ...prev, student_ids: newSelection }));
+    setForm((prev) => ({ ...prev, student_ids: newSelection }));
   };
 
   const handleSubmit = async () => {
@@ -181,7 +231,7 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
   };
 
   const getChapterName = (chapterId: number) => {
-    const chapter = allChapters.find(ch => ch.chapter_id === chapterId);
+    const chapter = allChapters.find((ch) => ch.chapter_id === chapterId);
     return chapter?.name || `Chapter ${chapterId}`;
   };
 
@@ -216,19 +266,39 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:items-start">
             {/* form inputs */}
             <div className="space-y-4">
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-medium text-gray-700">
                   Test Name *
                 </label>
                 <input
                   type="text"
                   value={form.test_name}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, test_name: e.target.value }))
-                  }
+                  onChange={(e) => {
+                    setForm((p) => ({ ...p, test_name: e.target.value }));
+                    setShowTestNameSuggestions(true);
+                  }}
                   placeholder="Enter test name"
+                  onKeyDown={handleTestNameKeyDown}
                   className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md bg-white shadow-sm focus:outline-none focus:ring-[#b0cb1f] focus:border-[#b0cb1f] text-sm"
                 />
+
+                {showTestNameSuggestions && testNameSuggestions.length > 0 && (
+                  <div className="absolute left-0 top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                    {testNameSuggestions.map((item, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => {
+                          setForm((p) => ({ ...p, test_name: item }));
+                          setShowTestNameSuggestions(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -253,21 +323,27 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
                       onClick={(e) => {
                         e.preventDefault();
                         if (form.student_ids.length === students.length) {
-                          setForm(p => ({ ...p, student_ids: [] }));
+                          setForm((p) => ({ ...p, student_ids: [] }));
                         } else {
-                          const allIds = students.map(s => s.student_id);
-                          setForm(p => ({ ...p, student_ids: allIds }));
+                          const allIds = students.map((s) => s.student_id);
+                          setForm((p) => ({ ...p, student_ids: allIds }));
                         }
                       }}
                       className="text-xs text-[#b0cb1f] hover:underline font-semibold"
                     >
-                      {form.student_ids.length === students.length ? "Deselect All" : "Select All"}
+                      {form.student_ids.length === students.length
+                        ? "Deselect All"
+                        : "Select All"}
                     </button>
                   )}
                 </div>
-                <div className={`border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto ${students.length === 0 ? 'bg-gray-50' : 'bg-white'}`}>
+                <div
+                  className={`border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto ${students.length === 0 ? "bg-gray-50" : "bg-white"}`}
+                >
                   {students.length === 0 ? (
-                    <p className="text-sm text-gray-500">No students available</p>
+                    <p className="text-sm text-gray-500">
+                      No students available
+                    </p>
                   ) : (
                     <div className="space-y-2">
                       {students.map((student) => (
@@ -277,18 +353,26 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
                         >
                           <input
                             type="checkbox"
-                            checked={form.student_ids.includes(student.student_id)}
-                            onChange={() => handleStudentToggle(student.student_id)}
+                            checked={form.student_ids.includes(
+                              student.student_id,
+                            )}
+                            onChange={() =>
+                              handleStudentToggle(student.student_id)
+                            }
                             className="mt-0.5 h-4 w-4 text-[#b0cb1f] border-gray-300 rounded focus:ring-[#b0cb1f]"
                           />
-                          <span className="text-sm text-gray-700 flex-1">{student.student_name}</span>
+                          <span className="text-sm text-gray-700 flex-1">
+                            {student.student_name}
+                          </span>
                         </label>
                       ))}
                     </div>
                   )}
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  {form.student_ids.length === 0 ? "Assigning to entire class" : `${form.student_ids.length} student(s) selected`}
+                  {form.student_ids.length === 0
+                    ? "Assigning to entire class"
+                    : `${form.student_ids.length} student(s) selected`}
                 </p>
               </div>
 
@@ -303,22 +387,26 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
                         e.preventDefault();
                         if (selectedChapters.length === allChapters.length) {
                           setSelectedChapters([]);
-                          setForm(p => ({ ...p, chapter_ids: [] }));
+                          setForm((p) => ({ ...p, chapter_ids: [] }));
                         } else {
-                          const allIds = allChapters.map(c => c.chapter_id!);
+                          const allIds = allChapters.map((c) => c.chapter_id!);
                           setSelectedChapters(allIds);
-                          setForm(p => ({ ...p, chapter_ids: allIds }));
+                          setForm((p) => ({ ...p, chapter_ids: allIds }));
                         }
                       }}
                       className="text-xs text-[#b0cb1f] hover:underline font-semibold"
                     >
-                      {selectedChapters.length === allChapters.length ? "Deselect All" : "Select All"}
+                      {selectedChapters.length === allChapters.length
+                        ? "Deselect All"
+                        : "Select All"}
                     </button>
                   )}
                 </div>
                 <div className="border border-gray-300 rounded-md bg-white p-3 max-h-48 overflow-y-auto">
                   {allChapters.length === 0 ? (
-                    <p className="text-sm text-gray-500">No chapters available</p>
+                    <p className="text-sm text-gray-500">
+                      No chapters available
+                    </p>
                   ) : (
                     <div className="space-y-2">
                       {allChapters.map((chapter) => (
@@ -328,11 +416,17 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
                         >
                           <input
                             type="checkbox"
-                            checked={selectedChapters.includes(chapter.chapter_id!)}
-                            onChange={() => handleChapterToggle(chapter.chapter_id!)}
+                            checked={selectedChapters.includes(
+                              chapter.chapter_id!,
+                            )}
+                            onChange={() =>
+                              handleChapterToggle(chapter.chapter_id!)
+                            }
                             className="mt-0.5 h-4 w-4 text-[#b0cb1f] border-gray-300 rounded focus:ring-[#b0cb1f]"
                           />
-                          <span className="text-sm text-gray-700 flex-1">{chapter.name}</span>
+                          <span className="text-sm text-gray-700 flex-1">
+                            {chapter.name}
+                          </span>
                         </label>
                       ))}
                     </div>
@@ -353,22 +447,31 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
                       onClick={(e) => {
                         e.preventDefault();
                         if (form.topic_ids.length === availableTopics.length) {
-                          setForm(p => ({ ...p, topic_ids: [] }));
+                          setForm((p) => ({ ...p, topic_ids: [] }));
                         } else {
-                          const allIds = availableTopics.map(t => t.topic_id!);
-                          setForm(p => ({ ...p, topic_ids: allIds }));
+                          const allIds = availableTopics.map(
+                            (t) => t.topic_id!,
+                          );
+                          setForm((p) => ({ ...p, topic_ids: allIds }));
                         }
                       }}
                       className="text-xs text-[#b0cb1f] hover:underline font-semibold"
                     >
-                      {form.topic_ids.length === availableTopics.length ? "Deselect All" : "Select All"}
+                      {form.topic_ids.length === availableTopics.length
+                        ? "Deselect All"
+                        : "Select All"}
                     </button>
                   )}
                 </div>
-                <div className={`border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto ${availableTopics.length === 0 ? 'bg-gray-50' : 'bg-white'
-                  }`}>
+                <div
+                  className={`border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto ${
+                    availableTopics.length === 0 ? "bg-gray-50" : "bg-white"
+                  }`}
+                >
                   {availableTopics.length === 0 ? (
-                    <p className="text-sm text-gray-500">Select chapters first</p>
+                    <p className="text-sm text-gray-500">
+                      Select chapters first
+                    </p>
                   ) : (
                     <div className="space-y-2">
                       {availableTopics.map((topic) => (
@@ -382,7 +485,9 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
                             onChange={() => handleTopicToggle(topic.topic_id!)}
                             className="mt-0.5 h-4 w-4 text-[#b0cb1f] border-gray-300 rounded focus:ring-[#b0cb1f]"
                           />
-                          <span className="text-sm text-gray-700 flex-1">{topic.name}</span>
+                          <span className="text-sm text-gray-700 flex-1">
+                            {topic.name}
+                          </span>
                         </label>
                       ))}
                     </div>
@@ -404,7 +509,8 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
                     onChange={(e) =>
                       setForm((p) => ({
                         ...p,
-                        questions: e.target.value === "" ? "" : Number(e.target.value),
+                        questions:
+                          e.target.value === "" ? "" : Number(e.target.value),
                       }))
                     }
                     min="1"
@@ -421,7 +527,8 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
                     onChange={(e) =>
                       setForm((p) => ({
                         ...p,
-                        timeLimit: e.target.value === "" ? "" : Number(e.target.value),
+                        timeLimit:
+                          e.target.value === "" ? "" : Number(e.target.value),
                       }))
                     }
                     min="1"
@@ -456,7 +563,12 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
                 </label>
                 <input
                   type="datetime-local"
-                  min={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
+                  min={new Date(
+                    new Date().getTime() -
+                      new Date().getTimezoneOffset() * 60000,
+                  )
+                    .toISOString()
+                    .slice(0, 16)}
                   value={form.due_date}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, due_date: e.target.value }))
@@ -468,63 +580,89 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
 
             {/* summary panel */}
             <div className="bg-gradient-to-br from-blue-50 to-gray-50 rounded-xl p-3 border border-blue-100 sticky top-0">
-              <h3 className="text-lg font-bold text-gray-800 mb-2">Test Summary</h3>
+              <h3 className="text-lg font-bold text-gray-800 mb-2">
+                Test Summary
+              </h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-600">Test Name:</span>
+                  <span className="text-sm font-medium text-gray-600">
+                    Test Name:
+                  </span>
                   <span className="text-sm text-gray-800 font-semibold">
                     {form.test_name || "Not entered"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-600">Subject:</span>
+                  <span className="text-sm font-medium text-gray-600">
+                    Subject:
+                  </span>
                   <span className="text-sm text-gray-800 font-semibold">
                     {subjectName || "Not selected"}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-sm font-medium text-gray-600">Chapters:</span>
+                  <span className="text-sm font-medium text-gray-600">
+                    Chapters:
+                  </span>
                   <span className="text-xs text-gray-700">
                     {form.chapter_ids.length === 0
                       ? "None selected"
                       : form.chapter_ids.length === allChapters.length
                         ? "All chapters selected"
-                        : form.chapter_ids.map((id) => getChapterName(id)).join(", ")}
+                        : form.chapter_ids
+                            .map((id) => getChapterName(id))
+                            .join(", ")}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-sm font-medium text-gray-600">Topics:</span>
+                  <span className="text-sm font-medium text-gray-600">
+                    Topics:
+                  </span>
                   <span className="text-xs text-gray-700">
                     {form.topic_ids.length === 0
                       ? "None selected"
                       : form.topic_ids.length === availableTopics.length
                         ? "All topics selected"
-                        : form.topic_ids.map((id) => getTopicName(id)).join(", ")}
+                        : form.topic_ids
+                            .map((id) => getTopicName(id))
+                            .join(", ")}
                   </span>
                 </div>
                 <hr className="my-2 border-blue-200" />
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-600">Questions:</span>
-                  <span className="text-sm font-bold text-[#b0cb1f]">{form.questions}</span>
+                  <span className="text-sm font-medium text-gray-600">
+                    Questions:
+                  </span>
+                  <span className="text-sm font-bold text-[#b0cb1f]">
+                    {form.questions}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-600">Time:</span>
-                  <span className="text-sm font-bold text-[#b0cb1f]">{form.timeLimit} min</span>
+                  <span className="text-sm font-medium text-gray-600">
+                    Time:
+                  </span>
+                  <span className="text-sm font-bold text-[#b0cb1f]">
+                    {form.timeLimit} min
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-600">Difficulty:</span>
+                  <span className="text-sm font-medium text-gray-600">
+                    Difficulty:
+                  </span>
                   <span className="text-sm font-bold text-[#b0cb1f]">
                     {form.difficulty || "Not Selected"}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-sm font-medium text-gray-600">Due Date:</span>
+                  <span className="text-sm font-medium text-gray-600">
+                    Due Date:
+                  </span>
                   <span className="text-xs text-gray-700">
                     {form.due_date
                       ? new Date(form.due_date).toLocaleString("en-IN", {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      })
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })
                       : "Not selected"}
                   </span>
                 </div>
@@ -537,7 +675,7 @@ const TestGeneratorModal: React.FC<TestGeneratorModalProps> = ({
           <button
             onClick={handleSubmit}
             disabled={isGenerating}
-            className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full text-gray-900 font-semibold text-sm transition-all shadow-md ${isGenerating ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#b0cb1f] hover:bg-[#c5de3a] hover:scale-[1.02]'}`}
+            className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full text-gray-900 font-semibold text-sm transition-all shadow-md ${isGenerating ? "bg-gray-300 cursor-not-allowed" : "bg-[#b0cb1f] hover:bg-[#c5de3a] hover:scale-[1.02]"}`}
           >
             {isGenerating ? (
               <>
