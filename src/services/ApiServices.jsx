@@ -33,7 +33,6 @@ axiosInstance.interceptors.request.use(
     if (subscriptionToken) {
       config.headers["subscription-token"] = subscriptionToken;
     }
-
     return config;
   },
   (error) => Promise.reject(error)
