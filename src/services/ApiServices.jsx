@@ -479,7 +479,9 @@ class ApiServices {
   getTeacherLearningPlanner() {
     return axiosInstance.get(GET_APIS.get_teacher_learning_planner);
   }
-
+  getParentProfile() {
+    return axiosInstance.get(GET_APIS.parent_profile);
+  }
 
 }
 
