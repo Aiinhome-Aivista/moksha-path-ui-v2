@@ -39,6 +39,7 @@ const StudentMaterials = () => {
     activeResourceType?: string;
     selectedSubjectName?: string;
     selectedTopicIds?: number[];
+    assignmentId?: number;
   } | null;
 
   // Initialize state with values from location state or fallbacks
@@ -60,6 +61,12 @@ const StudentMaterials = () => {
   const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
   const [chapters, setChapters] = useState<ChapterItem[]>([]);
   const [coreTopics, setCoreTopics] = useState<TopicItem[]>([]);
+
+  // To hold dynamic chapter/topic data when coming from Notifications
+  const [fetchedAssignmentContext, setFetchedAssignmentContext] = useState<{
+    chapterId?: number;
+    topicIds?: number[];
+  } | null>(null);
 
   // ── Resource data from API ──
   const [youtubeLinks, setYoutubeLinks] = useState<YouTubeLink[]>([]);
@@ -125,8 +132,26 @@ const StudentMaterials = () => {
           setStats(res.data.data.stats);
 
           setActiveSubject(
-            res.data.data.subject_wise_plan[0]?.subject_name || "",
+            locationState?.selectedSubjectName ||
+            res.data.data.subject_wise_plan[0]?.subject_name ||
+            "",
           );
+        }
+
+        // Handle assignmentId logic
+        if (locationState?.assignmentId) {
+          const assessRes = await ApiServices.getStudentAssessments();
+          if (assessRes.data?.status === "success") {
+            const assess = assessRes.data.data?.find(
+              (a: any) => a.assignment_id === locationState.assignmentId,
+            );
+            if (assess) {
+              setFetchedAssignmentContext({
+                chapterId: assess.chapter_ids?.[0], // Focus first chapter
+                topicIds: assess.topic_ids || [],
+              });
+            }
+          }
         }
       } catch (err) {
         // console.error("Init load failed", err);
@@ -281,10 +306,13 @@ const StudentMaterials = () => {
 
     let chapterIndex = -1;
 
-    if (locationState?.selectedChapterId) {
-      // LearningPlanner থেকে এলে
+    const targetChapterId =
+      fetchedAssignmentContext?.chapterId || locationState?.selectedChapterId;
+
+    if (targetChapterId) {
+      // LearningPlanner/Notification থেকে এলে
       chapterIndex = transformedChapters.findIndex(
-        (ch) => ch.chapter_id === locationState.selectedChapterId,
+        (ch) => ch.chapter_id === targetChapterId,
       );
 
       if (chapterIndex !== -1) {
@@ -334,14 +362,14 @@ const StudentMaterials = () => {
     // STEP 4: Select Topics (Exact Sync)
     // ----------------------------
 
-    if (
-      locationState?.selectedTopicIds &&
-      locationState.selectedTopicIds.length > 0
-    ) {
+    const targetTopicIds =
+      fetchedAssignmentContext?.topicIds || locationState?.selectedTopicIds;
+
+    if (targetTopicIds && targetTopicIds.length > 0) {
       const topicIndexes = extractedTopics
         .map((topic, index) =>
           topic.topic_id !== undefined &&
-            locationState.selectedTopicIds!.includes(topic.topic_id)
+            targetTopicIds.includes(topic.topic_id)
             ? index
             : -1,
         )
@@ -357,6 +385,7 @@ const StudentMaterials = () => {
     // planSource,
     locationState?.selectedChapterId,
     locationState?.selectedTopicIds,
+    fetchedAssignmentContext,
   ]);
 
   // ── Fetch resources when chapter & topic are selected ──
@@ -692,6 +721,7 @@ const StudentMaterials = () => {
               topicNames={selectedTopics
                 .map((i) => coreTopics[i]?.name)
                 .filter((name): name is string => name !== undefined)}
+              autoStartTestId={locationState?.assignmentId}
             />
           )}
           {activeResourceType === "Notes" && (

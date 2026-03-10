@@ -32,6 +32,7 @@ interface TestsProps {
   allTopics?: { topic_id?: number; name: string }[];
   topicIds?: number[] | null; //  ADD
   topicNames?: string[];
+  autoStartTestId?: number;
 }
 
 interface Assessment {
@@ -64,6 +65,7 @@ const Tests: React.FC<TestsProps> = ({
   allTopics = [],
   topicIds = null, //  ADD
   topicNames = [], //  ADD
+  autoStartTestId,
 }) => {
   const { showToast } = useToast();
   const [view, setView] = useState<TestView>("dashboard");
@@ -159,6 +161,27 @@ const Tests: React.FC<TestsProps> = ({
 
     return due < new Date();
   };
+
+  const hasAutoStarted = React.useRef(false);
+
+  useEffect(() => {
+    if (
+      autoStartTestId &&
+      assessments.length > 0 &&
+      !hasAutoStarted.current &&
+      startingTestId === null
+    ) {
+      const match = assessments.find(
+        (a) => a.assignment_id === autoStartTestId,
+      );
+      if (match) {
+        hasAutoStarted.current = true;
+        if (match.status === "Pending" && !isExpired(match)) {
+          handleStartTest(match);
+        }
+      }
+    }
+  }, [assessments, autoStartTestId, startingTestId]);
 
   const filteredAssessments = assessments.filter((assessment) => {
     // Subject filter
@@ -471,8 +494,8 @@ const Tests: React.FC<TestsProps> = ({
                       key={status}
                       onClick={() => setStatusFilter(status as any)}
                       className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition ${statusFilter === status
-                          ? "bg-[#b0cb1f] text-gray-900 border-[#b0cb1f]"
-                          : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+                        ? "bg-[#b0cb1f] text-gray-900 border-[#b0cb1f]"
+                        : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
                         }`}
                     >
                       {status}
@@ -531,10 +554,10 @@ const Tests: React.FC<TestsProps> = ({
                       {/* Status Badge & Accent Line */}
                       <div
                         className={`absolute top-0 left-0 w-1 h-full ${assessment.status === "Completed"
-                            ? "bg-green-500"
-                            : assessment.status === "Pending"
-                              ? "bg-[#b0cb1f]"
-                              : "bg-gray-300"
+                          ? "bg-green-500"
+                          : assessment.status === "Pending"
+                            ? "bg-[#b0cb1f]"
+                            : "bg-gray-300"
                           } `}
                       />
 
@@ -556,10 +579,10 @@ const Tests: React.FC<TestsProps> = ({
                           )}
                           <span
                             className={`px-3 py-1.5 rounded-full text-xs font-bold tracking-wide ${assessment.status === "Completed"
-                                ? "bg-green-100 text-primary"
-                                : assessment.status === "Pending"
-                                  ? "bg-yellow-100 text-yellow-700"
-                                  : "bg-gray-100 text-gray-600"
+                              ? "bg-green-100 text-primary"
+                              : assessment.status === "Pending"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-gray-100 text-gray-600"
                               } `}
                           >
                             {assessment.status === "Pending" &&
@@ -582,12 +605,12 @@ const Tests: React.FC<TestsProps> = ({
                                 isExpired(assessment))
                             }
                             className={`px-6 py-1.5 rounded-full font-bold text-sm shadow-md transition-all flex items-center gap-4 ${startingTestId === null && // if no test is currently loading
-                                !(
-                                  assessment.status === "Pending" &&
-                                  isExpired(assessment)
-                                )
-                                ? "bg-[#b0cb1f] text-gray-900 hover:bg-[#c5de3a] hover:scale-[1.02] active:scale-[0.98]"
-                                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              !(
+                                assessment.status === "Pending" &&
+                                isExpired(assessment)
+                              )
+                              ? "bg-[#b0cb1f] text-gray-900 hover:bg-[#c5de3a] hover:scale-[1.02] active:scale-[0.98]"
+                              : "bg-gray-100 text-gray-400 cursor-not-allowed"
                               } `}
                           >
                             {startingTestId === assessment.assignment_id ? ( // Show spinner ONLY on this specific clicked button
@@ -762,8 +785,8 @@ const Tests: React.FC<TestsProps> = ({
                     }
                     disabled={currentPage === 1}
                     className={`px-3 py-1 rounded-full border text-sm ${currentPage === 1
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white text-gray-700 hover:bg-gray-50"
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-white text-gray-700 hover:bg-gray-50"
                       } `}
                   >
                     Previous
@@ -788,9 +811,9 @@ const Tests: React.FC<TestsProps> = ({
                       Math.ceil(filteredAssessments.length / ITEMS_PER_PAGE)
                     }
                     className={`px-3 py-1 rounded-full border text-sm ${currentPage ===
-                        Math.ceil(filteredAssessments.length / ITEMS_PER_PAGE)
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white text-gray-700 hover:bg-gray-50"
+                      Math.ceil(filteredAssessments.length / ITEMS_PER_PAGE)
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-white text-gray-700 hover:bg-gray-50"
                       } `}
                   >
                     Next
