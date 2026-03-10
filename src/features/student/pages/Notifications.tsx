@@ -23,13 +23,13 @@ interface TestNotification {
   assignment_id: number;
   set_name: string;
   subject_name: string;
-  teacher_name: string;
+  assigned_by_name: string;
   assigned_date: string;
   due_date: string;
   duration_minutes: number;
   total_marks: number;
-  total_questions: number;
-  score_obtained: number;
+  number_of_questions: number;
+  marks_obtained: number;
   status: TestStatus;
 }
 
@@ -178,7 +178,7 @@ const Notifications: React.FC = () => {
     setActionError((prev) => ({ ...prev, [inv.id]: "" }));
     try {
       const res = await ApiServices.respondToInvite(inv.inviteToken, action);
-      
+
       if (res.data?.status === "success") {
         setInvitations((prev) =>
           prev.map((i) =>
@@ -196,10 +196,10 @@ const Notifications: React.FC = () => {
           try {
             // 1. Fetch their profiles (the DB just created/updated one for them!)
             const profilesRes = await ApiServices.getUserProfiles();
-            
+
             if (profilesRes.data?.status === "success") {
               const allProfiles = profilesRes.data.data;
-              
+
               // 2. Find the profile that matches the invite they just accepted
               // (Or fallback to the first available profile if names mismatch)
               const newlyActivatedProfile = allProfiles.find(
@@ -208,8 +208,8 @@ const Notifications: React.FC = () => {
 
               if (newlyActivatedProfile) {
                 // 3. Call the Switch Profile API to get a FRESH token
-                const switchRes = await ApiServices.switchUserProfile({ 
-                  profile_id: newlyActivatedProfile.profile_id 
+                const switchRes = await ApiServices.switchUserProfile({
+                  profile_id: newlyActivatedProfile.profile_id
                 });
 
                 if (switchRes.data?.status === "success") {
@@ -218,7 +218,7 @@ const Notifications: React.FC = () => {
                   if (newToken) {
                     localStorage.setItem("auth_token", newToken);
                   }
-                  
+
                   const newActiveProfile = switchRes.data.data.active_profile;
                   if (newActiveProfile) {
                     localStorage.setItem("active_profile", JSON.stringify(newActiveProfile));
@@ -321,11 +321,10 @@ const Notifications: React.FC = () => {
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
-                className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                  activeTab === key
+                className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${activeTab === key
                     ? "bg-white text-gray-800 shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
-                }`}
+                  }`}
               >
                 <span
                   className="material-symbols-outlined"
@@ -363,19 +362,17 @@ const Notifications: React.FC = () => {
                 <button
                   key={key}
                   onClick={() => handleFilterChange(key)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 flex items-center gap-1.5 ${
-                    activeFilter === key
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 flex items-center gap-1.5 ${activeFilter === key
                       ? "bg-gray-800 text-white border-gray-800 shadow-sm"
                       : "bg-white text-gray-500 border-gray-200 hover:border-gray-400 hover:text-gray-700"
-                  }`}
+                    }`}
                 >
                   {label}
                   <span
-                    className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold ${
-                      activeFilter === key
+                    className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold ${activeFilter === key
                         ? "bg-white/20 text-white"
                         : "bg-gray-100 text-gray-400"
-                    }`}
+                      }`}
                   >
                     {count}
                   </span>
@@ -443,11 +440,10 @@ const Notifications: React.FC = () => {
                   return (
                     <div
                       key={inv.id}
-                      className={`bg-white rounded-2xl border shadow-sm transition-all duration-300 overflow-hidden ${
-                        borderColor
+                      className={`bg-white rounded-2xl border shadow-sm transition-all duration-300 overflow-hidden ${borderColor
                           ? `border-l-4 ${borderColor} border-t-gray-100 border-r-gray-100 border-b-gray-100 hover:shadow-md`
                           : "border-gray-100 hover:border-gray-200 hover:shadow-sm"
-                      }`}
+                        }`}
                     >
                       {/* ── Card Header ── */}
                       <div
@@ -694,11 +690,10 @@ const Notifications: React.FC = () => {
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all duration-200 ${
-                        page === currentPage
+                      className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all duration-200 ${page === currentPage
                           ? "bg-[#BADA55] text-gray-800 shadow"
                           : "text-gray-400 hover:text-gray-700 hover:bg-gray-100"
-                      }`}
+                        }`}
                     >
                       {page}
                     </button>
@@ -805,11 +800,10 @@ const Notifications: React.FC = () => {
                 return (
                   <div
                     key={test.assignment_id}
-                    className={`rounded-2xl border shadow-sm p-5 space-y-3 transition-all duration-300 hover:shadow-md ${
-                      isPending
+                    className={`rounded-2xl border shadow-sm p-5 space-y-3 transition-all duration-300 hover:shadow-md ${isPending
                         ? "border-l-4 border-l-amber-400 bg-white"
                         : "border-l-4 border-l-green-500 bg-white"
-                    }`}
+                      }`}
                   >
                     {/* Top */}
                     <div className="flex items-start justify-between gap-3">
@@ -818,17 +812,16 @@ const Notifications: React.FC = () => {
                           {test.set_name}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {test.subject_name} • {test.teacher_name}
+                          {test.subject_name} • {test.assigned_by_name}
                         </p>
                       </div>
 
                       {/* Status */}
                       <span
-                        className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
-                          isPending
+                        className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${isPending
                             ? "bg-amber-50 text-amber-700"
                             : "bg-green-50 text-green-700"
-                        }`}
+                          }`}
                       >
                         {test.status}
                       </span>
@@ -859,7 +852,7 @@ const Notifications: React.FC = () => {
                           Questions
                         </p>
                         <p className="text-gray-700 font-semibold">
-                          {test.total_questions}
+                          {test.number_of_questions}
                         </p>
                       </div>
 
@@ -868,7 +861,7 @@ const Notifications: React.FC = () => {
                           Marks
                         </p>
                         <p className="text-gray-700 font-semibold">
-                          {test.score_obtained}/{test.total_marks}
+                          {test.marks_obtained}/{test.total_marks}
                         </p>
                       </div>
                     </div>
@@ -880,6 +873,7 @@ const Notifications: React.FC = () => {
                           navigate("/tests", {
                             state: {
                               assignmentId: test.assignment_id,
+                              selectedSubjectName: test.subject_name,
                             },
                           });
                         }}

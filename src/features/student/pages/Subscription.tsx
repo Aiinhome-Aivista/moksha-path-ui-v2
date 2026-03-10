@@ -8,6 +8,7 @@ import { useModal } from "../../auth/context/AuthContext";
 import PaymentSummaryModal from "../components/PaymentSummaryModal";
 import SubscriptionSetupModal from "../components/SubscriptionSetupModal";
 import { defaultPlans } from "./defaultPlans";
+import SearchableSelect from "../../../components/common/SearchableSelect";
 
 // Types
 interface Subject {
@@ -843,21 +844,14 @@ const Subscription: React.FC = () => {
                     Select Board
                   </label>
                   <div className="relative w-[200px]">
-                    <select
+                    <SearchableSelect
                       value={selectedBoard}
-                      onChange={(e) => setSelectedBoard(Number(e.target.value))}
-                      className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-3 py-2 pr-6 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all cursor-pointer truncate"
-                    >
-                      <option value="" disabled hidden>Board</option>
-                      {filteredBoards.map((b) => (
-                        <option key={b.id} value={b.id}>
-                          {b.name}
-                        </option>
-                      ))}
-                    </select>
-                    <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">
-                      ▾
-                    </span>
+                      onChange={(val) => setSelectedBoard(val === "" ? "" : Number(val))}
+                      options={filteredBoards.map((b) => ({ value: b.id, label: b.name }))}
+                      placeholder="Board"
+                      className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all"
+                      dropdownClassName="min-w-[200px]"
+                    />
                   </div>
                   {selectedBoard && (
                     <div className="absolute top-full left-0 mt-1 z-50 hidden group-hover:block bg-gray-800 text-white text-[10px] rounded-lg px-2 py-1 whitespace-nowrap shadow-lg pointer-events-none">
@@ -873,30 +867,22 @@ const Subscription: React.FC = () => {
                     Select School
                   </label>
                   <div className="relative w-[200px]">
-                    <select
+                    <SearchableSelect
                       value={selectedSchool}
-                      onChange={(e) => {
-                        if (e.target.value === "ADD_NEW") {
+                      onChange={(val) => {
+                        if (val === "ADD_NEW") {
                           setShowAddSchoolInput(true);
                           setSelectedSchool("");
                         } else {
-                          setSelectedSchool(Number(e.target.value));
+                          setSelectedSchool(val === "" ? "" : Number(val));
                           setShowAddSchoolInput(false);
                         }
                       }}
-                      className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-3 py-2 pr-6 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all cursor-pointer truncate"
-                    >
-                      <option value="" disabled hidden>School</option>
-                      {filteredSchools.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.name}
-                        </option>
-                      ))}
-                      {/* <option value="ADD_NEW">➕ Add New</option> */}
-                    </select>
-                    <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">
-                      ▾
-                    </span>
+                      options={filteredSchools.map((s) => ({ value: s.id, label: s.name }))}
+                      placeholder="School"
+                      className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all"
+                      dropdownClassName="min-w-[200px]"
+                    />
                   </div>
                   {selectedSchool && (
                     <div className="absolute top-full left-0 mt-1 z-50 hidden group-hover:block bg-gray-800 text-white text-[10px] rounded-lg px-2 py-1 whitespace-nowrap shadow-lg pointer-events-none">
@@ -929,21 +915,14 @@ const Subscription: React.FC = () => {
                     Select Class
                   </label>
                   <div className="relative w-[200px]">
-                    <select
+                    <SearchableSelect
                       value={selectedClass}
-                      onChange={(e) => setSelectedClass(Number(e.target.value))}
-                      className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-3 py-2 pr-6 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all cursor-pointer truncate"
-                    >
-                      <option value="" disabled hidden>Class</option>
-                      {filteredClasses.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                    <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">
-                      ▾
-                    </span>
+                      onChange={(val) => setSelectedClass(val === "" ? "" : Number(val))}
+                      options={filteredClasses.map((c) => ({ value: c.id, label: c.name }))}
+                      placeholder="Class"
+                      className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all"
+                      dropdownClassName="min-w-[200px]"
+                    />
                   </div>
                   {selectedClass && (
                     <div className="absolute top-full left-0 mt-1 z-50 hidden group-hover:block bg-gray-800 text-white text-[10px] rounded-lg px-2 py-1 whitespace-nowrap shadow-lg pointer-events-none">
@@ -988,21 +967,14 @@ const Subscription: React.FC = () => {
                     Acad. Year
                   </label>
                   <div className="relative w-[200px]">
-                    <select
+                    <SearchableSelect
                       value={selectedYear}
-                      onChange={(e) => setSelectedYear(e.target.value)}
-                      className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-3 py-2 pr-6 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all cursor-pointer truncate"
-                    >
-                      <option value="" disabled hidden>Year</option>
-                      {filteredYears.map((y) => (
-                        <option key={y.year} value={y.year}>
-                          {y.year}
-                        </option>
-                      ))}
-                    </select>
-                    <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">
-                      ▾
-                    </span>
+                      onChange={(val) => setSelectedYear(String(val))}
+                      options={filteredYears.map((y) => ({ value: y.year, label: y.year }))}
+                      placeholder="Year"
+                      className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all"
+                      dropdownClassName="min-w-[200px]"
+                    />
                   </div>
                   {selectedYear && (
                     <div className="absolute top-full left-0 mt-1 z-50 hidden group-hover:block bg-gray-800 text-white text-[10px] rounded-lg px-2 py-1 whitespace-nowrap shadow-lg pointer-events-none">
