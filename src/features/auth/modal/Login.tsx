@@ -265,11 +265,12 @@ export const LoginModal: React.FC = () => {
       });
 
       if (res.data?.status === "success") {
-        const { token, refresh_token } = res.data.data;
+        const { auth_token, refresh_token, subscription_token } = res.data.data;
 
-        localStorage.setItem("auth_token", token);
+        if (auth_token) localStorage.setItem("auth_token", auth_token);
         if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
-
+        if (subscription_token)
+          localStorage.setItem("subscription_token", subscription_token);
         setOtpError("");
         // if (verifyingType === "email") {
         //   setEmailVerified(true);
@@ -462,11 +463,12 @@ export const LoginModal: React.FC = () => {
                         !formData.email ||
                         !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
                       }
-                      className={`px-4 py-1.5 rounded-full text-xs font-medium border transition-colors disabled:cursor-not-allowed ${formData.email &&
+                      className={`px-4 py-1.5 rounded-full text-xs font-medium border transition-colors disabled:cursor-not-allowed ${
+                        formData.email &&
                         /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
-                        ? "bg-button-primary text-primary border-button-primary hover:opacity-90"
-                        : "bg-primary text-white"
-                        }`}
+                          ? "bg-button-primary text-primary border-button-primary hover:opacity-90"
+                          : "bg-primary text-white"
+                      }`}
                     >
                       Verify
                     </button>
@@ -503,10 +505,11 @@ export const LoginModal: React.FC = () => {
                       disabled={
                         !formData.mobile || formData.mobile.length !== 10
                       }
-                      className={`px-4 py-1.5 rounded-full text-xs font-medium border transition-colors disabled:cursor-not-allowed ${formData.mobile && formData.mobile.length === 10
-                        ? "bg-button-primary text-primary border-button-primary hover:opacity-90"
-                        : "bg-primary text-white"
-                        }`}
+                      className={`px-4 py-1.5 rounded-full text-xs font-medium border transition-colors disabled:cursor-not-allowed ${
+                        formData.mobile && formData.mobile.length === 10
+                          ? "bg-button-primary text-primary border-button-primary hover:opacity-90"
+                          : "bg-primary text-white"
+                      }`}
                     >
                       Verify
                     </button>
@@ -611,10 +614,11 @@ export const LoginModal: React.FC = () => {
                   (!emailVerified && !mobileVerified && !isNewUser) ||
                   isSigningUp
                 }
-                className={`px-7 py-2.5 rounded-full text-sm font-medium transition-colors disabled:cursor-not-allowed ${emailVerified || mobileVerified || isNewUser
-                  ? "bg-button-primary text-primary hover:opacity-90"
-                  : "bg-primary text-white"
-                  }`}
+                className={`px-7 py-2.5 rounded-full text-sm font-medium transition-colors disabled:cursor-not-allowed ${
+                  emailVerified || mobileVerified || isNewUser
+                    ? "bg-button-primary text-primary hover:opacity-90"
+                    : "bg-primary text-white"
+                }`}
               >
                 {isSigningUp ? "Signing up..." : "Sign Up"}
               </button>

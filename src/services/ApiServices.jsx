@@ -5,19 +5,39 @@ import { GET_APIS, POST_APIS } from "../../connection";
 const axiosInstance = axios.create();
 
 // Add request interceptor for token-based authentication
+// axiosInstance.interceptors.request.use(
+//   (config) => {
+//     const token = localStorage.getItem("auth_token");
+//     if (token) {
+//       config.headers.Authorization = `Bearer ${token}`;
+//     }
+//     return config;
+//   },
+//   (error) => {
+//     return Promise.reject(error);
+//   },
+// );
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("auth_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const authToken = localStorage.getItem("auth_token");
+    const subscriptionToken = localStorage.getItem("subscription_token");
+
+    if (!config.headers) config.headers = {};
+
+    // AUTH TOKEN
+    if (authToken) {
+      config.headers["Authorization"] = `Bearer ${authToken}`;
     }
+
+    // SUBSCRIPTION TOKEN
+    if (subscriptionToken) {
+      config.headers["subscription-token"] = subscriptionToken;
+    }
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error)
 );
-
 // Add response interceptor for error handling
 axiosInstance.interceptors.response.use(
   (response) => response,

@@ -253,6 +253,9 @@ export const SelectRoleModal: React.FC = () => {
         if (data?.refresh_token) {
           localStorage.setItem("refresh_token", data.refresh_token);
         }
+        if (data?.subscription_token) {
+          localStorage.setItem("subscription_token", data.subscription_token);
+        }
 
         if (data?.user) {
           const user = data.user;

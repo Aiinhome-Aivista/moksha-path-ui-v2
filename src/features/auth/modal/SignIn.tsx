@@ -310,11 +310,12 @@ export const SignInModal: React.FC = () => {
       });
 
       if (res.data?.status === "success") {
-        const { token, refresh_token } = res.data.data;
+        const { auth_token, refresh_token,subscription_token } = res.data.data;
 
-        if (token) localStorage.setItem("auth_token", token);
+        if (auth_token) localStorage.setItem("auth_token", auth_token);
         if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
-
+        if (subscription_token)
+          localStorage.setItem("subscription_token", subscription_token);
         setOtpError("");
         // closeSignIn();
         showToast("Signed in successfully", "success");

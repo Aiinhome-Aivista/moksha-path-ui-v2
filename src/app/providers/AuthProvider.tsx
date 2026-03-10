@@ -79,6 +79,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem("academic_payload");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("subscription_id");
+    localStorage.removeItem("subscription_token");
   };
 
   useEffect(() => {
