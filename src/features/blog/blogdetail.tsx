@@ -92,8 +92,9 @@ export const BlogDetail = () => {
   ];
 
   return (
-    <div className="bg-white font-sans min-h-screen pb-12">
-      <div className="max-w-7xl mx-auto px-4 py-8 md:px-8">
+    <div className="bg-white font-sans min-h-screen pb-12 w-full">
+      {/* INCREASED WIDTH HERE: Changed from max-w-7xl to max-w-[1400px] */}
+      <div className="max-w-[1400px] mx-auto px-4 py-8 md:px-8">
         
         {/* Main Grid Layout */}
         <div className="flex flex-col lg:flex-row gap-8">

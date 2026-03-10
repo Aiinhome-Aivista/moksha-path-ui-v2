@@ -127,11 +127,12 @@ export const BlogPage = () => {
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <div className="bg-gray-50 font-sans min-h-screen">
+    <div className="bg-gray-50 font-sans min-h-screen w-full">
       {/* Invisible div acting as our scroll anchor */}
       <div ref={topRef} className="h-0 w-0" />
 
-      <div className="max-w-7xl mx-auto px-4 py-8 md:px-8">
+      {/* INCREASED WIDTH HERE: Changed from max-w-7xl to max-w-[1400px] */}
+      <div className="max-w-[1400px] mx-auto px-4 py-8 md:px-8">
 
         {/* Blog Grid */}
         <div className="flex justify-center">
@@ -165,13 +166,13 @@ export const BlogPage = () => {
                 </p>
                 
                 {/* Button pinned to bottom */}
-{/* Link pinned to bottom */}
-<Link 
-  to={`/blogs/${post.id}`} 
-  className="w-full py-2.5 bg-[#ffed00] hover:bg-yellow-400 text-black font-medium text-sm rounded transition-colors mt-auto text-center block shadow-sm"
->
-  Read More
-</Link>
+                {/* Link pinned to bottom */}
+                <Link 
+                 to={`/blogs/${post.title.toLowerCase().replace(/:/g, '').replace(/\s+/g, '-')}`}
+                  className="w-full py-2.5 bg-[#ffed00] hover:bg-yellow-400 text-black font-medium text-sm rounded transition-colors mt-auto text-center block shadow-sm"
+                >
+                  Read More
+                </Link>
               </div>
               </div>
             ))}
