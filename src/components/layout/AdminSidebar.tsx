@@ -28,6 +28,12 @@ const adminMenuItems = [
         icon: <FileText size={20} strokeWidth={1.5} />,
         route: "/admin/blog/manage",
     },
+        {
+        page_id: "admin-manage-category",
+        page_name: "Category",
+        icon: <FileText size={20} strokeWidth={1.5} />,
+        route: "/admin/categories/manage",
+    },
     {
         page_id: "admin-manage-seo",
         page_name: "SEO",

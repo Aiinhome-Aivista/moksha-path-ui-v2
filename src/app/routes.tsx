@@ -30,6 +30,8 @@ import ManageBlog from "../features/admin/pages/blog/ManageBlog";
 import AddBlog from "../features/admin/pages/blog/AddBlog";
 import ManageSEO from "../features/admin/pages/seo/ManageSEO";
 import AddSEO from "../features/admin/pages/seo/AddSEO";
+import AddCategory from "../features/admin/pages/category/AddCategory";
+import ManageCategory from "../features/admin/pages/category/ManageCategory";
 
 const routes: RouteObject[] = [
   // Standalone Routes
@@ -116,6 +118,8 @@ const routes: RouteObject[] = [
       { path: "blog/add", element: <AddBlog /> },
       { path: "seo/manage", element: <ManageSEO /> },
       { path: "seo/add", element: <AddSEO /> },
+      { path: "categories/manage", element: <ManageCategory /> },
+      { path: "categories/add", element: <AddCategory /> },
     ]
   },
 
