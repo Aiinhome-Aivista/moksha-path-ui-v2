@@ -386,7 +386,7 @@ export const TeacherDashboard: React.FC = () => {
                   </div>
                 )}
               </div>
-              <button
+              {/* <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
                 className="absolute bottom-0 right-0 bg-[#BADA55] hover:bg-lime-400 w-7 h-7 rounded-full flex items-center justify-center shadow-md border-2 border-gray-900 transition-all duration-200 group-hover:scale-110"
@@ -397,7 +397,7 @@ export const TeacherDashboard: React.FC = () => {
                 >
                   photo_camera
                 </span>
-              </button>
+              </button> */}
               <input
                 ref={fileInputRef}
                 type="file"

@@ -46,60 +46,64 @@ const TestDetailsFormModal: React.FC<TestDetailsFormModalProps> = ({
     dueDate: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [suggestion, setSuggestion] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestions = useMemo(() => {
     const list: string[] = [];
 
     if (topicNames?.length) {
       topicNames.forEach((t) => list.push(`${t} Test`));
+      if (topicNames.length > 1) {
+        list.push(`Mixed Topics Test (${subjectName || 'Custom'})`);
+      }
     }
 
     if (chapterNames?.length) {
       chapterNames.forEach((c) => list.push(`${c} Test`));
+      if (chapterNames.length > 1) {
+        list.push(`Mixed Chapters Test (${subjectName || 'Custom'})`);
+      }
     }
 
     if (subjectName) {
-      list.push(`${subjectName} Test`);
+      list.push(`${subjectName} Practice Test`);
+      list.push(`${subjectName} Full Test`);
     }
 
-    return list;
+    return Array.from(new Set(list));
   }, [topicNames, chapterNames, subjectName]);
 
+  const filteredSuggestions = useMemo(() => {
+    if (!form.testName) return suggestions;
+    const exactMatch = suggestions.find(s => s.toLowerCase() === form.testName.toLowerCase());
+    if (exactMatch) return []; // Hide suggestions if exact match exists
+    return suggestions.filter(s => s.toLowerCase().includes(form.testName.toLowerCase()));
+  }, [form.testName, suggestions]);
+
   const handleTestNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Tab" && suggestion) {
+    if (e.key === "Tab" && showSuggestions && filteredSuggestions.length > 0) {
       e.preventDefault();
       setForm((prev) => ({
         ...prev,
-        testName: suggestion,
+        testName: filteredSuggestions[0],
       }));
-      setSuggestion("");
+      setShowSuggestions(false);
     }
   };
-  useEffect(() => {
-    if (!form.testName) {
-      setSuggestion("");
-      return;
-    }
 
-    const match = suggestions.find((s) =>
-      s.toLowerCase().includes(form.testName.toLowerCase()),
-    );
-
-    setSuggestion(match || "");
-  }, [form.testName, suggestions]);
-  
   // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
       setForm({
-        testName: "",
+        testName: suggestions[0] || "",
         maximumMarks: 0,
         totalQuestions: 0,
         durationMinutes: 0,
         difficultyLevel: "Mixed",
         dueDate: "",
       });
+      setShowSuggestions(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   // Prevent background scroll (Bulletproof Mobile Fix)
@@ -220,7 +224,7 @@ const TestDetailsFormModal: React.FC<TestDetailsFormModalProps> = ({
       // console.error("Test creation error:", error);
       showToast(
         error.response?.data?.message ||
-          "Failed to create test. Please try again.",
+        "Failed to create test. Please try again.",
         "error",
       );
       onClose();
@@ -313,14 +317,31 @@ const TestDetailsFormModal: React.FC<TestDetailsFormModalProps> = ({
               <input
                 type="text"
                 value={form.testName}
-                onChange={(e) => handleChange("testName", e.target.value)}
+                onChange={(e) => {
+                  handleChange("testName", e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setShowSuggestions(false)}
                 placeholder="e.g. Algebra Chapter 1 Practice"
                 className={inputClass}
                 onKeyDown={handleTestNameKeyDown}
               />
-              {suggestion && suggestion !== form.testName && (
-                <div className="absolute left-0 top-full mt-1 text-sm sm:text-xs text-gray-500 bg-white border border-gray-200 rounded px-3 py-1.5 sm:px-2 sm:py-1 shadow-sm z-50">
-                  {suggestion}
+              {showSuggestions && filteredSuggestions.length > 0 && (
+                <div className="absolute left-0 top-full mt-1 w-full max-h-40 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1 custom-scrollbar">
+                  {filteredSuggestions.map((s, i) => (
+                    <div
+                      key={i}
+                      className="px-4 py-2 sm:py-1.5 text-sm sm:text-xs text-gray-700 hover:bg-gray-50 hover:text-[#b0cb1f] cursor-pointer transition-colors"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        handleChange("testName", s);
+                        setShowSuggestions(false);
+                      }}
+                    >
+                      {s}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -429,14 +450,13 @@ const TestDetailsFormModal: React.FC<TestDetailsFormModalProps> = ({
               !form.durationMinutes ||
               isSubmitting
             }
-            className={`w-full sm:flex-1 px-4 py-3 sm:py-2.5 rounded-xl text-base sm:text-sm font-medium transition-all hover:scale-[1.02] ${
-              !form.testName ||
-              !form.totalQuestions ||
-              !form.durationMinutes ||
-              isSubmitting
+            className={`w-full sm:flex-1 px-4 py-3 sm:py-2.5 rounded-xl text-base sm:text-sm font-medium transition-all hover:scale-[1.02] ${!form.testName ||
+                !form.totalQuestions ||
+                !form.durationMinutes ||
+                isSubmitting
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                 : "bg-[#b0cb1f] text-gray-900 shadow-lg shadow-[#b0cb1f]/20 hover:bg-[#c5de3a]"
-            }`}
+              }`}
           >
             {isSubmitting ? (
               <span className="flex items-center justify-center gap-2">
