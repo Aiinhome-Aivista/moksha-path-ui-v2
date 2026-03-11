@@ -43,8 +43,8 @@ const PaymentGateway: React.FC = () => {
         academic_year: paymentData.academic_year,
         institute_id: paymentData.institute_id,
         subject_ids: paymentData.subject_ids,
-        total_licenses: paymentData.total_licences,
-        licences_used: paymentData.licences_used,
+        total_licenses: paymentData.total_licenses,
+        licenses_used: paymentData.licenses_used,
         transaction_id: "TXN-RAZORPAY-" + Math.floor(Math.random() * 100000000),
         subscription_name: paymentData.subscription_name,
         ui_total_amount: paymentData.ui_total_amount,
@@ -59,14 +59,7 @@ const PaymentGateway: React.FC = () => {
       const response = await ApiServices.completeSubscription(finalPayload);
 
       if (response.data?.status === "success") {
-        console.log("Subscription completed:", response);
-
-        // // Wait briefly to ensure subscription is saved in DB
-        // await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // // First decode attempt
-        // await decodeUserToken();
-
+        localStorage.removeItem("selected_subjects_payload");
         // // Verify subscription_id is actually set in localStorage
         const subscriptionId = response?.data?.data?.subscription_id;
         const subscriptionToken = response?.data?.data?.subscription_token;
@@ -93,7 +86,7 @@ const PaymentGateway: React.FC = () => {
               navigate("/teacher/dashboard", { replace: true });
             } else if (role === "parent") {
               navigate("/parent/dashboard", { replace: true });
-             } else {
+            } else {
               navigate("/dashboard", { replace: true });
             }
           }

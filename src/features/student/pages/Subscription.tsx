@@ -108,14 +108,6 @@ const Subscription: React.FC = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [currentTotalAmount, setCurrentTotalAmount] = useState(0);
-  // const activeProfile = JSON.parse(localStorage.getItem("active_profile") || "{}");
-  // const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
-  // const storedSubId = localStorage.getItem("subscription_id");
-  // const hasSubscription =
-  //   (activeProfile.subscription_id !== null && activeProfile.subscription_id !== undefined) ||
-  //   (userData.subscription_id !== null && userData.subscription_id !== undefined) ||
-  //   (storedSubId !== null && storedSubId !== "");
-
   const [showSetupModal, setShowSetupModal] = useState(false);
   const [profileImage, setProfileImage] = useState<string>(" ");
 
@@ -504,9 +496,9 @@ const Subscription: React.FC = () => {
         subject_ids: selectedSubjects.map((s) => s.subject_id),
         institute_id: selectedSchool || null,
         subscription_id: "",
-        licences_used: licenses_used,
+        licenses_used: licenses_used,
         subscription_name: subscriptionName,
-        total_licences: sheetCount,
+        total_licenses: sheetCount,
         ui_total_amount: currentTotalAmount,
         coupon_code: couponCode || undefined,
         // section: selectedSection ? String(selectedSection) : null,
@@ -687,8 +679,8 @@ const Subscription: React.FC = () => {
         subject_ids: selectedSubjects.map((s) => s.subject_id),
         institute_id: selectedSchool || null,
         ui_total_amount: uiTotalAmount,
-        total_licences: sheetCount,
-        licences_used: licenses_used,
+        total_licenses: sheetCount,
+        licenses_used: licenses_used,
         subscription_name: "",
       };
 
