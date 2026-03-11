@@ -9,7 +9,7 @@ const PaymentGateway: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
-  const { decodeUserToken } = useModal();
+  // const { decodeUserToken } = useModal();
   const [isProcessing, setIsProcessing] = React.useState(false);
 
   React.useEffect(() => {
@@ -59,22 +59,19 @@ const PaymentGateway: React.FC = () => {
       const response = await ApiServices.completeSubscription(finalPayload);
 
       if (response.data?.status === "success") {
-        // console.log("Subscription completed:", response.data);
+        console.log("Subscription completed:", response);
 
-        // Wait briefly to ensure subscription is saved in DB
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        // // Wait briefly to ensure subscription is saved in DB
+        // await new Promise((resolve) => setTimeout(resolve, 500));
 
-        // First decode attempt
-        await decodeUserToken();
+        // // First decode attempt
+        // await decodeUserToken();
 
-        // Verify subscription_id is actually set in localStorage
-        const subscriptionId = localStorage.getItem("subscription_token");
-        // console.log("📱 After decode - subscription_id in localStorage:", subscriptionId);
-
-        // If subscription_id is null, retry once more
-        if (!subscriptionId) {
-          await new Promise((resolve) => setTimeout(resolve, 300));
-          await decodeUserToken();
+        // // Verify subscription_id is actually set in localStorage
+        const subscriptionId = response?.data?.data?.subscription_id;
+        const subscriptionToken = response?.data?.data?.subscription_token;
+        if (subscriptionToken) {
+          localStorage.setItem("subscription_token", subscriptionToken);
         }
 
         if (response.data?.message === "Subscription already active") {
@@ -84,22 +81,22 @@ const PaymentGateway: React.FC = () => {
             response.data?.message || "Subscription completed successfully!",
             "success",
           );
-          const subscriptionId = localStorage.getItem("subscription_token");
           // console.log("idd",subscriptionId)
           if (subscriptionId) {
-            const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
-            const activeRole = userData?.roles?.[0]?.role_name;
-            const role = activeRole?.toLowerCase();
+            const profile = JSON.parse(
+              localStorage.getItem("active_profile") || "{}",
+            );
+
+            const role = profile?.role_name?.toLowerCase();
+
             if (role === "teacher") {
               navigate("/teacher/dashboard", { replace: true });
             } else if (role === "parent") {
               navigate("/parent/dashboard", { replace: true });
-            } else {
+             } else {
               navigate("/dashboard", { replace: true });
             }
           }
-          // Navigate after everything is set
-          // navigate("/dashboard");
         }
       } else {
         showToast(

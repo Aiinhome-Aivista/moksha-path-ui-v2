@@ -48,7 +48,7 @@ export const LoginModal: React.FC = () => {
     isNewUser,
     setIsNewUser,
     setInitialAuthIdentifier,
-    decodeUserToken,
+    // decodeUserToken,
     openProfileSelection,
     setProfilesList,
   } = useModal();
@@ -285,26 +285,6 @@ export const LoginModal: React.FC = () => {
           `${verifyingType === "email" ? "Email" : "Mobile"} verified successfully`,
           "success",
         );
-
-        // Refresh context data
-        // await decodeUserToken();
-        // // Always fetch menu - will handle gracefully if empty
-
-        // // Check if profile setup is incomplete (no user data AND no subscription)
-        // if (res.data?.data?.subscription_id === null && !res.data?.data?.user) {
-        //   closeLogin();
-        //   openSelectRole();
-        // } else if (res.data?.data?.subscription_id === null) {
-        //   // User has profile but no subscription
-        //   closeLogin();
-        //   navigate("/subscription", { replace: true });
-        // } else {
-        //   // User has complete profile with active subscription
-        //   closeLogin();
-        //   navigate("/dashboard", { replace: true });
-        // }
-        await decodeUserToken();
-
         const profileRes = await ApiServices.getUsersByTokenContact();
 
         const profiles = profileRes?.data?.data ?? [];

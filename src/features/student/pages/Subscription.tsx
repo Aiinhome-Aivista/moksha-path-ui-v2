@@ -144,11 +144,11 @@ const Subscription: React.FC = () => {
 
   const { user: modalUser } = useModal();
   const userName = modalUser?.name || "User";
-  const defaultRole =
-    modalUser?.roles?.find((role: any) => role.is_default === true) ||
-    modalUser?.roles?.[0];
 
-  const licenses_used = defaultRole?.role_id === 1 ? 1 : 0;
+
+  const profile = JSON.parse(localStorage.getItem("active_profile") || "{}");
+  const role = profile?.role_id || null;
+  const licenses_used = role === 1 ? 1 : 0;
 
   const localUser = JSON.parse(localStorage.getItem("user") || "{}");
   const isStudent = localUser.role === "student";
@@ -714,7 +714,7 @@ const Subscription: React.FC = () => {
   };
 
   const getInitial = () => {
-    return userName?.charAt(0).toUpperCase();
+    return profile?.username.charAt(0).toUpperCase();
   };
 
   const handleSetupConfirm = (data: {

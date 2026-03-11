@@ -70,7 +70,7 @@ export const SignInModal: React.FC = () => {
     openSelectRole,
     setInitialAuthIdentifier,
     setIsNewUser,
-    decodeUserToken,
+    // decodeUserToken,
     fetchMenu,
     openProfileSelection,
     setProfilesList,
@@ -349,7 +349,7 @@ export const SignInModal: React.FC = () => {
         //     navigate("/dashboard", { replace: true });
         //   }
         // }
-        await decodeUserToken();
+        // await decodeUserToken();
         await fetchMenu();
 
         const userData = JSON.parse(localStorage.getItem("user_data") || "{}");

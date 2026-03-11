@@ -63,7 +63,7 @@ export const SelectRoleModal: React.FC = () => {
     // setProfilesList,
     openLogin,
     fetchMenu,
-    decodeUserToken,
+    // decodeUserToken,
     initialAuthIdentifier,
     handleSignInSuccess,
   } = useModal();
@@ -283,7 +283,6 @@ export const SelectRoleModal: React.FC = () => {
           });
 
           // 2. Refresh context data
-          await decodeUserToken();
           await fetchMenu(); // Always fetch menu
 
           handleSignInSuccess();
@@ -317,7 +316,7 @@ export const SelectRoleModal: React.FC = () => {
           }
         } else {
           // Fallback if user object is not in response
-          await decodeUserToken();
+          // await decodeUserToken();
           await fetchMenu(); // Always fetch menu
           closeSelectRole();
 
