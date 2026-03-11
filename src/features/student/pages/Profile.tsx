@@ -1,14 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../app/providers/AuthProvider';
-import Button from '../../../components/common/Button';
 import { useModal } from '../../../features/auth/context/AuthContext';
 import ApiServices from '../../../services/ApiServices';
 
 const StudentProfile: React.FC = () => {
     const { user, roleConfig } = useAuth();
     const { openProfileSelection, setProfilesList } = useModal();
-    const [isEditing, setIsEditing] = useState(false);
     const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
+
+    // State for actual data fetched from APIs
+    const [profileImage, setProfileImage] = useState<string>('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [studentData, setStudentData] = useState({
+        name: user?.name || 'Student',
+        email: user?.email || '',
+        phone: '',
+        school: 'Not Assigned',
+        board: 'Not Assigned',
+        className: 'Not Assigned',
+        subjects: [] as any[],
+    });
+
+    useEffect(() => {
+        const fetchProfileData = async () => {
+            setIsLoading(true);
+            try {
+                // Fetch Profile Image
+                const imageRes = await ApiServices.getUserProfileImage();
+                if (imageRes.data?.status === 'success' && imageRes.data?.data?.image) {
+                    setProfileImage(imageRes.data.data.image);
+                }
+
+                // Fetch Planner Stats for school/board info
+                const plannerRes = await ApiServices.getStudentLearningPlanner();
+                let stats: any = {};
+                if (plannerRes.data?.status === 'success') {
+                    stats = plannerRes.data.data.stats;
+                }
+
+                // Fetch Subjects
+                const subjectsRes = await ApiServices.getStudentSubjects();
+                const subjects = subjectsRes.data?.data || [];
+
+                // Try pulling from user_data localStorage as fallback for phone/email
+                let localUserData = { phone: '', email: user?.email || '' };
+                try {
+                    const storedData = localStorage.getItem('user_data');
+                    if (storedData) {
+                        const parsed = JSON.parse(storedData);
+                        localUserData.phone = parsed.phone || parsed.contact || '';
+                        if (!localUserData.email) localUserData.email = parsed.email || '';
+                    }
+                } catch (e) {
+                    // console.error(e);
+                }
+
+                setStudentData({
+                    name: stats.student_name || user?.name || 'Student',
+                    email: localUserData.email,
+                    phone: localUserData.phone,
+                    school: stats.institute_name || 'Not Available',
+                    board: stats.board_name || 'Not Available',
+                    className: stats.class_name || 'Not Available',
+                    subjects: subjects,
+                });
+
+            } catch (error) {
+                // console.error('Failed to fetch profile details', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProfileData();
+    }, [user]);
 
     const handleViewProfiles = async () => {
         try {
@@ -25,291 +90,134 @@ const StudentProfile: React.FC = () => {
         }
     };
 
-    // Mock profile data
-    const profileData = {
-        studentId: 'STU-2024-001',
-        email: user?.email || 'john.doe@mokshapath.edu',
-        phone: '+1 (555) 123-4567',
-        dateOfBirth: 'January 15, 2005',
-        enrollmentDate: 'August 1, 2023',
-        grade: '11th Grade',
-        section: 'A',
-        gpa: '3.8',
-        address: '123 Learning Street, Education City, EC 12345',
-        guardianName: 'Robert Doe',
-        guardianPhone: '+1 (555) 987-6543',
+    const getInitial = () => {
+        return studentData.name?.charAt(0).toUpperCase() || 'S';
     };
 
-    const achievements = [
-        { id: 1, title: 'Honor Roll', date: 'Fall 2023', icon: '🏆' },
-        { id: 2, title: 'Science Fair Winner', date: 'March 2023', icon: '🔬' },
-        { id: 3, title: 'Perfect Attendance', date: '2023-2024', icon: '⭐' },
-        { id: 4, title: 'Math Olympiad Finalist', date: 'December 2023', icon: '🧮' },
-    ];
-
-    const courses = [
-        { id: 1, name: 'Advanced Mathematics', grade: 'A', progress: 85 },
-        { id: 2, name: 'Physics', grade: 'A-', progress: 78 },
-        { id: 3, name: 'English Literature', grade: 'B+', progress: 92 },
-        { id: 4, name: 'Computer Science', grade: 'A', progress: 95 },
-        { id: 5, name: 'Chemistry', grade: 'B+', progress: 72 },
-    ];
+    if (isLoading) {
+        return (
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-10 h-10 border-4 border-gray-200 border-t-[#BADA55] rounded-full animate-spin"></div>
+                    <span className="text-sm text-gray-500 font-medium">Loading profile...</span>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="space-y-8">
-            {/* Page Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-secondary-900 dark:text-white">
-                        My Profile
-                    </h1>
-                    <p className="text-secondary-500 dark:text-secondary-400 mt-1">
-                        Manage your personal information and preferences
-                    </p>
+        <div className="min-h-screen p-6 relative">
+            {/* Header Section Matches Dashboard */}
+            <header className="flex flex-wrap justify-between items-start mb-12 gap-6">
+                <div className="flex gap-4 items-start">
+                    <div className="relative group cursor-pointer">
+                        <div className="w-[90px] h-[90px] rounded-full overflow-hidden flex-shrink-0 border-3 border-gray-200 group-hover:border-[#b0cb1f] transition-colors duration-300 bg-gray-100 flex items-center justify-center">
+                            {profileImage ? (
+                                <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#b0cb1f] to-lime-500 text-white">
+                                    <span className="text-4xl font-bold">{getInitial()}</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-2xl text-[#ABB3BC] font-bold tracking-wide">
+                            My Profile
+                        </span>
+                        <h1 className="text-3xl font-bold text-primary m-0">
+                            {studentData.name}
+                        </h1>
+                        <p className="text-base text-primary font-medium m-0 flex items-center gap-2 mt-1">
+                            <span className="px-3 py-1 bg-highlighter text-primary rounded-full text-xs font-bold uppercase tracking-wider">
+                                {roleConfig?.label || 'Student'}
+                            </span>
+                        </p>
+                    </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Button
-                        variant="outline"
+
+                <div className="flex items-center">
+                    <button
                         onClick={handleViewProfiles}
-                        isLoading={isLoadingProfiles}
-                        className="bg-primary/5 border-primary/20 text-primary hover:bg-primary/10"
+                        disabled={isLoadingProfiles}
+                        className="bg-[#b0cb1f] hover:bg-[#c5de3a] text-primary px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 shadow-sm"
                     >
-                        View Profiles
-                    </Button>
-                    <Button
-                        variant={isEditing ? 'primary' : 'outline'}
-                        onClick={() => setIsEditing(!isEditing)}
-                    >
-                        {isEditing ? 'Save Changes' : 'Edit Profile'}
-                    </Button>
+                        {isLoadingProfiles ? 'Loading...' : 'Switch Profile'}
+                    </button>
                 </div>
+            </header>
+
+            {/* Main Content Grid Matches Dashboard Portions */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-12 mb-12">
+                <section>
+                    <h2 className="text-base font-bold text-gray-800 mb-4 pb-2 border-b-4 border-[#555555]">
+                        Academic Details
+                    </h2>
+                    <ul className="list-none p-0 m-0 space-y-4">
+                        <li className="flex justify-between items-center text-sm font-medium text-primary">
+                            <span>• School or Institute</span>
+                            <span className="font-bold">{studentData.school}</span>
+                        </li>
+                        <li className="flex justify-between items-center text-sm font-medium text-primary">
+                            <span>• Current Board</span>
+                            <span className="font-bold">{studentData.board}</span>
+                        </li>
+                        <li className="flex justify-between items-center text-sm font-medium text-primary">
+                            <span>• Class / Grade</span>
+                            <span className="font-bold">{studentData.className}</span>
+                        </li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 className="text-base font-bold text-gray-800 mb-4 pb-2 border-b-4 border-[#555555]">
+                        Contact Information
+                    </h2>
+                    <ul className="list-none p-0 m-0 space-y-4">
+                        <li className="flex justify-between items-center text-sm font-medium text-primary">
+                            <span>• Email Address</span>
+                            <span className="font-bold text-right">{studentData.email || 'Not provided'}</span>
+                        </li>
+                        <li className="flex justify-between items-center text-sm font-medium text-primary">
+                            <span>• Phone Number</span>
+                            <span className="font-bold">{studentData.phone || 'Not provided'}</span>
+                        </li>
+                    </ul>
+                </section>
             </div>
 
-            {/* Profile Card */}
-            <div className="bg-white dark:bg-secondary-800 rounded-2xl shadow-sm border border-secondary-200 dark:border-secondary-700 overflow-hidden">
-                {/* Banner */}
-                <div className="h-32 bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 relative">
-                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtNi42MjcgMC0xMiA1LjM3My0xMiAxMnM1LjM3MyAxMiAxMiAxMiAxMi01LjM3MyAxMi0xMi01LjM3My0xMi0xMi0xMnptMCAyMGMtNC40MTggMC04LTMuNTgyLTgtOHMzLjU4Mi04IDgtOCA4IDMuNTgyIDggOC0zLjU4MiA4LTggOHoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjA1Ii8+PC9nPjwvc3ZnPg==')] opacity-30"></div>
-                </div>
-
-                {/* Profile Info */}
-                <div className="relative px-6 pb-6">
-                    {/* Avatar */}
-                    <div className="absolute -top-12 left-6">
-                        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-4xl font-bold text-white shadow-xl ring-4 ring-white dark:ring-secondary-800">
-                            {user?.name?.charAt(0).toUpperCase()}
-                        </div>
-                    </div>
-
-                    {/* Info */}
-                    <div className="pt-16">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                            <div>
-                                <h2 className="text-2xl font-bold text-secondary-900 dark:text-white">
-                                    {user?.name}
-                                </h2>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-lg">{roleConfig?.icon}</span>
-                                    <span className="text-secondary-500 dark:text-secondary-400 capitalize">
-                                        {roleConfig?.label}
-                                    </span>
-                                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                                        Active
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-secondary-500 dark:text-secondary-400">
-                                <span>Student ID:</span>
-                                <span className="font-mono font-medium text-secondary-900 dark:text-white">
-                                    {profileData.studentId}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Main Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Personal Information */}
-                <div className="lg:col-span-2 space-y-6">
-                    {/* Contact Information */}
-                    <div className="bg-white dark:bg-secondary-800 rounded-xl shadow-sm border border-secondary-200 dark:border-secondary-700">
-                        <div className="p-6 border-b border-secondary-200 dark:border-secondary-700">
-                            <h3 className="text-lg font-semibold text-secondary-900 dark:text-white">
-                                Contact Information
-                            </h3>
-                        </div>
-                        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div>
-                                <label className="text-sm text-secondary-500 dark:text-secondary-400">
-                                    Email Address
-                                </label>
-                                <p className="mt-1 font-medium text-secondary-900 dark:text-white">
-                                    {profileData.email}
-                                </p>
-                            </div>
-                            <div>
-                                <label className="text-sm text-secondary-500 dark:text-secondary-400">
-                                    Phone Number
-                                </label>
-                                <p className="mt-1 font-medium text-secondary-900 dark:text-white">
-                                    {profileData.phone}
-                                </p>
-                            </div>
-                            <div className="sm:col-span-2">
-                                <label className="text-sm text-secondary-500 dark:text-secondary-400">
-                                    Address
-                                </label>
-                                <p className="mt-1 font-medium text-secondary-900 dark:text-white">
-                                    {profileData.address}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Academic Information */}
-                    <div className="bg-white dark:bg-secondary-800 rounded-xl shadow-sm border border-secondary-200 dark:border-secondary-700">
-                        <div className="p-6 border-b border-secondary-200 dark:border-secondary-700">
-                            <h3 className="text-lg font-semibold text-secondary-900 dark:text-white">
-                                Academic Information
-                            </h3>
-                        </div>
-                        <div className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
-                            <div>
-                                <label className="text-sm text-secondary-500 dark:text-secondary-400">
-                                    Grade
-                                </label>
-                                <p className="mt-1 font-medium text-secondary-900 dark:text-white">
-                                    {profileData.grade}
-                                </p>
-                            </div>
-                            <div>
-                                <label className="text-sm text-secondary-500 dark:text-secondary-400">
-                                    Section
-                                </label>
-                                <p className="mt-1 font-medium text-secondary-900 dark:text-white">
-                                    {profileData.section}
-                                </p>
-                            </div>
-                            <div>
-                                <label className="text-sm text-secondary-500 dark:text-secondary-400">
-                                    Current GPA
-                                </label>
-                                <p className="mt-1 font-medium text-green-600 dark:text-green-400">
-                                    {profileData.gpa}
-                                </p>
-                            </div>
-                            <div>
-                                <label className="text-sm text-secondary-500 dark:text-secondary-400">
-                                    Date of Birth
-                                </label>
-                                <p className="mt-1 font-medium text-secondary-900 dark:text-white">
-                                    {profileData.dateOfBirth}
-                                </p>
-                            </div>
-                            <div>
-                                <label className="text-sm text-secondary-500 dark:text-secondary-400">
-                                    Enrollment Date
-                                </label>
-                                <p className="mt-1 font-medium text-secondary-900 dark:text-white">
-                                    {profileData.enrollmentDate}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Current Courses */}
-                    <div className="bg-white dark:bg-secondary-800 rounded-xl shadow-sm border border-secondary-200 dark:border-secondary-700">
-                        <div className="p-6 border-b border-secondary-200 dark:border-secondary-700">
-                            <h3 className="text-lg font-semibold text-secondary-900 dark:text-white">
-                                Current Courses
-                            </h3>
-                        </div>
-                        <div className="p-6 space-y-4">
-                            {courses.map((course) => (
-                                <div key={course.id} className="flex items-center gap-4">
-                                    <div className="flex-1">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <span className="font-medium text-secondary-900 dark:text-white">
-                                                {course.name}
-                                            </span>
-                                            <span className="text-sm font-semibold text-primary-600 dark:text-primary-400">
-                                                {course.grade}
-                                            </span>
-                                        </div>
-                                        <div className="w-full bg-secondary-200 dark:bg-secondary-700 rounded-full h-2">
-                                            <div
-                                                className="bg-primary-600 dark:bg-primary-500 h-2 rounded-full transition-all duration-300"
-                                                style={{ width: `${course.progress}%` }}
-                                            ></div>
-                                        </div>
+            <div className="grid grid-cols-1 gap-12">
+                <section>
+                    <h2 className="text-base font-bold text-gray-800 mb-4 pb-2 border-b-4 border-[#555555]">
+                        Enrolled Subjects ({studentData.subjects.length})
+                    </h2>
+                    {studentData.subjects.length > 0 ? (
+                        <div className="flex gap-16 flex-wrap mt-6">
+                            {studentData.subjects.map((subject: any, index: number) => (
+                                <div key={index} className="flex flex-col items-center justify-end text-center w-[100px]">
+                                    <div className="flex items-center justify-center bg-highlighter w-[70px] h-[70px] rounded-full mb-3">
+                                        <span className="text-2xl font-bold text-red-500">
+                                            {subject.subject_name.charAt(0)}
+                                        </span>
                                     </div>
-                                    <span className="text-sm text-secondary-500 dark:text-secondary-400 w-12 text-right">
-                                        {course.progress}%
+                                    <span
+                                        className="text-xs font-bold text-primary mt-1 uppercase tracking-wider max-w-[100px] break-words whitespace-normal text-center"
+                                        style={{
+                                            wordBreak: "break-word",
+                                            lineHeight: "1.2",
+                                            minHeight: "38px",
+                                            display: "inline-block",
+                                        }}
+                                    >
+                                        {subject.subject_name}
                                     </span>
                                 </div>
                             ))}
                         </div>
-                    </div>
-                </div>
-
-                {/* Sidebar */}
-                <div className="space-y-6">
-                    {/* Guardian Information */}
-                    <div className="bg-white dark:bg-secondary-800 rounded-xl shadow-sm border border-secondary-200 dark:border-secondary-700">
-                        <div className="p-6 border-b border-secondary-200 dark:border-secondary-700">
-                            <h3 className="text-lg font-semibold text-secondary-900 dark:text-white">
-                                Guardian Information
-                            </h3>
-                        </div>
-                        <div className="p-6 space-y-4">
-                            <div>
-                                <label className="text-sm text-secondary-500 dark:text-secondary-400">
-                                    Name
-                                </label>
-                                <p className="mt-1 font-medium text-secondary-900 dark:text-white">
-                                    {profileData.guardianName}
-                                </p>
-                            </div>
-                            <div>
-                                <label className="text-sm text-secondary-500 dark:text-secondary-400">
-                                    Phone
-                                </label>
-                                <p className="mt-1 font-medium text-secondary-900 dark:text-white">
-                                    {profileData.guardianPhone}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Achievements */}
-                    <div className="bg-white dark:bg-secondary-800 rounded-xl shadow-sm border border-secondary-200 dark:border-secondary-700">
-                        <div className="p-6 border-b border-secondary-200 dark:border-secondary-700">
-                            <h3 className="text-lg font-semibold text-secondary-900 dark:text-white">
-                                Achievements
-                            </h3>
-                        </div>
-                        <div className="p-6 space-y-3">
-                            {achievements.map((achievement) => (
-                                <div
-                                    key={achievement.id}
-                                    className="flex items-center gap-3 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-700/50"
-                                >
-                                    <span className="text-2xl">{achievement.icon}</span>
-                                    <div>
-                                        <p className="font-medium text-secondary-900 dark:text-white text-sm">
-                                            {achievement.title}
-                                        </p>
-                                        <p className="text-xs text-secondary-500 dark:text-secondary-400">
-                                            {achievement.date}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                    ) : (
+                        <p className="text-sm text-gray-500 mt-2">You are not currently enrolled in any subjects.</p>
+                    )}
+                </section>
             </div>
         </div>
     );
