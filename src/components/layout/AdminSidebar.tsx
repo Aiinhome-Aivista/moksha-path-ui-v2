@@ -42,7 +42,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, toggleSideba
         // Here you would typically clear the auth token and navigate to login
         // Reusing standard sign out for now
         localStorage.removeItem("auth_token");
-        window.location.href = "/login";
+        window.location.href = "/";
     };
 
     return (
