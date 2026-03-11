@@ -105,7 +105,10 @@ const Notifications: React.FC = () => {
     "All",
   );
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [actioningState, setActioningState] = useState<{ id: number; action: "accept" | "reject" } | null>(null);
+  const [actioningState, setActioningState] = useState<{
+    id: number;
+    action: "accept" | "reject";
+  } | null>(null);
   const [actionError, setActionError] = useState<Record<number, string>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 9;
@@ -202,31 +205,66 @@ const Notifications: React.FC = () => {
 
               // 2. Find the profile that matches the invite they just accepted
               // (Or fallback to the first available profile if names mismatch)
-              const newlyActivatedProfile = allProfiles.find(
-                (p: any) => p.subscription_name === inv.subscriptionName
-              ) || allProfiles[0];
+              const newlyActivatedProfile =
+                allProfiles.find(
+                  (p: any) => p.subscription_name === inv.subscriptionName,
+                ) || allProfiles[0];
 
+              // if (newlyActivatedProfile) {
+              //   // 3. Call the Switch Profile API to get a FRESH token
+              //   const switchRes = await ApiServices.switchUserProfile({
+              //     profile_id: newlyActivatedProfile.profile_id
+              //   });
+
+              //   if (switchRes.data?.status === "success") {
+              //     // 4. Save the new token and profile
+              //     const newToken = switchRes.data.data.auth_token;
+              //     if (newToken) {
+              //       localStorage.setItem("auth_token", newToken);
+              //     }
+              //     const newSubscription_token = switchRes.data.data.subscription_token;
+              //     if (newSubscription_token) {
+              //       localStorage.setItem("subscription_token", newSubscription_token);
+              //     }
+
+              //     const newActiveProfile = switchRes.data.data.active_profile;
+              //     if (newActiveProfile) {
+              //       localStorage.setItem("active_profile", JSON.stringify(newActiveProfile));
+              //     }
+
+              //     // 5. Hard Redirect to Dashboard so the whole app reloads with the new token
+              //     // window.location.href = "/dashboard";
+              //     return; // Stop execution here so it doesn't clear the loading state prematurely
+              //   }
+              // }
               if (newlyActivatedProfile) {
-                // 3. Call the Switch Profile API to get a FRESH token
                 const switchRes = await ApiServices.switchUserProfile({
-                  profile_id: newlyActivatedProfile.profile_id
+                  profile_id: newlyActivatedProfile.profile_id,
                 });
 
                 if (switchRes.data?.status === "success") {
-                  // 4. Save the new token and profile
-                  const newToken = switchRes.data.data.token;
-                  if (newToken) {
-                    localStorage.setItem("auth_token", newToken);
+                  const {  subscription_token, active_profile } =
+                    switchRes.data.data;
+
+                  // if (auth_token) {
+                  //   localStorage.setItem("auth_token", auth_token);
+                  // }
+
+                  if (subscription_token) {
+                    localStorage.setItem(
+                      "subscription_token",
+                      subscription_token,
+                    );
                   }
 
-                  const newActiveProfile = switchRes.data.data.active_profile;
-                  if (newActiveProfile) {
-                    localStorage.setItem("active_profile", JSON.stringify(newActiveProfile));
+                  if (active_profile) {
+                    localStorage.setItem(
+                      "active_profile",
+                      JSON.stringify(active_profile),
+                    );
                   }
 
-                  // 5. Hard Redirect to Dashboard so the whole app reloads with the new token
-                  // window.location.href = "/dashboard";
-                  return; // Stop execution here so it doesn't clear the loading state prematurely
+                  return;
                 }
               }
             }
@@ -235,7 +273,6 @@ const Notifications: React.FC = () => {
           }
         }
         // ===================================================================
-
       } else {
         setActionError((prev) => ({
           ...prev,
@@ -321,10 +358,11 @@ const Notifications: React.FC = () => {
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
-                className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${activeTab === key
+                className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                  activeTab === key
                     ? "bg-white text-gray-800 shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
-                  }`}
+                }`}
               >
                 <span
                   className="material-symbols-outlined"
@@ -362,17 +400,19 @@ const Notifications: React.FC = () => {
                 <button
                   key={key}
                   onClick={() => handleFilterChange(key)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 flex items-center gap-1.5 ${activeFilter === key
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 flex items-center gap-1.5 ${
+                    activeFilter === key
                       ? "bg-gray-800 text-white border-gray-800 shadow-sm"
                       : "bg-white text-gray-500 border-gray-200 hover:border-gray-400 hover:text-gray-700"
-                    }`}
+                  }`}
                 >
                   {label}
                   <span
-                    className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold ${activeFilter === key
+                    className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold ${
+                      activeFilter === key
                         ? "bg-white/20 text-white"
                         : "bg-gray-100 text-gray-400"
-                      }`}
+                    }`}
                   >
                     {count}
                   </span>
@@ -432,18 +472,21 @@ const Notifications: React.FC = () => {
                   const isExpanded = expandedId === inv.id;
                   const isPending = inv.status === "Pending";
                   const isActioning = actioningState?.id === inv.id;
-                  const isAccepting = isActioning && actioningState?.action === "accept";
-                  const isRejecting = isActioning && actioningState?.action === "reject";
+                  const isAccepting =
+                    isActioning && actioningState?.action === "accept";
+                  const isRejecting =
+                    isActioning && actioningState?.action === "reject";
                   const thisActionError = actionError[inv.id] ?? "";
                   const borderColor = statusBorder[inv.status];
 
                   return (
                     <div
                       key={inv.id}
-                      className={`bg-white rounded-2xl border shadow-sm transition-all duration-300 overflow-hidden ${borderColor
+                      className={`bg-white rounded-2xl border shadow-sm transition-all duration-300 overflow-hidden ${
+                        borderColor
                           ? `border-l-4 ${borderColor} border-t-gray-100 border-r-gray-100 border-b-gray-100 hover:shadow-md`
                           : "border-gray-100 hover:border-gray-200 hover:shadow-sm"
-                        }`}
+                      }`}
                     >
                       {/* ── Card Header ── */}
                       <div
@@ -690,10 +733,11 @@ const Notifications: React.FC = () => {
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all duration-200 ${page === currentPage
+                      className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                        page === currentPage
                           ? "bg-[#BADA55] text-gray-800 shadow"
                           : "text-gray-400 hover:text-gray-700 hover:bg-gray-100"
-                        }`}
+                      }`}
                     >
                       {page}
                     </button>
@@ -800,10 +844,11 @@ const Notifications: React.FC = () => {
                 return (
                   <div
                     key={test.assignment_id}
-                    className={`rounded-2xl border shadow-sm p-5 space-y-3 transition-all duration-300 hover:shadow-md ${isPending
+                    className={`rounded-2xl border shadow-sm p-5 space-y-3 transition-all duration-300 hover:shadow-md ${
+                      isPending
                         ? "border-l-4 border-l-amber-400 bg-white"
                         : "border-l-4 border-l-green-500 bg-white"
-                      }`}
+                    }`}
                   >
                     {/* Top */}
                     <div className="flex items-start justify-between gap-3">
@@ -818,10 +863,11 @@ const Notifications: React.FC = () => {
 
                       {/* Status */}
                       <span
-                        className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${isPending
+                        className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
+                          isPending
                             ? "bg-amber-50 text-amber-700"
                             : "bg-green-50 text-green-700"
-                          }`}
+                        }`}
                       >
                         {test.status}
                       </span>

@@ -150,6 +150,7 @@ const ParentDashboard: React.FC = () => {
     if (selectedChildId === null) return;
 
     const fetchDashboardData = async (studentId: number) => {
+      console.log("Fetching dashboard data for student ID:", studentId);
       try {
         // 1. Fetch Basic Student Info & Planner Stats
         const response = await ApiServices.getStudentLearningPlanner();

@@ -68,7 +68,7 @@ const PaymentGateway: React.FC = () => {
         await decodeUserToken();
 
         // Verify subscription_id is actually set in localStorage
-        const subscriptionId = localStorage.getItem("subscription_id");
+        const subscriptionId = localStorage.getItem("subscription_token");
         // console.log("📱 After decode - subscription_id in localStorage:", subscriptionId);
 
         // If subscription_id is null, retry once more
@@ -84,7 +84,7 @@ const PaymentGateway: React.FC = () => {
             response.data?.message || "Subscription completed successfully!",
             "success",
           );
-          const subscriptionId = localStorage.getItem("subscription_id");
+          const subscriptionId = localStorage.getItem("subscription_token");
           // console.log("idd",subscriptionId)
           if (subscriptionId) {
             const userData = JSON.parse(localStorage.getItem("user_data") || "{}");

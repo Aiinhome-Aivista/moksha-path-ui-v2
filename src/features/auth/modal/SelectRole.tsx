@@ -247,12 +247,12 @@ export const SelectRoleModal: React.FC = () => {
         }
 
         // Update tokens with the new profile's credentials
-        if (data?.token) {
-          localStorage.setItem("auth_token", data.token);
-        }
-        if (data?.refresh_token) {
-          localStorage.setItem("refresh_token", data.refresh_token);
-        }
+        // if (data?.token) {
+        //   localStorage.setItem("auth_token", data.token);
+        // }
+        // if (data?.refresh_token) {
+        //   localStorage.setItem("refresh_token", data.refresh_token);
+        // }
         if (data?.subscription_token) {
           localStorage.setItem("subscription_token", data.subscription_token);
         }
