@@ -66,9 +66,9 @@ const StudentDashboard: React.FC = () => {
     }
   };
 
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
+  // const triggerFileInput = () => {
+  //   fileInputRef.current?.click();
+  // };
 
   const fetchProfileImage = async () => {
     try {
@@ -255,7 +255,7 @@ const StudentDashboard: React.FC = () => {
             </div>
 
             {/* Upload Badge - Bottom Right Corner */}
-            <button
+            {/* <button
               onClick={triggerFileInput}
               disabled={uploading}
               className="absolute bottom-0 right-0 bg-[#BADA55] hover:bg-lime-500 disabled:opacity-70 disabled:cursor-not-allowed w-[32px] h-[32px] rounded-full flex items-center justify-center shadow-lg border-2 border-white transition-all duration-300 transform group-hover:scale-110 active:scale-95"
@@ -271,7 +271,7 @@ const StudentDashboard: React.FC = () => {
                   photo_camera
                 </span>
               )}
-            </button>
+            </button> */}
 
             {/* Hidden File Input */}
             <input
