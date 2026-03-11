@@ -13,6 +13,7 @@ export interface User {
   email: string;
   role: Role;
   avatar?: string;
+  phone?: string;
 }
 
 export interface AuthContextType {

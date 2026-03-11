@@ -79,9 +79,9 @@ const ParentDashboard: React.FC = () => {
       setUploading(false);
     }
   };
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
+  // const triggerFileInput = () => {
+  //   fileInputRef.current?.click();
+  // };
 
   const fetchProfileImage = async () => {
     try {
@@ -356,7 +356,7 @@ const ParentDashboard: React.FC = () => {
             </div>
 
             {/* Upload Badge - Bottom Right Corner */}
-            <button
+            {/* <button
               onClick={triggerFileInput}
               disabled={uploading}
               className="absolute bottom-0 right-0 bg-[#BADA55] hover:bg-lime-500 disabled:opacity-70 disabled:cursor-not-allowed w-[32px] h-[32px] rounded-full flex items-center justify-center shadow-lg border-2 border-white transition-all duration-300 transform group-hover:scale-110 active:scale-95"
@@ -372,7 +372,7 @@ const ParentDashboard: React.FC = () => {
                   photo_camera
                 </span>
               )}
-            </button>
+            </button> */}
 
             {/* Hidden File Input */}
             <input
@@ -503,12 +503,12 @@ const ParentDashboard: React.FC = () => {
     
 
         {/* Score Badges */}
-        <div className="flex items-center pr-7 ml-auto mr-4 mt-11">
-          <div className="flex gap-20">
+        <div className="flex items-center pr-2 ml-auto mr-4 mt-11">
+          <div className="flex gap-24">
             {studentData.subjectsArray.map((subject: any, index: number) => {
               const subjectScore = analyticsData.subjectScores.find((s: any) => s.subject_name === subject.subject_name)?.average_percentage || 0;
               return (
-                <div key={index} className="flex flex-col items-center justify-end text-center min-h-[120px]">
+                <div key={index} className="flex flex-col items-center justify-end text-center min-h-[120px] w-[100px]">
                   <div className="flex items-center justify-center bg-highlighter w-[70px] h-[70px] rounded-full mb-2">
                     <span className="text-xl font-bold text-red-500">
                       {Math.round(subjectScore)}%

@@ -522,6 +522,17 @@ export const SelectRoleModal: React.FC = () => {
                 const filteredSchools = useFilter ? institutes.filter((s) => validSchools.includes(s.id)) : institutes;
                 const filteredClasses = useFilter ? classes.filter((c) => validClasses.includes(c.id)) : classes;
 
+                // Automatically clear selections if they are no longer in the valid options
+                if (selectedBoardId !== "" && !filteredBoards.some(b => b.id === selectedBoardId)) {
+                  setSelectedBoardId("");
+                }
+                if (selectedInstituteId !== "" && !filteredSchools.some(s => s.id === selectedInstituteId)) {
+                  setSelectedInstituteId("");
+                }
+                if (selectedClassId !== "" && !filteredClasses.some(c => c.id === selectedClassId)) {
+                  setSelectedClassId("");
+                }
+
                 return (
                   <div className="space-y-4 pt-2 animate-in fade-in zoom-in-95 duration-300">
                     {/* Select Board */}
@@ -531,9 +542,15 @@ export const SelectRoleModal: React.FC = () => {
                       </label>
                       <SearchableSelect
                         value={selectedBoardId}
-                        onChange={(val) =>
-                          setSelectedBoardId(val === "" ? "" : Number(val))
-                        }
+                        onChange={(val) => {
+                          if (val === "") {
+                            setSelectedBoardId("");
+                            setSelectedInstituteId("");
+                            setSelectedClassId("");
+                          } else {
+                            setSelectedBoardId(Number(val));
+                          }
+                        }}
                         options={filteredBoards.map((b) => ({ value: b.id, label: b.name }))}
                         placeholder="Select Board"
                         className="w-full py-2.5 rounded-xl border border-gray-200 bg-blue-50/30 text-gray-900 outline-none focus:border-blue-400 transition-all text-sm appearance-none cursor-pointer px-4"
@@ -548,9 +565,15 @@ export const SelectRoleModal: React.FC = () => {
                       </label>
                       <SearchableSelect
                         value={selectedInstituteId}
-                        onChange={(val) =>
-                          setSelectedInstituteId(val === "" ? "" : Number(val))
-                        }
+                        onChange={(val) => {
+                          if (val === "") {
+                            setSelectedBoardId("");
+                            setSelectedInstituteId("");
+                            setSelectedClassId("");
+                          } else {
+                            setSelectedInstituteId(Number(val));
+                          }
+                        }}
                         options={filteredSchools.map((i) => ({ value: i.id, label: i.name }))}
                         placeholder="Select Institute"
                         className="w-full py-2.5 rounded-xl border border-gray-200 bg-blue-50/30 text-gray-900 outline-none focus:border-blue-400 transition-all text-sm appearance-none cursor-pointer px-4"
@@ -565,9 +588,15 @@ export const SelectRoleModal: React.FC = () => {
                       </label>
                       <SearchableSelect
                         value={selectedClassId}
-                        onChange={(val) =>
-                          setSelectedClassId(val === "" ? "" : Number(val))
-                        }
+                        onChange={(val) => {
+                          if (val === "") {
+                            setSelectedBoardId("");
+                            setSelectedInstituteId("");
+                            setSelectedClassId("");
+                          } else {
+                            setSelectedClassId(Number(val));
+                          }
+                        }}
                         options={filteredClasses.map((c) => ({ value: c.id, label: c.name }))}
                         placeholder="Select Class"
                         className="w-full py-2.5 rounded-xl border border-gray-200 bg-blue-50/30 text-gray-900 outline-none focus:border-blue-400 transition-all text-sm appearance-none cursor-pointer px-4"
