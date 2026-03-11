@@ -1,4 +1,4 @@
-import { createBrowserRouter, type RouteObject } from "react-router-dom";
+import { createBrowserRouter, type RouteObject, Navigate } from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
 import Login from "../features/auth/modal/Login";
 import { SelectRole } from "../features/auth/modal/SelectRole";
@@ -22,6 +22,15 @@ import TeacherLearningPlanner from "../features/teacher/pages/TeacherLearningPla
 
 import Blogs from "../features/blog/blogpage";
 import BlogDetail from "../features/blog/blogdetail";
+
+// Admin Imports
+import AdminLayout from "../components/layout/AdminLayout";
+import AdminDashboard from "../features/admin/pages/AdminDashboard";
+import ManageBlog from "../features/admin/pages/blog/ManageBlog";
+import AddBlog from "../features/admin/pages/blog/AddBlog";
+import ManageSEO from "../features/admin/pages/seo/ManageSEO";
+import AddSEO from "../features/admin/pages/seo/AddSEO";
+
 const routes: RouteObject[] = [
   // Standalone Routes
   { path: "/login", element: <Login /> },
@@ -76,11 +85,6 @@ const routes: RouteObject[] = [
         element: <PlaceholderPage title="Principal Portal - Coming Soon" />,
       },
       {
-        path: "admin/",
-        element: <PlaceholderPage title="Admin Portal - Coming Soon" />,
-      },
-
-      {
         path: "institution/",
         element: <PlaceholderPage title="Institution Portal - Coming Soon" />,
       },
@@ -100,10 +104,21 @@ const routes: RouteObject[] = [
     path: "principal/",
     element: <PlaceholderPage title="Principal Portal - Coming Soon" />,
   },
+
+  // Independent Admin Routes Structure
   {
-    path: "admin/",
-    element: <PlaceholderPage title="Admin Portal - Coming Soon" />,
+    path: "/admin",
+    element: <AdminLayout />,
+    children: [
+      { path: "", element: <Navigate to="dashboard" replace /> },
+      { path: "dashboard", element: <AdminDashboard /> },
+      { path: "blog/manage", element: <ManageBlog /> },
+      { path: "blog/add", element: <AddBlog /> },
+      { path: "seo/manage", element: <ManageSEO /> },
+      { path: "seo/add", element: <AddSEO /> },
+    ]
   },
+
   { path: "parent/", element: <ParentDashboard /> },
   {
     path: "institution/",
