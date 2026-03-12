@@ -223,7 +223,6 @@ const Invitations: React.FC = () => {
 
   // ── pagination ─────────────────────────────────────────────────────────
 
-
   const userTotalPages = Math.max(
     1,
     Math.ceil(tabFiltered.length / USER_PAGE_SIZE),
@@ -367,8 +366,12 @@ const Invitations: React.FC = () => {
           } else {
             failCount++;
           }
-        } catch {
+        } catch (err: any) {
           failCount++;
+          const message =
+            err?.response?.data?.message || "Failed to send invitation.";
+
+          setSendError(message);
         }
       }
 
@@ -381,7 +384,7 @@ const Invitations: React.FC = () => {
           setSendSuccess("");
         }, 1200);
       } else if (failCount > 0) {
-        setSendError(`Failed to send ${failCount} invite(s).`);
+        // setSendError(`Failed to send ${failCount} invite(s).`);
       }
     } catch (err: any) {
       setSendError(err?.response?.data?.message || "Something went wrong.");
@@ -616,10 +619,11 @@ const Invitations: React.FC = () => {
                     <button
                       key={tab}
                       onClick={() => setUserStatusTab(tab)}
-                      className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${isActive
-                        ? activeColors[tab] + " shadow-sm"
-                        : "text-gray-400 hover:text-gray-700 hover:bg-gray-50"
-                        }`}
+                      className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                        isActive
+                          ? activeColors[tab] + " shadow-sm"
+                          : "text-gray-400 hover:text-gray-700 hover:bg-gray-50"
+                      }`}
                     >
                       <span
                         className="material-symbols-outlined"
@@ -634,10 +638,11 @@ const Invitations: React.FC = () => {
                       </span>
                       {tab}
                       <span
-                        className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold ${isActive
-                          ? "bg-white/30 text-inherit"
-                          : "bg-gray-100 text-gray-400"
-                          }`}
+                        className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold ${
+                          isActive
+                            ? "bg-white/30 text-inherit"
+                            : "bg-gray-100 text-gray-400"
+                        }`}
                       >
                         {tabCounts[tab]}
                       </span>
@@ -702,10 +707,11 @@ const Invitations: React.FC = () => {
                 return (
                   <div
                     key={u.id}
-                    className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all duration-1000 ${borderColor
-                      ? `border-l-4 ${borderColor} border-t-gray-100 ${isExpanded ? "h-full" : "h-20"} border-r-gray-100 border-b-gray-100 hover:shadow-md`
-                      : "border-gray-100 hover:border-gray-200 hover:shadow-sm"
-                      }`}
+                    className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all duration-1000 ${
+                      borderColor
+                        ? `border-l-4 ${borderColor} border-t-gray-100 ${isExpanded ? "h-full" : "h-20"} border-r-gray-100 border-b-gray-100 hover:shadow-md`
+                        : "border-gray-100 hover:border-gray-200 hover:shadow-sm"
+                    }`}
                   >
                     <div
                       className="flex items-center gap-4 p-4 cursor-pointer"
@@ -721,8 +727,12 @@ const Invitations: React.FC = () => {
                           <span className="text-sm font-bold text-gray-800 truncate">
                             {u.user}
                           </span>
-                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full ${st.bg} ${st.text}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
+                          <span
+                            className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full ${st.bg} ${st.text}`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${st.dot}`}
+                            />
                             {u.status}
                           </span>
                         </div>
@@ -741,27 +751,47 @@ const Invitations: React.FC = () => {
                       <div className="border-t border-gray-100 transition-transform duration-300 px-4 pb-5 pt-4 space-y-4">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                           <div className="bg-gray-50 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Plan</p>
-                            <p className="text-xs font-semibold text-gray-700">{u.subscriptionName}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
+                              Plan
+                            </p>
+                            <p className="text-xs font-semibold text-gray-700">
+                              {u.subscriptionName}
+                            </p>
                           </div>
                           <div className="bg-gray-50 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Invited On</p>
-                            <p className="text-xs font-semibold text-gray-700">{u.invitedOn}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">
+                              Invited On
+                            </p>
+                            <p className="text-xs font-semibold text-gray-700">
+                              {u.invitedOn}
+                            </p>
                           </div>
                           <div className="bg-gray-50 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Accepted</p>
-                            <p className="text-xs font-semibold text-gray-700">{u.requestAcceptedOn || "—"}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
+                              Accepted
+                            </p>
+                            <p className="text-xs font-semibold text-gray-700">
+                              {u.requestAcceptedOn || "—"}
+                            </p>
                           </div>
                           <div className="bg-gray-50 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Expires</p>
-                            <p className="text-xs font-semibold text-amber-600">{u.subscriptionExpiryDate || "—"}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
+                              Expires
+                            </p>
+                            <p className="text-xs font-semibold text-amber-600">
+                              {u.subscriptionExpiryDate || "—"}
+                            </p>
                           </div>
                         </div>
 
                         {u.phone && (
                           <div>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Phone</p>
-                            <p className="text-xs font-semibold text-gray-700">{u.phone}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">
+                              Phone
+                            </p>
+                            <p className="text-xs font-semibold text-gray-700">
+                              {u.phone}
+                            </p>
                           </div>
                         )}
 
@@ -790,21 +820,24 @@ const Invitations: React.FC = () => {
             {userTotalPages > 1 && (
               <div className="flex items-center justify-between gap-4 border-t border-gray-100 px-5 py-3 mt-6">
                 <p className="text-xs text-gray-400 font-medium whitespace-nowrap">
-                  {(userPage - 1) * USER_PAGE_SIZE + 1}–{Math.min(userPage * USER_PAGE_SIZE, tabFiltered.length)}
+                  {(userPage - 1) * USER_PAGE_SIZE + 1}–
+                  {Math.min(userPage * USER_PAGE_SIZE, tabFiltered.length)}
                   <span className="text-gray-300"> / </span>
                   {tabFiltered.length}
                 </p>
 
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: userTotalPages }, (_, i) => i + 1).map((pg) => (
-                    <button
-                      key={pg}
-                      onClick={() => setUserPage(pg)}
-                      className={`w-7 h-7 rounded-lg text-xs font-bold transition-all duration-150 ${pg === userPage ? "bg-[#BADA55] text-gray-800 shadow-sm" : "text-gray-400 hover:bg-gray-100"}`}
-                    >
-                      {pg}
-                    </button>
-                  ))}
+                  {Array.from({ length: userTotalPages }, (_, i) => i + 1).map(
+                    (pg) => (
+                      <button
+                        key={pg}
+                        onClick={() => setUserPage(pg)}
+                        className={`w-7 h-7 rounded-lg text-xs font-bold transition-all duration-150 ${pg === userPage ? "bg-[#BADA55] text-gray-800 shadow-sm" : "text-gray-400 hover:bg-gray-100"}`}
+                      >
+                        {pg}
+                      </button>
+                    ),
+                  )}
                 </div>
 
                 <div className="flex items-center gap-1">
@@ -813,16 +846,24 @@ const Invitations: React.FC = () => {
                     disabled={userPage === 1}
                     className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: "16px" }}
+                    >
                       chevron_left
                     </span>
                   </button>
                   <button
-                    onClick={() => setUserPage((p) => Math.min(userTotalPages, p + 1))}
+                    onClick={() =>
+                      setUserPage((p) => Math.min(userTotalPages, p + 1))
+                    }
                     disabled={userPage === userTotalPages}
                     className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: "16px" }}
+                    >
                       chevron_right
                     </span>
                   </button>
@@ -920,7 +961,9 @@ const Invitations: React.FC = () => {
                       if (filteredNames.length > 0) setShowDropdown(true);
                     }}
                     placeholder={
-                      usernamesLoading ? "Loading users…" : "Search username, full name, email or mobile…"
+                      usernamesLoading
+                        ? "Loading users…"
+                        : "Search username, full name, email or mobile…"
                     }
                     disabled={usernamesLoading}
                     className="w-full border border-gray-200 rounded-xl pl-10 pr-10 py-3 text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 focus:border-[#BADA55] transition-all disabled:bg-gray-50 disabled:cursor-wait"
@@ -969,7 +1012,9 @@ const Invitations: React.FC = () => {
                           </span>
                           {(user.email || user.mobile) && (
                             <span className="block text-[11px] text-gray-400 truncate mt-0.5">
-                              {[user.email, user.mobile].filter(Boolean).join(" • ")}
+                              {[user.email, user.mobile]
+                                .filter(Boolean)
+                                .join(" • ")}
                             </span>
                           )}
                         </span>
@@ -1005,7 +1050,9 @@ const Invitations: React.FC = () => {
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-sm flex-shrink-0">
-                          {u.fullName ? u.fullName.charAt(0).toUpperCase() : "U"}
+                          {u.fullName
+                            ? u.fullName.charAt(0).toUpperCase()
+                            : "U"}
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-bold text-gray-800 truncate">
@@ -1025,7 +1072,9 @@ const Invitations: React.FC = () => {
                         onClick={() => handleRemoveUser(u.id)}
                         className="text-gray-400 hover:text-red-500 p-1"
                       >
-                        <span className="material-symbols-outlined text-xl">close</span>
+                        <span className="material-symbols-outlined text-xl">
+                          close
+                        </span>
                       </button>
                     </div>
                   ))}
@@ -1069,7 +1118,10 @@ const Invitations: React.FC = () => {
               <h3 className="text-lg font-bold text-gray-800">Remove User</h3>
             </div>
             <div className="p-6 space-y-4">
-              <p className="text-sm text-gray-600">Are you sure you want to remove this user from the subscription? This action cannot be undone.</p>
+              <p className="text-sm text-gray-600">
+                Are you sure you want to remove this user from the subscription?
+                This action cannot be undone.
+              </p>
               {deleteError && (
                 <div className="text-sm text-red-600">{deleteError}</div>
               )}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import IconChat from "../../../assets/icon/chat2.svg";
 // @ts-ignore
@@ -109,7 +109,7 @@ const Subscription: React.FC = () => {
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [currentTotalAmount, setCurrentTotalAmount] = useState(0);
   const [showSetupModal, setShowSetupModal] = useState(false);
-  const [profileImage, setProfileImage] = useState<string>(" ");
+  const [profileImage, setProfileImage] = useState<string>("");
 
   const [boards, setBoards] = useState<Board[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
@@ -118,15 +118,9 @@ const Subscription: React.FC = () => {
   const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
   const [dependencyMap, setDependencyMap] = useState<DependencyMapItem[]>([]);
 
-  const [selectedBoard, setSelectedBoard] = useState<number | "">(
-    location.state?.preselectedAcademicDetails?.board_id || "",
-  );
-  const [selectedSchool, setSelectedSchool] = useState<number | "">(
-    location.state?.preselectedAcademicDetails?.institute_id || "",
-  );
-  const [selectedClass, setSelectedClass] = useState<number | "">(
-    location.state?.preselectedAcademicDetails?.class_id || "",
-  );
+  const [selectedBoard, setSelectedBoard] = useState<number | "">("");
+  const [selectedSchool, setSelectedSchool] = useState<number | "">("");
+  const [selectedClass, setSelectedClass] = useState<number | "">("");
   // const [selectedSection, setSelectedSection] = useState<number | "">("");
   const [selectedYear, setSelectedYear] = useState<string>("");
 
@@ -137,7 +131,6 @@ const Subscription: React.FC = () => {
   const { user: modalUser } = useModal();
   const userName = modalUser?.name || "User";
 
-
   const profile = JSON.parse(localStorage.getItem("active_profile") || "{}");
   const role = profile?.role_id || null;
   const licenses_used = role === 1 ? 1 : 0;
@@ -145,41 +138,67 @@ const Subscription: React.FC = () => {
   const localUser = JSON.parse(localStorage.getItem("user") || "{}");
   const isStudent = localUser.role === "student";
 
+  useEffect(() => {
+    const preselected = location.state?.preselectedAcademicDetails;
+
+    if (preselected) {
+      setSelectedBoard(preselected.board_id || "");
+      setSelectedClass(preselected.class_id || "");
+      setSelectedSchool(preselected.institute_id || "");
+    }
+  }, [location.state]);
+  useEffect(() => {
+    if (selectedBoard && !boards.some((b) => b.id === selectedBoard)) {
+      setSelectedBoard("");
+    }
+
+    if (selectedSchool && !schools.some((s) => s.id === selectedSchool)) {
+      setSelectedSchool("");
+    }
+
+    if (selectedClass && !classes.some((c) => c.id === selectedClass)) {
+      setSelectedClass("");
+    }
+
+    if (selectedYear && !academicYears.some((y) => y.year === selectedYear)) {
+      setSelectedYear("");
+    }
+  }, [boards, schools, classes, academicYears]);
   // Fetch academic details from backend (JWT based)
   React.useEffect(() => {
-    const fetchAcademicDetails = async () => {
-      try {
-        const response = await ApiServices.getUserAcademicDetails();
+    // const fetchAcademicDetails = async () => {
+    //   try {
+    //     const response = await ApiServices.getUserAcademicDetails();
 
-        if (response.data?.status === "success") {
-          const data = response.data.data[0];
+    //     if (response.data?.status === "success") {
+    //       const data = response.data.data[0];
 
-          setAcademicDetails(data);
+    //       setAcademicDetails(data);
 
-          // PRESELECT DROPDOWNS FOR STUDENT
-          if (isStudent) {
-            setSelectedBoard(data.board_id);
-            setSelectedClass(data.class_id);
-            setSelectedSchool(data.institute_id || "");
-            // Academic year is left empty for student to select: "academic year bad e"
-            setSelectedYear("");
+    //       // PRESELECT DROPDOWNS FOR STUDENT
+    //       if (isStudent) {
+    //         setSelectedBoard(data.board_id);
+    //         setSelectedClass(data.class_id);
+    //         setSelectedSchool(data.institute_id || "");
+    //         // Academic year is left empty for student to select: "academic year bad e"
+    //         setSelectedYear("");
 
-            // Set selected subjects from API
-            if (Array.isArray(data.subjects)) {
-              setSelectedSubjects(data.subjects);
-            }
-          }
-          setAcademicDetails(data);
-        } else {
-          setIsPageLoading(false);
-        }
-      } catch (error) {
-        // console.error("Failed to load academic details", error);
-        setIsPageLoading(false);
-      }
-    };
+    //         // Set selected subjects from API
+    //         if (Array.isArray(data.subjects)) {
+    //           setSelectedSubjects(data.subjects);
+    //         }
+    //       }
+    //       setAcademicDetails(data);
+    //     } else {
+    //       setIsPageLoading(false);
+    //     }
+    //   } catch (error) {
+    //     // console.error("Failed to load academic details", error);
+    //     setIsPageLoading(false);
+    //   }
+    // };
 
-    fetchAcademicDetails();
+    // fetchAcademicDetails();
     fetchProfileImage();
     fetchAcademicMasterData();
     transformData(defaultPlans);
@@ -256,6 +275,7 @@ const Subscription: React.FC = () => {
   };
 
   React.useEffect(() => {
+    if (!selectedBoard || !selectedClass || !selectedYear) return;
     fetchAvailableSubjects();
   }, [selectedBoard, selectedClass, selectedSchool, selectedYear]);
 
@@ -613,7 +633,8 @@ const Subscription: React.FC = () => {
   };
 
   const calculatePlanDisplayPrice = (plan: ApiPlan, licenses: number) => {
-    if (!plan.subject_prices || selectedSubjects.length === 0) return 0;
+    // if (!plan.subject_prices || selectedSubjects.length === 0) return 0;
+    if (selectedSubjects.length === 0 || !plan.subject_prices?.length) return 0;
     const subjectTotal = plan.subject_prices.reduce(
       (sum, sp) => sum + (sp.price || 0),
       0,
@@ -639,7 +660,7 @@ const Subscription: React.FC = () => {
     const afterDiscount = subjectTotal - (subjectTotal * discountPercent) / 100;
     const total = afterDiscount * sheetCount;
     return total;
-  }, [selectedPlan, sheetCount]);
+  }, [selectedPlan, sheetCount, selectedSubjects]);
 
   const handleSave = async () => {
     if (!selectedPlan) {
@@ -706,7 +727,7 @@ const Subscription: React.FC = () => {
   };
 
   const getInitial = () => {
-    return profile?.username.charAt(0).toUpperCase();
+    return profile?.username?.charAt(0).toUpperCase();
   };
 
   const handleSetupConfirm = (data: {
@@ -855,18 +876,30 @@ const Subscription: React.FC = () => {
               : academicYears;
 
             // Automatically clear selections if they are no longer in the valid options
-            if (selectedBoard !== "" && !filteredBoards.some(b => b.id === selectedBoard)) {
-              setSelectedBoard("");
-            }
-            if (selectedSchool !== "" && !filteredSchools.some(s => s.id === selectedSchool)) {
-              setSelectedSchool("");
-            }
-            if (selectedClass !== "" && !filteredClasses.some(c => c.id === selectedClass)) {
-              setSelectedClass("");
-            }
-            if (selectedYear !== "" && !filteredYears.some(y => y.year === selectedYear)) {
-              setSelectedYear("");
-            }
+            // if (
+            //   selectedBoard !== "" &&
+            //   !filteredBoards.some((b) => b.id === selectedBoard)
+            // ) {
+            //   setSelectedBoard("");
+            // }
+            // if (
+            //   selectedSchool !== "" &&
+            //   !filteredSchools.some((s) => s.id === selectedSchool)
+            // ) {
+            //   setSelectedSchool("");
+            // }
+            // if (
+            //   selectedClass !== "" &&
+            //   !filteredClasses.some((c) => c.id === selectedClass)
+            // ) {
+            //   setSelectedClass("");
+            // }
+            // if (
+            //   selectedYear !== "" &&
+            //   !filteredYears.some((y) => y.year === selectedYear)
+            // ) {
+            //   setSelectedYear("");
+            // }
 
             return (
               <div className="flex flex-wrap items-end gap-2">
@@ -891,7 +924,10 @@ const Subscription: React.FC = () => {
                           setSelectedBoard(Number(val));
                         }
                       }}
-                      options={filteredBoards.map((b) => ({ value: b.id, label: b.name }))}
+                      options={filteredBoards.map((b) => ({
+                        value: b.id,
+                        label: b.name,
+                      }))}
                       placeholder="Board"
                       className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all"
                       dropdownClassName="min-w-[200px]"
@@ -987,7 +1023,10 @@ const Subscription: React.FC = () => {
                           setSelectedClass(Number(val));
                         }
                       }}
-                      options={filteredClasses.map((c) => ({ value: c.id, label: c.name }))}
+                      options={filteredClasses.map((c) => ({
+                        value: c.id,
+                        label: c.name,
+                      }))}
                       placeholder="Class"
                       className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all"
                       dropdownClassName="min-w-[200px]"
@@ -1053,7 +1092,10 @@ const Subscription: React.FC = () => {
                           setSelectedYear(String(val));
                         }
                       }}
-                      options={filteredYears.map((y) => ({ value: y.year, label: y.year }))}
+                      options={filteredYears.map((y) => ({
+                        value: y.year,
+                        label: y.year,
+                      }))}
                       placeholder="Year"
                       className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all"
                       dropdownClassName="min-w-[200px]"

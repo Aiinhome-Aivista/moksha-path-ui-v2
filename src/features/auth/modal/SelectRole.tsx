@@ -247,8 +247,8 @@ export const SelectRoleModal: React.FC = () => {
         }
 
         // Update tokens with the new profile's credentials
-        if (data?.token) {
-          localStorage.setItem("auth_token", data.token);
+        if (data?.auth_token) {
+          localStorage.setItem("auth_token", data.auth_token);
         }
         if (data?.refresh_token) {
           localStorage.setItem("refresh_token", data.refresh_token);
