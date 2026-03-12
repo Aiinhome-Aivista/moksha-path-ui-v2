@@ -154,7 +154,7 @@ const StudentProfile: React.FC = () => {
                     courses: values.courses,
                 };
                 // TODO: await ApiServices.updateStudentProfile(payload);
-                console.log('[Profile] API Payload ready:', payload);
+                // console.log('[Profile] API Payload ready:', payload);
                 setIsEditing(false);
             } catch {
                 // silently fail

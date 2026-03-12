@@ -159,7 +159,7 @@ const StudentDashboard: React.FC = () => {
             }));
           }
         } catch (error) {
-          console.error("Failed to fetch profile stats", error);
+          // console.error("Failed to fetch profile stats", error);
         } finally {
           setIsProfileLoading(false);
         }
@@ -173,7 +173,7 @@ const StudentDashboard: React.FC = () => {
           const subjectNames = subjects.map((s: Subject) => s.subject_name).join(", ");
           setStudentData(prev => ({ ...prev, subjects: subjectNames, subjectsArray: subjects }));
         } catch (error) {
-          console.error("Failed to fetch subjects", error);
+          // console.error("Failed to fetch subjects", error);
         } finally {
           setIsSubjectsLoading(false);
         }
@@ -222,7 +222,7 @@ const StudentDashboard: React.FC = () => {
             subjectScores: scores,
           }));
         } catch (error) {
-          console.error("Failed to fetch analytics", error);
+          // console.error("Failed to fetch analytics", error);
         } finally {
           setIsAnalyticsLoading(false);
         }
@@ -243,7 +243,7 @@ const StudentDashboard: React.FC = () => {
             improvements: derivedImprovements.length > 0 ? derivedImprovements : []
           }));
         } catch (error) {
-          console.error("Failed to fetch strengths", error);
+          // console.error("Failed to fetch strengths", error);
         } finally {
           setIsStrengthLoading(false);
         }
@@ -258,7 +258,7 @@ const StudentDashboard: React.FC = () => {
             pendingTasks: pendingRes.data?.data || [],
           }));
         } catch (error) {
-          console.error("Failed to fetch pending tasks", error);
+          // console.error("Failed to fetch pending tasks", error);
         } finally {
           setIsPendingTasksLoading(false);
         }
