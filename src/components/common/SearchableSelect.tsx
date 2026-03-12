@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ChevronDown, Search, RotateCcw } from "lucide-react";
+import { ChevronDown, RotateCcw } from "lucide-react";
 
 export interface Option {
     value: string | number;

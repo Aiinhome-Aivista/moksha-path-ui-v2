@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices"; // Assuming ApiServices path
 import { useToast } from "../../../app/providers/ToastProvider";
-import { useModal } from "../../auth/context/AuthContext";
+// import { useModal } from "../../auth/context/AuthContext";
 
 const PaymentGateway: React.FC = () => {
   const navigate = useNavigate();

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, type ReactNode } from 'react';
 import ApiServices from '../../../services/ApiServices';
 
 export interface PageAccessItem {
@@ -8,14 +8,14 @@ export interface PageAccessItem {
   route: string;
 }
 
-interface UserData {
-  exp: number;
-  name: string;
-  roles: { role_id: number; role_name: string }[];
-  session_id: string;
-  user_id: string;
-  username: string;
-}
+// interface UserData {
+//   exp: number;
+//   name: string;
+//   roles: { role_id: number; role_name: string }[];
+//   session_id: string;
+//   user_id: string;
+//   username: string;
+// }
 interface ModalContextType {
   isLoginOpen: boolean;
   openLogin: () => void;
@@ -55,7 +55,7 @@ interface ModalContextType {
   setProfilesList: (profiles: any[]) => void;
 
   // NEW AUTH STATES
-  user: UserData | null;
+  // user: UserData | null;
   // decodeUserToken: () => Promise<void>;
 
   // Menu / Page Access
@@ -85,7 +85,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [initialAuthIdentifier, setInitialAuthIdentifier] = useState("");
   const [isNewUser, setIsNewUser] = useState(false);
 
-  const [user, setUser] = useState<UserData | null>(null);
+  // const [user, setUser] = useState<UserData | null>(null);
 
   // Menu / Page Access state
   const [menuItems, setMenuItems] = useState<PageAccessItem[]>([]);
@@ -265,7 +265,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setProfilesList,
 
         // new auth
-        user,
+        // user,
         // decodeUserToken,
 
         // menu / page access

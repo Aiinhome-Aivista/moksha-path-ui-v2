@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useFormik } from 'formik';
 import { useAuth } from '../../../app/providers/AuthProvider';
-import { useModal } from '../../../features/auth/context/AuthContext';
+// import { useModal } from '../../../features/auth/context/AuthContext';
 import ApiServices from '../../../services/ApiServices';
 import {
     Mail, BookOpen, Phone,
-    TrendingUp, User, Edit3, CheckCircle2,
-    GraduationCap, Users, Receipt, Lock, MapPin,
+    TrendingUp,  Edit3, CheckCircle2,
+    GraduationCap, Users, Lock, MapPin,
     PlusCircle, X
 } from 'lucide-react';
 
@@ -135,24 +135,25 @@ const StudentProfile: React.FC = () => {
 
     const formik = useFormik<ProfileFormValues>({
         initialValues,
-        onSubmit: async (values) => {
+        onSubmit: async () => {
+            // values
             try {
                 setIsSaving(true);
                 // API payload — ready to send
-                const payload = {
-                    address: values.address,
-                    academic: values.academic,
-                    board: values.board,
-                    dateOfBirth: values.dateOfBirth,
-                    grade: values.grade,
-                    section: values.section,
-                    enrollmentDate: values.enrollmentDate,
-                    guardianName: values.guardianName,
-                    guardianRelation: values.guardianRelation,
-                    guardianEmail: values.guardianEmail,
-                    guardianPhone: values.guardianPhone,
-                    courses: values.courses,
-                };
+                // const payload = {
+                //     address: values.address,
+                //     academic: values.academic,
+                //     board: values.board,
+                //     dateOfBirth: values.dateOfBirth,
+                //     grade: values.grade,
+                //     section: values.section,
+                //     enrollmentDate: values.enrollmentDate,
+                //     guardianName: values.guardianName,
+                //     guardianRelation: values.guardianRelation,
+                //     guardianEmail: values.guardianEmail,
+                //     guardianPhone: values.guardianPhone,
+                //     courses: values.courses,
+                // };
                 // TODO: await ApiServices.updateStudentProfile(payload);
                 // console.log('[Profile] API Payload ready:', payload);
                 setIsEditing(false);
