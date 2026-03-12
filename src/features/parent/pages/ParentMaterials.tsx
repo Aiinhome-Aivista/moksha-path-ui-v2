@@ -532,6 +532,12 @@ const ParentMaterials = () => {
       .filter((name) => name !== undefined) as string[];
   };
 
+  const getClassId = () => {
+    if (locationState?.stats?.class_id) return locationState.stats.class_id;
+    const boardItem = academicHierarchy.find((item: any) => item.board_name === board && item.class_name === className);
+    return boardItem?.class_id;
+  };
+
   return (
     <div className="min-h-screen">
       <div className="flex gap-6">
@@ -578,12 +584,8 @@ const ParentMaterials = () => {
               chapterNames={getSelectedChapterNames()}
               allChapters={chapters}
               allTopics={coreTopics}
-              topicIds={selectedTopics
-                .map((i) => coreTopics[i]?.topic_id)
-                .filter((id): id is number => id !== undefined)}
-              topicNames={selectedTopics
-                .map((i) => coreTopics[i]?.name)
-                .filter((name): name is string => name !== undefined)}
+              classIds={getClassId() ? [getClassId()] : []}
+              stats={locationState?.stats}
             />
           )}
           {activeResourceType === "Notes" && (
