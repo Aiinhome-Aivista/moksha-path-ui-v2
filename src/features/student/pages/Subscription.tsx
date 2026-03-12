@@ -548,7 +548,7 @@ const Subscription: React.FC = () => {
         academic_year: selectedYear,
         subject_ids: selectedSubjects.map((s) => s.subject_id),
         ui_total_amount: uiTotalAmount,
-        total_licenses: sheetCount,
+        total_licences: sheetCount,
         coupon_code: couponCode,
       };
 
