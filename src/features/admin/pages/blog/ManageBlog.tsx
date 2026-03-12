@@ -43,7 +43,7 @@ export const ManageBlog: React.FC = () => {
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-secondary-900 dark:text-white flex items-center gap-3">
+                    <h1 className="text-2xl font-bold text-primary dark:text-white flex items-center gap-3">
                         <FileText className="text-[#b0cb1f]" />
                         Manage Blogs
                     </h1>

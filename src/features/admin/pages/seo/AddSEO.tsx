@@ -23,6 +23,7 @@ export const AddSEO: React.FC = () => {
     const [metaTitle, setMetaTitle] = useState('');
     const [metaDescription, setMetaDescription] = useState('');
     const [keywords, setKeywords] = useState('');
+    const [canonicalUrl, setCanonicalUrl] = useState('');
 
     useEffect(() => {
         if (isEditMode && editId) {
@@ -32,6 +33,7 @@ export const AddSEO: React.FC = () => {
                 setMetaTitle(seoToEdit.title);
                 setMetaDescription(seoToEdit.description);
                 setKeywords(seoToEdit.keywords);
+                setCanonicalUrl((seoToEdit as any).canonicalUrl || '');
             }
         } else {
             // Clear form for "Add New" mode
@@ -39,6 +41,7 @@ export const AddSEO: React.FC = () => {
             setMetaTitle('');
             setMetaDescription('');
             setKeywords('');
+            setCanonicalUrl('');
         }
     }, [editId, isEditMode]);
 
@@ -49,7 +52,7 @@ export const AddSEO: React.FC = () => {
                     <ArrowLeft size={20} />
                 </NavLink>
                 <div>
-                    <h1 className="text-2xl font-bold text-secondary-900 dark:text-white">
+                    <h1 className="text-2xl font-bold text-primary dark:text-white">
                         {isEditMode ? 'Edit SEO Config' : 'Add New SEO Config'}
                     </h1>
                 </div>
@@ -70,7 +73,7 @@ export const AddSEO: React.FC = () => {
                     </div> */}
 
                     <div className="space-y-2">
-                        <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">SOE Title</label>
+                        <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">SEO Title</label>
                         <input
                             type="text"
                             className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -81,7 +84,7 @@ export const AddSEO: React.FC = () => {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">SOE Description</label>
+                        <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">SEO Description</label>
                         <textarea
                             rows={4}
                             className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -91,15 +94,28 @@ export const AddSEO: React.FC = () => {
                         ></textarea>
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Keywords</label>
-                        <input
-                            type="text"
-                            className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            placeholder="education, platform, learning, courses (comma separated)"
-                            value={keywords}
-                            onChange={(e) => setKeywords(e.target.value)}
-                        />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Keywords</label>
+                            <input
+                                type="text"
+                                className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                placeholder="education, platform, learning, courses"
+                                value={keywords}
+                                onChange={(e) => setKeywords(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Canonical URL</label>
+                            <input
+                                type="text"
+                                className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                placeholder="https://example.com/page"
+                                value={canonicalUrl}
+                                onChange={(e) => setCanonicalUrl(e.target.value)}
+                            />
+                        </div>
                     </div>
 
                     <div className="flex justify-end pt-4 border-t border-secondary-200 dark:border-secondary-700">
