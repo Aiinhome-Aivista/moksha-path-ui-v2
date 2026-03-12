@@ -6,7 +6,7 @@ export const AdminDashboard: React.FC = () => {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-secondary-900 dark:text-white">
+                    <h1 className="text-2xl font-bold text-primary dark:text-white">
                         Admin Dashboard
                     </h1>
                     <p className="text-secondary-500 dark:text-secondary-400 mt-1">
