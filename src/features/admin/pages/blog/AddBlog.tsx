@@ -3,6 +3,7 @@ import { ArrowLeft, Save, Image as ImageIcon, X } from 'lucide-react';
 import { NavLink, useSearchParams } from 'react-router-dom';
 // Ensure this path is correct for your project
 import { blogs } from '../../../blog/blog';
+import TiptapEditor from '../blog/TiTapEditor';
 
 export const AddBlog: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -24,7 +25,7 @@ export const AddBlog: React.FC = () => {
             if (blogToEdit) {
                 setTitle(blogToEdit.title);
                 setCategory(blogToEdit.category);
-                setAuthor(blogToEdit.author || ''); 
+                setAuthor(blogToEdit.author || '');
                 setContent(blogToEdit.content.join('\n\n'));
                 setImageUrl(blogToEdit.image);
                 setImageFile(null);
@@ -43,7 +44,7 @@ export const AddBlog: React.FC = () => {
 
     return (
         <div className="space-y-6 max-w-8xl mx-auto">
-            
+
             {/* Header / Top Bar */}
             <div className="flex items-center gap-4">
                 <NavLink to="/admin/blog/manage" className="p-2 hover:bg-secondary-100 dark:hover:bg-secondary-800 rounded-full transition-colors text-secondary-500">
@@ -59,7 +60,7 @@ export const AddBlog: React.FC = () => {
             {/* Form Container */}
             <div className="bg-white dark:bg-secondary-800 rounded-2xl p-6 shadow-sm border border-secondary-200 dark:border-secondary-700">
                 <form className="space-y-6">
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Post Title */}
                         <div className="space-y-2">
@@ -86,23 +87,20 @@ export const AddBlog: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Content (Rich Text Editor Mockup) */}
+                    {/* Content (Rich Text Editor) */}
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Content</label>
-                        <textarea
-                            rows={12}
-                            className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-y"
-                            placeholder="Write your article content here..."
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                        ></textarea>
+                        <TiptapEditor
+                            content={content}
+                            onChange={(html) => setContent(html)}
+                        />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Category */}
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Category</label>
-                            <select 
+                            <select
                                 className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
@@ -148,14 +146,14 @@ export const AddBlog: React.FC = () => {
 
                     {/* Submit Button */}
                     <div className="flex justify-end pt-4 border-t border-secondary-200 dark:border-secondary-700">
-                        <button 
-                            type="button" 
+                        <button
+                            type="button"
                             className="flex items-center gap-2 bg-[#b0cb1f] text-gray-900 px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-[#c5de3a] transition-colors"
                         >
                             <Save size={18} /> {isEditMode ? 'Update Blog' : 'Publish Blog'}
                         </button>
                     </div>
-                    
+
                 </form>
             </div>
         </div>
