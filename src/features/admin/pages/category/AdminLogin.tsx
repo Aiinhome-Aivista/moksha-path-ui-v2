@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../app/providers/AuthProvider';
 import { useToast } from '../../../../app/providers/ToastProvider';
-import { Key, User, Shield } from 'lucide-react';
+import { Key, User, Shield, RefreshCw } from 'lucide-react';
 import Header from '../../../../components/layout/Header';
 import Footer from '../../../../components/layout/Footer';
 import LandingPage from '../../../landingpage/pages/LandingPage';
@@ -11,10 +11,25 @@ const AdminLogin: React.FC = () => {
     const [username, setUsername] = useState('moksha-admin');
     const [password, setPassword] = useState('Moksha@2024');
     const [captcha, setCaptcha] = useState('');
+    const [captchaCode, setCaptchaCode] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const { login } = useAuth();
     const { showToast } = useToast();
+
+    const generateAndSetCaptcha = () => {
+        const code = Math.floor(1000 + Math.random() * 9000).toString();
+        setCaptchaCode(code);
+    };
+
+    useEffect(() => {
+        generateAndSetCaptcha();
+    }, []);
+
+    const handleResetCaptcha = () => {
+        generateAndSetCaptcha();
+        setCaptcha(''); // Clear user input
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -24,7 +39,7 @@ const AdminLogin: React.FC = () => {
         // In a real app, you would call an API here.
         setTimeout(() => {
             // Replace with actual captcha validation
-            if (username === 'moksha-admin' && password === 'Moksha@2024' && captcha === '1234') {
+            if (username === 'moksha-admin' && password === 'Moksha@2024' && captcha === captchaCode) {
                 showToast('Login successful!', 'success');
                 
                 // The login function from useAuth should handle setting the user state,
@@ -36,7 +51,7 @@ const AdminLogin: React.FC = () => {
             } else {
                 showToast('Invalid credentials or captcha.', 'error');
                 setIsLoading(false);
-                // In a real app, you would also regenerate the captcha here.
+                handleResetCaptcha();
             }
         }, 1000);
     };
@@ -127,7 +142,7 @@ const AdminLogin: React.FC = () => {
                         {/* Captcha */}
                         <div>
                              <label htmlFor="captcha"  className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-2">
-                                Security Code
+                                Captcha
                             </label>
                             <div className="flex items-center gap-4">
                                 <div className="relative flex-grow">
@@ -144,9 +159,13 @@ const AdminLogin: React.FC = () => {
                                     />
                                 </div>
                                 <div className="bg-gray-200 dark:bg-secondary-700 rounded-lg p-2 h-[50px] flex items-center justify-center select-none">
-                                    {/* In a real app, this would be a generated image */}
-                                    <span className="text-2xl font-bold tracking-[.2em] text-gray-700 dark:text-gray-300" style={{ fontFamily: 'monospace' }}>1234</span>
+                                    <span className="text-2xl font-bold tracking-[.2em] text-gray-700 dark:text-gray-300" style={{ fontFamily: 'monospace' }}>
+                                        {captchaCode}
+                                    </span>
                                 </div>
+                                <button type="button" onClick={handleResetCaptcha} className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-secondary-800 rounded-full transition-colors" title="Reset Captcha">
+                                    <RefreshCw size={20} />
+                                </button>
                             </div>
                         </div>
 
@@ -162,7 +181,7 @@ const AdminLogin: React.FC = () => {
                                         <span>Signing In...</span>
                                     </>
                                 ) : (
-                                    'Sign In Securely'
+                                    'Sign In'
                                 )}
                             </button>
                         </div>

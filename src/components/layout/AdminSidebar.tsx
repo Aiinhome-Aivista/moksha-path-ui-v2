@@ -9,6 +9,7 @@ import {
     FileText,
     Search,
     ChevronRight,
+    BookOpen
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -26,7 +27,7 @@ const adminMenuItems = [
     {
         page_id: "admin-manage-blog",
         page_name: "Blog",
-        icon: <FileText size={20} strokeWidth={1.5} />,
+        icon: <BookOpen size={20} strokeWidth={1.5} />,
         route: "/admin/blog/manage",
     },
         {
