@@ -46,6 +46,11 @@ export const BlogDetail = () => {
   const otherCategoryBlogs = otherBlogs.filter((b) => b.category !== blog.category);
   const relatedArticles = [...relatedInCategory, ...otherCategoryBlogs].slice(0, 5).map(formatForSidebar);
 
+  // --- Previous / Next Post Logic ---
+  const currentIndex = blogs.findIndex((b) => b.slug === blog.slug);
+  const prevBlog = currentIndex > 0 ? blogs[currentIndex - 1] : null;
+  const nextBlog = currentIndex < blogs.length - 1 ? blogs[currentIndex + 1] : null;
+
   return (
     <div className="bg-white font-sans min-h-screen pb-12 w-full">
       <div className="max-w-[1400px] mx-auto px-4 py-8 md:px-8">
@@ -104,6 +109,30 @@ export const BlogDetail = () => {
                     {paragraph}
                   </p>
                 ))}
+              </div>
+
+              {/* Added Previous / Next Navigation Section */}
+              <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-start gap-8">
+                <div className="flex-1 w-full text-left">
+                  {prevBlog && (
+                    <Link to={`/blogs/${prevBlog.slug}`} className="block group">
+                      <span className="block text-xs text-gray-400 mb-2">Previous Post</span>
+                      <span className="block text-[14px] font-medium text-[#b0cb1f] group-hover:opacity-80 transition-opacity">
+                        {prevBlog.title}
+                      </span>
+                    </Link>
+                  )}
+                </div>
+                <div className="flex-1 w-full text-left sm:text-right">
+                  {nextBlog && (
+                    <Link to={`/blogs/${nextBlog.slug}`} className="block group">
+                      <span className="block text-xs text-gray-400 mb-2">Next Post</span>
+                      <span className="block text-[14px] font-medium text-[#b0cb1f] group-hover:opacity-80 transition-opacity">
+                        {nextBlog.title}
+                      </span>
+                    </Link>
+                  )}
+                </div>
               </div>
 
             </div>
