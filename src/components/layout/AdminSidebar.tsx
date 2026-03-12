@@ -1,5 +1,6 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../../app/providers/AuthProvider";
 import {
     X,
     LogOut,
@@ -43,12 +44,14 @@ const adminMenuItems = [
 ];
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, toggleSidebar }) => {
+    const { logout } = useAuth();
+    const navigate = useNavigate();
 
     const handleLogout = () => {
-        // Here you would typically clear the auth token and navigate to login
-        // Reusing standard sign out for now
-        localStorage.removeItem("auth_token");
-        window.location.href = "/";
+        // Call the comprehensive logout function from AuthProvider
+        logout();
+        // Redirect to the public landing page after logout.
+        navigate("/", { replace: true });
     };
 
     return (
@@ -85,9 +88,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, toggleSideba
                         >
                             <X size={24} strokeWidth={2.5} />
                         </button>
-                        <div className="flex flex-col items-start justify-center">
-                            <span className="text-secondary-900 dark:text-white font-bold text-lg tracking-wide leading-tight">Admin CP</span>
-                            <span className="text-primary-500 text-[10px] font-bold uppercase tracking-widest text-[#b0cb1f]">Workspace</span>
+                        <div className="flex items-center gap-3">
+                            <img src="/Logo.svg" alt="App Logo" className="h-25 w-[80%]" />
                         </div>
                     </>
                 ) : (

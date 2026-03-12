@@ -141,19 +141,19 @@ export const ManageSEO: React.FC = () => {
                             {currentItems.length > 0 ? (
                                 currentItems.map((seo) => (
                                     <tr key={seo.id} className="divide-x divide-gray-100 dark:divide-secondary-700 hover:bg-gray-50 dark:hover:bg-secondary-700/50 transition-colors">
-                                        <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-300 align-middle">
+                                        <td className="px-6 py-4 text-center text-primary dark:text-gray-300 align-middle">
                                             {seo.id}
                                         </td>
-                                        <td className="px-6 py-4 text-center font-medium text-gray-700 dark:text-gray-200 min-w-[200px] align-middle">
+                                        <td className="px-6 py-4 text-center font-medium text-primary dark:text-gray-200 min-w-[200px] align-middle">
                                             {seo.title}
                                         </td>
-                                        <td className="px-6 py-4 text-center text-gray-500 min-w-[200px] align-middle">
+                                        <td className="px-6 py-4 text-center text-primary dark:text-gray-400 min-w-[200px] align-middle">
                                             {seo.description}
                                         </td>
-                                        <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-300 min-w-[300px] leading-relaxed align-middle">
+                                        <td className="px-6 py-4 text-center text-primary dark:text-gray-300 min-w-[300px] leading-relaxed align-middle">
                                             {seo.keywords}
                                         </td>
-                                        <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-300 whitespace-nowrap align-middle">
+                                        <td className="px-6 py-4 text-center text-primary dark:text-gray-300 whitespace-nowrap align-middle">
                                             {seo.created}
                                         </td>
                                         <td className="px-6 py-4 text-center align-middle">
