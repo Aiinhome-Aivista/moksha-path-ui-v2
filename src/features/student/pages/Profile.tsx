@@ -25,10 +25,11 @@ interface ProfileFormValues {
     // Contact (email & phone always read-only)
     address: string;
     // Academic
+    academic: string;
+    board: string;
     dateOfBirth: string;
     grade: string;
     section: string;
-    gpa: string;
     enrollmentDate: string;
     // Guardian
     guardianName: string;
@@ -113,11 +114,12 @@ const StudentProfile: React.FC = () => {
     // ── Formik ─────────────────────────────────
     const initialValues: ProfileFormValues = {
         address: '123 Learning Street, Education City, EC 12345',
+        academic: '2026-2027',
+        board: 'CBSE',
         dateOfBirth: 'January 15, 2005',
-        grade: '11th Grade',
+        grade: '11th',
         section: 'A',
-        gpa: '3.8',
-        enrollmentDate: 'August 1, 2023',
+        enrollmentDate: 'March 1, 2026',
         guardianName: 'Robert Doe',
         guardianRelation: 'Father',
         guardianEmail: 'robert.doe@example.com',
@@ -139,10 +141,11 @@ const StudentProfile: React.FC = () => {
                 // API payload — ready to send
                 const payload = {
                     address: values.address,
+                    academic: values.academic,
+                    board: values.board,
                     dateOfBirth: values.dateOfBirth,
                     grade: values.grade,
                     section: values.section,
-                    gpa: values.gpa,
                     enrollmentDate: values.enrollmentDate,
                     guardianName: values.guardianName,
                     guardianRelation: values.guardianRelation,
@@ -380,9 +383,10 @@ const StudentProfile: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <SectionCard icon={<GraduationCap size={14} className="text-primary" />} title="Academic Information">
                         <div className="p-4 grid grid-cols-3 gap-4">
-                            <FormField label="Grade" name="grade" value={formik.values.grade} onChange={formik.handleChange} isEditing={isEditing} />
+                            <FormField label="Board" name="board" value={formik.values.board} onChange={formik.handleChange} isEditing={isEditing} />
+                            <FormField label="School" name="grade" value={formik.values.grade} onChange={formik.handleChange} isEditing={isEditing} />
                             <FormField label="Section" name="section" value={formik.values.section} onChange={formik.handleChange} isEditing={isEditing} />
-                            <FormField label="GPA" name="gpa" value={formik.values.gpa} onChange={formik.handleChange} isEditing={isEditing} highlight />
+                                                        <FormField label="Academic Year" name="academic" value={formik.values.academic} onChange={formik.handleChange} isEditing={isEditing} />
                             <div className="col-span-2">
                                 <FormField label="Enrollment" name="enrollmentDate" value={formik.values.enrollmentDate} onChange={formik.handleChange} isEditing={isEditing} />
                             </div>
