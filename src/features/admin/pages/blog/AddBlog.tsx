@@ -3,7 +3,7 @@ import { ArrowLeft, Save, Image as ImageIcon, X } from 'lucide-react';
 import { NavLink, useSearchParams } from 'react-router-dom';
 // Ensure this path is correct for your project
 import { blogs } from '../../../blog/blog';
-import TiptapEditor from '../blog/TiTapEditor';
+import TiptapEditor from '../blog/TitapEditor';
 
 export const AddBlog: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -51,7 +51,7 @@ export const AddBlog: React.FC = () => {
                     <ArrowLeft size={20} />
                 </NavLink>
                 <div>
-                    <h1 className="text-2xl font-bold text-secondary-900 dark:text-white">
+                    <h1 className="text-2xl font-bold text-primary dark:text-white">
                         {isEditMode ? 'Edit Blog Article' : 'Add New Blog Article'}
                     </h1>
                 </div>
