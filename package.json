@@ -8,9 +8,13 @@
     "build": "tsc -b && vite build && node -e \"require('fs').copyFileSync('public/web.config', 'dist/web.config')\"",
     "lint": "eslint .",
     "preview": "vite preview"
-    
   },
   "dependencies": {
+    "@tiptap/extension-image": "^3.20.1",
+    "@tiptap/extension-text-align": "^3.20.1",
+    "@tiptap/extension-underline": "^3.20.1",
+    "@tiptap/react": "^3.20.1",
+    "@tiptap/starter-kit": "^3.20.1",
     "axios": "^1.13.4",
     "express": "^5.2.1",
     "lucide-react": "^0.563.0",
