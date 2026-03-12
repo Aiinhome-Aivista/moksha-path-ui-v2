@@ -98,16 +98,16 @@ export const ManageBlog: React.FC = () => {
                             {currentBlogs.length > 0 ? (
                                 currentBlogs.map((blog) => (
                                     <tr key={blog.id} className="divide-x divide-gray-100 dark:divide-secondary-700 hover:bg-gray-50 dark:hover:bg-secondary-700/50 transition-colors">
-                                        <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-300">
+                                        <td className="px-6 py-4 text-center text-primary dark:text-gray-300">
                                             {blog.id}
                                         </td>
-                                        <td className="px-6 py-4 text-center font-medium text-gray-700 dark:text-gray-200 max-w-xs truncate">
+                                        <td className="px-6 py-4 text-center font-medium text-primary dark:text-gray-200 max-w-xs truncate">
                                             {blog.title}
                                         </td>
-                                        <td className="px-6 py-4 text-center text-gray-500 text-xs max-w-xs truncate">
+                                        <td className="px-6 py-4 text-center text-primary dark:text-gray-400 text-xs max-w-xs truncate">
                                             {blog.excerpt}
                                         </td>
-                                        <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-300">
+                                        <td className="px-6 py-4 text-center text-primary dark:text-gray-300">
                                             {blog.category}
                                         </td>
                                         <td className="px-6 py-4 text-center">
@@ -126,7 +126,7 @@ export const ManageBlog: React.FC = () => {
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-300">
+                                        <td className="px-6 py-4 text-center text-primary dark:text-gray-300">
                                             {blog.publishDate}
                                         </td>
                                         <td className="px-6 py-4 text-center">

@@ -81,7 +81,7 @@ export const BlogPage = () => {
                 {/* Link pinned to bottom */}
                 <Link 
                  to={`/blogs/${post.slug}`}
-                  className="w-full py-2.5 bg-[#ffed00] hover:bg-yellow-400 text-black font-medium text-sm rounded transition-colors mt-auto text-center block shadow-sm"
+                  className="w-full py-2.5 bg-[#FCEA0A] hover:bg-yellow-400 text-black font-medium text-sm rounded transition-colors mt-auto text-center block shadow-sm"
                 >
                   Read More
                 </Link>
@@ -117,7 +117,7 @@ export const BlogPage = () => {
                 onClick={() => goToPage(number)}
                 className={`px-3 md:px-4 py-2 font-medium rounded shadow-sm transition-all duration-200 ${
                   currentPage === number 
-                    ? "bg-[#ffed00] text-black" 
+                    ? "bg-[#FCEA0A] text-black" 
                     : "bg-white border border-gray-200 text-gray-600 hover:bg-[#fef08a]" 
                 }`}
               >
@@ -128,7 +128,7 @@ export const BlogPage = () => {
             <button 
               onClick={goToNextPage}
               disabled={currentPage === totalPages}
-              className="px-3 md:px-4 py-2 bg-[#ffed00] text-black font-medium rounded shadow-sm hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-3 md:px-4 py-2 bg-[#FCEA0A] text-black font-medium rounded shadow-sm hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Next
             </button>
@@ -136,7 +136,7 @@ export const BlogPage = () => {
             <button 
               onClick={goToLastPage}
               disabled={currentPage === totalPages}
-              className="px-3 md:px-4 py-2 bg-[#ffed00] text-black font-medium rounded shadow-sm hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-3 md:px-4 py-2 bg-[#FCEA0A] text-black font-medium rounded shadow-sm hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Last
             </button>

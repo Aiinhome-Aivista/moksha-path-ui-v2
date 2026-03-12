@@ -7,9 +7,7 @@ import { useAuth } from "../../app/providers/AuthProvider";
 import { PageLoader } from "../common/Loader";
 
 export const AdminLayout: React.FC = () => {
-    // We are maintaining basic authentication checks, but ideally 
-    // you would check for an 'admin' role here later.
-    const { isLoading, isAuthenticated } = useAuth();
+    const { isLoading, isAuthenticated, user } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Show loading state while checking auth
@@ -17,11 +15,11 @@ export const AdminLayout: React.FC = () => {
         return <PageLoader text="Loading Admin Workspace..." />;
     }
 
-    // Temporarily bypassing authentication for the admin panel during development
-    // NOTE: For true security, implement an admin login flow and role-check here.
-    // if (!isAuthenticated) {
-    //     return <Navigate to="/login" replace />;
-    // }
+    // For true security, implement an admin login flow and role-check here.
+    // We check for an 'admin' role.
+    if (!isAuthenticated || user?.role !== 'admin') {
+        return <Navigate to="/admin/login" replace />;
+    }
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-background-dark flex">

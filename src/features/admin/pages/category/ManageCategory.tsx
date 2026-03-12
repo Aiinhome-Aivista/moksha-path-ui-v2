@@ -114,10 +114,10 @@ export const ManageCategories: React.FC = () => {
                             {currentCategories.length > 0 ? (
                                 currentCategories.map((cat) => (
                                     <tr key={cat.id} className="divide-x divide-gray-100 dark:divide-secondary-700 hover:bg-gray-50 dark:hover:bg-secondary-700/50 transition-colors">
-                                        <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-300 align-middle">
+                                        <td className="px-6 py-4 text-center text-primary dark:text-gray-300 align-middle">
                                             {cat.id}
                                         </td>
-                                        <td className="px-6 py-4 text-center font-medium text-gray-700 dark:text-gray-200 align-middle">
+                                        <td className="px-6 py-4 text-center font-medium text-primary dark:text-gray-200 align-middle">
                                             {cat.name}
                                         </td>
                                         <td className="px-6 py-4 text-center align-middle">

@@ -32,6 +32,7 @@ import ManageSEO from "../features/admin/pages/seo/ManageSEO";
 import AddSEO from "../features/admin/pages/seo/AddSEO";
 import AddCategory from "../features/admin/pages/category/AddCategory";
 import ManageCategory from "../features/admin/pages/category/ManageCategory";
+import AdminLogin from "../features/admin/pages/category/AdminLogin";
 
 const routes: RouteObject[] = [
   // Standalone Routes
@@ -110,17 +111,22 @@ const routes: RouteObject[] = [
   // Independent Admin Routes Structure
   {
     path: "/admin",
-    element: <AdminLayout />,
     children: [
-      { path: "", element: <Navigate to="dashboard" replace /> },
-      { path: "dashboard", element: <AdminDashboard /> },
-      { path: "blog/manage", element: <ManageBlog /> },
-      { path: "blog/add", element: <AddBlog /> },
-      { path: "seo/manage", element: <ManageSEO /> },
-      { path: "seo/add", element: <AddSEO /> },
-      { path: "categories/manage", element: <ManageCategory /> },
-      { path: "categories/add", element: <AddCategory /> },
-    ]
+      { path: "login", element: <AdminLogin /> },
+      {
+        element: <AdminLayout />,
+        children: [
+          { path: "", element: <Navigate to="dashboard" replace /> },
+          { path: "dashboard", element: <AdminDashboard /> },
+          { path: "blog/manage", element: <ManageBlog /> },
+          { path: "blog/add", element: <AddBlog /> },
+          { path: "seo/manage", element: <ManageSEO /> },
+          { path: "seo/add", element: <AddSEO /> },
+          { path: "categories/manage", element: <ManageCategory /> },
+          { path: "categories/add", element: <AddCategory isOpen={true} onClose={() => {}} editId={null} /> },
+        ],
+      },
+    ],
   },
 
   { path: "parent/", element: <ParentDashboard /> },
