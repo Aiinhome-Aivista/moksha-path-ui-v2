@@ -228,6 +228,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             <li key={item.page_id}>
               <NavLink
                 to={item.route}
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
                 onClick={() => {
                   if (isOpen) toggleSidebar();
                 }}

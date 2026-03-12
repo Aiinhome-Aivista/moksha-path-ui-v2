@@ -230,103 +230,147 @@ const SubscriptionSetupModal: React.FC<SubscriptionSetupModalProps> = ({
                         </div>
                     ) : (
                         <div className="space-y-5">
-                            {/* Board & School Row */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                <div>
-                                    <label className="block text-sm font-medium text-primary mb-2">
-                                        Choose Your Board <span className="text-red-500">*</span>
-                                    </label>
-                                    <SearchableSelect
-                                        value={selectedBoard}
-                                        onChange={(val) =>
-                                            setSelectedBoard(val === "" ? "" : Number(val))
-                                        }
-                                        options={boards.map((b) => ({ value: b.id, label: b.name }))}
-                                        placeholder="Select Board"
-                                        className="w-full py-2 border-b border-gray-300 text-primary bg-transparent focus:outline-none focus:border-gray-500 text-base"
-                                    />
-                                </div>
+                            {(() => {
+                                return (
+                                    <>
+                                        {/* Board & School Row */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                            <div>
+                                                <label className="block text-sm font-medium text-primary mb-2">
+                                                    Choose Your Board <span className="text-red-500">*</span>
+                                                </label>
+                                                <SearchableSelect
+                                                    value={selectedBoard}
+                                                    onChange={(val) => {
+                                                        if (val === "") {
+                                                            setSelectedBoard("");
+                                                            setSelectedSchool("");
+                                                            setSelectedClass("");
+                                                            setSelectedYear("");
+                                                            setSelectedSubjects([]);
+                                                            setAvailableSubjects([]);
+                                                        } else {
+                                                            setSelectedBoard(Number(val));
+                                                        }
+                                                    }}
+                                                    options={boards.map((b) => ({ value: b.id, label: b.name }))}
+                                                    placeholder="Select Board"
+                                                    className="w-full py-2 border-b border-gray-300 text-primary bg-transparent focus:outline-none focus:border-gray-500 text-base"
+                                                />
+                                            </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-primary mb-2">
-                                        Choose Your School
-                                    </label>
-                                    <SearchableSelect
-                                        value={selectedSchool}
-                                        onChange={(val) => {
-                                            if (val === "ADD_NEW") {
-                                                setShowAddSchoolInput(true);
-                                                setSelectedSchool("");
-                                            } else {
-                                                setSelectedSchool(val === "" ? "" : Number(val));
-                                                setShowAddSchoolInput(false);
-                                            }
-                                        }}
-                                        options={[
-                                            ...schools.map((s) => ({ value: s.id, label: s.name })),
-                                            { value: "ADD_NEW", label: "➕ Add New School" }
-                                        ]}
-                                        placeholder="Select School"
-                                        className="w-full py-2 border-b border-gray-300 text-primary bg-transparent focus:outline-none focus:border-gray-500 text-base"
-                                    />
+                                            <div>
+                                                <label className="block text-sm font-medium text-primary mb-2">
+                                                    Choose Your School
+                                                </label>
+                                                <SearchableSelect
+                                                    value={selectedSchool}
+                                                    onChange={(val) => {
+                                                        if (val === "ADD_NEW") {
+                                                            setShowAddSchoolInput(true);
+                                                            setSelectedSchool("");
+                                                        } else if (val === "") {
+                                                            setSelectedBoard("");
+                                                            setSelectedSchool("");
+                                                            setSelectedClass("");
+                                                            setSelectedYear("");
+                                                            setSelectedSubjects([]);
+                                                            setAvailableSubjects([]);
+                                                            setShowAddSchoolInput(false);
+                                                        } else {
+                                                            setSelectedSchool(Number(val));
+                                                            setShowAddSchoolInput(false);
+                                                        }
+                                                    }}
+                                                    options={[
+                                                        ...schools.map((s) => ({ value: s.id, label: s.name })),
+                                                        { value: "ADD_NEW", label: "➕ Add New School" }
+                                                    ]}
+                                                    placeholder="Select School"
+                                                    className="w-full py-2 border-b border-gray-300 text-primary bg-transparent focus:outline-none focus:border-gray-500 text-base"
+                                                />
 
-                                    {showAddSchoolInput && (
-                                        <div className="mt-3 flex gap-2">
-                                            <input
-                                                value={newSchoolName}
-                                                onChange={(e) => setNewSchoolName(e.target.value)}
-                                                placeholder="Enter school name"
-                                                className="flex-1 py-2 border-b border-gray-300 text-primary placeholder-gray-400 focus:outline-none focus:border-gray-500 bg-transparent text-sm"
-                                            />
-                                            <button
-                                                onClick={handleAddSchool}
-                                                disabled={isAddingSchool}
-                                                className="px-4 py-1.5 rounded-full text-xs font-medium bg-primary text-white hover:opacity-90 transition-colors disabled:opacity-50"
-                                            >
-                                                {isAddingSchool ? "Adding..." : "Add"}
-                                            </button>
+                                                {showAddSchoolInput && (
+                                                    <div className="mt-3 flex gap-2">
+                                                        <input
+                                                            value={newSchoolName}
+                                                            onChange={(e) => setNewSchoolName(e.target.value)}
+                                                            placeholder="Enter school name"
+                                                            className="flex-1 py-2 border-b border-gray-300 text-primary placeholder-gray-400 focus:outline-none focus:border-gray-500 bg-transparent text-sm"
+                                                        />
+                                                        <button
+                                                            onClick={handleAddSchool}
+                                                            disabled={isAddingSchool}
+                                                            className="px-4 py-1.5 rounded-full text-xs font-medium bg-primary text-white hover:opacity-90 transition-colors disabled:opacity-50"
+                                                        >
+                                                            {isAddingSchool ? "Adding..." : "Add"}
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
-                            </div>
 
-                            {/* Class & Year Row */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                <div>
-                                    <label className="block text-sm font-medium text-primary mb-2">
-                                        Class / Standard <span className="text-red-500">*</span>
-                                    </label>
-                                    <SearchableSelect
-                                        value={selectedClass}
-                                        onChange={(val) =>
-                                            setSelectedClass(val === "" ? "" : Number(val))
-                                        }
-                                        options={classes.map((c) => ({ value: c.id, label: c.name }))}
-                                        placeholder="Select Class"
-                                        className="w-full py-2 border-b border-gray-300 text-primary bg-transparent focus:outline-none focus:border-gray-500 text-base"
-                                    />
-                                </div>
+                                        {/* Class & Year Row */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                            <div>
+                                                <label className="block text-sm font-medium text-primary mb-2">
+                                                    Class / Standard <span className="text-red-500">*</span>
+                                                </label>
+                                                <SearchableSelect
+                                                    value={selectedClass}
+                                                    onChange={(val) => {
+                                                        if (val === "") {
+                                                            setSelectedBoard("");
+                                                            setSelectedSchool("");
+                                                            setSelectedClass("");
+                                                            setSelectedYear("");
+                                                            setSelectedSubjects([]);
+                                                            setAvailableSubjects([]);
+                                                        } else {
+                                                            setSelectedClass(Number(val));
+                                                        }
+                                                    }}
+                                                    options={classes.map((c) => ({ value: c.id, label: c.name }))}
+                                                    placeholder="Select Class"
+                                                    className="w-full py-2 border-b border-gray-300 text-primary bg-transparent focus:outline-none focus:border-gray-500 text-base"
+                                                />
+                                            </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-primary mb-2">
-                                        Academic Year <span className="text-red-500">*</span>
-                                    </label>
-                                    <select
-                                        value={selectedYear}
-                                        onChange={(e) => setSelectedYear(e.target.value)}
-                                        className="w-full py-2 border-b border-gray-300 text-primary bg-transparent focus:outline-none focus:border-gray-500 text-base"
-                                    >
-                                        <option value="">Select Year</option>
-                                        {academicYears.map((y) => (
-                                            <option key={y.year} value={y.year}>
-                                                {y.year}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-primary mb-2">
+                                                    Academic Year <span className="text-red-500">*</span>
+                                                </label>
+                                                <select
+                                                    value={selectedYear}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        if (val === "") {
+                                                            setSelectedBoard("");
+                                                            setSelectedSchool("");
+                                                            setSelectedClass("");
+                                                            setSelectedYear("");
+                                                            setSelectedSubjects([]);
+                                                            setAvailableSubjects([]);
+                                                        } else {
+                                                            setSelectedYear(val);
+                                                        }
+                                                    }}
+                                                    className="w-full py-2 border-b border-gray-300 text-primary bg-transparent focus:outline-none focus:border-gray-500 text-base"
+                                                >
+                                                    <option value="">Select Year</option>
+                                                    {academicYears.map((y) => (
+                                                        <option key={y.year} value={y.year}>
+                                                            {y.year}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
 
 
+                                    </>
+                                );
+                            })()}
                             {/* Seats Row */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-[10px] tracking-widest text-gray-400 font-semibold px-1">

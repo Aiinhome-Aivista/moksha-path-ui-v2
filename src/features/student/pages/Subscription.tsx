@@ -503,9 +503,9 @@ const Subscription: React.FC = () => {
         subject_ids: selectedSubjects.map((s) => s.subject_id),
         institute_id: selectedSchool || null,
         subscription_id: "",
-        licences_used: licenses_used,
+        licenses_used: licenses_used,
         subscription_name: subscriptionName,
-        total_licences: sheetCount,
+        total_licenses: sheetCount,
         ui_total_amount: currentTotalAmount,
         coupon_code: couponCode || undefined,
         // section: selectedSection ? String(selectedSection) : null,
@@ -535,7 +535,7 @@ const Subscription: React.FC = () => {
         academic_year: selectedYear,
         subject_ids: selectedSubjects.map((s) => s.subject_id),
         ui_total_amount: uiTotalAmount,
-        total_licences: sheetCount,
+        total_licenses: sheetCount,
         coupon_code: couponCode,
       };
 
@@ -664,7 +664,7 @@ const Subscription: React.FC = () => {
         academic_year: selectedYear,
         subject_ids: selectedSubjects.map((s) => s.subject_id),
         ui_total_amount: uiTotalAmount,
-        total_licences: sheetCount,
+        total_licenses: sheetCount,
       };
 
       const validateResponse =
@@ -686,8 +686,8 @@ const Subscription: React.FC = () => {
         subject_ids: selectedSubjects.map((s) => s.subject_id),
         institute_id: selectedSchool || null,
         ui_total_amount: uiTotalAmount,
-        total_licences: sheetCount,
-        licences_used: licenses_used,
+        total_licenses: sheetCount,
+        licenses_used: licenses_used,
         subscription_name: "",
       };
 
@@ -835,6 +835,20 @@ const Subscription: React.FC = () => {
             const filteredClasses = useFilter ? classes.filter(c => validClasses.includes(c.id)) : classes;
             const filteredYears = useFilter ? academicYears.filter(y => validYears.includes(y.year)) : academicYears;
 
+            // Automatically clear selections if they are no longer in the valid options
+            if (selectedBoard !== "" && !filteredBoards.some(b => b.id === selectedBoard)) {
+              setSelectedBoard("");
+            }
+            if (selectedSchool !== "" && !filteredSchools.some(s => s.id === selectedSchool)) {
+              setSelectedSchool("");
+            }
+            if (selectedClass !== "" && !filteredClasses.some(c => c.id === selectedClass)) {
+              setSelectedClass("");
+            }
+            if (selectedYear !== "" && !filteredYears.some(y => y.year === selectedYear)) {
+              setSelectedYear("");
+            }
+
             return (
               <div className="flex flex-wrap items-end gap-2">
                 {/* Board */}
@@ -846,7 +860,18 @@ const Subscription: React.FC = () => {
                   <div className="relative w-[200px]">
                     <SearchableSelect
                       value={selectedBoard}
-                      onChange={(val) => setSelectedBoard(val === "" ? "" : Number(val))}
+                      onChange={(val) => {
+                        if (val === "") {
+                          setSelectedBoard("");
+                          setSelectedSchool("");
+                          setSelectedClass("");
+                          setSelectedYear("");
+                          setSelectedSubjects([]);
+                          setAvailableSubjects([]);
+                        } else {
+                          setSelectedBoard(Number(val));
+                        }
+                      }}
                       options={filteredBoards.map((b) => ({ value: b.id, label: b.name }))}
                       placeholder="Board"
                       className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all"
@@ -873,8 +898,16 @@ const Subscription: React.FC = () => {
                         if (val === "ADD_NEW") {
                           setShowAddSchoolInput(true);
                           setSelectedSchool("");
+                        } else if (val === "") {
+                          setSelectedBoard("");
+                          setSelectedSchool("");
+                          setSelectedClass("");
+                          setSelectedYear("");
+                          setSelectedSubjects([]);
+                          setAvailableSubjects([]);
+                          setShowAddSchoolInput(false);
                         } else {
-                          setSelectedSchool(val === "" ? "" : Number(val));
+                          setSelectedSchool(Number(val));
                           setShowAddSchoolInput(false);
                         }
                       }}
@@ -917,7 +950,18 @@ const Subscription: React.FC = () => {
                   <div className="relative w-[200px]">
                     <SearchableSelect
                       value={selectedClass}
-                      onChange={(val) => setSelectedClass(val === "" ? "" : Number(val))}
+                      onChange={(val) => {
+                        if (val === "") {
+                          setSelectedBoard("");
+                          setSelectedSchool("");
+                          setSelectedClass("");
+                          setSelectedYear("");
+                          setSelectedSubjects([]);
+                          setAvailableSubjects([]);
+                        } else {
+                          setSelectedClass(Number(val));
+                        }
+                      }}
                       options={filteredClasses.map((c) => ({ value: c.id, label: c.name }))}
                       placeholder="Class"
                       className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all"
@@ -969,7 +1013,18 @@ const Subscription: React.FC = () => {
                   <div className="relative w-[200px]">
                     <SearchableSelect
                       value={selectedYear}
-                      onChange={(val) => setSelectedYear(String(val))}
+                      onChange={(val) => {
+                        if (val === "") {
+                          setSelectedBoard("");
+                          setSelectedSchool("");
+                          setSelectedClass("");
+                          setSelectedYear("");
+                          setSelectedSubjects([]);
+                          setAvailableSubjects([]);
+                        } else {
+                          setSelectedYear(String(val));
+                        }
+                      }}
                       options={filteredYears.map((y) => ({ value: y.year, label: y.year }))}
                       placeholder="Year"
                       className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all"

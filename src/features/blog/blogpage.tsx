@@ -1,101 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { blogs } from './blog';
 
 export const BlogPage = () => {
   // 1. Reference to the top of the page for smooth scrolling
   const topRef = useRef<HTMLDivElement>(null);
 
-  // 2. Class 1 to 12 Study Data
-  const allStudyMaterials = [
-    {
-      id: 1,
-      image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "CLASS 1 • MATHEMATICS",
-      title: "Foundational Math: Playing with Numbers",
-      meta: "Chapter 1 / Basic Arithmetic / Study Guide",
-      excerpt: "An interactive introduction to counting, recognizing shapes, and understanding basic addition and subtraction through visual play...",
-    },
-    {
-      id: 2,
-      image: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "CLASS 2 • SCIENCE",
-      title: "Exploring Our World: Plants and Animals",
-      meta: "Chapter 3 / Environmental Science / Study Guide",
-      excerpt: "Discover the amazing world around us! Learn how plants grow, the different types of animals, and what they need to survive...",
-    },
-    {
-      id: 3,
-      image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "CLASS 3 • ENGLISH",
-      title: "Building Vocabulary and Reading Comprehension",
-      meta: "Chapter 2 / Language Arts / Practice Set",
-      excerpt: "Step up your reading skills! This module covers new vocabulary words, sentence construction, and understanding short stories...",
-    },
-    {
-      id: 4,
-      image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "CLASS 4 • GEOGRAPHY",
-      title: "Understanding Maps and Earth's Landforms",
-      meta: "Chapter 4 / Social Studies / Interactive Map",
-      excerpt: "Learn how to read maps, understand directions, and explore the different landforms like mountains, valleys, and oceans on our planet...",
-    },
-    {
-      id: 6,
-      image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "CLASS 6 • PHYSICS",
-      title: "Middle School Physics: Force and Motion",
-      meta: "Chapter 1 / General Science / Lab Experiment",
-      excerpt: "What makes things move? Dive into the basics of physics, exploring gravity, friction, force, and motion with real-world examples...",
-    },
-    {
-      id: 7,
-      image: "https://images.unsplash.com/photo-1461360370896-922624d12aa1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "CLASS 7 • HISTORY",
-      title: "Ancient Civilizations and Global Cultures",
-      meta: "Chapter 6 / World History / Study Notes",
-      excerpt: "Travel back in time to study the rise and fall of ancient empires, significant historical events, and how they shaped the modern world...",
-    },
-    {
-      id: 8,
-      image: "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "CLASS 8 • CHEMISTRY",
-      title: "Introduction to Elements and the Periodic Table",
-      meta: "Chapter 3 / Chemistry / Study Guide",
-      excerpt: "Uncover the building blocks of the universe. Learn about atoms, molecules, chemical reactions, and how to read the periodic table...",
-    },
-    {
-      id: 9,
-      image: "https://images.unsplash.com/photo-1596495578065-6e0763fa1178?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "CLASS 9 • MATHEMATICS",
-      title: "Algebraic Expressions and Geometry Basics",
-      meta: "Chapter 4 / Advanced Math / Formula Sheet",
-      excerpt: "Preparing for board exams starts here. Master linear equations, polynomials, and the fundamental theorems of geometry...",
-    },
-    {
-      id: 10,
-      image: "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "CLASS 10 • BIOLOGY",
-      title: "Life Processes: Human Anatomy and Genetics",
-      meta: "Chapter 8 / Life Sciences / Diagram Notes",
-      excerpt: "A deep dive into biological systems. Study human anatomy, plant reproduction, heredity, and evolution for your final board preparations...",
-    },
-    {
-      id: 11,
-      image: "https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "CLASS 11 • PHYSICS",
-      title: "Advanced Mechanics and Thermodynamics",
-      meta: "Chapter 2 / Senior Secondary Physics / derivations",
-      excerpt: "Stepping into higher-level physics. Understand kinematics, the laws of motion, work, energy, and complex thermodynamic principles...",
-    },
-    {
-      id: 12,
-      image: "https://images.unsplash.com/photo-1509228468518-180dd4864904?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "CLASS 12 • MATHEMATICS",
-      title: "Calculus, Integration, and Data Analysis",
-      meta: "Chapter 7 / Board Prep / Practice Exams",
-      excerpt: "The final frontier of school mathematics. Master limits, derivatives, integrals, matrices, and probability for competitive exams...",
-    }
-  ];
+  // 2. Use data from blog.ts
+  const allStudyMaterials = blogs;
 
   // 3. Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -168,7 +80,7 @@ export const BlogPage = () => {
                 {/* Button pinned to bottom */}
                 {/* Link pinned to bottom */}
                 <Link 
-                 to={`/blogs/${post.title.toLowerCase().replace(/:/g, '').replace(/\s+/g, '-')}`}
+                 to={`/blogs/${post.slug}`}
                   className="w-full py-2.5 bg-[#ffed00] hover:bg-yellow-400 text-black font-medium text-sm rounded transition-colors mt-auto text-center block shadow-sm"
                 >
                   Read More
