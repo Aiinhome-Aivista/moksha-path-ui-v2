@@ -7,7 +7,7 @@ import {
     Mail, BookOpen, Phone,
     TrendingUp, User, Edit3, CheckCircle2,
     GraduationCap, Users, Receipt, Lock, MapPin,
-    PlusCircle, Trash2, X
+    PlusCircle, X
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────
@@ -32,6 +32,8 @@ interface ProfileFormValues {
     enrollmentDate: string;
     // Guardian
     guardianName: string;
+    guardianRelation: string;
+    guardianEmail: string;
     guardianPhone: string;
     // Lists
     courses: Course[];
@@ -117,6 +119,8 @@ const StudentProfile: React.FC = () => {
         gpa: '3.8',
         enrollmentDate: 'August 1, 2023',
         guardianName: 'Robert Doe',
+        guardianRelation: 'Father',
+        guardianEmail: 'robert.doe@example.com',
         guardianPhone: '+91 98765 99999',
         courses: [
             { name: 'Advanced Mathematics', grade: 'A', progress: 85 },
@@ -141,6 +145,8 @@ const StudentProfile: React.FC = () => {
                     gpa: values.gpa,
                     enrollmentDate: values.enrollmentDate,
                     guardianName: values.guardianName,
+                    guardianRelation: values.guardianRelation,
+                    guardianEmail: values.guardianEmail,
                     guardianPhone: values.guardianPhone,
                     courses: values.courses,
                 };
@@ -163,18 +169,7 @@ const StudentProfile: React.FC = () => {
         setIsEditing(false);
     };
 
-    // Courses helpers
-    const addCourse = () =>
-        formik.setFieldValue('courses', [
-            ...formik.values.courses,
-            { name: '', grade: '', progress: 0 },
-        ]);
 
-    const removeCourse = (index: number) =>
-        formik.setFieldValue(
-            'courses',
-            formik.values.courses.filter((_, i) => i !== index)
-        );
 
     // ── Style helpers ──────────────────────────
     const avgProgress = formik.values.courses.length
@@ -185,9 +180,9 @@ const StudentProfile: React.FC = () => {
         : 0;
 
     const getGradeColor = (grade: string) => {
-        if (grade.startsWith('A')) return 'bg-[#b0cb1f]/10 text-[#6b7a0e]';
-        if (grade.startsWith('B')) return 'bg-blue-50 text-blue-700';
-        return 'bg-gray-100 text-gray-600';
+        if (grade.startsWith('A')) return 'bg-[#b0cb1f]/10 text-primary';
+        if (grade.startsWith('B')) return 'bg-blue-50 text-primary';
+        return 'bg-gray-100 text-primary';
     };
 
     const getProgressColor = (value: number) => {
@@ -287,40 +282,56 @@ const StudentProfile: React.FC = () => {
                     </div>
                 </div>
                 <div className="px-5 py-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                        <div>
-                            <h2 className="text-base font-bold text-gray-900">{user?.name || 'Student Name'}</h2>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                                <span className="text-xs text-gray-500 capitalize">{roleConfig?.label || 'Student'}</span>
-                                <span className="text-gray-300 text-[10px]">•</span>
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-50 text-green-700 border border-green-200/60">
-                                    Active
-                                </span>
+                    <div className="flex flex-wrap items-center justify-between gap-6 mb-3">
+                        <div className="flex items-start gap-10 flex-1">
+                            <div>
+                                <h2 className="text-base font-bold text-primary">{user?.name || 'Student Name'}</h2>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                    <span className="text-xs text-primary capitalize">{roleConfig?.label || 'Student'}</span>
+                                    <span className="text-gray-300 text-[10px]">•</span>
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-50 text-green-700 border border-green-200/60">
+                                        Active
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="">
+                                <span className="text-base font-bold text-primary tracking-wider block">Date of Birth</span>
+                                {isEditing ? (
+                                    <input
+                                        name="dateOfBirth"
+                                        value={formik.values.dateOfBirth}
+                                        onChange={formik.handleChange}
+                                        className="px-2 py-0.5 text-xs rounded border border-gray-200 bg-gray-50 focus:outline-none focus:border-[#b0cb1f] text-gray-900"
+                                    />
+                                ) : (
+                                    <span className="text-xs text-primary">{formik.values.dateOfBirth}</span>
+                                )}
                             </div>
                         </div>
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-50 border border-gray-200 text-xs font-mono text-gray-500">
+                        <div className="grid grid-cols-2 gap-8">
+                            {[
+                                { label: 'Subject', value: formik.values.courses.length, icon: <BookOpen size={13} className="text-primary" /> },
+                                { label: 'Avg Progress', value: `${avgProgress}%`, icon: <TrendingUp size={13} className="text-primary" /> },
+                            ].map((s, i) => (
+                                <div key={i} className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-50 border border-gray-100">
+                                    <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center shadow-sm border border-gray-100 shrink-0">
+                                        {s.icon}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-primary leading-none">{s.value}</p>
+                                        <p className="text-[10px] text-primary mt-0.5 leading-none">{s.label}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        {/* <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-50 border border-gray-200 text-xs font-mono text-gray-500">
                             <Receipt size={11} className="text-[#b0cb1f]" />
                             STU-2024-001
-                        </span>
+                        </span> */}
                     </div>
 
                     {/* Quick stats */}
-                    <div className="grid grid-cols-2 gap-2">
-                        {[
-                            { label: 'Courses', value: formik.values.courses.length, icon: <BookOpen size={13} className="text-[#b0cb1f]" /> },
-                            { label: 'Avg Progress', value: `${avgProgress}%`, icon: <TrendingUp size={13} className="text-blue-500" /> },
-                        ].map((s, i) => (
-                            <div key={i} className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                                <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center shadow-sm border border-gray-100 shrink-0">
-                                    {s.icon}
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold text-gray-900 leading-none">{s.value}</p>
-                                    <p className="text-[10px] text-gray-400 mt-0.5 leading-none">{s.label}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+
                 </div>
             </div>
 
@@ -329,18 +340,18 @@ const StudentProfile: React.FC = () => {
 
                 {/* Row 1: Contact Information + Guardian Info */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <SectionCard icon={<Mail size={14} className="text-[#b0cb1f]" />} title="Contact Information">
+                    <SectionCard icon={<Mail size={14} className="text-primary" />} title="Contact Information">
                         <div className="p-4 space-y-3">
                             <div className="grid grid-cols-2 gap-3">
                                 <ReadOnlyField
                                     label="Email Address"
                                     value={user?.email || 'student@mokshapath.edu'}
-                                    icon={<Mail size={10} className="text-gray-400" />}
+                                    icon={<Mail size={10} className="text-primary" />}
                                 />
                                 <ReadOnlyField
                                     label="Mobile Number"
                                     value={(user as any)?.phone || '+91 98765 43210'}
-                                    icon={<Phone size={10} className="text-gray-400" />}
+                                    icon={<Phone size={10} className="text-primary" />}
                                 />
                             </div>
                             <FormField
@@ -349,105 +360,61 @@ const StudentProfile: React.FC = () => {
                                 value={formik.values.address}
                                 onChange={formik.handleChange}
                                 isEditing={isEditing}
-                                icon={<MapPin size={10} className="text-gray-400" />}
+                                icon={<MapPin size={10} className="text-primary" />}
                             />
                         </div>
                     </SectionCard>
-                    <SectionCard icon={<Users size={14} className="text-[#b0cb1f]" />} title="Guardian Info">
-                        <div className="p-4 space-y-3">
-                            <FormField label="Name" name="guardianName" value={formik.values.guardianName} onChange={formik.handleChange} isEditing={isEditing} />
-                            <FormField label="Phone" name="guardianPhone" value={formik.values.guardianPhone} onChange={formik.handleChange} isEditing={isEditing} />
+                    <SectionCard icon={<Users size={14} className="text-primary" />} title="Guardian Info">
+                        <div className="p-4 space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <FormField label="Name" name="guardianName" value={formik.values.guardianName} onChange={formik.handleChange} isEditing={false} />
+                                <FormField label="Relation" name="guardianRelation" value={formik.values.guardianRelation} onChange={formik.handleChange} isEditing={false} />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <FormField label="Email" name="guardianEmail" value={formik.values.guardianEmail} onChange={formik.handleChange} isEditing={false} />
+                                <FormField label="Phone" name="guardianPhone" value={formik.values.guardianPhone} onChange={formik.handleChange} isEditing={false} />
+                            </div>
                         </div>
                     </SectionCard>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <SectionCard icon={<GraduationCap size={14} className="text-[#b0cb1f]" />} title="Academic Information">
+                    <SectionCard icon={<GraduationCap size={14} className="text-primary" />} title="Academic Information">
                         <div className="p-4 grid grid-cols-3 gap-4">
                             <FormField label="Grade" name="grade" value={formik.values.grade} onChange={formik.handleChange} isEditing={isEditing} />
                             <FormField label="Section" name="section" value={formik.values.section} onChange={formik.handleChange} isEditing={isEditing} />
                             <FormField label="GPA" name="gpa" value={formik.values.gpa} onChange={formik.handleChange} isEditing={isEditing} highlight />
-                            {/* <FormField label="Date of Birth" name="dateOfBirth" value={formik.values.dateOfBirth} onChange={formik.handleChange} isEditing={isEditing} /> */}
                             <div className="col-span-2">
                                 <FormField label="Enrollment" name="enrollmentDate" value={formik.values.enrollmentDate} onChange={formik.handleChange} isEditing={isEditing} />
                             </div>
                         </div>
                     </SectionCard>
 
-                    {/* Current Courses */}
+                    {/* Current Progress */}
                     <SectionCard
-                        icon={<TrendingUp size={14} className="text-[#b0cb1f]" />}
-                        title="Current Courses"
-                        action={
-                            isEditing ? (
-                                <button
-                                    type="button"
-                                    onClick={addCourse}
-                                    className="flex items-center gap-1 text-[10px] font-semibold text-[#6b7a0e] hover:text-[#b0cb1f] transition-colors"
-                                >
-                                    <PlusCircle size={12} />
-                                    Add Course
-                                </button>
-                            ) : null
-                        }
+                        icon={<TrendingUp size={14} className="text-primary" />}
+                        title="Current Progress"
                     >
                         <div className="p-4 space-y-3">
                             {formik.values.courses.map((course, index) => (
                                 <div key={index}>
-                                    {isEditing ? (
-                                        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                                            <input
-                                                name={`courses[${index}].name`}
-                                                value={course.name}
-                                                onChange={formik.handleChange}
-                                                placeholder="Course name"
-                                                className="flex-1 min-w-0 px-2 py-1 text-xs rounded-lg border border-gray-200 bg-white focus:outline-none focus:border-[#b0cb1f] focus:ring-2 focus:ring-[#b0cb1f]/20 text-gray-900 transition-all"
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-xs text-primary w-32 shrink-0 truncate">{course.name}</span>
+                                        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full rounded-full transition-all duration-500"
+                                                style={{ width: `${course.progress}%`, backgroundColor: getProgressColor(Number(course.progress)) }}
                                             />
-                                            <input
-                                                name={`courses[${index}].grade`}
-                                                value={course.grade}
-                                                onChange={formik.handleChange}
-                                                placeholder="Grade"
-                                                className="w-14 px-2 py-1 text-xs rounded-lg border border-gray-200 bg-white focus:outline-none focus:border-[#b0cb1f] focus:ring-2 focus:ring-[#b0cb1f]/20 text-gray-900 transition-all text-center"
-                                            />
-                                            <input
-                                                name={`courses[${index}].progress`}
-                                                type="number"
-                                                min={0}
-                                                max={100}
-                                                value={course.progress}
-                                                onChange={formik.handleChange}
-                                                placeholder="%"
-                                                className="w-14 px-2 py-1 text-xs rounded-lg border border-gray-200 bg-white focus:outline-none focus:border-[#b0cb1f] focus:ring-2 focus:ring-[#b0cb1f]/20 text-gray-900 transition-all text-center"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => removeCourse(index)}
-                                                className="text-red-400 hover:text-red-600 transition-colors shrink-0"
-                                                title="Remove course"
-                                            >
-                                                <Trash2 size={13} />
-                                            </button>
                                         </div>
-                                    ) : (
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-sm font-medium text-gray-700 w-32 shrink-0 truncate">{course.name}</span>
-                                            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full rounded-full transition-all duration-500"
-                                                    style={{ width: `${course.progress}%`, backgroundColor: getProgressColor(Number(course.progress)) }}
-                                                />
-                                            </div>
-                                            <span className="text-xs text-gray-500 w-8 text-right shrink-0">{course.progress}%</span>
-                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${getGradeColor(course.grade)}`}>
-                                                {course.grade}
-                                            </span>
-                                        </div>
-                                    )}
+                                        <span className="text-xs text-primary w-8 text-right shrink-0">{course.progress}%</span>
+                                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${getGradeColor(course.grade)}`}>
+                                            {course.grade}
+                                        </span>
+                                    </div>
                                 </div>
                             ))}
 
                             {formik.values.courses.length === 0 && (
-                                <p className="text-xs text-gray-400 text-center py-2">No courses added yet.</p>
+                                <p className="text-xs text-primary text-center py-2">No courses added yet.</p>
                             )}
                         </div>
                     </SectionCard>
@@ -481,7 +448,7 @@ const SectionCard: React.FC<{
         <div className="flex items-center justify-between gap-2 px-5 py-3 border-b border-gray-100">
             <div className="flex items-center gap-2">
                 {icon}
-                <h3 className="text-sm font-bold text-gray-800">{title}</h3>
+                <h3 className="text-sm font-bold text-primary">{title}</h3>
             </div>
             {action && <div>{action}</div>}
         </div>
@@ -500,7 +467,7 @@ const FormField: React.FC<{
     icon?: React.ReactNode;
 }> = ({ label, name, value, onChange, isEditing, highlight, icon }) => (
     <div>
-        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
+        <label className="text-[10px] font-bold text-primary uppercase tracking-wider block mb-1">
             {label}
         </label>
         {isEditing ? (
@@ -513,7 +480,7 @@ const FormField: React.FC<{
         ) : (
             <div className="flex items-center gap-1">
                 {icon && <span className="shrink-0">{icon}</span>}
-                <p className={`text-xs font-medium text-gray-800 ${highlight ? 'text-base font-bold text-[#6b7a0e]' : ''}`}>
+                <p className={`text-xs font-medium text-primary ${highlight ? 'text-base font-bold text-[#6b7a0e]' : ''}`}>
                     {value || <span className="text-gray-300 italic">—</span>}
                 </p>
             </div>
@@ -528,13 +495,13 @@ const ReadOnlyField: React.FC<{
     icon?: React.ReactNode;
 }> = ({ label, value, icon }) => (
     <div>
-        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1 flex items-center gap-1">
+        <label className="text-[10px] font-bold text-primary uppercase tracking-wider block mb-1 flex items-center gap-1">
             {label}
             <Lock size={8} className="text-gray-300" />
         </label>
         <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 border border-gray-100">
             {icon && <span className="shrink-0">{icon}</span>}
-            <p className="text-xs font-medium text-gray-500 truncate">{value}</p>
+            <p className="text-xs font-medium text-primary truncate">{value}</p>
         </div>
     </div>
 );
@@ -567,7 +534,7 @@ const AddProfileModal: React.FC<{
                 auth_identifier: identifier,
                 role_name: targetRole
             };
-            
+
             const response = await ApiServices.addProfileV4(payload);
             if (response.data?.status === 'success') {
                 onClose();
@@ -587,9 +554,9 @@ const AddProfileModal: React.FC<{
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
             <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 animate-in fade-in zoom-in duration-200">
-                <button 
+                <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute top-4 right-4 text-primary hover:text-gray-600 transition-colors"
                 >
                     <X size={20} />
                 </button>
@@ -601,7 +568,7 @@ const AddProfileModal: React.FC<{
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
+                        <label className="text-[10px] font-bold text-primary uppercase tracking-wider block mb-1">
                             Full Name
                         </label>
                         <input
@@ -615,7 +582,7 @@ const AddProfileModal: React.FC<{
                     </div>
 
                     <div>
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
+                        <label className="text-[10px] font-bold text-primary uppercase tracking-wider block mb-1">
                             Email or Mobile Number
                         </label>
                         <input
