@@ -173,7 +173,7 @@ const ParentDashboard: React.FC = () => {
           }
         }
       } catch (err: any) {
-        console.error("Failed to fetch children", err);
+        // console.error("Failed to fetch children", err);
       } finally {
         setIsChildrenLoading(false);
       }
@@ -197,7 +197,7 @@ const ParentDashboard: React.FC = () => {
           });
         }
       } catch (err) {
-        console.error("Error fetching parent profile", err);
+        // console.error("Error fetching parent profile", err);
       } finally {
         setIsParentProfileLoading(false);
       }
@@ -244,7 +244,7 @@ const ParentDashboard: React.FC = () => {
             }));
           }
         } catch (error) {
-          console.error("Failed to fetch planner stats", error);
+          // console.error("Failed to fetch planner stats", error);
         } finally {
           setIsLearningPlannerLoading(false);
         }
@@ -310,7 +310,7 @@ const ParentDashboard: React.FC = () => {
             subjectScores: scores,
           }));
         } catch (error) {
-          console.error("Failed to fetch analytics", error);
+          // console.error("Failed to fetch analytics", error);
         } finally {
           setIsAnalyticsLoading(false);
         }
@@ -337,7 +337,7 @@ const ParentDashboard: React.FC = () => {
               derivedImprovements.length > 0 ? derivedImprovements : [],
           }));
         } catch (error) {
-          console.error("Failed to fetch strengths", error);
+          // console.error("Failed to fetch strengths", error);
         } finally {
           setIsStrengthLoading(false);
         }
@@ -353,7 +353,7 @@ const ParentDashboard: React.FC = () => {
             pendingTasks: pendingRes.data?.data || [],
           }));
         } catch (error) {
-          console.error("Failed to fetch pending tasks", error);
+          // console.error("Failed to fetch pending tasks", error);
         } finally {
           setIsPendingTasksLoading(false);
         }

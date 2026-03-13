@@ -4,7 +4,7 @@ import IconChat from "../../../assets/icon/chat2.svg";
 // @ts-ignore
 import ApiServices from "../../../services/ApiServices";
 import { useToast } from "../../../app/providers/ToastProvider";
-import { useModal } from "../../auth/context/AuthContext";
+// import { useModal } from "../../auth/context/AuthContext";
 import PaymentSummaryModal from "../components/PaymentSummaryModal";
 import SubscriptionSetupModal from "../components/SubscriptionSetupModal";
 import { defaultPlans } from "./defaultPlans";
@@ -128,8 +128,7 @@ const Subscription: React.FC = () => {
   const [newSchoolName, setNewSchoolName] = useState("");
   const [isAddingSchool, setIsAddingSchool] = useState(false);
 
-  const { user: modalUser } = useModal();
-  const userName = modalUser?.name || "User";
+  // const { user: modalUser } = useModal();
 
   const profile = JSON.parse(localStorage.getItem("active_profile") || "{}");
   const role = profile?.role_id || null;
@@ -548,7 +547,7 @@ const Subscription: React.FC = () => {
         academic_year: selectedYear,
         subject_ids: selectedSubjects.map((s) => s.subject_id),
         ui_total_amount: uiTotalAmount,
-        total_licenses: sheetCount,
+        total_licences: sheetCount,
         coupon_code: couponCode,
       };
 

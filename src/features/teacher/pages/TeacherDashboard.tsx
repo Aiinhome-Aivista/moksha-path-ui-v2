@@ -1370,7 +1370,7 @@ export const TeacherDashboard: React.FC = () => {
           setTopStudents(res.data.data.top_20_students || []);
         }
       } catch (err) {
-        console.error(err);
+        // console.error(err);
       } finally {
         setTopStudentsLoading(false);
       }
@@ -1393,7 +1393,7 @@ export const TeacherDashboard: React.FC = () => {
           setBottomStudents(res.data.data.lowest_20_students || []);
         }
       } catch (err) {
-        console.error(err);
+        // console.error(err);
       } finally {
         setBottomStudentsLoading(false);
       }
