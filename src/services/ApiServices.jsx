@@ -524,7 +524,7 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.parent_profile);
   }
 
-  
+
   // =======================
   // BLOGS APIs
   // =======================
@@ -619,6 +619,22 @@ class ApiServices {
 
   getActiveUserConnections() {
     return axiosInstance.get(GET_APIS.active_user_connections);
+  }
+  // =======================
+  // Parent Student notification APIs
+  // =======================
+
+  // Get pending mapping requests
+  getPendingMappingRequests() {
+    return axiosInstance.get(GET_APIS.get_pending_mapping_requests);
+  }
+
+  // Accept / Delete mapping request
+  manageParentStudentMapping(payload) {
+    return axiosInstance.post(
+      POST_APIS.manage_parent_student_mapping,
+      payload
+    );
   }
 }
 

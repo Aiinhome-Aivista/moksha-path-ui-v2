@@ -90,6 +90,9 @@ export const GET_APIS = {
   user_academic_info: `${BASE_URL}user/user_academic_info`,
   search_user_for_mapping: `${BASE_URL}user/search_user_for_mapping`,
   active_user_connections: `${BASE_URL}user/get_active_user_student_parent_list`,
+
+  //profile notification
+  get_pending_mapping_requests: `${BASE_URL}user/get_pending_mapping_requests`,
 };
 
 export const POST_APIS = {
@@ -170,4 +173,6 @@ export const POST_APIS = {
   // Update User Profile
   update_profile: `${BASE_URL}user/update_profile`,
   add_mapping: `${BASE_URL}user/add_parent_student_mapping`,
+  //profile notification add/delete
+  manage_parent_student_mapping: `${BASE_URL}user/manage_parent_student_mapping`,
 };
