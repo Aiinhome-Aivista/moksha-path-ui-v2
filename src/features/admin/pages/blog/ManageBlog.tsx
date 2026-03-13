@@ -8,9 +8,30 @@ import {
   Trash2,
   Loader2,
   AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 import ApiServices from "../../../../services/ApiServices";
 import { useToast } from "../../../../app/providers/ToastProvider";
+
+// ==========================================
+// GLOBAL SEARCH FUNCTION
+// This searches EVERY key in your API data automatically
+// ==========================================
+const searchAnyKey = (dataArray: any[], searchQuery: string) => {
+  if (!searchQuery) return dataArray;
+  
+  const query = searchQuery.toLowerCase().trim();
+
+  return dataArray.filter((item) => {
+    // Object.values(item) gets all the data inside the object, regardless of the key names
+    return Object.values(item).some((value) => {
+      if (value === null || value === undefined) return false;
+      // Convert everything to a string and check if it matches the search query
+      return String(value).toLowerCase().includes(query);
+    });
+  });
+};
+// ==========================================
 
 export const ManageBlog: React.FC = () => {
   const [blogs, setBlogs] = useState<any[]>([]);
@@ -38,28 +59,17 @@ export const ManageBlog: React.FC = () => {
     }
   };
 
-
   useEffect(() => {
     fetchBlogs();
   }, []);
 
-  // Reset to page 1 when search query or category changes
+  // Reset to page 1 when search query changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
 
-  const filteredBlogs = blogs.filter((blog) => {
-    const query = searchQuery.toLowerCase().trim();
-    const matchesSearch =
-      !query ||
-      (blog.id && blog.id.toString().includes(query)) ||
-      (blog.title && blog.title.toLowerCase().includes(query)) ||
-      (blog.category_name &&
-        blog.category_name.toLowerCase().includes(query)) ||
-      (blog.category && blog.category.toLowerCase().includes(query));
-
-    return matchesSearch;
-  });
+  // 👇 Apply the global search function here 👇
+  const filteredBlogs = searchAnyKey(blogs, searchQuery);
 
   // Pagination Logic
   const totalPosts = filteredBlogs.length;
@@ -130,18 +140,26 @@ export const ManageBlog: React.FC = () => {
 
       {/* Table Card Container */}
       <div className="bg-white dark:bg-secondary-800 rounded-xl shadow-sm border border-secondary-200 dark:border-secondary-700 overflow-hidden">
-        {/* Search & Filter Bar */}
-        <div className="p-4 border-b border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800/50 flex flex-col md:flex-row gap-4">
-          <div className="relative flex-grow max-w-md flex items-center">
+        {/* Search & Refresh Bar */}
+        <div className="p-4 border-b border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800/50 flex items-center justify-between gap-4">
+          <div className="relative max-w-md flex items-center w-full">
             <Search className="absolute left-3 text-gray-400" size={18} />
             <input
               type="text"
-              placeholder="Search by ID, Title, Category..."
+              placeholder="Search anything..."
               className="pl-10 pr-4 py-2 border border-gray-200 dark:border-secondary-600 rounded-md w-full text-primary dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#b0cb1f]/50 transition-shadow text-black dark:text-white"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          <button
+            onClick={fetchBlogs}
+            disabled={isLoading}
+            className="p-2 rounded-full hover:bg-secondary-100 dark:hover:bg-secondary-700 text-secondary-500 dark:text-secondary-400 transition-colors disabled:opacity-50 disabled:cursor-wait"
+            title="Refresh"
+          >
+            <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
+          </button>
         </div>
 
         {/* Table Layout */}
@@ -172,7 +190,7 @@ export const ManageBlog: React.FC = () => {
                       {startIndex + index + 1}
                     </td>
                     <td className="px-6 py-4 text-center font-medium text-primary dark:text-gray-200 max-w-xs truncate">
-                      {blog.blog_title}
+                      {blog.blog_title || blog.title}
                     </td>
                     <td className="px-6 py-4 text-center text-primary dark:text-gray-400 text-xs max-w-xs truncate">
                       {blog.blog_content
@@ -306,16 +324,13 @@ export const ManageBlog: React.FC = () => {
       {/* Modern Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          {/* Backdrop with Glassmorphism */}
           <div 
             className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
             onClick={() => !isDeleting && setShowDeleteModal(false)}
           />
           
-          {/* Modal Card */}
           <div className="relative bg-white dark:bg-secondary-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-secondary-100 dark:border-secondary-800">
             <div className="p-8 text-center">
-              {/* Warning Icon */}
               <div className="w-20 h-20 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <AlertTriangle size={40} className="text-red-500" />
               </div>
@@ -352,7 +367,6 @@ export const ManageBlog: React.FC = () => {
               </div>
             </div>
             
-            {/* Top accent bar */}
             <div className="h-1.5 w-full bg-red-500" />
           </div>
         </div>
