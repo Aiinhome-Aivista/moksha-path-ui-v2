@@ -28,6 +28,7 @@ interface ProfileFormValues {
   // Academic
   academic: string;
   board: string;
+  school: string;
   dateOfBirth: string;
   grade: string;
   section: string;
@@ -120,6 +121,7 @@ const StudentProfile: React.FC = () => {
     address: "123 Learning Street, Education City, EC 12345",
     academic: "2026-2027",
     board: "CBSE",
+    school: "Moksha International School",
     dateOfBirth: "January 15, 2005",
     grade: "11th",
     section: "A",
@@ -173,7 +175,19 @@ const StudentProfile: React.FC = () => {
   // ── Helpers ────────────────────────────────
   const handleSave = () => formik.submitForm();
 
-  const handleCancel = (section: 'basic' | 'guardian') => {
+  const isTeacher = user?.role === "teacher";
+  const isParent = user?.role === "parent";
+
+  const secondSectionConfig = {
+    title: isParent ? "Student Info" : "Guardian Info",
+    labels: {
+      name: isParent ? "Student Name" : "Name",
+      email: isParent ? "Student Email" : "Email",
+      phone: isParent ? "Student Phone" : "Phone",
+    },
+  };
+
+  const handleCancel = (section: "basic" | "guardian") => {
     formik.resetForm();
     if (section === 'basic') setIsEditingBasic(false);
     if (section === 'guardian') setIsEditingGuardian(false);
@@ -337,7 +351,7 @@ const StudentProfile: React.FC = () => {
           title="Academic Information"
         >
           <div className="px-5 py-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
               <FormField
                 label="Board"
                 name="board"
@@ -347,6 +361,13 @@ const StudentProfile: React.FC = () => {
               />
               <FormField
                 label="School"
+                name="school"
+                value={formik.values.school}
+                onChange={formik.handleChange}
+                isEditing={false}
+              />
+              <FormField
+                label="Class"
                 name="grade"
                 value={formik.values.grade}
                 onChange={formik.handleChange}
@@ -395,13 +416,15 @@ const StudentProfile: React.FC = () => {
           >
             <div className="p-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                <FormField
-                  label="Date of Birth"
-                  name="dateOfBirth"
-                  value={formik.values.dateOfBirth}
-                  onChange={formik.handleChange}
-                  isEditing={isEditingBasic}
-                />
+                {user?.role === "student" && (
+                  <FormField
+                    label="Date of Birth"
+                    name="dateOfBirth"
+                    value={formik.values.dateOfBirth}
+                    onChange={formik.handleChange}
+                    isEditing={isEditingBasic}
+                  />
+                )}
                 <ReadOnlyField
                   label="Email Address"
                   value={user?.email || "student@mokshapath.edu"}
@@ -423,54 +446,76 @@ const StudentProfile: React.FC = () => {
               </div>
             </div>
           </SectionCard>
-          <SectionCard
-            icon={<Users size={14} className="text-primary" />}
-            title="Guardian Info"
-            action={
-              <EditButtons 
-                isEditing={isEditingGuardian}
-                onEdit={() => setIsEditingGuardian(true)}
-                onCancel={() => handleCancel('guardian')}
-                onSave={handleSave}
-                isSaving={isSaving}
-              />
-            }
-          >
-            <div className="p-4 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField
-                  label="Name"
-                  name="guardianName"
-                  value={formik.values.guardianName}
-                  onChange={formik.handleChange}
+          {!isTeacher && (
+            <SectionCard
+              icon={<Users size={14} className="text-primary" />}
+              title={secondSectionConfig.title}
+              action={
+                <EditButtons
                   isEditing={isEditingGuardian}
+                  onEdit={() => setIsEditingGuardian(true)}
+                  onCancel={() => handleCancel("guardian")}
+                  onSave={handleSave}
+                  isSaving={isSaving}
                 />
-                <FormField
-                  label="Relation"
-                  name="guardianRelation"
-                  value={formik.values.guardianRelation}
-                  onChange={formik.handleChange}
-                  isEditing={isEditingGuardian}
-                />
+              }
+            >
+              <div className="p-4 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    label={secondSectionConfig.labels.name}
+                    name="guardianName"
+                    value={formik.values.guardianName}
+                    onChange={formik.handleChange}
+                    isEditing={isEditingGuardian}
+                  />
+                  {isParent ? (
+                    <FormField
+                      label="Date of Birth"
+                      name="dateOfBirth"
+                      value={formik.values.dateOfBirth}
+                      onChange={formik.handleChange}
+                      isEditing={isEditingGuardian}
+                    />
+                  ) : (
+                    <FormField
+                      label="Relation"
+                      name="guardianRelation"
+                      value={formik.values.guardianRelation}
+                      onChange={formik.handleChange}
+                      isEditing={isEditingGuardian}
+                    />
+                  )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    label={secondSectionConfig.labels.email}
+                    name="guardianEmail"
+                    value={formik.values.guardianEmail}
+                    onChange={formik.handleChange}
+                    isEditing={isEditingGuardian}
+                  />
+                  <FormField
+                    label={secondSectionConfig.labels.phone}
+                    name="guardianPhone"
+                    value={formik.values.guardianPhone}
+                    onChange={formik.handleChange}
+                    isEditing={isEditingGuardian}
+                  />
+                  {isParent && (
+                    <FormField
+                      label="Address"
+                      name="address"
+                      value={formik.values.address}
+                      onChange={formik.handleChange}
+                      isEditing={isEditingGuardian}
+                      icon={<MapPin size={10} className="text-primary" />}
+                    />
+                  )}
+                </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField
-                  label="Email"
-                  name="guardianEmail"
-                  value={formik.values.guardianEmail}
-                  onChange={formik.handleChange}
-                  isEditing={isEditingGuardian}
-                />
-                <FormField
-                  label="Phone"
-                  name="guardianPhone"
-                  value={formik.values.guardianPhone}
-                  onChange={formik.handleChange}
-                  isEditing={isEditingGuardian}
-                />
-              </div>
-            </div>
-          </SectionCard>
+            </SectionCard>
+          )}
         </div>
       </div>
       {profileBtn.targetRole && (
