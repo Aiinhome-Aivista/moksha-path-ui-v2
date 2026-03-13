@@ -59,6 +59,30 @@ const statusConfig: Record<
   },
 };
 
+const profileStatusConfig: Record<
+  ProfileStatus,
+  { bg: string; text: string; dot: string; label: string }
+> = {
+  Pending: {
+    bg: "bg-amber-50",
+    text: "text-amber-700",
+    dot: "bg-amber-400",
+    label: "Pending",
+  },
+  Complete: {
+    bg: "bg-green-50",
+    text: "text-green-700",
+    dot: "bg-green-500",
+    label: "Complete",
+  },
+  Expired: {
+    bg: "bg-red-50",
+    text: "text-red-600",
+    dot: "bg-red-500",
+    label: "Expired",
+  },
+};
+
 // left-border color map for cards
 const statusBorder: Record<InvitationStatus, string> = {
   Pending: "border-l-amber-400",
@@ -1081,9 +1105,9 @@ const Notifications: React.FC = () => {
                     >
                       {/* Avatar */}
                       <div
-                        className={`flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br ${p.grad} flex items-center justify-center text-white text-lg font-bold shadow-sm`}
+                        className={`flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br ${avatarGradients[p.id % avatarGradients.length] || avatarGradients[0]} flex items-center justify-center text-white text-lg font-bold shadow-sm`}
                       >
-                        {p.name.charAt(0).toUpperCase()}
+                        {(p.name || "U").charAt(0).toUpperCase()}
                       </div>
 
                       {/* Info */}
@@ -1094,12 +1118,12 @@ const Notifications: React.FC = () => {
                           </span>
                           {/* Status badge */}
                           <span
-                            className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full ${p.statusCfg.bg} ${p.statusCfg.text}`}
+                            className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full ${profileStatusConfig[p.status as ProfileStatus]?.bg || "bg-gray-50"} ${profileStatusConfig[p.status as ProfileStatus]?.text || "text-gray-500"}`}
                           >
                             <span
-                              className={`w-1.5 h-1.5 rounded-full ${p.statusCfg.dot}`}
+                              className={`w-1.5 h-1.5 rounded-full ${profileStatusConfig[p.status as ProfileStatus]?.dot || "bg-gray-300"}`}
                             />
-                            {p.statusCfg.label}
+                            {profileStatusConfig[p.status as ProfileStatus]?.label || p.status}
                           </span>
                         </div>
                         {/* <p className="text-xs text-gray-500 truncate">
@@ -1175,9 +1199,6 @@ const Notifications: React.FC = () => {
                           </div>
                         </div>
 
-                        <div
-                          className={`flex items-center gap-2 text-xs font-semibold ${p.statusCfg.text} ${p.statusCfg.bg} px-4 py-2.5 rounded-xl`}
-                        >
                           <span
                             className="material-symbols-outlined text-base"
                             style={{
@@ -1195,7 +1216,6 @@ const Notifications: React.FC = () => {
                             : p.status === "Pending"
                               ? "This invitation is pending your response."
                               : "This invitation has expired."}
-                        </div>
                         {p.request_type === "Received" && p.can_accept && (
                           <div className="flex gap-3 pt-2">
                             <button
