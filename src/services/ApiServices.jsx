@@ -616,6 +616,10 @@ class ApiServices {
   addParentStudentMapping(payload) {
     return axiosInstance.post(POST_APIS.add_mapping, payload);
   }
+
+  getActiveUserConnections() {
+    return axiosInstance.get(GET_APIS.active_user_connections);
+  }
 }
 
 export default new ApiServices();
