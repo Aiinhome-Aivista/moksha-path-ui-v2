@@ -1,22 +1,74 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { blogs, type Blog } from './blog'; // Adjust path if needed
+import ApiServices from '../../services/ApiServices';
+import { Loader2, Calendar, BookOpen, Share2 } from 'lucide-react';
 
 export const BlogDetail = () => {
-  // Use useParams and get the first available parameter value as the slug.
-  // This makes the component robust even if the route parameter is not named ':slug'
-  // (e.g., if the route is defined as '/blogs/:id').
   const params = useParams();
   const slug = Object.values(params)[0];
+  const [blog, setBlog] = useState<any>(null);
+  const [latestArticles, setLatestArticles] = useState<any[]>([]);
+  const [relatedArticles, setRelatedArticles] = useState<any[]>([]);
+  const [prevBlog, setPrevBlog] = useState<any>(null);
+  const [nextBlog, setNextBlog] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Scroll to top when page or slug changes
   useEffect(() => {
     window.scrollTo(0, 0);
+    const fetchBlogData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await ApiServices.getPublicBlogs();
+        if (response.data.code === 200 || response.data.status === 'success') {
+          const allBlogs = response.data.data || [];
+          const foundBlog = allBlogs.find(
+            (b: any) => b.slug.toLowerCase().trim() === slug?.toLowerCase().trim()
+          );
+          setBlog(foundBlog || null);
+          
+          if (foundBlog) {
+            const currentIndex = allBlogs.findIndex(
+              (b: any) => b.slug.toLowerCase().trim() === slug?.toLowerCase().trim()
+            );
+
+            if (currentIndex !== -1) {
+              // Assuming allBlogs is ordered by Date DESC (index 0 is newest)
+              // Next (newer) is at currentIndex - 1
+              setNextBlog(allBlogs[currentIndex - 1] || null);
+              // Previous (older) is at currentIndex + 1
+              setPrevBlog(allBlogs[currentIndex + 1] || null);
+            }
+
+            // Set sidebar articles
+            const others = allBlogs.filter((b: any) => b.slug !== slug);
+            setLatestArticles(others.slice(0, 5));
+            
+            // Related articles logic
+            const related = others.filter((b: any) => b.category === foundBlog.category);
+            const nonRelated = others.filter((b: any) => b.category !== foundBlog.category);
+            setRelatedArticles([...related, ...nonRelated].slice(0, 5));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching blog details:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (slug) fetchBlogData();
   }, [slug]);
 
-  const blog = slug
-    ? blogs.find((b) => b.slug.toLowerCase().trim() === slug.toLowerCase().trim())
-    : undefined;
+  if (isLoading) {
+    return (
+      <div className="bg-white min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="animate-spin text-[#FCEA0A] mb-4 mx-auto" size={50} />
+          <p className="text-gray-500 font-medium">Loading article details...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!blog) {
     return (
@@ -32,24 +84,7 @@ export const BlogDetail = () => {
     );
   }
 
-  // Helper to format blog data for the sidebar
-  const formatForSidebar = (b: Blog) => ({
-    ...b,
-    date: b.publishDate,
-  });
-
-  // --- Dynamic Sidebar Content ---
-  const otherBlogs = blogs.filter((b) => b.slug !== slug);
-  const latestArticles = otherBlogs.slice(0, 5).map(formatForSidebar);
-  
-  const relatedInCategory = otherBlogs.filter((b) => b.category === blog.category);
-  const otherCategoryBlogs = otherBlogs.filter((b) => b.category !== blog.category);
-  const relatedArticles = [...relatedInCategory, ...otherCategoryBlogs].slice(0, 5).map(formatForSidebar);
-
-  // --- Previous / Next Post Logic ---
-  const currentIndex = blogs.findIndex((b) => b.slug === blog.slug);
-  const prevBlog = currentIndex > 0 ? blogs[currentIndex - 1] : null;
-  const nextBlog = currentIndex < blogs.length - 1 ? blogs[currentIndex + 1] : null;
+  const imageBaseUrl = `${import.meta.env.VITE_API_BASE_URL}blogs/get-image/`;
 
   return (
     <div className="bg-white font-sans min-h-screen pb-12 w-full">
@@ -63,9 +98,12 @@ export const BlogDetail = () => {
             {/* Hero Image */}
             <div className="w-full h-[300px] md:h-[450px] bg-gray-100">
               <img
-                src={blog.image}
+                src={blog.image?.startsWith('http') ? blog.image : `${imageBaseUrl}${blog.image}`}
                 alt={blog.title}
                 className="w-full h-full object-cover"
+                onError={(e: any) => {
+                  e.target.src = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80';
+                }}
               />
             </div>
 
@@ -82,7 +120,7 @@ export const BlogDetail = () => {
 
               {/* Meta Data */}
               <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-8">
-                {blog.meta}
+                Leave a Comment / {blog.category} / {blog.author}
               </p>
 
               {/* Social Share Buttons */}
@@ -102,14 +140,26 @@ export const BlogDetail = () => {
                 </button>
               </div>
 
-              {/* Dynamic Blog Text Content (Maps through your content array) */}
-              <div className="prose max-w-none text-gray-700 text-[16px]">
-                {blog.content.map((paragraph, index) => (
-                  <p key={index} className="mb-6 leading-relaxed">
-                    {paragraph}
-                  </p>
-                ))}
+              {/* Dynamic Blog Text Content */}
+              <div className="prose max-w-none text-gray-700 text-[16px] blog-content-rendered">
+                {/* 
+                  Only show content once. If blog_content is available, use it. 
+                  If not, use excerpt as the primary content but style it as full content.
+                */}
+                <div 
+                  dangerouslySetInnerHTML={{ __html: blog.blog_content || blog.excerpt || "" }} 
+                  className="leading-relaxed"
+                />
               </div>
+
+              <style>{`
+                .blog-content-rendered h1 { font-size: 1.875rem; font-weight: 700; margin-bottom: 1.5rem; color: #111827; line-height: 1.25; }
+                .blog-content-rendered h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.25rem; color: #1f2937; }
+                .blog-content-rendered p { margin-bottom: 1.5rem; line-height: 1.625; color: #4b5563; }
+                .blog-content-rendered strong { font-weight: 700; color: #111827; }
+                .blog-content-rendered ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1.5rem; }
+                .blog-content-rendered li { margin-bottom: 0.5rem; }
+              `}</style>
 
               {/* Added Previous / Next Navigation Section */}
               <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-start gap-8">
@@ -151,16 +201,19 @@ export const BlogDetail = () => {
                 {latestArticles.map((article) => (
                   <Link to={`/blogs/${article.slug}`} key={article.slug} className="flex gap-4 group cursor-pointer">
                     <img
-                      src={article.image}
+                      src={article.image?.startsWith('http') ? article.image : `${imageBaseUrl}${article.image}`}
                       alt="Thumbnail"
                       className="w-20 h-20 object-cover rounded flex-shrink-0"
+                      onError={(e: any) => {
+                         e.target.src = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=200&q=80';
+                      }}
                     />
                     <div className="flex flex-col justify-center">
                       <h3 className="text-[14px] font-semibold text-gray-800 leading-snug group-hover:text-yellow-600 transition-colors line-clamp-2">
                         {article.title}
                       </h3>
                       <p className="text-[12px] text-gray-500 mt-2">
-                        {article.category} | {article.date}
+                        {article.category} | {article.publishDate}
                       </p>
                     </div>
                   </Link>
@@ -178,16 +231,19 @@ export const BlogDetail = () => {
                 {relatedArticles.map((article) => (
                   <Link to={`/blogs/${article.slug}`} key={`related-${article.slug}`} className="flex gap-4 group cursor-pointer">
                     <img
-                      src={article.image}
+                      src={article.image?.startsWith('http') ? article.image : `${imageBaseUrl}${article.image}`}
                       alt="Thumbnail"
                       className="w-20 h-20 object-cover rounded flex-shrink-0"
+                      onError={(e: any) => {
+                         e.target.src = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=200&q=80';
+                      }}
                     />
                     <div className="flex flex-col justify-center">
                       <h3 className="text-[14px] font-semibold text-gray-800 leading-snug group-hover:text-yellow-600 transition-colors line-clamp-2">
                         {article.title}
                       </h3>
                       <p className="text-[12px] text-gray-500 mt-2">
-                        {article.category} | {article.date}
+                        {article.category} | {article.publishDate}
                       </p>
                     </div>
                   </Link>

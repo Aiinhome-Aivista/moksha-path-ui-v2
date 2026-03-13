@@ -1,6 +1,5 @@
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../app/providers/AuthProvider";
+import { NavLink } from "react-router-dom";
 import {
     X,
     LogOut,
@@ -17,42 +16,43 @@ interface AdminSidebarProps {
     toggleSidebar: () => void;
 }
 
-const adminMenuItems = [
-    {
-        page_id: "admin-dashboard",
-        page_name: "Dashboard",
-        icon: <LayoutDashboard size={20} strokeWidth={1.5} />,
-        route: "/admin/dashboard",
-    },
-    {
-        page_id: "admin-manage-blog",
-        page_name: "Blog",
-        icon: <BookOpen size={20} strokeWidth={1.5} />,
-        route: "/admin/blog/manage",
-    },
-        {
-        page_id: "admin-manage-category",
-        page_name: "Category",
-        icon: <FileText size={20} strokeWidth={1.5} />,
-        route: "/admin/categories/manage",
-    },
-    {
-        page_id: "admin-manage-seo",
-        page_name: "SEO",
-        icon: <Search size={20} strokeWidth={1.5} />,
-        route: "/admin/seo/manage",
-    },
-];
+const getIconForPage = (pageName: string) => {
+    const name = pageName.toLowerCase();
+    if (name.includes('dashboard')) return <LayoutDashboard size={20} strokeWidth={1.5} />;
+    if (name.includes('blog')) return <BookOpen size={20} strokeWidth={1.5} />;
+    if (name.includes('category') || name.includes('categories')) return <FileText size={20} strokeWidth={1.5} />;
+    if (name.includes('seo')) return <Search size={20} strokeWidth={1.5} />;
+    return <FileText size={20} strokeWidth={1.5} />;
+};
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, toggleSidebar }) => {
-    const { logout } = useAuth();
-    const navigate = useNavigate();
+    const [menuItems, setMenuItems] = React.useState<any[]>([]);
+
+    React.useEffect(() => {
+        const storedUser = localStorage.getItem("admin_user");
+        if (storedUser) {
+            try {
+                const userObj = JSON.parse(storedUser);
+                if (userObj?.menus) {
+                    const mappedMenus = userObj.menus.map((item: any) => ({
+                        page_id: item.page_id,
+                        page_name: item.page_name,
+                        icon: getIconForPage(item.page_name),
+                        route: `/admin${item.page_route}`
+                    }));
+                    setMenuItems(mappedMenus);
+                }
+            } catch (error) {
+                console.error("Failed to parse menus", error);
+            }
+        }
+    }, []);
 
     const handleLogout = () => {
-        // Call the comprehensive logout function from AuthProvider
-        logout();
-        // Redirect to the public landing page after logout.
-        navigate("/", { replace: true });
+        // Clear all session/auth tokens related to admin manually
+        localStorage.removeItem("admin_user");
+        // Force redirect to login which clears state completely
+        window.location.href = "/admin/login";
     };
 
     return (
@@ -111,7 +111,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, toggleSideba
                     Core Modules
                 </div>
                 <ul className="space-y-1">
-                    {adminMenuItems.map((item) => (
+                    {menuItems.map((item) => (
                         <li key={item.page_id}>
                             <NavLink
                                 to={item.route}
