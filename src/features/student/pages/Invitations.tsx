@@ -542,6 +542,11 @@ const Invitations: React.FC = () => {
     }
   };
 
+  const classDisplay =
+    selectedClasses.length > 2
+      ? `${selectedClasses.slice(0, 2).join(", ")}...`
+      : selectedClasses.join(", ");
+
   return (
     <div className="min-h-screen p-6 space-y-6">
       {/* ── Page Header ── */}
@@ -735,11 +740,10 @@ const Invitations: React.FC = () => {
                     <button
                       key={tab}
                       onClick={() => setUserStatusTab(tab)}
-                      className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
-                        isActive
-                          ? activeColors[tab] + " shadow-sm"
-                          : "text-gray-400 hover:text-gray-700 hover:bg-gray-50"
-                      }`}
+                      className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${isActive
+                        ? activeColors[tab] + " shadow-sm"
+                        : "text-gray-400 hover:text-gray-700 hover:bg-gray-50"
+                        }`}
                     >
                       <span
                         className="material-symbols-outlined"
@@ -754,11 +758,10 @@ const Invitations: React.FC = () => {
                       </span>
                       {tab}
                       <span
-                        className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold ${
-                          isActive
-                            ? "bg-white/30 text-inherit"
-                            : "bg-gray-100 text-gray-400"
-                        }`}
+                        className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold ${isActive
+                          ? "bg-white/30 text-inherit"
+                          : "bg-gray-100 text-gray-400"
+                          }`}
                       >
                         {tabCounts[tab]}
                       </span>
@@ -823,11 +826,10 @@ const Invitations: React.FC = () => {
                 return (
                   <div
                     key={u.id}
-                    className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all duration-1000 ${
-                      borderColor
-                        ? `border-l-4 ${borderColor} border-t-gray-100 ${isExpanded ? "h-full" : "h-20"} border-r-gray-100 border-b-gray-100 hover:shadow-md`
-                        : "border-gray-100 hover:border-gray-200 hover:shadow-sm"
-                    }`}
+                    className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all duration-1000 ${borderColor
+                      ? `border-l-4 ${borderColor} border-t-gray-100 ${isExpanded ? "h-full" : "h-20"} border-r-gray-100 border-b-gray-100 hover:shadow-md`
+                      : "border-gray-100 hover:border-gray-200 hover:shadow-sm"
+                      }`}
                   >
                     <div
                       className="flex items-center gap-4 p-4 cursor-pointer"
@@ -1060,14 +1062,20 @@ const Invitations: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
                 {/* Institution Filter */}
-                <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-medium text-gray-600">
+                <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-medium text-gray-600 max-w-[220px]">
                   <input
                     type="checkbox"
                     checked={true}
                     disabled
                     className="w-4 h-4 accent-[#BADA55]"
                   />
-                  {instituteName || "Loading institute..."}
+
+                  <span
+                    className="truncate cursor-pointer"
+                    title={instituteName}
+                  >
+                    {instituteName || "Loading institute..."}
+                  </span>
                 </div>
 
 
@@ -1077,14 +1085,33 @@ const Invitations: React.FC = () => {
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
                       school
                     </span>
-
+                    {/* 
                     <input
                       type="text"
                       value={classSearch}
+                      title={selectedClasses.join(", ")}
                       onChange={(e) => setClassSearch(e.target.value)}
-                      onClick={() => setShowClassDropdown((prev) => !prev)}
+                      // onClick={() => setShowClassDropdown((prev) => !prev)}
+                      onFocus={() => setShowClassDropdown(true)}
                       placeholder="Class"
                       className="w-full border border-gray-200 rounded-xl pl-10 pr-9 py-2.5 text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 focus:border-[#BADA55] shadow-sm"
+                    /> */}
+                    <input
+                      type="text"
+                      value={
+                        classSearch ||
+                        (selectedClasses.length > 2
+                          ? `${selectedClasses.slice(0, 2).join(", ")}...`
+                          : selectedClasses.join(", "))
+                      }
+                      title={selectedClasses.join(", ")}
+                      onChange={(e) => {
+                        setClassSearch(e.target.value);
+                        setShowClassDropdown(true);
+                      }}
+                      onFocus={() => setShowClassDropdown(true)}
+                      placeholder="Class"
+                      className="w-full cursor-pointer border border-gray-200 rounded-xl pl-10 pr-9 py-2.5 text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 focus:border-[#BADA55] shadow-sm"
                     />
 
                     <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
@@ -1110,18 +1137,13 @@ const Invitations: React.FC = () => {
                               type="checkbox"
                               checked={selectedClasses.includes(c)}
                               onChange={() => {
-                                setSelectedClasses((prev) => {
-                                  let updated;
+                                setSelectedClasses((prev) =>
+                                  prev.includes(c)
+                                    ? prev.filter((x) => x !== c)
+                                    : [...prev, c]
+                                );
 
-                                  if (prev.includes(c)) {
-                                    updated = prev.filter((x) => x !== c);
-                                  } else {
-                                    updated = [...prev, c];
-                                  }
-
-                                  setClassSearch(updated.join(", "));
-                                  return updated;
-                                });
+                                setClassSearch("");
                               }}
                               className="accent-[#BADA55]"
                             />
