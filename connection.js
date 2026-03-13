@@ -81,6 +81,8 @@ export const GET_APIS = {
   blog_admin_dashboard: `${BASE_URL}blogs/admin-dashboard`,
   blog_category_dropdown: `${BASE_URL}blogs/category-dropdown`,
   public_blogs: `${BASE_URL}blogs/public-blogs`,
+  //invite modal instititute list
+  get_institute_list: `${BASE_URL}user/get_institute_hierarchy`,
 };
 
 export const POST_APIS = {
@@ -156,4 +158,5 @@ export const POST_APIS = {
   blog_delete: `${BASE_URL}blogs/blog/delete`,
   blog_seo_insert_update: `${BASE_URL}blogs/seo/insert-update`,
   blog_seo_delete: `${BASE_URL}blogs/seo/delete`,
+  all_user_by_pagination: `${BASE_URL}user/get_all_usernames_with_paginations`,
 };

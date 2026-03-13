@@ -519,6 +519,7 @@ class ApiServices {
   getTeacherLearningPlanner() {
     return axiosInstance.get(GET_APIS.get_teacher_learning_planner);
   }
+
   getParentProfile() {
     return axiosInstance.get(GET_APIS.parent_profile);
   }
@@ -576,6 +577,14 @@ class ApiServices {
   }
   getPublicBlogs() {
     return publicAxiosInstance.get(GET_APIS.public_blogs);
+  }
+  getInstituteList() {
+    return axiosInstance.get(GET_APIS.get_institute_list);
+  }
+
+
+  allUserByPagination(payload) {
+    return axiosInstance.post(POST_APIS.all_user_by_pagination, payload);
   }
 
 }
