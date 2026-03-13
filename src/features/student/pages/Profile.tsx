@@ -187,40 +187,66 @@ const StudentProfile: React.FC = () => {
     ],
   };
 
+  // const formik = useFormik<ProfileFormValues>({
+  //   initialValues,
+  //   onSubmit: async () => {
+  //     // values
+  //     try {
+  //       setIsSaving(true);
+  //       // API payload — ready to send
+  //       // const payload = {
+  //       //     address: values.address,
+  //       //     academic: values.academic,
+  //       //     board: values.board,
+  //       //     dateOfBirth: values.dateOfBirth,
+  //       //     grade: values.grade,
+  //       //     section: values.section,
+  //       //     enrollmentDate: values.enrollmentDate,
+  //       //     guardianName: values.guardianName,
+  //       //     guardianRelation: values.guardianRelation,
+  //       //     guardianEmail: values.guardianEmail,
+  //       //     guardianPhone: values.guardianPhone,
+  //       //     courses: values.courses,
+  //       // };
+  //       // TODO: await ApiServices.updateStudentProfile(payload);
+  //       // console.log('[Profile] API Payload ready:', payload);
+  //       setIsEditingBasic(false);
+  //       setIsEditingGuardian(false);
+  //     } catch {
+  //       // silently fail
+  //     } finally {
+  //       setIsSaving(false);
+  //     }
+  //   },
+  // });
+
+  // ── Helpers ────────────────────────────────
+  
   const formik = useFormik<ProfileFormValues>({
     initialValues,
-    onSubmit: async () => {
-      // values
+    onSubmit: async (values) => {
       try {
         setIsSaving(true);
-        // API payload — ready to send
-        // const payload = {
-        //     address: values.address,
-        //     academic: values.academic,
-        //     board: values.board,
-        //     dateOfBirth: values.dateOfBirth,
-        //     grade: values.grade,
-        //     section: values.section,
-        //     enrollmentDate: values.enrollmentDate,
-        //     guardianName: values.guardianName,
-        //     guardianRelation: values.guardianRelation,
-        //     guardianEmail: values.guardianEmail,
-        //     guardianPhone: values.guardianPhone,
-        //     courses: values.courses,
-        // };
-        // TODO: await ApiServices.updateStudentProfile(payload);
-        // console.log('[Profile] API Payload ready:', payload);
-        setIsEditingBasic(false);
-        setIsEditingGuardian(false);
-      } catch {
-        // silently fail
+
+        const payload = {
+          dob: values.dateOfBirth ? values.dateOfBirth : null,
+          address: values.address,
+        };
+
+        const response = await ApiServices.updateUserProfile(payload);
+
+        if (response.data?.status === "success") {
+          setIsEditingBasic(false);
+        }
+
+      } catch (error) {
+        console.error("Profile update failed", error);
       } finally {
         setIsSaving(false);
       }
     },
   });
 
-  // ── Helpers ────────────────────────────────
   const handleSave = () => formik.submitForm();
 
   const isTeacher = user?.role === "teacher";
