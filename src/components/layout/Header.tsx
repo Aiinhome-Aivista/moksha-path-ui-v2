@@ -239,7 +239,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
             {/* THIS IS THE ONLY CHANGE: Wrapper made relative, Dropdown moved inside */}
             {/* Outer container can keep gap if you have other items, but remove relative from here */}
             <div className="flex items-center justify-end ml-4">
-              {isAuthenticated && (
+              {isAuthenticated && user?.role !== 'admin' && (
                 <div className="relative flex items-center justify-center">
                   <button
                     onClick={() =>
