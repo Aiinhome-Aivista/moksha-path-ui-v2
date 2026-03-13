@@ -75,6 +75,11 @@ export const GET_APIS = {
   parent_profile: `${BASE_URL}parent_teacher/dashboard/parent/parent-profile`,
   //invite modal instititute list
   get_institute_list: `${BASE_URL}user/get_institute_hierarchy`,
+
+  //profile apis
+  // User Profile APIs
+  profile_info: `${BASE_URL}user/profile_info`,
+  user_academic_info: `${BASE_URL}user/user_academic_info`,
 };
 
 export const POST_APIS = {
@@ -143,4 +148,7 @@ export const POST_APIS = {
   select_profile: `${BASE_URL}auth/select_profile`,
 
   all_user_by_pagination: `${BASE_URL}user/get_all_usernames_with_paginations`,
+
+  // Update User Profile
+  update_profile: `${BASE_URL}user/update_profile`,
 };

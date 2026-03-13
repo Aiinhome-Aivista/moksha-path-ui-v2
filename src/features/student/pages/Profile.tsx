@@ -57,6 +57,12 @@ const StudentProfile: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  //for academic info
+  const [academicInfo, setAcademicInfo] = useState<any>(null);
+
+  //for basic info
+  const [profileInfo, setProfileInfo] = useState<any>(null);
+
   // ── Profile image ──────────────────────────
   useEffect(() => {
     const fetchProfileImage = async () => {
@@ -70,6 +76,48 @@ const StudentProfile: React.FC = () => {
       }
     };
     fetchProfileImage();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchAcademicInfo = async () => {
+      try {
+        const res = await ApiServices.getUserAcademicInfo();
+
+        if (res.data?.status === "success") {
+          setAcademicInfo(res.data.data);
+        }
+      } catch (error) {
+        console.error("Academic info fetch failed");
+      }
+    };
+
+    fetchAcademicInfo();
+  }, []);
+
+  useEffect(() => {
+    const fetchProfileInfo = async () => {
+      try {
+        const res = await ApiServices.getProfileInfo();
+
+        if (res.data?.status === "success") {
+          const data = res.data.data;
+
+          setProfileInfo(data);
+
+          // Fill form values
+          formik.setValues({
+            ...formik.values,
+            address: data.address || "",
+            dateOfBirth: data.dob || "",
+          });
+        }
+      } catch (error) {
+        console.error("Profile fetch failed");
+      }
+    };
+
+    fetchProfileInfo();
   }, []);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -192,17 +240,17 @@ const StudentProfile: React.FC = () => {
     if (section === 'basic') setIsEditingBasic(false);
     if (section === 'guardian') setIsEditingGuardian(false);
   };
-  
-  const EditButtons = ({ 
-    isEditing, 
-    onEdit, 
-    onCancel, 
-    onSave, 
-    isSaving 
-  }: { 
-    isEditing: boolean; 
-    onEdit: () => void; 
-    onCancel: () => void; 
+
+  const EditButtons = ({
+    isEditing,
+    onEdit,
+    onCancel,
+    onSave,
+    isSaving
+  }: {
+    isEditing: boolean;
+    onEdit: () => void;
+    onCancel: () => void;
     onSave: () => void;
     isSaving?: boolean;
   }) => (
@@ -243,7 +291,7 @@ const StudentProfile: React.FC = () => {
       )}
     </div>
   );
-  
+
   // const getGradeColor = (grade: string) => {
   //     if (grade.startsWith('A')) return 'bg-[#b0cb1f]/10 text-primary';
   //     if (grade.startsWith('B')) return 'bg-blue-50 text-primary';
@@ -355,42 +403,43 @@ const StudentProfile: React.FC = () => {
               <FormField
                 label="Board"
                 name="board"
-                value={formik.values.board}
+                // value={formik.values.board}
+                value={academicInfo?.board_name || ""}
                 onChange={formik.handleChange}
                 isEditing={false}
               />
               <FormField
                 label="School"
                 name="school"
-                value={formik.values.school}
+                value={academicInfo?.institute_name || ""}
                 onChange={formik.handleChange}
                 isEditing={false}
               />
               <FormField
                 label="Class"
                 name="grade"
-                value={formik.values.grade}
+                value={academicInfo?.class_name || ""}
                 onChange={formik.handleChange}
                 isEditing={false}
               />
               <FormField
                 label="Section"
                 name="section"
-                value={formik.values.section}
+                value={academicInfo?.section_name || ""}
                 onChange={formik.handleChange}
                 isEditing={false}
               />
               <FormField
                 label="Academic Year"
                 name="academic"
-                value={formik.values.academic}
+                value={academicInfo?.academic_year || ""}
                 onChange={formik.handleChange}
                 isEditing={false}
               />
               <FormField
                 label="Enrollment"
                 name="enrollmentDate"
-                value={formik.values.enrollmentDate}
+                value={academicInfo?.enrollment_date || ""}
                 onChange={formik.handleChange}
                 isEditing={false}
               />
@@ -405,7 +454,7 @@ const StudentProfile: React.FC = () => {
             icon={<Mail size={14} className="text-primary" />}
             title="Basic Information"
             action={
-              <EditButtons 
+              <EditButtons
                 isEditing={isEditingBasic}
                 onEdit={() => setIsEditingBasic(true)}
                 onCancel={() => handleCancel('basic')}
@@ -427,12 +476,12 @@ const StudentProfile: React.FC = () => {
                 )}
                 <ReadOnlyField
                   label="Email Address"
-                  value={user?.email || "student@mokshapath.edu"}
+                  value={profileInfo?.email || ""}
                   icon={<Mail size={10} className="text-primary" />}
                 />
                 <ReadOnlyField
                   label="Mobile Number"
-                  value={(user as any)?.phone || "+91 98765 43210"}
+                  value={profileInfo?.mobile || ""}
                   icon={<Phone size={10} className="text-primary" />}
                 />
                 <FormField

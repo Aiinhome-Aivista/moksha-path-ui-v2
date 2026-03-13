@@ -47,7 +47,7 @@ axiosInstance.interceptors.response.use(
     //   // window.location.href = "/login";
     // }
     // Allow 400 responses to be resolved instead of rejected (for coupon validation)
-    if ((error.response?.status === 400)||(error.response?.status === 400) && error.response?.data) {
+    if ((error.response?.status === 400) || (error.response?.status === 400) && error.response?.data) {
       return Promise.resolve(error.response);
     }
     return Promise.reject(error);
@@ -518,6 +518,26 @@ class ApiServices {
 
   allUserByPagination(payload) {
     return axiosInstance.post(POST_APIS.all_user_by_pagination, payload);
+  }
+
+
+  // =======================
+  // USER PROFILE APIs
+  // =======================
+
+  // Get Profile Info
+  getProfileInfo() {
+    return axiosInstance.get(GET_APIS.profile_info);
+  }
+
+  // Update Profile
+  updateUserProfile(payload) {
+    return axiosInstance.post(POST_APIS.update_profile, payload);
+  }
+
+  // Get User Academic Info
+  getUserAcademicInfo() {
+    return axiosInstance.get(GET_APIS.user_academic_info);
   }
 
 }
