@@ -10,10 +10,6 @@ import {
     PlusCircle, X
 } from 'lucide-react';
 
-// ─────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────
-
 
 interface Course {
     name: string;
