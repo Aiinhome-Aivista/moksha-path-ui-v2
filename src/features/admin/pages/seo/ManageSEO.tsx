@@ -1,8 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { ListPlus, Search, Edit, Trash2, Globe, Loader2, AlertTriangle } from 'lucide-react';
+import { ListPlus, Search, Edit, Trash2, Globe, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import ApiServices from '../../../../services/ApiServices';
 import { useToast } from '../../../../app/providers/ToastProvider';
+
+// ==========================================
+// GLOBAL SEARCH FUNCTION
+// This searches EVERY key in your API data automatically
+// ==========================================
+const searchAnyKey = (dataArray: any[], searchQuery: string) => {
+  if (!searchQuery) return dataArray;
+  
+  const query = searchQuery.toLowerCase().trim();
+
+  return dataArray.filter((item) => {
+    // Object.values(item) gets all the data inside the object, regardless of the key names
+    return Object.values(item).some((value) => {
+      if (value === null || value === undefined) return false;
+      // Convert everything to a string and check if it matches the search query
+      return String(value).toLowerCase().includes(query);
+    });
+  });
+};
+// ==========================================
 
 export const ManageSEO: React.FC = () => {
     const [allSeoData, setAllSeoData] = useState<any[]>([]);
@@ -39,23 +59,8 @@ export const ManageSEO: React.FC = () => {
         setCurrentPage(1);
     }, [searchQuery]);
 
-    const filteredData = allSeoData.filter(seo => {
-        const query = searchQuery.toLowerCase().trim();
-        if (!query) return true;
-
-        const title = seo.seo_title || seo.title || '';
-        const desc = seo.seo_description || seo.description || '';
-        const keys = seo.seo_keywords || seo.keywords || '';
-        const route = seo.page_route || seo.route || '';
-
-        return (
-            seo.id.toString().includes(query) ||
-            title.toLowerCase().includes(query) ||
-            desc.toLowerCase().includes(query) ||
-            keys.toLowerCase().includes(query) ||
-            route.toLowerCase().includes(query)
-        );
-    });
+    // 👇 Applying the Deep Search logic here 👇
+    const filteredData = searchAnyKey(allSeoData, searchQuery);
 
     const handleDeleteClick = (id: number) => {
         setSeoToDelete(id);
@@ -120,17 +125,25 @@ export const ManageSEO: React.FC = () => {
             <div className="bg-white dark:bg-secondary-800 rounded-xl shadow-sm border border-secondary-200 dark:border-secondary-700 overflow-hidden">
                 
                 {/* Search Bar Top Bar */}
-                <div className="p-4 border-b border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800/50">
-                    <div className="relative w-full max-w-md flex items-center">
+                <div className="p-4 border-b border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800/50 flex items-center justify-between gap-4">
+                    <div className="relative max-w-md flex items-center w-full">
                         <Search className="absolute left-3 text-gray-400" size={18} />
                         <input
                             type="text"
-                            placeholder="Search by ID, Title, Description, Keywords..."
-                            className="pl-10 pr-4 py-2 border border-gray-200 dark:border-secondary-600 rounded-md w-full bg-white dark:bg-secondary-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#b0cb1f]/50 transition-shadow"
+                            placeholder="Search anything..."
+                            className="pl-10 pr-4 py-2 border border-gray-200 dark:border-secondary-600 rounded-md w-full text-primary dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#b0cb1f]/50 transition-shadow text-black dark:text-white"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
+                    <button
+                        onClick={fetchSeoData}
+                        disabled={isLoading}
+                        className="p-2 rounded-full hover:bg-secondary-100 dark:hover:bg-secondary-700 text-secondary-500 dark:text-secondary-400 transition-colors disabled:opacity-50 disabled:cursor-wait"
+                        title="Refresh"
+                    >
+                        <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
+                    </button>
                 </div>
 
                 {/* Table Layout */}
@@ -170,13 +183,13 @@ export const ManageSEO: React.FC = () => {
                                             {seo.page_route}
                                         </td>
                                         <td className="px-6 py-4 text-center font-medium text-primary dark:text-gray-200 min-w-[200px] align-middle">
-                                            {seo.seo_title}
+                                            {seo.seo_title || seo.title}
                                         </td>
                                         <td className="px-6 py-4 text-center text-primary dark:text-gray-400 min-w-[200px] align-middle">
-                                            {seo.seo_description}
+                                            {seo.seo_description || seo.description}
                                         </td>
                                         <td className="px-6 py-4 text-center text-primary dark:text-gray-300 min-w-[200px] leading-relaxed align-middle">
-                                            {seo.seo_keywords}
+                                            {seo.seo_keywords || seo.keywords}
                                         </td>
                                         <td className="px-6 py-4 text-center text-primary dark:text-gray-300 whitespace-nowrap align-middle">
                                             {seo.created_at ? new Date(seo.created_at).toLocaleDateString() : 'N/A'}
@@ -205,10 +218,10 @@ export const ManageSEO: React.FC = () => {
                                         <div className="p-12 text-center text-secondary-500 dark:text-secondary-400 flex flex-col items-center justify-center min-h-[300px]">
                                             <Search size={48} className="text-gray-300 dark:text-secondary-600 mb-4" />
                                             <p className="font-semibold text-lg text-gray-600 dark:text-secondary-300">
-                                                No SEO data configured yet
+                                                No SEO data found
                                             </p>
                                             <p className="text-sm text-gray-400 mt-1">
-                                                Start by adding metadata for your core pages.
+                                                Try adjusting your search or add a new SEO configuration.
                                             </p>
                                         </div>
                                     </td>
