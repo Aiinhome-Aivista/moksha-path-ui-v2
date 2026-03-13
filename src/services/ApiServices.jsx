@@ -607,6 +607,15 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.user_academic_info);
   }
 
+  searchUserForMapping(name) {
+    return axiosInstance.get(GET_APIS.search_user_for_mapping, {
+      params: { name }
+    });
+  }
+
+  addParentStudentMapping(payload) {
+    return axiosInstance.post(POST_APIS.add_mapping, payload);
+  }
 }
 
 export default new ApiServices();
