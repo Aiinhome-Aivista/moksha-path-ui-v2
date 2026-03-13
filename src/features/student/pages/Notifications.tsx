@@ -9,13 +9,14 @@ type ActiveTab = "subscription" | "test" | "profile";
 interface ReceivedInvitation {
   id: number;
   inviteToken: string;
-  invitedBy: string;
+  invitedBy: string; // or receiverName
   subscriptionName: string;
   planName: string;
   subjects: string[];
   invitedOn: string;
   expiresOn: string;
   status: InvitationStatus;
+  type: "received" | "sent";
 }
 
 type TestStatus = "Pending" | "Completed";
@@ -81,11 +82,14 @@ const FILTERS: { key: InvitationStatus | "All"; label: string }[] = [
 ];
 
 // Normalize raw API item → ReceivedInvitation
-function normalize(item: any): ReceivedInvitation {
+function normalize(item: any, type: "received" | "sent"): ReceivedInvitation {
   return {
     id: item.invite_id,
     inviteToken: item.invite_token,
-    invitedBy: item.sender_name ?? "Unknown",
+    invitedBy:
+      type === "received"
+        ? item.sender_name ?? "Unknown"
+        : item.receiver_name ?? "Unknown",
     subscriptionName: item.subscription_name ?? item.plan_name ?? "—",
     planName: item.plan_name ?? "—",
     subjects: Array.isArray(item.subject_names) ? item.subject_names : [],
@@ -94,6 +98,7 @@ function normalize(item: any): ReceivedInvitation {
       item.subscriptionExpiryDate ??
       (item.expires_at ? item.expires_at.split(",")[0] : "—"),
     status: (item.status as InvitationStatus) || "Pending",
+    type,
   };
 }
 
@@ -134,8 +139,16 @@ const Notifications: React.FC = () => {
     setError("");
     try {
       const res = await ApiServices.getInviteHistory();
-      if (res.data?.status === "success" && res.data?.data?.received_invites) {
-        setInvitations(res.data.data.received_invites.map(normalize));
+      if (res.data?.status === "success" && res.data?.data) {
+        const received = (res.data.data.received_invites || []).map((i: any) =>
+          normalize(i, "received"),
+        );
+        const sent = (res.data.data.sent_invites || []).map((i: any) =>
+          normalize(i, "sent"),
+        );
+        // Merge and sort by ID (Assuming higher ID is newer)
+        const combined = [...received, ...sent].sort((a, b) => b.id - a.id);
+        setInvitations(combined);
       } else {
         setError(res.data?.message || "Failed to load invitations.");
       }
@@ -464,7 +477,7 @@ const Notifications: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
               {filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 gap-2 text-gray-400">
                   <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2">
@@ -496,7 +509,7 @@ const Notifications: React.FC = () => {
 
                   return (
                     <div
-                      key={inv.id}
+                      key={`${inv.id}-${inv.type}`}
                       className={`bg-white rounded-2xl border shadow-sm transition-all duration-300 overflow-hidden ${
                         borderColor
                           ? `border-l-4 ${borderColor} border-t-gray-100 border-r-gray-100 border-b-gray-100 hover:shadow-md`
@@ -534,7 +547,9 @@ const Notifications: React.FC = () => {
                             </span>
                           </div>
                           <p className="text-xs text-gray-500 truncate">
-                            Invited you to{" "}
+                            {inv.type === "received"
+                              ? "Invited you to "
+                              : "You invited to "}
                             <span className="font-semibold text-gray-700">
                               {inv.subscriptionName}
                             </span>
@@ -639,8 +654,8 @@ const Notifications: React.FC = () => {
                             </p>
                           )}
 
-                          {/* Action buttons — only if Pending */}
-                          {isPending && (
+                          {/* Action buttons — only if Pending and Received */}
+                          {isPending && inv.type === "received" && (
                             <div className="flex gap-3 pt-1">
                               <button
                                 disabled={isActioning}
@@ -698,26 +713,43 @@ const Notifications: React.FC = () => {
                             </div>
                           )}
 
-                          {/* Already actioned message */}
-                          {!isPending && (
+                          {/* Status message */}
+                          {(inv.status !== "Pending" || inv.type === "sent") && (
                             <div
                               className={`flex items-center gap-2 text-xs font-semibold ${cfg.text} ${cfg.bg} px-4 py-2.5 rounded-xl`}
                             >
                               <span
                                 className="material-symbols-outlined text-base"
                                 style={{
-                                  fontVariationSettings: "'wght' 500, 'FILL' 1",
+                                   fontVariationSettings: "'wght' 500, 'FILL' 1",
                                 }}
                               >
                                 {inv.status === "Accepted"
                                   ? "check_circle"
-                                  : "cancel"}
+                                  : inv.status === "Pending"
+                                    ? "schedule"
+                                    : "cancel"}
                               </span>
-                              You have{" "}
-                              {inv.status === "Accepted"
-                                ? "accepted"
-                                : "declined"}{" "}
-                              this invitation.
+                              {inv.type === "received" ? (
+                                <>
+                                  You have{" "}
+                                  {inv.status === "Accepted"
+                                    ? "accepted"
+                                    : inv.status === "Rejected"
+                                      ? "declined"
+                                      : ""}{" "}
+                                  this invitation.
+                                </>
+                              ) : (
+                                <>
+                                  This invitation is{" "}
+                                  {inv.status === "Accepted"
+                                    ? "accepted"
+                                    : inv.status === "Rejected"
+                                      ? "declined"
+                                      : "pending response"}.
+                                </>
+                              )}
                             </div>
                           )}
                         </div>
