@@ -170,7 +170,7 @@ const StudentProfile: React.FC = () => {
     academic: "2026-2027",
     board: "CBSE",
     school: "Moksha International School",
-    dateOfBirth: "January 15, 2005",
+    dateOfBirth: "",
     grade: "11th",
     section: "A",
     enrollmentDate: "March 1, 2026",
@@ -677,36 +677,62 @@ const AddProfileModal: React.FC<{
   onClose: () => void;
   targetRole: "parent" | "student";
 }> = ({ isOpen, onClose, targetRole }) => {
-  const [name, setName] = useState("");
-  const [identifier, setIdentifier] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   if (!isOpen) return null;
 
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+    try {
+      setIsSearching(true);
+      setError("");
+      setSearchResults([]);
+      const response = await ApiServices.searchUserForMapping(searchQuery);
+      if (response.data?.status === "success") {
+        setSearchResults(response.data.data || []);
+        if (response.data.data?.length === 0) {
+          setError("No users found matching your search.");
+        }
+      } else {
+        setError(response.data?.message || "Search failed");
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Search failed");
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !identifier) {
-      setError("Please fill in all fields");
+    if (!selectedUser) {
+      setError("Please select a user to map.");
       return;
     }
 
     try {
       setIsLoading(true);
       setError("");
+      
       const payload = {
-        name,
-        auth_identifier: identifier,
-        role_name: targetRole,
+        student_user_id: selectedUser.user_id
       };
 
-      const response = await ApiServices.addProfileV4(payload);
+      const response = await ApiServices.addParentStudentMapping(payload);
       if (response.data?.status === "success") {
-        onClose();
-        // Optionally refresh or show success toast (not implemented in this component)
-        window.location.reload(); // Simple way to refresh profiles
+        setSuccess("Mapping request sent successfully!");
+        setTimeout(() => {
+          onClose();
+          window.location.reload();
+        }, 1500);
       } else {
-        setError(response.data?.message || "Failed to add profile");
+        setError(response.data?.message || "Failed to add mapping");
       }
     } catch (err: any) {
       setError(err.response?.data?.message || "Something went wrong");
@@ -721,7 +747,7 @@ const AddProfileModal: React.FC<{
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 animate-in fade-in zoom-in duration-200">
+      <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 animate-in fade-in zoom-in duration-200">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-primary hover:text-gray-600 transition-colors"
@@ -733,40 +759,65 @@ const AddProfileModal: React.FC<{
           Add {targetRole === "parent" ? "Parent" : "Child"}
         </h2>
         <p className="text-sm text-gray-500 mb-6">
-          Create a linked profile for your{" "}
-          {targetRole === "parent" ? "guardian" : "child"}.
+          Find and link your {targetRole === "parent" ? "guardian" : "child"} by searching their name, email, or phone.
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-[10px] font-bold text-primary uppercase tracking-wider block mb-1">
-              Full Name
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. John Doe"
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:border-[#b0cb1f] focus:ring-2 focus:ring-[#b0cb1f]/20 transition-all"
-              required
-            />
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="text-[10px] font-bold text-primary uppercase tracking-wider block mb-1">
+                Search User
+              </label>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                placeholder="Name, Email or Phone..."
+                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:border-[#b0cb1f] focus:ring-2 focus:ring-[#b0cb1f]/20 transition-all"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleSearch}
+              disabled={isSearching}
+              className="mt-5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5"
+            >
+              {isSearching ? <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> : "Search"}
+            </button>
           </div>
 
-          <div>
-            <label className="text-[10px] font-bold text-primary uppercase tracking-wider block mb-1">
-              Email or Mobile Number
-            </label>
-            <input
-              type="text"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="e.g. +91 98765 43210"
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:border-[#b0cb1f] focus:ring-2 focus:ring-[#b0cb1f]/20 transition-all"
-              required
-            />
-          </div>
+          {searchResults.length > 0 && (
+            <div className="max-h-48 overflow-y-auto border border-gray-100 rounded-lg divide-y divide-gray-50">
+              {searchResults
+                .filter((user) => {
+                  const query = searchQuery.toLowerCase().trim();
+                  return (
+                    user.full_name?.toLowerCase().includes(query) ||
+                    user.email?.toLowerCase().includes(query) ||
+                    user.phone?.includes(query)
+                  );
+                })
+                .map((user) => (
+                  <div
+                    key={user.user_id}
+                    onClick={() => setSelectedUser(user)}
+                    className={`p-3 cursor-pointer transition-colors hover:bg-lime-50/50 ${selectedUser?.user_id === user.user_id ? "bg-lime-50 border-l-4 border-l-[#b0cb1f]" : ""}`}
+                  >
+                    <p className="text-sm font-bold text-gray-900">{user.full_name}</p>
+                    <div className="flex items-center gap-3 mt-0.5">
+                      <p className="text-[11px] text-gray-500">{user.email}</p>
+                      <p className="text-[11px] text-gray-500">•</p>
+                      <p className="text-[11px] text-gray-500">{user.phone}</p>
+                      <span className="ml-auto px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-[9px] font-bold uppercase">{user.role_type}</span>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
 
           {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
+          {success && <p className="text-xs text-green-600 font-bold flex items-center gap-1"><CheckCircle2 size={12}/> {success}</p>}
 
           <div className="flex gap-3 pt-2">
             <button
@@ -777,9 +828,10 @@ const AddProfileModal: React.FC<{
               Cancel
             </button>
             <button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-[#b0cb1f] hover:bg-[#a0ba1c] rounded-lg transition-colors flex items-center justify-center gap-2"
+              type="button"
+              onClick={handleSubmit}
+              disabled={isLoading || !selectedUser}
+              className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-[#b0cb1f] hover:bg-[#a0ba1c] rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -791,7 +843,7 @@ const AddProfileModal: React.FC<{
               )}
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

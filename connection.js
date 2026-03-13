@@ -88,6 +88,7 @@ export const GET_APIS = {
   // User Profile APIs
   profile_info: `${BASE_URL}user/profile_info`,
   user_academic_info: `${BASE_URL}user/user_academic_info`,
+  search_user_for_mapping: `${BASE_URL}user/search_user_for_mapping`,
 };
 
 export const POST_APIS = {
@@ -167,4 +168,5 @@ export const POST_APIS = {
 
   // Update User Profile
   update_profile: `${BASE_URL}user/update_profile`,
+  add_mapping: `${BASE_URL}user/add_parent_student_mapping`,
 };

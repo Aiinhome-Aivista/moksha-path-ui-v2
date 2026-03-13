@@ -3,18 +3,20 @@ import ApiServices from "../../../services/ApiServices";
 import { useNavigate } from "react-router-dom";
 
 type InvitationStatus = "Pending" | "Accepted" | "Rejected";
-type ActiveTab = "subscription" | "test";
+type ProfileStatus = "Complete" | "Pending" | "Expired";
+type ActiveTab = "subscription" | "test" | "profile";
 
 interface ReceivedInvitation {
   id: number;
   inviteToken: string;
-  invitedBy: string;
+  invitedBy: string; // or receiverName
   subscriptionName: string;
   planName: string;
   subjects: string[];
   invitedOn: string;
   expiresOn: string;
   status: InvitationStatus;
+  type: "received" | "sent";
 }
 
 type TestStatus = "Pending" | "Completed";
@@ -80,11 +82,14 @@ const FILTERS: { key: InvitationStatus | "All"; label: string }[] = [
 ];
 
 // Normalize raw API item → ReceivedInvitation
-function normalize(item: any): ReceivedInvitation {
+function normalize(item: any, type: "received" | "sent"): ReceivedInvitation {
   return {
     id: item.invite_id,
     inviteToken: item.invite_token,
-    invitedBy: item.sender_name ?? "Unknown",
+    invitedBy:
+      type === "received"
+        ? item.sender_name ?? "Unknown"
+        : item.receiver_name ?? "Unknown",
     subscriptionName: item.subscription_name ?? item.plan_name ?? "—",
     planName: item.plan_name ?? "—",
     subjects: Array.isArray(item.subject_names) ? item.subject_names : [],
@@ -93,6 +98,7 @@ function normalize(item: any): ReceivedInvitation {
       item.subscriptionExpiryDate ??
       (item.expires_at ? item.expires_at.split(",")[0] : "—"),
     status: (item.status as InvitationStatus) || "Pending",
+    type,
   };
 }
 
@@ -116,6 +122,12 @@ const Notifications: React.FC = () => {
   const [tests, setTests] = useState<TestNotification[]>([]);
   const [testLoading, setTestLoading] = useState(false);
   const [testError, setTestError] = useState("");
+  const [profileFilter, setProfileFilter] = useState<ProfileStatus | "All">(
+    "All",
+  );
+  const [profileExpandedId, setProfileExpandedId] = useState<number | null>(
+    null,
+  );
   const navigate = useNavigate();
   // ── fetch on mount ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -127,8 +139,16 @@ const Notifications: React.FC = () => {
     setError("");
     try {
       const res = await ApiServices.getInviteHistory();
-      if (res.data?.status === "success" && res.data?.data?.received_invites) {
-        setInvitations(res.data.data.received_invites.map(normalize));
+      if (res.data?.status === "success" && res.data?.data) {
+        const received = (res.data.data.received_invites || []).map((i: any) =>
+          normalize(i, "received"),
+        );
+        const sent = (res.data.data.sent_invites || []).map((i: any) =>
+          normalize(i, "sent"),
+        );
+        // Merge and sort by ID (Assuming higher ID is newer)
+        const combined = [...received, ...sent].sort((a, b) => b.id - a.id);
+        setInvitations(combined);
       } else {
         setError(res.data?.message || "Failed to load invitations.");
       }
@@ -308,10 +328,18 @@ const Notifications: React.FC = () => {
     setCurrentPage(1);
   };
 
+  const userProfile = JSON.parse(localStorage.getItem("active_profile") || "{}");
+  const roleName = userProfile?.role_name?.toLowerCase() || "";
+  const isStudentOrParent = roleName === "student" || roleName === "parent";
+
   const tabs: { key: ActiveTab; label: string; icon: string }[] = [
     { key: "subscription", label: "Subscription", icon: "subscriptions" },
     { key: "test", label: "Test", icon: "quiz" },
   ];
+
+  if (isStudentOrParent) {
+    tabs.push({ key: "profile", label: "Profile", icon: "person" });
+  }
 
   const fetchTestNotifications = async () => {
     setTestLoading(true);
@@ -449,7 +477,7 @@ const Notifications: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
               {filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 gap-2 text-gray-400">
                   <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2">
@@ -481,7 +509,7 @@ const Notifications: React.FC = () => {
 
                   return (
                     <div
-                      key={inv.id}
+                      key={`${inv.id}-${inv.type}`}
                       className={`bg-white rounded-2xl border shadow-sm transition-all duration-300 overflow-hidden ${
                         borderColor
                           ? `border-l-4 ${borderColor} border-t-gray-100 border-r-gray-100 border-b-gray-100 hover:shadow-md`
@@ -519,7 +547,9 @@ const Notifications: React.FC = () => {
                             </span>
                           </div>
                           <p className="text-xs text-gray-500 truncate">
-                            Invited you to{" "}
+                            {inv.type === "received"
+                              ? "Invited you to "
+                              : "You invited to "}
                             <span className="font-semibold text-gray-700">
                               {inv.subscriptionName}
                             </span>
@@ -624,8 +654,8 @@ const Notifications: React.FC = () => {
                             </p>
                           )}
 
-                          {/* Action buttons — only if Pending */}
-                          {isPending && (
+                          {/* Action buttons — only if Pending and Received */}
+                          {isPending && inv.type === "received" && (
                             <div className="flex gap-3 pt-1">
                               <button
                                 disabled={isActioning}
@@ -683,26 +713,43 @@ const Notifications: React.FC = () => {
                             </div>
                           )}
 
-                          {/* Already actioned message */}
-                          {!isPending && (
+                          {/* Status message */}
+                          {(inv.status !== "Pending" || inv.type === "sent") && (
                             <div
                               className={`flex items-center gap-2 text-xs font-semibold ${cfg.text} ${cfg.bg} px-4 py-2.5 rounded-xl`}
                             >
                               <span
                                 className="material-symbols-outlined text-base"
                                 style={{
-                                  fontVariationSettings: "'wght' 500, 'FILL' 1",
+                                   fontVariationSettings: "'wght' 500, 'FILL' 1",
                                 }}
                               >
                                 {inv.status === "Accepted"
                                   ? "check_circle"
-                                  : "cancel"}
+                                  : inv.status === "Pending"
+                                    ? "schedule"
+                                    : "cancel"}
                               </span>
-                              You have{" "}
-                              {inv.status === "Accepted"
-                                ? "accepted"
-                                : "declined"}{" "}
-                              this invitation.
+                              {inv.type === "received" ? (
+                                <>
+                                  You have{" "}
+                                  {inv.status === "Accepted"
+                                    ? "accepted"
+                                    : inv.status === "Rejected"
+                                      ? "declined"
+                                      : ""}{" "}
+                                  this invitation.
+                                </>
+                              ) : (
+                                <>
+                                  This invitation is{" "}
+                                  {inv.status === "Accepted"
+                                    ? "accepted"
+                                    : inv.status === "Rejected"
+                                      ? "declined"
+                                      : "pending response"}.
+                                </>
+                              )}
                             </div>
                           )}
                         </div>
@@ -783,28 +830,7 @@ const Notifications: React.FC = () => {
             </div>
           )}
         </div>
-      ) : (
-        /* ── Test Tab: Under Development ── */
-        // <div className="flex flex-col items-center justify-center py-28 gap-4">
-        //     <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center mb-2 shadow-sm">
-        //         <span
-        //             className="material-symbols-outlined text-5xl text-violet-400"
-        //             style={{ fontVariationSettings: "'FILL' 0, 'wght' 200, 'opsz' 48" }}
-        //         >
-        //             construction
-        //         </span>
-        //     </div>
-        //     <div className="text-center space-y-1">
-        //         <p className="text-base font-bold text-gray-700">Under Development</p>
-        //         <p className="text-sm text-gray-400 max-w-xs">
-        //             Test notifications are coming soon. Stay tuned for updates!
-        //         </p>
-        //     </div>
-        //     <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-violet-50 text-violet-500 px-3 py-1.5 rounded-full border border-violet-100">
-        //         <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-        //         Coming Soon
-        //     </span>
-        // </div>
+      ) : activeTab === "test" ? (
         <div className="space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between">
@@ -941,6 +967,246 @@ const Notifications: React.FC = () => {
             </div>
           )}
         </div>
+      ) : (
+        /* ── Profile Tab (Hardcoded) ── */
+        <div className="space-y-4">
+          {/* Inner Tabs / Filters */}
+          <div className="flex flex-wrap gap-2">
+            {[
+              { label: "All", key: "All" as const },
+              { label: "Complete", key: "Complete" as const },
+              { label: "Pending", key: "Pending" as const },
+              { label: "Expire", key: "Expired" as const },
+            ].map((f) => {
+              const count =
+                f.key === "All"
+                  ? 3
+                  : f.key === "Complete"
+                    ? 1
+                    : f.key === "Pending"
+                      ? 1
+                      : 1;
+              return (
+                <button
+                  key={f.key}
+                  onClick={() => {
+                    setProfileFilter(f.key);
+                    setProfileExpandedId(null);
+                  }}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 flex items-center gap-1.5 ${
+                    profileFilter === f.key
+                      ? "bg-gray-800 text-white border-gray-800 shadow-sm"
+                      : "bg-white text-gray-500 border-gray-200 hover:border-gray-400 hover:text-gray-700"
+                  }`}
+                >
+                  {f.label}
+                  <span
+                    className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold ${
+                      profileFilter === f.key
+                        ? "bg-white/20 text-white"
+                        : "bg-gray-100 text-gray-400"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Hardcoded Invitation Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+            {[
+              {
+                id: 1,
+                name: "Soheli Roy",
+                status: "Complete",
+                subject: "math",
+                date: "07 Mar 2026",
+                plan: "Quarterly Plan",
+                subscription: "math",
+                invitedOn: "07 Mar 2026",
+                expiresOn: "05 Jun 2026",
+                grad: "from-violet-500 to-purple-600",
+                statusLabel: "Accepted",
+                statusCfg: statusConfig["Accepted"],
+              },
+              {
+                id: 2,
+                name: "John Doe",
+                status: "Pending",
+                subject: "Physics",
+                date: "10 Mar 2026",
+                plan: "Monthly Plan",
+                subscription: "Physics",
+                invitedOn: "10 Mar 2026",
+                expiresOn: "10 Apr 2026",
+                grad: "from-blue-500 to-cyan-500",
+                statusLabel: "Pending",
+                statusCfg: statusConfig["Pending"],
+              },
+              {
+                id: 3,
+                name: "Arun Kumar",
+                status: "Expired",
+                subject: "Chemistry",
+                date: "01 Feb 2026",
+                plan: "Quarterly Plan",
+                subscription: "Chemistry",
+                invitedOn: "01 Feb 2026",
+                expiresOn: "01 May 2026",
+                grad: "from-rose-500 to-pink-500",
+                statusLabel: "Expired",
+                statusCfg: {
+                  bg: "bg-red-50",
+                  text: "text-red-600",
+                  dot: "bg-red-500",
+                  label: "Expired",
+                },
+              },
+            ]
+              .filter((p) => profileFilter === "All" || p.status === profileFilter)
+              .map((p) => {
+                const isExpanded = profileExpandedId === p.id;
+                return (
+                  <div
+                    key={p.id}
+                    className="bg-white rounded-2xl border border-l-4 border-l-gray-100 border-t-gray-100 border-r-gray-100 border-b-gray-100 shadow-sm transition-all duration-300 overflow-hidden hover:shadow-md"
+                    style={{
+                      borderLeftColor:
+                        p.status === "Complete"
+                          ? "#22C55E"
+                          : p.status === "Pending"
+                            ? "#FBBF24"
+                            : "#EF4444",
+                    }}
+                  >
+                    <div
+                      className="flex items-center gap-4 p-5 cursor-pointer"
+                      onClick={() =>
+                        setProfileExpandedId(isExpanded ? null : p.id)
+                      }
+                    >
+                      {/* Avatar */}
+                      <div
+                        className={`flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br ${p.grad} flex items-center justify-center text-white text-lg font-bold shadow-sm`}
+                      >
+                        {p.name.charAt(0).toUpperCase()}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                          <span className="text-sm font-bold text-gray-800">
+                            {p.name}
+                          </span>
+                          {/* Status badge */}
+                          <span
+                            className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full ${p.statusCfg.bg} ${p.statusCfg.text}`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${p.statusCfg.dot}`}
+                            />
+                            {p.statusCfg.label}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 truncate">
+                          Invited you to{" "}
+                          <span className="font-semibold text-gray-700">
+                            {p.subject}
+                          </span>
+                        </p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <span
+                            className="material-symbols-outlined text-gray-300"
+                            style={{ fontSize: "12px" }}
+                          >
+                            schedule
+                          </span>
+                          <span className="text-[11px] text-gray-400">
+                            {p.date}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Expand chevron */}
+                      <span
+                        className={`material-symbols-outlined text-gray-300 text-xl transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`}
+                        style={{ fontVariationSettings: "'wght' 300" }}
+                      >
+                        expand_more
+                      </span>
+                    </div>
+
+                    {/* Expandable Content */}
+                    {isExpanded && (
+                      <div className="border-t border-gray-100 px-4 pb-5 pt-4 space-y-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                          <div className="bg-gray-50 rounded-xl p-3">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
+                              Plan
+                            </p>
+                            <p className="text-xs font-semibold text-gray-700">
+                              {p.plan}
+                            </p>
+                          </div>
+                          <div className="bg-gray-50 rounded-xl p-3">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
+                              Subscription
+                            </p>
+                            <p className="text-xs font-semibold text-gray-700">
+                              {p.subscription}
+                            </p>
+                          </div>
+                          <div className="bg-gray-50 rounded-xl p-3">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
+                              Invited On
+                            </p>
+                            <p className="text-xs font-semibold text-gray-700">
+                              {p.invitedOn}
+                            </p>
+                          </div>
+                          <div className="bg-gray-50 rounded-xl p-3">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
+                              Expires On
+                            </p>
+                            <p
+                              className={`text-xs font-semibold ${p.status === "Expired" ? "text-red-500" : "text-amber-600"}`}
+                            >
+                              {p.expiresOn}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div
+                          className={`flex items-center gap-2 text-xs font-semibold ${p.statusCfg.text} ${p.statusCfg.bg} px-4 py-2.5 rounded-xl`}
+                        >
+                          <span
+                            className="material-symbols-outlined text-base"
+                            style={{
+                              fontVariationSettings: "'wght' 500, 'FILL' 1",
+                            }}
+                          >
+                            {p.status === "Complete"
+                              ? "check_circle"
+                              : p.status === "Pending"
+                                ? "schedule"
+                                : "cancel"}
+                          </span>
+                          {p.status === "Complete"
+                            ? "You have accepted this invitation."
+                            : p.status === "Pending"
+                              ? "This invitation is pending your response."
+                              : "This invitation has expired."}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+
       )}
     </div>
   );
