@@ -73,6 +73,8 @@ export const GET_APIS = {
   // Learning Planner for teacher and parent
   get_teacher_learning_planner: `${BASE_URL}learning/teacher/learning_planner`,
   parent_profile: `${BASE_URL}parent_teacher/dashboard/parent/parent-profile`,
+  //invite modal instititute list
+  get_institute_list: `${BASE_URL}user/get_institute_hierarchy`,
 };
 
 export const POST_APIS = {
@@ -136,4 +138,6 @@ export const POST_APIS = {
   verify_account_v4: `${BASE_URL}auth/verify_account`,
   add_profile_v4: `${BASE_URL}auth/add_profile`,
   select_profile: `${BASE_URL}auth/select_profile`,
+
+  all_user_by_pagination: `${BASE_URL}user/get_all_usernames_with_paginations`,
 };
