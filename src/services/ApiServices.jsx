@@ -297,6 +297,13 @@ class ApiServices {
   getUserProfileImage() {
     return axiosInstance.get(GET_APIS.get_profile_picture);
   }
+
+  // Student profile update — uncomment + add endpoint in connection.js when backend is ready
+  // updateStudentProfile(payload) {
+  //   return axiosInstance.post(POST_APIS.update_student_profile, payload);
+  // }
+
+
   // Subscription Invite APIs
   // getInviteList() {
   //   return axiosInstance.get(GET_APIS.subscription_invite_list);

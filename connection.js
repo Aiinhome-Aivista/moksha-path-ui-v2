@@ -131,6 +131,9 @@ export const POST_APIS = {
   //profile picture upload
   upload_profile_picture: `${BASE_URL}user/profile_image/upload`,
 
+  // Student profile update (uncomment when backend is ready)
+  // update_student_profile: `${BASE_URL}user/student/profile/update`,
+
   //add new institute
   add_institute: `${BASE_URL}academic/institute/add`,
 
