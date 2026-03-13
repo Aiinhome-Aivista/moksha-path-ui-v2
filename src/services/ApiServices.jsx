@@ -54,6 +54,20 @@ axiosInstance.interceptors.response.use(
   },
 );
 
+// Create another axios instance without request interceptors (no tokens)
+const publicAxiosInstance = axios.create();
+
+// Add response interceptor for error handling
+publicAxiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if ((error.response?.status === 400) && error.response?.data) {
+      return Promise.resolve(error.response);
+    }
+    return Promise.reject(error);
+  },
+);
+
 class ApiServices {
   // Auth APIs
 
@@ -510,7 +524,60 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.parent_profile);
   }
 
+  
+  // =======================
+  // BLOGS APIs
+  // =======================
 
+  blogAdminLogin(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_admin_login, data);
+  }
+
+  getBlogCategories() {
+    return publicAxiosInstance.get(GET_APIS.blog_categories);
+  }
+
+  insertUpdateBlogCategory(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_category_insert_update, data);
+  }
+
+  deleteBlogCategory(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_category_delete, data);
+  }
+
+  getBlogsList() {
+    return publicAxiosInstance.get(GET_APIS.blogs_list);
+  }
+
+  insertUpdateBlog(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_insert_update, data);
+  }
+
+  deleteBlog(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_delete, data);
+  }
+
+  getBlogSeoSettings() {
+    return publicAxiosInstance.get(GET_APIS.blog_seo_settings);
+  }
+
+  insertUpdateBlogSeo(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_seo_insert_update, data);
+  }
+
+  deleteBlogSeo(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_seo_delete, data);
+  }
+
+  getBlogAdminDashboard() {
+    return publicAxiosInstance.get(GET_APIS.blog_admin_dashboard);
+  }
+  getBlogCategoryDropdown() {
+    return publicAxiosInstance.get(GET_APIS.blog_category_dropdown);
+  }
+  getPublicBlogs() {
+    return publicAxiosInstance.get(GET_APIS.public_blogs);
+  }
   getInstituteList() {
     return axiosInstance.get(GET_APIS.get_institute_list);
   }

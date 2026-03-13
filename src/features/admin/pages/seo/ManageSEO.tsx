@@ -1,53 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { ListPlus, Search, Edit, Trash2 } from 'lucide-react';
+import { ListPlus, Search, Edit, Trash2, Globe, Loader2, AlertTriangle } from 'lucide-react';
+import ApiServices from '../../../../services/ApiServices';
+import { useToast } from '../../../../app/providers/ToastProvider';
 
 export const ManageSEO: React.FC = () => {
-    // Mock data based on your screenshot
-    const [allSeoData] = useState([
-        {
-            id: 1,
-            title: "Recruitment and Jobs Online in India, UAE and entire world - Remote, IT, Fresher & Internship Jobs | SahajJobs",
-            description: "Find jobs in India and internati...",
-            keywords: "jobs, recruitment, job search, post jobs, employment, career opportunities, hiring, CV evaluation, job description, SahajJobs, India jobs, international jobs, job openings, fresher, career portal, hiring, recruitment platform, remote work, job listings, jobs in India, entry level jobs, finance jobs, healthcare jobs, IT jobs, urgent hiring, walk-in jobs, Sahaj Job, Sahaj Jobs",
-            created: "Jan 21, 2026"
-        },
-        {
-            id: 2,
-            title: "Homepage - MokshaPath - Guided Path to True Learning",
-            description: "MokshaPath offers AI-based learning plans, courses, and more.",
-            keywords: "learning, education, ai tutor, online courses, student success",
-            created: "Jan 20, 2026"
-        },
-        {
-            id: 3,
-            title: "About Us - Our Mission at MokshaPath",
-            description: "Learn about the team and vision behind MokshaPath.",
-            keywords: "about us, mission, vision, edtech, education team",
-            created: "Jan 19, 2026"
-        },
-        {
-            id: 4,
-            title: "Contact MokshaPath for Support and Inquiries",
-            description: "Get in touch with our support team for any questions.",
-            keywords: "contact, support, help, inquiry, customer service",
-            created: "Jan 18, 2026"
-        },
-        {
-            id: 5,
-            title: "Blog - Latest Articles on Education and Career",
-            description: "Read our blog for tips on study skills, career development, and more.",
-            keywords: "blog, articles, study tips, career advice, student help",
-            created: "Jan 17, 2026"
-        },
-        {
-            id: 6,
-            title: "Pricing and Plans for MokshaPath Subscriptions",
-            description: "Explore our affordable subscription plans for students and institutions.",
-            keywords: "pricing, plans, subscription, cost, student plan",
-            created: "Jan 16, 2026"
+    const [allSeoData, setAllSeoData] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [seoToDelete, setSeoToDelete] = useState<number | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const { showToast } = useToast();
+
+    const fetchSeoData = async () => {
+        setIsLoading(true);
+        try {
+            const response = await ApiServices.getBlogSeoSettings();
+            if (response.data.code === 200 || response.data.status === 'success') {
+                setAllSeoData(response.data.data || []);
+            }
+        } catch (error) {
+            console.error("Error fetching SEO data:", error);
+            showToast("Failed to load SEO settings", "error");
+        } finally {
+            setIsLoading(false);
         }
-    ]);
+    };
+
+    useEffect(() => {
+        fetchSeoData();
+    }, []);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -61,14 +43,44 @@ export const ManageSEO: React.FC = () => {
         const query = searchQuery.toLowerCase().trim();
         if (!query) return true;
 
+        const title = seo.seo_title || seo.title || '';
+        const desc = seo.seo_description || seo.description || '';
+        const keys = seo.seo_keywords || seo.keywords || '';
+        const route = seo.page_route || seo.route || '';
+
         return (
             seo.id.toString().includes(query) ||
-            seo.title.toLowerCase().includes(query) ||
-            seo.description.toLowerCase().includes(query) ||
-            seo.keywords.toLowerCase().includes(query) ||
-            seo.created.toLowerCase().includes(query)
+            title.toLowerCase().includes(query) ||
+            desc.toLowerCase().includes(query) ||
+            keys.toLowerCase().includes(query) ||
+            route.toLowerCase().includes(query)
         );
     });
+
+    const handleDeleteClick = (id: number) => {
+        setSeoToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!seoToDelete) return;
+
+        setIsDeleting(true);
+        try {
+            const response = await ApiServices.deleteBlogSeo({ id: seoToDelete });
+            if (response.data.code === 200 || response.data.status === 'success') {
+                showToast(response.data.message || "SEO configuration deleted", "success");
+                setShowDeleteModal(false);
+                setSeoToDelete(null);
+                fetchSeoData();
+            }
+        } catch (error) {
+            console.error("Error deleting SEO:", error);
+            showToast("Failed to delete SEO settings", "error");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     // Pagination Logic
     const totalItems = filteredData.length;
@@ -96,7 +108,7 @@ export const ManageSEO: React.FC = () => {
                     </p>
                 </div>
                 <NavLink
-                    to="/admin/seo/add"
+                    to="/admin/add-seo"
                     className="flex items-center gap-2 bg-[#b0cb1f] hover:bg-[#c5de3a] text-gray-900 px-5 py-2.5 rounded-xl font-semibold transition-colors shadow-md"
                 >
                     <ListPlus size={18} />
@@ -128,6 +140,7 @@ export const ManageSEO: React.FC = () => {
                         <thead className="bg-[#b0cb1f] text-gray-900 font-semibold border-b border-gray-200 dark:border-secondary-700">
                             <tr className="divide-x divide-gray-900/20">
                                 <th className="px-6 py-4 text-center whitespace-nowrap">ID</th>
+                                <th className="px-6 py-4 text-center whitespace-nowrap">Page Route</th>
                                 <th className="px-6 py-4 text-center whitespace-nowrap">Title</th>
                                 <th className="px-6 py-4 text-center whitespace-nowrap">Description</th>
                                 <th className="px-6 py-4 text-center whitespace-nowrap">Keywords</th>
@@ -138,31 +151,47 @@ export const ManageSEO: React.FC = () => {
                         
                         {/* Table Body */}
                         <tbody className="divide-y divide-gray-100 dark:divide-secondary-700">
-                            {currentItems.length > 0 ? (
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan={7}>
+                                        <div className="p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
+                                            <Loader2 size={40} className="text-[#b0cb1f] animate-spin mb-4" />
+                                            <p className="text-gray-500">Loading SEO settings...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : currentItems.length > 0 ? (
                                 currentItems.map((seo) => (
                                     <tr key={seo.id} className="divide-x divide-gray-100 dark:divide-secondary-700 hover:bg-gray-50 dark:hover:bg-secondary-700/50 transition-colors">
                                         <td className="px-6 py-4 text-center text-primary dark:text-gray-300 align-middle">
                                             {seo.id}
                                         </td>
+                                        <td className="px-6 py-4 text-center text-[#b0cb1f] font-mono text-xs align-middle">
+                                            {seo.page_route}
+                                        </td>
                                         <td className="px-6 py-4 text-center font-medium text-primary dark:text-gray-200 min-w-[200px] align-middle">
-                                            {seo.title}
+                                            {seo.seo_title}
                                         </td>
                                         <td className="px-6 py-4 text-center text-primary dark:text-gray-400 min-w-[200px] align-middle">
-                                            {seo.description}
+                                            {seo.seo_description}
                                         </td>
-                                        <td className="px-6 py-4 text-center text-primary dark:text-gray-300 min-w-[300px] leading-relaxed align-middle">
-                                            {seo.keywords}
+                                        <td className="px-6 py-4 text-center text-primary dark:text-gray-300 min-w-[200px] leading-relaxed align-middle">
+                                            {seo.seo_keywords}
                                         </td>
                                         <td className="px-6 py-4 text-center text-primary dark:text-gray-300 whitespace-nowrap align-middle">
-                                            {seo.created}
+                                            {seo.created_at ? new Date(seo.created_at).toLocaleDateString() : 'N/A'}
                                         </td>
                                         <td className="px-6 py-4 text-center align-middle">
                                             {/* Horizontal Action Buttons */}
                                             <div className="flex items-center justify-center space-x-4">
-                                                <NavLink to={`/admin/seo/add?edit=${seo.id}`} className="text-amber-500 hover:text-amber-600 transition-colors" title="Edit">
+                                                <NavLink to={`/admin/add-seo?edit=${seo.id}`} className="text-amber-500 hover:text-amber-600 transition-colors" title="Edit">
                                                     <Edit size={18} />
                                                 </NavLink>
-                                                <button className="text-red-500 hover:text-red-600 transition-colors" title="Delete">
+                                                <button 
+                                                    onClick={() => handleDeleteClick(seo.id)}
+                                                    className="text-red-500 hover:text-red-600 transition-colors" 
+                                                    title="Delete"
+                                                >
                                                     <Trash2 size={18} />
                                                 </button>
                                             </div>
@@ -172,7 +201,7 @@ export const ManageSEO: React.FC = () => {
                             ) : (
                                 /* Empty State (Hidden if there is data) */
                                 <tr>
-                                    <td colSpan={6}>
+                                    <td colSpan={7}>
                                         <div className="p-12 text-center text-secondary-500 dark:text-secondary-400 flex flex-col items-center justify-center min-h-[300px]">
                                             <Search size={48} className="text-gray-300 dark:text-secondary-600 mb-4" />
                                             <p className="font-semibold text-lg text-gray-600 dark:text-secondary-300">
@@ -228,6 +257,61 @@ export const ManageSEO: React.FC = () => {
                 )}
 
             </div>
+
+            {/* Modern Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                    {/* Backdrop with Glassmorphism */}
+                    <div 
+                        className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+                        onClick={() => !isDeleting && setShowDeleteModal(false)}
+                    />
+                    
+                    {/* Modal Card */}
+                    <div className="relative bg-white dark:bg-secondary-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-secondary-100 dark:border-secondary-800">
+                        <div className="p-8 text-center">
+                            {/* Warning Icon */}
+                            <div className="w-20 h-20 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <AlertTriangle size={40} className="text-red-500" />
+                            </div>
+                            
+                            <h3 className="text-2xl font-bold text-secondary-900 dark:text-white mb-3">
+                                Delete SEO Config?
+                            </h3>
+                            <p className="text-secondary-500 dark:text-secondary-400 mb-8 leading-relaxed">
+                                Are you sure you want to remove this SEO metadata config? This will affect how this page appears in search results.
+                            </p>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <button
+                                    onClick={() => setShowDeleteModal(false)}
+                                    disabled={isDeleting}
+                                    className="px-6 py-3.5 rounded-2xl font-bold text-secondary-600 dark:text-secondary-400 hover:bg-secondary-100 dark:hover:bg-secondary-800 transition-colors disabled:opacity-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    disabled={isDeleting}
+                                    className="px-6 py-3.5 rounded-2xl font-bold bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30 transition-all active:scale-95 flex items-center justify-center gap-2 group disabled:opacity-70"
+                                >
+                                    {isDeleting ? (
+                                        <Loader2 size={20} className="animate-spin" />
+                                    ) : (
+                                        <>
+                                            <Trash2 size={18} className="group-hover:shake" />
+                                            Delete Now
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {/* Top accent bar */}
+                        <div className="h-1.5 w-full bg-red-500" />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

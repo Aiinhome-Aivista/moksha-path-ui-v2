@@ -1,27 +1,40 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { blogs } from './blog';
+import ApiServices from '../../services/ApiServices';
+import { Loader2, BookOpen } from 'lucide-react';
 
 export const BlogPage = () => {
-  // 1. Reference to the top of the page for smooth scrolling
   const topRef = useRef<HTMLDivElement>(null);
-
-  // 2. Use data from blog.ts
-  const allStudyMaterials = blogs;
-
-  // 3. Pagination State
+  const [allStudyMaterials, setAllStudyMaterials] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = 6; // Set to 6 so there are exactly 2 pages for 12 classes
+  const postsPerPage = 6;
 
-  // 4. Scroll to top whenever the page changes
+  const fetchPublicBlogs = async () => {
+    setIsLoading(true);
+    try {
+      const response = await ApiServices.getPublicBlogs();
+      if (response.data.code === 200 || response.data.status === 'success') {
+        setAllStudyMaterials(response.data.data || []);
+      }
+    } catch (error) {
+      // console.error("Error fetching public blogs:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPublicBlogs();
+  }, []);
+
   useEffect(() => {
     if (topRef.current) {
-      // scrollIntoView works perfectly even inside scrollable divs (like your AppLayout)
       topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [currentPage]); // This effect runs every time currentPage updates
+  }, [currentPage]);
 
-  // 5. Pagination Logic
+  // Pagination Logic
   const totalPosts = allStudyMaterials.length;
   const totalPages = Math.ceil(totalPosts / postsPerPage);
   
@@ -29,8 +42,8 @@ export const BlogPage = () => {
   const endIndex = Math.min(startIndex + postsPerPage, totalPosts);
   const currentPosts = allStudyMaterials.slice(startIndex, endIndex);
 
-  // 6. Handlers for buttons
-  const goToPage = (page: React.SetStateAction<number>) => setCurrentPage(page);
+  // Handlers for buttons
+  const goToPage = (page: number) => setCurrentPage(page);
   const goToNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   const goToPrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
   const goToFirstPage = () => setCurrentPage(1);
@@ -47,48 +60,74 @@ export const BlogPage = () => {
       <div className="max-w-[1400px] mx-auto px-4 py-8 md:px-8">
 
         {/* Blog Grid */}
-        <div className="flex justify-center">
-          <div className="inline-grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {currentPosts.map((post) => (
-              <div key={post.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-              {/* Card Image */}
-              <div className="h-52 bg-gray-200 overflow-hidden p-3 rounded-t-xl">
-                 <div className="w-full h-full rounded-lg overflow-hidden relative">
-                    <img 
-                      src={post.image} 
-                      alt={post.title} 
-                      className="w-full h-full object-cover"
-                    />
-                 </div>
-              </div>
+        <div className="flex justify-center min-h-[400px]">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 className="animate-spin text-[#FCEA0A] mb-4" size={50} />
+              <p className="text-gray-500 font-medium">Fetching latest insights...</p>
+            </div>
+          ) : currentPosts.length > 0 ? (
+            <div className="inline-grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {currentPosts.map((post) => (
+                <div key={post.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                  {/* Card Image */}
+                  <div className="h-52 bg-gray-200 overflow-hidden p-3 rounded-t-xl">
+                    <div className="w-full h-full rounded-lg overflow-hidden relative">
+                        <img 
+                          src={post.image?.startsWith('http') ? post.image : `${import.meta.env.VITE_API_BASE_URL}blogs/get-image/${post.image}`} 
+                          alt={post.title} 
+                          className="w-full h-full object-cover"
+                          onError={(e: any) => {
+                            e.target.src = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80';
+                          }}
+                        />
+                    </div>
+                  </div>
 
-              {/* Card Content */}
-              <div className="p-6 flex flex-col flex-grow">
-                <p className="text-xs font-bold text-blue-700 uppercase tracking-wide mb-3">
-                  {post.category}
-                </p>
-                <h2 className="text-lg font-semibold text-gray-800 leading-snug mb-3 line-clamp-2">
-                  {post.title}
-                </h2>
-                <p className="text-xs text-gray-500 italic mb-4">
-                  {post.meta}
-                </p>
-                <p className="text-sm text-gray-600 mb-6 flex-grow line-clamp-3">
-                  {post.excerpt}
-                </p>
-                
-                {/* Button pinned to bottom */}
-                {/* Link pinned to bottom */}
-                <Link 
-                 to={`/blogs/${post.slug}`}
-                  className="w-full py-2.5 bg-[#FCEA0A] hover:bg-yellow-400 text-black font-medium text-sm rounded transition-colors mt-auto text-center block shadow-sm"
-                >
-                  Read More
-                </Link>
+                  {/* Card Content */}
+                  <div className="p-6 flex flex-col flex-grow">
+                    <p className="text-xs font-bold text-blue-700 uppercase tracking-wide mb-3">
+                      {post.category}
+                    </p>
+                    <h2 className="text-lg font-semibold text-gray-800 leading-snug mb-3 line-clamp-2">
+                      {post.title}
+                    </h2>
+                    <p className="text-xs text-gray-500 italic mb-4">
+                      Leave a Comment / {post.category} / {post.author}
+                    </p>
+                    <p className="text-sm text-gray-600 mb-6 flex-grow line-clamp-3">
+                      {(() => {
+                        let plainExcerpt = post.excerpt?.replace(/<[^>]*>?/gm, ' ').trim() || "";
+                        if (plainExcerpt.startsWith(post.title)) {
+                          plainExcerpt = plainExcerpt.substring(post.title.length).trim();
+                        }
+                        // Truncate to 150 chars if longer and add ellipsis
+                        return plainExcerpt.length > 150 
+                          ? plainExcerpt.substring(0, 150) + "..." 
+                          : plainExcerpt;
+                      })()}
+                    </p>
+                    
+                    {/* Link pinned to bottom */}
+                    <Link 
+                      to={`/blogs/${post.slug}`}
+                      className="w-full py-2.5 bg-[#FCEA0A] hover:bg-yellow-400 text-black font-medium text-sm rounded transition-colors mt-auto text-center block shadow-sm"
+                    >
+                      Read More
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
+                <BookOpen size={40} />
               </div>
-              </div>
-            ))}
-          </div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">No blogs found</h2>
+              <p className="text-gray-500">We haven't published any articles yet. Please check back later!</p>
+            </div>
+          )}
         </div>
 
         {/* Dynamic Pagination */}
@@ -144,7 +183,7 @@ export const BlogPage = () => {
           </div>
           
           <div className="font-medium text-gray-500">
-            Showing {startIndex + 1}-{endIndex} of {totalPosts} classes
+            Showing {totalPosts > 0 ? startIndex + 1 : 0}-{endIndex} of {totalPosts} articles
           </div>
         </div>
         
