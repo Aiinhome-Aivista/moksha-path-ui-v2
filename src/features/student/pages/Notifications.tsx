@@ -128,6 +128,12 @@ const Notifications: React.FC = () => {
   const [profileExpandedId, setProfileExpandedId] = useState<number | null>(
     null,
   );
+
+  //profile notification
+  const [profileRequests, setProfileRequests] = useState<any[]>([]);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState("");
+
   const navigate = useNavigate();
   // ── fetch on mount ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -263,7 +269,7 @@ const Notifications: React.FC = () => {
                 });
 
                 if (switchRes.data?.status === "success") {
-                  const {  subscription_token, active_profile } =
+                  const { subscription_token, active_profile } =
                     switchRes.data.data;
 
                   // if (auth_token) {
@@ -362,9 +368,52 @@ const Notifications: React.FC = () => {
     }
   };
 
+  const fetchProfileRequests = async () => {
+    setProfileLoading(true);
+    setProfileError("");
+
+    try {
+      const res = await ApiServices.getPendingMappingRequests();
+
+      if (res.data?.status === "success") {
+        setProfileRequests(res.data.data || []);
+      } else {
+        setProfileError(res.data?.message || "Failed to load requests");
+      }
+    } catch (err: any) {
+      setProfileError(
+        err?.response?.data?.message || "Unable to fetch requests"
+      );
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  const manageProfileRequest = async (
+    linkId: number,
+    action: "ACCEPT" | "DELETE"
+  ) => {
+    try {
+      const res = await ApiServices.manageParentStudentMapping({
+        link_id: linkId,
+        action,
+      });
+
+      if (res.data?.status === "success") {
+        fetchProfileRequests();
+      }
+    } catch (error) {
+      console.error("Failed to update mapping", error);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === "test") {
       fetchTestNotifications();
+    }
+
+    if (activeTab === "profile") {
+      fetchProfileRequests();
     }
   }, [activeTab]);
   return (
@@ -386,11 +435,10 @@ const Notifications: React.FC = () => {
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
-                className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                  activeTab === key
-                    ? "bg-white text-gray-800 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
+                className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${activeTab === key
+                  ? "bg-white text-gray-800 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+                  }`}
               >
                 <span
                   className="material-symbols-outlined"
@@ -428,19 +476,17 @@ const Notifications: React.FC = () => {
                 <button
                   key={key}
                   onClick={() => handleFilterChange(key)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 flex items-center gap-1.5 ${
-                    activeFilter === key
-                      ? "bg-gray-800 text-white border-gray-800 shadow-sm"
-                      : "bg-white text-gray-500 border-gray-200 hover:border-gray-400 hover:text-gray-700"
-                  }`}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 flex items-center gap-1.5 ${activeFilter === key
+                    ? "bg-gray-800 text-white border-gray-800 shadow-sm"
+                    : "bg-white text-gray-500 border-gray-200 hover:border-gray-400 hover:text-gray-700"
+                    }`}
                 >
                   {label}
                   <span
-                    className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold ${
-                      activeFilter === key
-                        ? "bg-white/20 text-white"
-                        : "bg-gray-100 text-gray-400"
-                    }`}
+                    className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold ${activeFilter === key
+                      ? "bg-white/20 text-white"
+                      : "bg-gray-100 text-gray-400"
+                      }`}
                   >
                     {count}
                   </span>
@@ -510,11 +556,10 @@ const Notifications: React.FC = () => {
                   return (
                     <div
                       key={`${inv.id}-${inv.type}`}
-                      className={`bg-white rounded-2xl border shadow-sm transition-all duration-300 overflow-hidden ${
-                        borderColor
-                          ? `border-l-4 ${borderColor} border-t-gray-100 border-r-gray-100 border-b-gray-100 hover:shadow-md`
-                          : "border-gray-100 hover:border-gray-200 hover:shadow-sm"
-                      }`}
+                      className={`bg-white rounded-2xl border shadow-sm transition-all duration-300 overflow-hidden ${borderColor
+                        ? `border-l-4 ${borderColor} border-t-gray-100 border-r-gray-100 border-b-gray-100 hover:shadow-md`
+                        : "border-gray-100 hover:border-gray-200 hover:shadow-sm"
+                        }`}
                     >
                       {/* ── Card Header ── */}
                       <div
@@ -721,7 +766,7 @@ const Notifications: React.FC = () => {
                               <span
                                 className="material-symbols-outlined text-base"
                                 style={{
-                                   fontVariationSettings: "'wght' 500, 'FILL' 1",
+                                  fontVariationSettings: "'wght' 500, 'FILL' 1",
                                 }}
                               >
                                 {inv.status === "Accepted"
@@ -780,11 +825,10 @@ const Notifications: React.FC = () => {
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all duration-200 ${
-                        page === currentPage
-                          ? "bg-[#BADA55] text-gray-800 shadow"
-                          : "text-gray-400 hover:text-gray-700 hover:bg-gray-100"
-                      }`}
+                      className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all duration-200 ${page === currentPage
+                        ? "bg-[#BADA55] text-gray-800 shadow"
+                        : "text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+                        }`}
                     >
                       {page}
                     </button>
@@ -870,11 +914,10 @@ const Notifications: React.FC = () => {
                 return (
                   <div
                     key={test.assignment_id}
-                    className={`rounded-2xl border shadow-sm p-5 space-y-3 transition-all duration-300 hover:shadow-md ${
-                      isPending
-                        ? "border-l-4 border-l-amber-400 bg-white"
-                        : "border-l-4 border-l-green-500 bg-white"
-                    }`}
+                    className={`rounded-2xl border shadow-sm p-5 space-y-3 transition-all duration-300 hover:shadow-md ${isPending
+                      ? "border-l-4 border-l-amber-400 bg-white"
+                      : "border-l-4 border-l-green-500 bg-white"
+                      }`}
                   >
                     {/* Top */}
                     <div className="flex items-start justify-between gap-3">
@@ -889,11 +932,10 @@ const Notifications: React.FC = () => {
 
                       {/* Status */}
                       <span
-                        className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
-                          isPending
-                            ? "bg-amber-50 text-amber-700"
-                            : "bg-green-50 text-green-700"
-                        }`}
+                        className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${isPending
+                          ? "bg-amber-50 text-amber-700"
+                          : "bg-green-50 text-green-700"
+                          }`}
                       >
                         {test.status}
                       </span>
@@ -993,19 +1035,17 @@ const Notifications: React.FC = () => {
                     setProfileFilter(f.key);
                     setProfileExpandedId(null);
                   }}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 flex items-center gap-1.5 ${
-                    profileFilter === f.key
-                      ? "bg-gray-800 text-white border-gray-800 shadow-sm"
-                      : "bg-white text-gray-500 border-gray-200 hover:border-gray-400 hover:text-gray-700"
-                  }`}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 flex items-center gap-1.5 ${profileFilter === f.key
+                    ? "bg-gray-800 text-white border-gray-800 shadow-sm"
+                    : "bg-white text-gray-500 border-gray-200 hover:border-gray-400 hover:text-gray-700"
+                    }`}
                 >
                   {f.label}
                   <span
-                    className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold ${
-                      profileFilter === f.key
-                        ? "bg-white/20 text-white"
-                        : "bg-gray-100 text-gray-400"
-                    }`}
+                    className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold ${profileFilter === f.key
+                      ? "bg-white/20 text-white"
+                      : "bg-gray-100 text-gray-400"
+                      }`}
                   >
                     {count}
                   </span>
@@ -1016,55 +1056,7 @@ const Notifications: React.FC = () => {
 
           {/* Hardcoded Invitation Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
-            {[
-              {
-                id: 1,
-                name: "Soheli Roy",
-                status: "Complete",
-                subject: "math",
-                date: "07 Mar 2026",
-                plan: "Quarterly Plan",
-                subscription: "math",
-                invitedOn: "07 Mar 2026",
-                expiresOn: "05 Jun 2026",
-                grad: "from-violet-500 to-purple-600",
-                statusLabel: "Accepted",
-                statusCfg: statusConfig["Accepted"],
-              },
-              {
-                id: 2,
-                name: "John Doe",
-                status: "Pending",
-                subject: "Physics",
-                date: "10 Mar 2026",
-                plan: "Monthly Plan",
-                subscription: "Physics",
-                invitedOn: "10 Mar 2026",
-                expiresOn: "10 Apr 2026",
-                grad: "from-blue-500 to-cyan-500",
-                statusLabel: "Pending",
-                statusCfg: statusConfig["Pending"],
-              },
-              {
-                id: 3,
-                name: "Arun Kumar",
-                status: "Expired",
-                subject: "Chemistry",
-                date: "01 Feb 2026",
-                plan: "Quarterly Plan",
-                subscription: "Chemistry",
-                invitedOn: "01 Feb 2026",
-                expiresOn: "01 May 2026",
-                grad: "from-rose-500 to-pink-500",
-                statusLabel: "Expired",
-                statusCfg: {
-                  bg: "bg-red-50",
-                  text: "text-red-600",
-                  dot: "bg-red-500",
-                  label: "Expired",
-                },
-              },
-            ]
+            {profileRequests
               .filter((p) => profileFilter === "All" || p.status === profileFilter)
               .map((p) => {
                 const isExpanded = profileExpandedId === p.id;
@@ -1110,11 +1102,16 @@ const Notifications: React.FC = () => {
                             {p.statusCfg.label}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500 truncate">
+                        {/* <p className="text-xs text-gray-500 truncate">
                           Invited you to{" "}
                           <span className="font-semibold text-gray-700">
-                            {p.subject}
+                           {p.role}
                           </span>
+                        </p> */}
+                        <p className="text-xs text-gray-500 truncate">
+                          {p.request_type === "Received"
+                            ? "Sent you a mapping request"
+                            : "You sent a mapping request"}
                         </p>
                         <div className="flex items-center gap-1 mt-1">
                           <span
@@ -1124,7 +1121,7 @@ const Notifications: React.FC = () => {
                             schedule
                           </span>
                           <span className="text-[11px] text-gray-400">
-                            {p.date}
+                            {new Date(p.request_date).toLocaleDateString()}
                           </span>
                         </div>
                       </div>
@@ -1199,6 +1196,23 @@ const Notifications: React.FC = () => {
                               ? "This invitation is pending your response."
                               : "This invitation has expired."}
                         </div>
+                        {p.request_type === "Received" && p.can_accept && (
+                          <div className="flex gap-3 pt-2">
+                            <button
+                              onClick={() => manageProfileRequest(p.link_id, "DELETE")}
+                              className="flex-1 px-4 py-2 border border-red-200 text-red-500 rounded-xl text-sm font-semibold hover:bg-red-50"
+                            >
+                              Reject
+                            </button>
+
+                            <button
+                              onClick={() => manageProfileRequest(p.link_id, "ACCEPT")}
+                              className="flex-1 px-4 py-2 bg-[#BADA55] text-gray-800 rounded-xl text-sm font-bold hover:bg-lime-400"
+                            >
+                              Accept
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
