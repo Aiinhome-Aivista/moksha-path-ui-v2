@@ -149,16 +149,20 @@ const Notifications: React.FC = () => {
   const [profileFilter, setProfileFilter] = useState<ProfileStatus | "All">(
     "All",
   );
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState("");
   const [profileExpandedId, setProfileExpandedId] = useState<number | null>(
     null,
   );
 
   //profile notification
   const [profileRequests, setProfileRequests] = useState<any[]>([]);
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [profileError, setProfileError] = useState("");
-  const [activeConnections, setActiveConnections] = useState<any[]>([]);
-  const allProfileItems = [...profileRequests, ...activeConnections];
+  const [profileSummary, setProfileSummary] = useState<any>({
+    all: 0,
+    complete: 0,
+    expired: 0,
+    pending: 0
+  });
 
   const navigate = useNavigate();
   // ── fetch on mount ─────────────────────────────────────────────────────
@@ -402,7 +406,10 @@ const Notifications: React.FC = () => {
       const res = await ApiServices.getPendingMappingRequests();
 
       if (res.data?.status === "success") {
-        setProfileRequests(res.data.data || []);
+        setProfileRequests(res.data.data?.users_list || []);
+        if (res.data.data?.summary) {
+          setProfileSummary(res.data.data.summary);
+        }
       } else {
         setProfileError(res.data?.message || "Failed to load requests");
       }
@@ -433,23 +440,7 @@ const Notifications: React.FC = () => {
     }
   };
 
-  const fetchActiveConnections = async () => {
-    try {
-      const res = await ApiServices.getActiveUserStudentParentList();
 
-      if (res.data?.status === "success") {
-        const formatted = (res.data.data || []).map((item: any) => ({
-          ...item,
-          status: "Complete", // mark as completed connection
-          request_type: "History"
-        }));
-
-        setActiveConnections(formatted);
-      }
-    } catch (err) {
-      console.error("Failed to fetch active connections", err);
-    }
-  };
 
   useEffect(() => {
     if (activeTab === "test") {
@@ -458,7 +449,6 @@ const Notifications: React.FC = () => {
 
     if (activeTab === "profile") {
       fetchProfileRequests();
-      fetchActiveConnections();
     }
   }, [activeTab]);
   return (
@@ -1060,15 +1050,12 @@ const Notifications: React.FC = () => {
           {/* Inner Tabs / Filters */}
           <div className="flex flex-wrap gap-2">
             {[
-              { label: "All", key: "All" as const },
-              { label: "Complete", key: "Complete" as const },
-              { label: "Pending", key: "Pending" as const },
-              { label: "Expire", key: "Expired" as const },
+              { label: "All", key: "All" as const, countKey: "all" },
+              { label: "Complete", key: "Complete" as const, countKey: "complete" },
+              { label: "Pending", key: "Pending" as const, countKey: "pending" },
+              { label: "Expire", key: "Expired" as const, countKey: "expired" },
             ].map((f) => {
-              const count =
-                f.key === "All"
-                  ? allProfileItems.length
-                  : allProfileItems.filter((p) => p.status === f.key).length;
+              const count = profileSummary?.[f.countKey] || 0;
               return (
                 <button
                   key={f.key}
@@ -1097,19 +1084,23 @@ const Notifications: React.FC = () => {
 
           {/*Profile Invitation Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
-            {allProfileItems
-              .filter((p) => profileFilter === "All" || p.status === profileFilter)
+            {profileRequests
+              .filter((p) => profileFilter === "All" || p.status_label === profileFilter || (profileFilter === "Complete" && p.status_label === "Accepted") || (profileFilter === "Pending" && p.status_label === "Pending") || (profileFilter === "Expired" && p.status_label === "Rejected"))
               .map((p) => {
-                const isExpanded = profileExpandedId === p.id;
+                const isExpanded = profileExpandedId === p.link_id;
+                
+                // mapped backwards compatibility
+                const mappedStatus = p.status_label === "Accepted" ? "Complete" : p.status_label === "Rejected" ? "Expired" : p.status_label;
+
                 return (
                   <div
-                    key={p.id}
+                    key={p.link_id}
                     className="bg-white rounded-2xl border border-l-4 border-l-gray-100 border-t-gray-100 border-r-gray-100 border-b-gray-100 shadow-sm transition-all duration-300 overflow-hidden hover:shadow-md"
                     style={{
                       borderLeftColor:
-                        p.status === "Complete"
+                        mappedStatus === "Complete"
                           ? "#22C55E"
-                          : p.status === "Pending"
+                          : mappedStatus === "Pending"
                             ? "#FBBF24"
                             : "#EF4444",
                     }}
@@ -1117,30 +1108,30 @@ const Notifications: React.FC = () => {
                     <div
                       className="flex items-center gap-4 p-5 cursor-pointer"
                       onClick={() =>
-                        setProfileExpandedId(isExpanded ? null : p.id)
+                        setProfileExpandedId(isExpanded ? null : p.link_id)
                       }
                     >
                       {/* Avatar */}
                       <div
-                        className={`flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br ${avatarGradients[p.id % avatarGradients.length] || avatarGradients[0]} flex items-center justify-center text-white text-lg font-bold shadow-sm`}
+                        className={`flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br ${avatarGradients[p.link_id % avatarGradients.length] || avatarGradients[0]} flex items-center justify-center text-white text-lg font-bold shadow-sm`}
                       >
-                        {(p.name || "U").charAt(0).toUpperCase()}
+                        {(p.full_name || p.username || "U").charAt(0).toUpperCase()}
                       </div>
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-0.5">
                           <span className="text-sm font-bold text-gray-800">
-                            {p.name}
+                            {p.full_name || p.username}
                           </span>
                           {/* Status badge */}
                           <span
-                            className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full ${profileStatusConfig[p.status as ProfileStatus]?.bg || "bg-gray-50"} ${profileStatusConfig[p.status as ProfileStatus]?.text || "text-gray-500"}`}
+                            className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full ${profileStatusConfig[mappedStatus as ProfileStatus]?.bg || "bg-gray-50"} ${profileStatusConfig[mappedStatus as ProfileStatus]?.text || "text-gray-500"}`}
                           >
                             <span
-                              className={`w-1.5 h-1.5 rounded-full ${profileStatusConfig[p.status as ProfileStatus]?.dot || "bg-gray-300"}`}
+                              className={`w-1.5 h-1.5 rounded-full ${profileStatusConfig[mappedStatus as ProfileStatus]?.dot || "bg-gray-300"}`}
                             />
-                            {profileStatusConfig[p.status as ProfileStatus]?.label || p.status}
+                            {profileStatusConfig[mappedStatus as ProfileStatus]?.label || mappedStatus}
                           </span>
                         </div>
                         {/* <p className="text-xs text-gray-500 truncate">
@@ -1154,17 +1145,19 @@ const Notifications: React.FC = () => {
                             ? "Sent you a mapping request"
                             : "You sent a mapping request"}
                         </p>
-                        <div className="flex items-center gap-1 mt-1">
-                          <span
-                            className="material-symbols-outlined text-gray-300"
-                            style={{ fontSize: "12px" }}
-                          >
-                            schedule
-                          </span>
-                          <span className="text-[11px] text-gray-400">
-                            {new Date(p.request_date).toLocaleDateString()}
-                          </span>
-                        </div>
+                        {p.request_date || p.connected_on ? (
+                          <div className="flex items-center gap-1 mt-1">
+                            <span
+                              className="material-symbols-outlined text-gray-300"
+                              style={{ fontSize: "12px" }}
+                            >
+                              schedule
+                            </span>
+                            <span className="text-[11px] text-gray-400">
+                              {new Date(p.request_date || p.connected_on).toLocaleDateString()}
+                            </span>
+                          </div>
+                        ) : null}
                       </div>
 
                       {/* Expand chevron */}
@@ -1179,23 +1172,23 @@ const Notifications: React.FC = () => {
                     {/* Expandable Content */}
                     {isExpanded && (
                       <div className="border-t border-gray-100 px-4 pb-5 pt-4 space-y-4">
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                           {/* Role */}
                           <div className="bg-gray-50 rounded-xl p-3">
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
-                              Role
+                              Username
                             </p>
                             <p className="text-xs font-semibold text-gray-700">
-                              {p.role}
+                              {p.username || "—"}
                             </p>
                           </div>
 
                           {/* Email */}
-                          <div className="bg-gray-50 rounded-xl p-3">
+                          <div className="bg-gray-50 rounded-xl p-3 overflow-hidden">
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
                               Email
                             </p>
-                            <p className="text-xs font-semibold text-gray-700 break-all">
+                            <p className="text-xs font-semibold text-gray-700 break-all truncate" title={p.email || ""}>
                               {p.email || "—"}
                             </p>
                           </div>
@@ -1206,39 +1199,44 @@ const Notifications: React.FC = () => {
                               Phone
                             </p>
                             <p className="text-xs font-semibold text-gray-700">
-                              {p.phone || "—"}
-                            </p>
-                          </div>
-
-                          {/* Request Date */}
-                          <div className="bg-gray-50 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
-                              Requested On
-                            </p>
-                            <p className="text-xs font-semibold text-gray-700">
-                              {/* {new Date(p.request_date).toLocaleDateString()} */}
-                              {new Date(p.request_date || p.connected_on).toLocaleDateString()}
+                              {p.mobile || p.phone || "—"}
                             </p>
                           </div>
                         </div>
 
-                        <span
-                          className="material-symbols-outlined text-base"
-                          style={{
-                            fontVariationSettings: "'wght' 500, 'FILL' 1",
-                          }}
-                        >
-                          {p.status === "Complete"
-                            ? "check_circle"
-                            : p.status === "Pending"
-                              ? "schedule"
-                              : "cancel"}
-                        </span>
-                        {p.status === "Complete"
-                          ? "You have accepted this invitation."
-                          : p.status === "Pending"
-                            ? "This invitation is pending your response."
-                            : "This invitation has expired."}
+                        <div className="flex items-center gap-2 mt-4">
+                          <span
+                            className={`material-symbols-outlined text-base ${mappedStatus === "Complete"
+                                ? "text-green-500"
+                                : mappedStatus === "Pending"
+                                  ? "text-amber-500"
+                                  : "text-red-500"
+                              }`}
+                            style={{
+                              fontVariationSettings: "'wght' 500, 'FILL' 1",
+                            }}
+                          >
+                            {mappedStatus === "Complete"
+                              ? "check_circle"
+                              : mappedStatus === "Pending"
+                                ? "schedule"
+                                : "cancel"}
+                          </span>
+                          <span
+                            className={`text-sm font-semibold ${mappedStatus === "Complete"
+                                ? "text-green-600"
+                                : mappedStatus === "Pending"
+                                  ? "text-amber-600"
+                                  : "text-red-600"
+                              }`}
+                          >
+                            {mappedStatus === "Complete"
+                              ? "You have accepted this invitation."
+                              : mappedStatus === "Pending"
+                                ? "This invitation is pending your response."
+                                : "This invitation has expired."}
+                          </span>
+                        </div>
                         {p.request_type === "Received" && p.can_accept && !p.connected_on && (
                           <div className="flex gap-3 pt-2">
                             <button

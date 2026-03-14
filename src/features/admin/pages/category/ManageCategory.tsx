@@ -27,7 +27,7 @@ export const ManageCategories: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 5;
 
   const fetchCategories = async () => {
     setIsLoading(true);
