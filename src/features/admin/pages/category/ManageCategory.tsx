@@ -158,7 +158,7 @@ export const ManageCategories: React.FC = () => {
             <Search className="absolute left-3 text-gray-400" size={18} />
             <input
               type="text"
-              placeholder="Search anything..."
+              placeholder="Search category..."
               className="pl-10 pr-4 py-2 border border-gray-200 dark:border-secondary-600 rounded-md w-full bg-white dark:bg-secondary-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#b0cb1f]/50 transition-shadow text-primary dark:text-white"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -191,7 +191,7 @@ export const ManageCategories: React.FC = () => {
             {/* GREEN Table Header */}
             <thead className="bg-[#b0cb1f] text-gray-900 font-semibold border-b border-gray-200 dark:border-secondary-700">
               <tr className="divide-x divide-gray-900/20">
-                <th className="px-6 py-4 text-center w-24">ID</th>
+                <th className="px-6 py-4 text-center w-24">Sl. No.</th>
                 <th className="px-6 py-4 text-center">Category Name</th>
                 <th className="px-6 py-4 text-center w-32">Action</th>
               </tr>
