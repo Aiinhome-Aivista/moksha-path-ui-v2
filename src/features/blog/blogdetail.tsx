@@ -171,12 +171,7 @@ export const BlogDetail = () => {
                 .blog-content-rendered th, .blog-content-rendered td { border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; }
                 .blog-content-rendered th { background-color: #f3f4f6; font-weight: 700; }
 
-                /* Dark mode styles */
-                .dark .blog-content-rendered h1, .dark .blog-content-rendered h2, .dark .blog-content-rendered h3, .dark .blog-content-rendered strong { color: #f9fafb; }
-                .dark .blog-content-rendered p { color: #d1d5db; }
-                .dark .blog-content-rendered blockquote { border-color: #4b5563; color: #9ca3af; }
-                .dark .blog-content-rendered th, .dark .blog-content-rendered td { border-color: #4b5563; }
-                .dark .blog-content-rendered th { background-color: #374151; }
+
               `}</style>
 
               {/* Added Previous / Next Navigation Section */}
