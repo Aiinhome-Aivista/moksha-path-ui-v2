@@ -132,7 +132,7 @@
 // export default Header;
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useModal } from "../../features/auth/context/AuthContext";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { LogoutConfirmationModal } from "../../features/auth/modal/LogoutConfirmationModal";
@@ -149,6 +149,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
   const { openSignIn, clearMenu } = useModal();
   const { isAuthenticated, logout, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const { showToast } = useToast();
@@ -226,7 +227,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
               >
                 Blogs
               </button>
-              {!isAuthenticated && (
+              {!isAuthenticated && !location.pathname.startsWith('/admin') && (
                 <button
                   onClick={openSignIn}
                   className="text-sm font-semibold text-gray-700 hover:text-gray-900"
@@ -239,7 +240,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
             {/* THIS IS THE ONLY CHANGE: Wrapper made relative, Dropdown moved inside */}
             {/* Outer container can keep gap if you have other items, but remove relative from here */}
             <div className="flex items-center justify-end ml-4">
-              {isAuthenticated && (
+              {isAuthenticated && user?.role !== 'admin' && (
                 <div className="relative flex items-center justify-center">
                   <button
                     onClick={() =>
