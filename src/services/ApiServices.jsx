@@ -636,6 +636,11 @@ class ApiServices {
       payload
     );
   }
+
+  // Get active parent/student connections
+  getActiveUserStudentParentList() {
+    return axiosInstance.get(GET_APIS.get_active_user_student_parent_list);
+  }
 }
 
 export default new ApiServices();

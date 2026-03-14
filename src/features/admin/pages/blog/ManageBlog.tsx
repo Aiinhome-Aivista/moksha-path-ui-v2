@@ -168,7 +168,7 @@ export const ManageBlog: React.FC = () => {
             {/* GREEN Table Header */}
             <thead className="bg-[#b0cb1f] text-gray-900 font-semibold border-b border-gray-200 dark:border-secondary-700">
               <tr className="divide-x divide-gray-900/20">
-                <th className="px-6 py-4 text-center">ID</th>
+                <th className="px-6 py-4 text-center">Sl. No.</th>
                 <th className="px-6 py-4 text-center">Title</th>
                 <th className="px-6 py-4 text-center">Content Preview</th>
                 <th className="px-6 py-4 text-center">Category</th>
