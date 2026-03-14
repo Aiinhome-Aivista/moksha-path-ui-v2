@@ -63,6 +63,10 @@ const StudentProfile: React.FC = () => {
   //for basic info
   const [profileInfo, setProfileInfo] = useState<any>(null);
 
+  // for active connections (Guardian/Student)
+  const [activeConnections, setActiveConnections] = useState<any[]>([]);
+  const [loadingConnections, setLoadingConnections] = useState(false);
+
   // ── Profile image ──────────────────────────
   useEffect(() => {
     const fetchProfileImage = async () => {
@@ -118,6 +122,38 @@ const StudentProfile: React.FC = () => {
     };
 
     fetchProfileInfo();
+  }, []);
+
+  useEffect(() => {
+    const fetchConnections = async () => {
+      try {
+        setLoadingConnections(true);
+        const res = await ApiServices.getActiveUserConnections();
+        if (res.data?.status === "success") {
+          const connections = res.data.data || [];
+          setActiveConnections(connections);
+
+          // If we have at least one connection, pre-fill formik for the secondary section
+          if (connections.length > 0) {
+            const first = connections[0];
+            formik.setValues((prev) => ({
+              ...prev,
+              guardianName: first.name || "",
+              guardianEmail: first.email || "",
+              guardianPhone: first.phone || "",
+              address: first.address || prev.address,
+              dateOfBirth: first.dob || prev.dateOfBirth,
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Connections fetch failed", error);
+      } finally {
+        setLoadingConnections(false);
+      }
+    };
+
+    fetchConnections();
   }, []);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -536,58 +572,71 @@ const StudentProfile: React.FC = () => {
               }
             >
               <div className="p-4 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField
-                    label={secondSectionConfig.labels.name}
-                    name="guardianName"
-                    value={formik.values.guardianName}
-                    onChange={formik.handleChange}
-                    isEditing={isEditingGuardian}
-                  />
-                  {isParent ? (
-                    <FormField
-                      label="Date of Birth"
-                      name="dateOfBirth"
-                      value={formik.values.dateOfBirth}
-                      onChange={formik.handleChange}
-                      isEditing={isEditingGuardian}
-                    />
-                  ) : (
-                    <FormField
-                      label="Relation"
-                      name="guardianRelation"
-                      value={formik.values.guardianRelation}
-                      onChange={formik.handleChange}
-                      isEditing={isEditingGuardian}
-                    />
-                  )}
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField
-                    label={secondSectionConfig.labels.email}
-                    name="guardianEmail"
-                    value={formik.values.guardianEmail}
-                    onChange={formik.handleChange}
-                    isEditing={isEditingGuardian}
-                  />
-                  <FormField
-                    label={secondSectionConfig.labels.phone}
-                    name="guardianPhone"
-                    value={formik.values.guardianPhone}
-                    onChange={formik.handleChange}
-                    isEditing={isEditingGuardian}
-                  />
-                  {isParent && (
-                    <FormField
-                      label="Address"
-                      name="address"
-                      value={formik.values.address}
-                      onChange={formik.handleChange}
-                      isEditing={isEditingGuardian}
-                      icon={<MapPin size={10} className="text-primary" />}
-                    />
-                  )}
-                </div>
+                {loadingConnections ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="w-6 h-6 border-2 border-gray-200 border-t-[#b0cb1f] rounded-full animate-spin" />
+                  </div>
+                ) : activeConnections.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-6 text-gray-400">
+                    <Users size={24} className="mb-2 opacity-20" />
+                    <p className="text-xs italic">No linked {isParent ? "student" : "guardian"} found</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        label={secondSectionConfig.labels.name}
+                        name="guardianName"
+                        value={formik.values.guardianName}
+                        onChange={formik.handleChange}
+                        isEditing={isEditingGuardian}
+                      />
+                      {isParent ? (
+                        <FormField
+                          label="Date of Birth"
+                          name="dateOfBirth"
+                          value={formik.values.dateOfBirth}
+                          onChange={formik.handleChange}
+                          isEditing={isEditingGuardian}
+                        />
+                      ) : (
+                        <FormField
+                          label="Relation"
+                          name="guardianRelation"
+                          value={formik.values.guardianRelation}
+                          onChange={formik.handleChange}
+                          isEditing={isEditingGuardian}
+                        />
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        label={secondSectionConfig.labels.email}
+                        name="guardianEmail"
+                        value={formik.values.guardianEmail}
+                        onChange={formik.handleChange}
+                        isEditing={isEditingGuardian}
+                      />
+                      <FormField
+                        label={secondSectionConfig.labels.phone}
+                        name="guardianPhone"
+                        value={formik.values.guardianPhone}
+                        onChange={formik.handleChange}
+                        isEditing={isEditingGuardian}
+                      />
+                      {isParent && (
+                        <FormField
+                          label="Address"
+                          name="address"
+                          value={formik.values.address}
+                          onChange={formik.handleChange}
+                          isEditing={isEditingGuardian}
+                          icon={<MapPin size={10} className="text-primary" />}
+                        />
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </SectionCard>
           )}

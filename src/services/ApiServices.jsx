@@ -617,6 +617,9 @@ class ApiServices {
     return axiosInstance.post(POST_APIS.add_mapping, payload);
   }
 
+  getActiveUserConnections() {
+    return axiosInstance.get(GET_APIS.active_user_connections);
+  }
   // =======================
   // Parent Student notification APIs
   // =======================
