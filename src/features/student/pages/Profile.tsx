@@ -544,7 +544,7 @@ const StudentProfile: React.FC = () => {
                     <p className="text-xs italic">No linked {isParent ? "student" : "guardian"} found</p>
                   </div>
                 ) : (
-                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="space-y-2 max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
                     {activeConnections.map((connection: any, index: number) => (
                       <React.Fragment key={connection.link_id || connection.user_id}>
                         <div className="rounded-xl p-4 relative">

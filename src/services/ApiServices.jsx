@@ -624,9 +624,9 @@ class ApiServices {
   // Parent Student notification APIs
   // =======================
 
-  // Get pending mapping requests
+  // Get pending mapping requests (Now using all summary)
   getPendingMappingRequests() {
-    return axiosInstance.get(GET_APIS.get_pending_mapping_requests);
+    return axiosInstance.get(GET_APIS.get_invitation_all_summary);
   }
 
   // Accept / Delete mapping request

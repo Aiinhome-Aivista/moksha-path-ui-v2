@@ -94,6 +94,7 @@ export const GET_APIS = {
   //profile notification
   get_pending_mapping_requests: `${BASE_URL}user/get_pending_mapping_requests`,
   get_active_user_student_parent_list: `${BASE_URL}user/get_active_user_student_parent_list`,
+  get_invitation_all_summary: `${BASE_URL}user/get_invitation_all_summary`,
 };
 
 export const POST_APIS = {
