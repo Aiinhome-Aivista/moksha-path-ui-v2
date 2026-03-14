@@ -152,7 +152,7 @@ export const ManageSEO: React.FC = () => {
                         {/* GREEN Table Header */}
                         <thead className="bg-[#b0cb1f] text-gray-900 font-semibold border-b border-gray-200 dark:border-secondary-700">
                             <tr className="divide-x divide-gray-900/20">
-                                <th className="px-6 py-4 text-center whitespace-nowrap">ID</th>
+                                <th className="px-6 py-4 text-center whitespace-nowrap">Sl. No.</th>
                                 <th className="px-6 py-4 text-center whitespace-nowrap">Page Route</th>
                                 <th className="px-6 py-4 text-center whitespace-nowrap">Title</th>
                                 <th className="px-6 py-4 text-center whitespace-nowrap">Description</th>

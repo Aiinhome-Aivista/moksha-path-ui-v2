@@ -125,7 +125,7 @@ export const AdminDashboard: React.FC = () => {
 
             <div className="bg-white dark:bg-secondary-800 rounded-2xl p-6 shadow-sm border border-secondary-200 dark:border-secondary-700">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-secondary-900 dark:text-white flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-primary dark:text-white flex items-center gap-2">
                         <FileText className="text-[#b0cb1f]" size={20} />
                         Recent Blog Posts
                     </h2>

@@ -49,7 +49,7 @@ const StudentProfile: React.FC = () => {
   const { user, roleConfig } = useAuth();
   // const { openProfileSelection, setProfilesList } = useModal();
   const [isEditingBasic, setIsEditingBasic] = useState(false);
-  const [isEditingGuardian, setIsEditingGuardian] = useState(false);
+  // const [isEditingGuardian, setIsEditingGuardian] = useState(false);
   // const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [profileImage, setProfileImage] = useState<string>("");
@@ -133,18 +133,7 @@ const StudentProfile: React.FC = () => {
           const connections = res.data.data || [];
           setActiveConnections(connections);
 
-          // If we have at least one connection, pre-fill formik for the secondary section
-          if (connections.length > 0) {
-            const first = connections[0];
-            formik.setValues((prev) => ({
-              ...prev,
-              guardianName: first.name || "",
-              guardianEmail: first.email || "",
-              guardianPhone: first.phone || "",
-              address: first.address || prev.address,
-              dateOfBirth: first.dob || prev.dateOfBirth,
-            }));
-          }
+          // removed formik prefilling since we're using ReadOnlyField mapping directly
         }
       } catch (error) {
         console.error("Connections fetch failed", error);
@@ -202,25 +191,19 @@ const StudentProfile: React.FC = () => {
 
   // ── Formik ─────────────────────────────────
   const initialValues: ProfileFormValues = {
-    address: "123 Learning Street, Education City, EC 12345",
-    academic: "2026-2027",
-    board: "CBSE",
-    school: "Moksha International School",
+    address: "",
+    academic: "",
+    board: "",
+    school: "",
     dateOfBirth: "",
-    grade: "11th",
-    section: "A",
-    enrollmentDate: "March 1, 2026",
-    guardianName: "Robert Doe",
-    guardianRelation: "Father",
-    guardianEmail: "robert.doe@example.com",
-    guardianPhone: "+91 98765 99999",
-    courses: [
-      { name: "Advanced Mathematics", grade: "A", progress: 85 },
-      { name: "Physics", grade: "A-", progress: 78 },
-      { name: "English Literature", grade: "B+", progress: 92 },
-      { name: "Computer Science", grade: "A", progress: 95 },
-      { name: "Chemistry", grade: "B+", progress: 72 },
-    ],
+    grade: "",
+    section: "",
+    enrollmentDate: "",
+    guardianName: "",
+    guardianRelation: "",
+    guardianEmail: "",
+    guardianPhone: "",
+    courses: [],
   };
 
   // const formik = useFormik<ProfileFormValues>({
@@ -257,7 +240,7 @@ const StudentProfile: React.FC = () => {
   // });
 
   // ── Helpers ────────────────────────────────
-  
+
   const formik = useFormik<ProfileFormValues>({
     initialValues,
     onSubmit: async (values) => {
@@ -289,18 +272,18 @@ const StudentProfile: React.FC = () => {
   const isParent = user?.role === "parent";
 
   const secondSectionConfig = {
-    title: isParent ? "Student Info" : "Guardian Info",
+    title: isParent ? "Child Info" : "Guardian Info",
     labels: {
-      name: isParent ? "Student Name" : "Name",
-      email: isParent ? "Student Email" : "Email",
-      phone: isParent ? "Student Phone" : "Phone",
+      name: isParent ? "Child Name" : "Name",
+      email: isParent ? "Child Email" : "Email",
+      phone: isParent ? "Child Phone" : "Phone",
     },
   };
 
   const handleCancel = (section: "basic" | "guardian") => {
     formik.resetForm();
     if (section === 'basic') setIsEditingBasic(false);
-    if (section === 'guardian') setIsEditingGuardian(false);
+    // if (section === 'guardian') setIsEditingGuardian(false);
   };
 
   const EditButtons = ({
@@ -353,18 +336,6 @@ const StudentProfile: React.FC = () => {
       )}
     </div>
   );
-
-  // const getGradeColor = (grade: string) => {
-  //     if (grade.startsWith('A')) return 'bg-[#b0cb1f]/10 text-primary';
-  //     if (grade.startsWith('B')) return 'bg-blue-50 text-primary';
-  //     return 'bg-gray-100 text-primary';
-  // };
-
-  // const getProgressColor = (value: number) => {
-  //     if (value >= 85) return '#b0cb1f';
-  //     if (value >= 70) return '#f97316';
-  //     return '#ef4444';
-  // };
   return (
     <form onSubmit={formik.handleSubmit} className="p-4 sm:p-5">
       {/* ── Profile Hero Card ── */}
@@ -393,7 +364,7 @@ const StudentProfile: React.FC = () => {
                   className="w-full h-full flex items-center justify-center text-xl font-black text-white"
                   style={{ background: "rgba(255,255,255,0.25)" }}
                 >
-                  {user?.name?.charAt(0).toUpperCase() || "S"}
+                  {user?.name?.charAt(0)?.toUpperCase()}
                 </div>
               )}
             </div>
@@ -430,11 +401,11 @@ const StudentProfile: React.FC = () => {
           </div>
           <div className="relative flex-1 min-w-0">
             <h1 className="text-lg font-bold text-primary leading-none">
-              {user?.name || "Student Name"}
+              {user?.name}
             </h1>
             <div className="flex items-center gap-1.5 mt-1">
               <span className="text-xs text-primary font-medium opacity-90 capitalize">
-                {roleConfig?.label || "Student"}
+                {roleConfig?.label}
               </span>
               <span className="text-primary/30 text-[10px]">•</span>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-primary border border-white/30">
@@ -561,15 +532,6 @@ const StudentProfile: React.FC = () => {
             <SectionCard
               icon={<Users size={14} className="text-primary" />}
               title={secondSectionConfig.title}
-              action={
-                <EditButtons
-                  isEditing={isEditingGuardian}
-                  onEdit={() => setIsEditingGuardian(true)}
-                  onCancel={() => handleCancel("guardian")}
-                  onSave={handleSave}
-                  isSaving={isSaving}
-                />
-              }
             >
               <div className="p-4 space-y-4">
                 {loadingConnections ? (
@@ -582,60 +544,67 @@ const StudentProfile: React.FC = () => {
                     <p className="text-xs italic">No linked {isParent ? "student" : "guardian"} found</p>
                   </div>
                 ) : (
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        label={secondSectionConfig.labels.name}
-                        name="guardianName"
-                        value={formik.values.guardianName}
-                        onChange={formik.handleChange}
-                        isEditing={isEditingGuardian}
-                      />
-                      {isParent ? (
-                        <FormField
-                          label="Date of Birth"
-                          name="dateOfBirth"
-                          value={formik.values.dateOfBirth}
-                          onChange={formik.handleChange}
-                          isEditing={isEditingGuardian}
-                        />
-                      ) : (
-                        <FormField
-                          label="Relation"
-                          name="guardianRelation"
-                          value={formik.values.guardianRelation}
-                          onChange={formik.handleChange}
-                          isEditing={isEditingGuardian}
-                        />
-                      )}
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        label={secondSectionConfig.labels.email}
-                        name="guardianEmail"
-                        value={formik.values.guardianEmail}
-                        onChange={formik.handleChange}
-                        isEditing={isEditingGuardian}
-                      />
-                      <FormField
-                        label={secondSectionConfig.labels.phone}
-                        name="guardianPhone"
-                        value={formik.values.guardianPhone}
-                        onChange={formik.handleChange}
-                        isEditing={isEditingGuardian}
-                      />
-                      {isParent && (
-                        <FormField
-                          label="Address"
-                          name="address"
-                          value={formik.values.address}
-                          onChange={formik.handleChange}
-                          isEditing={isEditingGuardian}
-                          icon={<MapPin size={10} className="text-primary" />}
-                        />
-                      )}
-                    </div>
-                  </>
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+                    {activeConnections.map((connection: any, index: number) => (
+                      <React.Fragment key={connection.link_id || connection.user_id}>
+                        <div className="rounded-xl p-4 relative">
+                          {/* Optional Number badge like "Child 1" / "Guardian 1" */}
+                          <div className="absolute -top-1 left-4 px-2 py-0.5 bg-white text-[10px] font-bold text-primary uppercase tracking-wider border border-gray-100 rounded-full">
+                            {isParent ? "Child" : "Guardian"} {index + 1}
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                            <ReadOnlyField
+                              label={secondSectionConfig.labels.name}
+                              value={connection.name || ""}
+                            />
+                            {isParent ? (
+                              <ReadOnlyField
+                                label="Date of Birth"
+                                value={connection.dob || "NA"}
+                              />
+                            ) : (
+                              <ReadOnlyField
+                                label="Relation"
+                                value={connection.role || ""}
+                              />
+                            )}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                            <ReadOnlyField
+                              label={secondSectionConfig.labels.email}
+                              value={connection.email || ""}
+                              icon={<Mail size={10} className="text-primary" />}
+                            />
+                            <ReadOnlyField
+                              label={secondSectionConfig.labels.phone}
+                              value={connection.phone || ""}
+                              icon={<Phone size={10} className="text-primary" />}
+                            />
+                            {isParent && (
+                              <ReadOnlyField
+                                label="Address"
+                                value={connection.address || ""}
+                                icon={<MapPin size={10} className="text-primary" />}
+                              />
+                            )}
+                          </div>
+                        </div>
+                        {/* Divider between items */}
+                        {index < activeConnections.length - 1 && (
+                          <div className="relative flex items-center py-2">
+                            <div className="flex-grow border-t border-gray-100"></div>
+                            <span className="flex-shrink-0 mx-4 bg-white text-gray-300">
+                              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'wght' 300" }}>
+                                link
+                              </span>
+                            </span>
+                            <div className="flex-grow border-t border-gray-100"></div>
+                          </div>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
                 )}
               </div>
             </SectionCard>
@@ -768,10 +737,13 @@ const AddProfileModal: React.FC<{
     try {
       setIsLoading(true);
       setError("");
-      
-      const payload = {
-        student_user_id: selectedUser.user_id
-      };
+
+      const payload: any = {};
+      if (targetRole === "parent") {
+        payload.parent_user_id = selectedUser.user_id;
+      } else {
+        payload.student_user_id = selectedUser.user_id;
+      }
 
       const response = await ApiServices.addParentStudentMapping(payload);
       if (response.data?.status === "success") {
@@ -866,7 +838,7 @@ const AddProfileModal: React.FC<{
           )}
 
           {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
-          {success && <p className="text-xs text-green-600 font-bold flex items-center gap-1"><CheckCircle2 size={12}/> {success}</p>}
+          {success && <p className="text-xs text-green-600 font-bold flex items-center gap-1"><CheckCircle2 size={12} /> {success}</p>}
 
           <div className="flex gap-3 pt-2">
             <button
