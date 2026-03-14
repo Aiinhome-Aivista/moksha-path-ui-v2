@@ -157,6 +157,8 @@ const Notifications: React.FC = () => {
   const [profileRequests, setProfileRequests] = useState<any[]>([]);
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState("");
+  const [activeConnections, setActiveConnections] = useState<any[]>([]);
+  const allProfileItems = [...profileRequests, ...activeConnections];
 
   const navigate = useNavigate();
   // ── fetch on mount ─────────────────────────────────────────────────────
@@ -431,6 +433,24 @@ const Notifications: React.FC = () => {
     }
   };
 
+  const fetchActiveConnections = async () => {
+    try {
+      const res = await ApiServices.getActiveUserStudentParentList();
+
+      if (res.data?.status === "success") {
+        const formatted = (res.data.data || []).map((item: any) => ({
+          ...item,
+          status: "Complete", // mark as completed connection
+          request_type: "History"
+        }));
+
+        setActiveConnections(formatted);
+      }
+    } catch (err) {
+      console.error("Failed to fetch active connections", err);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === "test") {
       fetchTestNotifications();
@@ -438,6 +458,7 @@ const Notifications: React.FC = () => {
 
     if (activeTab === "profile") {
       fetchProfileRequests();
+      fetchActiveConnections();
     }
   }, [activeTab]);
   return (
@@ -1046,12 +1067,8 @@ const Notifications: React.FC = () => {
             ].map((f) => {
               const count =
                 f.key === "All"
-                  ? 3
-                  : f.key === "Complete"
-                    ? 1
-                    : f.key === "Pending"
-                      ? 1
-                      : 1;
+                  ? allProfileItems.length
+                  : allProfileItems.filter((p) => p.status === f.key).length;
               return (
                 <button
                   key={f.key}
@@ -1078,9 +1095,9 @@ const Notifications: React.FC = () => {
             })}
           </div>
 
-          {/* Hardcoded Invitation Cards Grid */}
+          {/*Profile Invitation Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
-            {profileRequests
+            {allProfileItems
               .filter((p) => profileFilter === "All" || p.status === profileFilter)
               .map((p) => {
                 const isExpanded = profileExpandedId === p.id;
@@ -1163,60 +1180,66 @@ const Notifications: React.FC = () => {
                     {isExpanded && (
                       <div className="border-t border-gray-100 px-4 pb-5 pt-4 space-y-4">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                          {/* Role */}
                           <div className="bg-gray-50 rounded-xl p-3">
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
-                              Plan
+                              Role
                             </p>
                             <p className="text-xs font-semibold text-gray-700">
-                              {p.plan}
+                              {p.role}
                             </p>
                           </div>
+
+                          {/* Email */}
                           <div className="bg-gray-50 rounded-xl p-3">
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
-                              Subscription
+                              Email
+                            </p>
+                            <p className="text-xs font-semibold text-gray-700 break-all">
+                              {p.email || "—"}
+                            </p>
+                          </div>
+
+                          {/* Phone */}
+                          <div className="bg-gray-50 rounded-xl p-3">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
+                              Phone
                             </p>
                             <p className="text-xs font-semibold text-gray-700">
-                              {p.subscription}
+                              {p.phone || "—"}
                             </p>
                           </div>
+
+                          {/* Request Date */}
                           <div className="bg-gray-50 rounded-xl p-3">
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
-                              Invited On
+                              Requested On
                             </p>
                             <p className="text-xs font-semibold text-gray-700">
-                              {p.invitedOn}
-                            </p>
-                          </div>
-                          <div className="bg-gray-50 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
-                              Expires On
-                            </p>
-                            <p
-                              className={`text-xs font-semibold ${p.status === "Expired" ? "text-red-500" : "text-amber-600"}`}
-                            >
-                              {p.expiresOn}
+                              {/* {new Date(p.request_date).toLocaleDateString()} */}
+                              {new Date(p.request_date || p.connected_on).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
 
-                          <span
-                            className="material-symbols-outlined text-base"
-                            style={{
-                              fontVariationSettings: "'wght' 500, 'FILL' 1",
-                            }}
-                          >
-                            {p.status === "Complete"
-                              ? "check_circle"
-                              : p.status === "Pending"
-                                ? "schedule"
-                                : "cancel"}
-                          </span>
+                        <span
+                          className="material-symbols-outlined text-base"
+                          style={{
+                            fontVariationSettings: "'wght' 500, 'FILL' 1",
+                          }}
+                        >
                           {p.status === "Complete"
-                            ? "You have accepted this invitation."
+                            ? "check_circle"
                             : p.status === "Pending"
-                              ? "This invitation is pending your response."
-                              : "This invitation has expired."}
-                        {p.request_type === "Received" && p.can_accept && (
+                              ? "schedule"
+                              : "cancel"}
+                        </span>
+                        {p.status === "Complete"
+                          ? "You have accepted this invitation."
+                          : p.status === "Pending"
+                            ? "This invitation is pending your response."
+                            : "This invitation has expired."}
+                        {p.request_type === "Received" && p.can_accept && !p.connected_on && (
                           <div className="flex gap-3 pt-2">
                             <button
                               onClick={() => manageProfileRequest(p.link_id, "DELETE")}
