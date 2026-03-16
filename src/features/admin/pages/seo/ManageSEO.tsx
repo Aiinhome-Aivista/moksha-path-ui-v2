@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { ListPlus, Search, Edit, Trash2, Globe, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { ListPlus, Search, Edit, Trash2,Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import ApiServices from '../../../../services/ApiServices';
 import { useToast } from '../../../../app/providers/ToastProvider';
 
@@ -24,31 +24,74 @@ const searchAnyKey = (dataArray: any[], searchQuery: string) => {
 };
 // ==========================================
 
+// ==========================================
+// GLOBAL DATE FORMATTER (DD/MM/YYYY)
+// ==========================================
+const formatDate = (dateString: string | undefined | null): string => {
+  if (!dateString) return 'N/A';
+  try {
+    const date = new Date(dateString);
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+    }
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  } catch (error) {
+    return 'Invalid Date';
+  }
+};
+// ==========================================
+
 export const ManageSEO: React.FC = () => {
     const [allSeoData, setAllSeoData] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isTableLoading, setIsTableLoading] = useState(true); // For initial page load
+    const [isRefreshing, setIsRefreshing] = useState(false);    // For the refresh button only
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [seoToDelete, setSeoToDelete] = useState<number | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const { showToast } = useToast();
 
-    const fetchSeoData = async () => {
-        setIsLoading(true);
+    // Function 1: Initial Load
+    const loadInitialData = async () => {
+        setIsTableLoading(true);
         try {
             const response = await ApiServices.getBlogSeoSettings();
             if (response.data.code === 200 || response.data.status === 'success') {
                 setAllSeoData(response.data.data || []);
             }
         } catch (error) {
-            console.error("Error fetching SEO data:", error);
+            console.error("Error loading SEO data:", error);
             showToast("Failed to load SEO settings", "error");
         } finally {
-            setIsLoading(false);
+            setIsTableLoading(false);
+        }
+    };
+
+    // Function 2: Manual Refresh (Different Logic Path)
+    const handleManualRefresh = async () => {
+        if (isTableLoading || isRefreshing) return; // Block if already busy
+        setIsRefreshing(true);
+        try {
+            const response = await ApiServices.getBlogSeoSettings();
+            if (response.data.code === 200 || response.data.status === 'success') {
+                setAllSeoData(response.data.data || []);
+                showToast("Data refreshed", "success");
+            } else {
+                showToast("Failed to refresh data", "error");
+            }
+        } catch (error) {
+            console.error("Error refreshing SEO data:", error);
+            showToast("Failed to refresh data", "error");
+        } finally {
+            setIsRefreshing(false);
         }
     };
 
     useEffect(() => {
-        fetchSeoData();
+        loadInitialData();
     }, []);
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -77,7 +120,7 @@ export const ManageSEO: React.FC = () => {
                 showToast(response.data.message || "SEO configuration deleted", "success");
                 setShowDeleteModal(false);
                 setSeoToDelete(null);
-                fetchSeoData();
+                loadInitialData(); // Refetch data after delete
             }
         } catch (error) {
             console.error("Error deleting SEO:", error);
@@ -131,18 +174,23 @@ export const ManageSEO: React.FC = () => {
                         <input
                             type="text"
                             placeholder="Search anything..."
-                            className="pl-10 pr-4 py-2 border border-gray-200 dark:border-secondary-600 rounded-md w-full text-primary dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#b0cb1f]/50 transition-shadow text-black dark:text-white"
+                            className="pl-10 pr-4 py-2 border border-gray-200 dark:border-secondary-600 rounded-md w-full text-primary dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#b0cb1f]/50 transition-shadow text-black dark:text-white disabled:opacity-70 disabled:cursor-not-allowed"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            disabled={isTableLoading || isRefreshing}
                         />
                     </div>
                     <button
-                        onClick={fetchSeoData}
-                        disabled={isLoading}
+                        onClick={handleManualRefresh}
+                        disabled={isTableLoading || isRefreshing}
                         className="p-2 rounded-full hover:bg-secondary-100 dark:hover:bg-secondary-700 text-secondary-500 dark:text-secondary-400 transition-colors disabled:opacity-50 disabled:cursor-wait"
                         title="Refresh"
                     >
-                        <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
+                        {isRefreshing ? (
+                            <div className="w-5 h-5 border-2 border-gray-300 dark:border-secondary-600 border-t-[#b0cb1f] rounded-full animate-spin" />
+                        ) : (
+                            <RefreshCw size={18} />
+                        )}
                     </button>
                 </div>
 
@@ -164,20 +212,32 @@ export const ManageSEO: React.FC = () => {
                         
                         {/* Table Body */}
                         <tbody className="divide-y divide-gray-100 dark:divide-secondary-700">
-                            {isLoading ? (
+                            {isTableLoading ? (
+                                // Initial Page Load Loader
                                 <tr>
-                                    <td colSpan={7}>
-                                        <div className="p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
-                                            <Loader2 size={40} className="text-[#b0cb1f] animate-spin mb-4" />
-                                            <p className="text-gray-500">Loading SEO settings...</p>
+                                    <td colSpan={7} className="p-20 text-center min-h-[300px]">
+                                        <div className="flex flex-col items-center justify-center gap-3">
+                                            <div className="w-10 h-10 border-4 border-secondary-200 dark:border-secondary-700 border-t-[#b0cb1f] rounded-full animate-spin" />
+                                            <p className="text-secondary-500 dark:text-secondary-400 text-sm font-medium">Loading initial data...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : isRefreshing ? (
+                                // Manual Refresh Table Loader
+                                <tr>
+                                    <td colSpan={7} className="p-20 text-center bg-gray-50/50 dark:bg-secondary-800/20 min-h-[300px]">
+                                        <div className="flex flex-col items-center justify-center gap-3">
+                                            <div className="w-8 h-8 border-4 border-secondary-200 dark:border-secondary-700 border-t-[#b0cb1f] rounded-full animate-spin" />
+                                            <p className="text-secondary-500 dark:text-secondary-400 font-medium">Refreshing table data...</p>
                                         </div>
                                     </td>
                                 </tr>
                             ) : currentItems.length > 0 ? (
-                                currentItems.map((seo) => (
+                                // Actual Data Rows
+                                currentItems.map((seo, index) => (
                                     <tr key={seo.id} className="divide-x divide-gray-100 dark:divide-secondary-700 hover:bg-gray-50 dark:hover:bg-secondary-700/50 transition-colors">
                                         <td className="px-6 py-4 text-center text-primary dark:text-gray-300 align-middle">
-                                            {seo.id}
+                                            {startIndex + index + 1}
                                         </td>
                                         <td className="px-6 py-4 text-center text-[#b0cb1f] font-mono text-xs align-middle">
                                             {seo.page_route}
@@ -192,7 +252,7 @@ export const ManageSEO: React.FC = () => {
                                             {seo.seo_keywords || seo.keywords}
                                         </td>
                                         <td className="px-6 py-4 text-center text-primary dark:text-gray-300 whitespace-nowrap align-middle">
-                                            {seo.created_at ? new Date(seo.created_at).toLocaleDateString() : 'N/A'}
+                                            {formatDate(seo.created_at)}
                                         </td>
                                         <td className="px-6 py-4 text-center align-middle">
                                             {/* Horizontal Action Buttons */}
@@ -212,7 +272,7 @@ export const ManageSEO: React.FC = () => {
                                     </tr>
                                 ))
                             ) : (
-                                /* Empty State (Hidden if there is data) */
+                                // No Data Found
                                 <tr>
                                     <td colSpan={7}>
                                         <div className="p-12 text-center text-secondary-500 dark:text-secondary-400 flex flex-col items-center justify-center min-h-[300px]">
@@ -232,7 +292,7 @@ export const ManageSEO: React.FC = () => {
                 </div>
 
                 {/* Pagination Footer */}
-                {totalPages > 1 && (
+                {!isTableLoading && !isRefreshing && totalPages > 1 && (
                     <div className="p-4 border-t border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 flex justify-between items-center">
                         <span className="text-sm text-gray-500 dark:text-gray-400">
                             Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, totalItems)} of {totalItems} entries

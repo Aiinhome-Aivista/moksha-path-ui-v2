@@ -33,9 +33,31 @@ const searchAnyKey = (dataArray: any[], searchQuery: string) => {
 };
 // ==========================================
 
+// ==========================================
+// GLOBAL DATE FORMATTER (DD/MM/YYYY)
+// ==========================================
+const formatDate = (dateString: string | undefined | null): string => {
+  if (!dateString) return 'N/A';
+  try {
+    const date = new Date(dateString);
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+    }
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  } catch (error) {
+    return 'Invalid Date';
+  }
+};
+// ==========================================
+
 export const ManageBlog: React.FC = () => {
   const [blogs, setBlogs] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isTableLoading, setIsTableLoading] = useState(true); // For initial page load
+  const [isRefreshing, setIsRefreshing] = useState(false);    // For the refresh button only
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -44,23 +66,44 @@ export const ManageBlog: React.FC = () => {
   const { showToast } = useToast();
   const POSTS_PER_PAGE = 5;
 
-  const fetchBlogs = async () => {
-    setIsLoading(true);
+  // Function 1: Initial Load
+  const loadInitialData = async () => {
+    setIsTableLoading(true);
     try {
       const response = await ApiServices.getBlogsList();
       if (response.data.code === 200 || response.data.status === "success") {
         setBlogs(response.data.data || []);
       }
     } catch (error) {
-      console.error("Error fetching blogs:", error);
+      console.error("Error loading blogs:", error);
       showToast("Failed to load blogs", "error");
     } finally {
-      setIsLoading(false);
+      setIsTableLoading(false);
+    }
+  };
+
+  // Function 2: Manual Refresh (Different Logic Path)
+  const handleManualRefresh = async () => {
+    if (isTableLoading || isRefreshing) return; // Block if already busy
+    setIsRefreshing(true);
+    try {
+      const response = await ApiServices.getBlogsList();
+      if (response.data.code === 200 || response.data.status === "success") {
+        setBlogs(response.data.data || []);
+        // showToast("Blogs refreshed", "success");
+      } else {
+        showToast("Failed to refresh blogs", "error");
+      }
+    } catch (error) {
+      console.error("Error refreshing blogs:", error);
+      showToast("Failed to refresh blogs", "error");
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
-    fetchBlogs();
+    loadInitialData();
   }, []);
 
   // Reset to page 1 when search query changes
@@ -104,7 +147,7 @@ export const ManageBlog: React.FC = () => {
         );
         setShowDeleteModal(false);
         setBlogToDelete(null);
-        fetchBlogs();
+        loadInitialData(); // Refetch data after delete
       } else {
         showToast(response.data.message || "Failed to delete blog", "error");
       }
@@ -147,18 +190,23 @@ export const ManageBlog: React.FC = () => {
             <input
               type="text"
               placeholder="Search anything..."
-              className="pl-10 pr-4 py-2 border border-gray-200 dark:border-secondary-600 rounded-md w-full text-primary dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#b0cb1f]/50 transition-shadow text-black dark:text-white"
+              className="pl-10 pr-4 py-2 border border-gray-200 dark:border-secondary-600 rounded-md w-full text-primary dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#b0cb1f]/50 transition-shadow text-black dark:text-white disabled:opacity-70 disabled:cursor-not-allowed"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              disabled={isTableLoading || isRefreshing}
             />
           </div>
           <button
-            onClick={fetchBlogs}
-            disabled={isLoading}
+            onClick={handleManualRefresh}
+            disabled={isTableLoading || isRefreshing}
             className="p-2 rounded-full hover:bg-secondary-100 dark:hover:bg-secondary-700 text-secondary-500 dark:text-secondary-400 transition-colors disabled:opacity-50 disabled:cursor-wait"
             title="Refresh"
           >
-            <RefreshCw size={18} className={isLoading ? "animate-spin" : ""} />
+            {isRefreshing ? (
+              <div className="w-5 h-5 border-2 border-gray-300 dark:border-secondary-600 border-t-[#b0cb1f] rounded-full animate-spin" />
+            ) : (
+              <RefreshCw size={18} />
+            )}
           </button>
         </div>
 
@@ -180,7 +228,28 @@ export const ManageBlog: React.FC = () => {
 
             {/* Table Body */}
             <tbody className="divide-y divide-gray-100 dark:divide-secondary-700">
-              {currentBlogs.length > 0 ? (
+              {isTableLoading ? (
+                // Initial Page Load Loader
+                <tr>
+                  <td colSpan={7} className="p-20 text-center min-h-[300px]">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <div className="w-10 h-10 border-4 border-secondary-200 dark:border-secondary-700 border-t-[#b0cb1f] rounded-full animate-spin" />
+                      <p className="text-secondary-500 dark:text-secondary-400 text-sm font-medium">Loading initial data...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : isRefreshing ? (
+                // Manual Refresh Table Loader
+                <tr>
+                  <td colSpan={7} className="p-20 text-center bg-gray-50/50 dark:bg-secondary-800/20 min-h-[300px]">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <div className="w-8 h-8 border-4 border-secondary-200 dark:border-secondary-700 border-t-[#b0cb1f] rounded-full animate-spin" />
+                      <p className="text-secondary-500 dark:text-secondary-400 font-medium">Refreshing table data...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : currentBlogs.length > 0 ? (
+                // Actual Data Rows
                 currentBlogs.map((blog, index) => (
                   <tr
                     key={blog.id}
@@ -229,9 +298,7 @@ export const ManageBlog: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center text-primary dark:text-gray-300">
-                      {blog.created_at
-                        ? new Date(blog.created_at).toLocaleDateString()
-                        : blog.publishDate || "N/A"}
+                      {formatDate(blog.created_at || blog.publishDate)}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center space-x-4">
@@ -253,21 +320,9 @@ export const ManageBlog: React.FC = () => {
                     </td>
                   </tr>
                 ))
-              ) : isLoading ? (
-                <tr>
-                  <td colSpan={7}>
-                    <div className="p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
-                      <Loader2
-                        size={40}
-                        className="text-[#b0cb1f] animate-spin mb-4"
-                      />
-                      <p className="text-gray-500">Loading blogs...</p>
-                    </div>
-                  </td>
-                </tr>
               ) : (
-                /* Empty State (Hidden if there is data) */
-                <tr>
+                // No Data Found
+                <tr key="no-data">
                   <td colSpan={7}>
                     <div className="p-12 text-center text-secondary-500 dark:text-secondary-400 flex flex-col items-center justify-center min-h-[300px]">
                       <FileText
@@ -289,7 +344,7 @@ export const ManageBlog: React.FC = () => {
         </div>
 
         {/* Pagination Footer */}
-        {totalPages > 1 && (
+        {!isTableLoading && !isRefreshing && totalPages > 1 && (
           <div className="p-4 border-t border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 flex justify-between items-center">
             <span className="text-sm text-gray-500 dark:text-gray-400">
               Showing {startIndex + 1} to{" "}
