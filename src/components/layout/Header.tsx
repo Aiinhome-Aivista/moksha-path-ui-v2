@@ -194,9 +194,20 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
       <header className="sticky top-0 z-40 h-14 bg-gray-100 dark:bg-secondary-900 border-secondary-200 dark:border-secondary-700 shadow-sm">
         <div className="h-full px-4 lg:px-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={handleLogoClick} className="flex items-center animate-fade-in cursor-pointer">
+            {/* <button onClick={handleLogoClick} className="flex items-center animate-fade-in cursor-pointer">
               <img src="/Logo.svg" alt="App Logo" className="h-[90%] w-[80%]" />
-            </button>
+            </button> */}
+            <div className="flex items-center gap-2 font-bold text-lg" onClick={handleLogoClick}>
+              <img src="/logogod.svg" alt="logo" className="w-10 h-10" />
+              <div>
+                <h3>
+                  Moksh<span className="text-xl text-[#E7842E]">Path</span>
+                </h3>
+                <p className="text-xs leading-none font-normal">
+                  Guided Path to True Learning
+                </p>
+              </div>
+            </div>
           </div>
           <div className="flex-1 flex justify-center">
             <div className="flex items-center absolute left-1/2 -translate-x-full z-10 bg-yellow-500 rounded-b-full pl-10 pr-12 gap-3">
@@ -221,7 +232,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
               <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
                 Institutional Access
               </button>
-                            <button
+              <button
                 onClick={() => navigate("/blogs")}
                 className="text-sm font-semibold text-gray-700 hover:text-gray-900"
               >

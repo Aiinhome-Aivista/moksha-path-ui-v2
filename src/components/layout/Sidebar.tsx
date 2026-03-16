@@ -205,8 +205,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             >
               <X size={24} strokeWidth={2.5} />
             </button>
-            <div className="flex items-center gap-3">
+            {/* <div className="flex items-center gap-3">
               <img src="/Logo.svg" alt="App Logo" className="h-25 w-[80%]" />
+            </div> */}
+            <div className="flex items-center gap-2 font-bold text-lg">
+              <img src="/logogod.svg" alt="logo" className="w-10 h-10" />
+              <div>
+                <h3>
+                  Moksh<span className="text-xl text-[#E7842E]">Path</span>
+                </h3>
+                <p className="text-xs leading-none font-normal text-nowrap">
+                  Guided Path to True Learning
+                </p>
+              </div>
             </div>
           </>
         ) : (
