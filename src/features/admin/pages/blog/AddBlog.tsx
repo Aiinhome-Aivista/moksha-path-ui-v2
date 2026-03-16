@@ -60,7 +60,7 @@ export const AddBlog: React.FC = () => {
 
         fetchCategories();
         fetchBlogData();
-    }, [editId, isEditMode]);
+    }, [editId, isEditMode, showToast]);
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -78,9 +78,10 @@ export const AddBlog: React.FC = () => {
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
-            showToast("Please fill in all required fields.", "warning");
+            // showToast("Please fill in all required fields.", "warning");
             return;
         }
+        
         setErrors({});
         setIsSubmitting(true);
         try {
@@ -115,8 +116,6 @@ export const AddBlog: React.FC = () => {
 
     return (
         <div className="space-y-6 max-w-8xl mx-auto">
-
-            {/* Header / Top Bar */}
             <div className="flex items-center gap-4">
                 <NavLink to="/admin/manage-blog" className="p-2 hover:bg-secondary-100 dark:hover:bg-secondary-800 rounded-full transition-colors text-secondary-500">
                     <ArrowLeft size={20} />
@@ -128,20 +127,25 @@ export const AddBlog: React.FC = () => {
                 </div>
             </div>
 
-            {/* Form Container */}
             <div className="bg-white dark:bg-secondary-800 rounded-2xl p-6 shadow-sm border border-secondary-200 dark:border-secondary-700">
                 <form className="space-y-6" onSubmit={handleSave}>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Post Title */}
                         <div className="space-y-2">
-                            <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Post Title</label>
+                            <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Post Title<span className="text-red ps-1">*</span></label>
                             <input
                                 type="text"
                                 className={`w-full px-4 py-3 rounded-xl border ${errors.title ? 'border-red-500 focus:ring-red-500/50' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-primary dark:text-white focus:outline-none focus:ring-2 text-black dark:text-white`}
                                 placeholder="Enter a captivating title..."
                                 value={title}
-                                onChange={(e) => setTitle(e.target.value)}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setTitle(value);
+                                    setErrors((prev) => ({
+                                        ...prev,
+                                        title: value.trim() ? "" : "Blog title is required.",
+                                    }));
+                                }}
                                 disabled={isSubmitting}
                             />
                             {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
@@ -153,9 +157,7 @@ export const AddBlog: React.FC = () => {
                             <input
                                 type="text"
                                 className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-black dark:text-white"
-                                placeholder="e.g., Arpan Dutta"
                                 value={author}
-                                onChange={(e) => setAuthor(e.target.value)}
                                 disabled
                             />
                         </div>
@@ -163,11 +165,17 @@ export const AddBlog: React.FC = () => {
 
                     {/* Content (Rich Text Editor) */}
                     <div className="space-y-2">
-                        <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Content</label>
+                        <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Content <span className="text-red ps-1">*</span></label>
                         <div className={`rounded-xl ${errors.content ? 'ring-2 ring-red-500' : ''} transition-all`}>
                             <TiptapEditor
                                 content={content}
-                                onChange={(html) => setContent(html)}
+                                onChange={(html) => {
+                                    setContent(html);
+                                    setErrors((prev) => ({
+                                        ...prev,
+                                        content: (html.trim() && html !== '<p></p>') ? "" : "Blog content cannot be empty.",
+                                    }));
+                                }}
                             />
                         </div>
                         {errors.content && <p className="text-xs text-red-500 mt-1">{errors.content}</p>}
@@ -176,11 +184,18 @@ export const AddBlog: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Category */}
                         <div className="space-y-2">
-                            <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Category</label>
+                            <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Category <span className="text-red ps-1">*</span></label>
                             <select
                                 className={`w-full px-4 py-3 rounded-xl border ${errors.categoryId ? 'border-red-500 focus:ring-red-500/50' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-primary dark:text-white focus:outline-none focus:ring-2 text-black dark:text-white`}
                                 value={categoryId}
-                                onChange={(e) => setCategoryId(e.target.value)}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setCategoryId(value);
+                                    setErrors((prev) => ({
+                                        ...prev,
+                                        categoryId: value ? "" : "A category is required.",
+                                    }));
+                                }}
                                 disabled={isSubmitting}
                             >
                                 <option value="">Select a Category</option>
@@ -216,15 +231,12 @@ export const AddBlog: React.FC = () => {
                                         onChange={(e) => setImageFile(e.target.files?.[0] || null)}
                                         disabled={isSubmitting}
                                     />
-                                    <p className="text-xs text-secondary-500 mt-2">
-                                        Recommended: 1200x630px. Max 2MB.
-                                    </p>
+                                    <p className="text-xs text-secondary-500 mt-2">Recommended: 1200x630px. Max 2MB.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Submit Button */}
                     <div className="flex justify-end pt-4 border-t border-secondary-200 dark:border-secondary-700">
                         <button
                             type="submit"
@@ -232,18 +244,12 @@ export const AddBlog: React.FC = () => {
                             className="flex items-center gap-2 bg-[#b0cb1f] text-gray-900 px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-[#c5de3a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isSubmitting ? (
-                                <>
-                                    <Loader2 size={18} className="animate-spin" /> 
-                                    {isEditMode ? 'Updating...' : 'Publishing...'}
-                                </>
+                                <><Loader2 size={18} className="animate-spin" /> {isEditMode ? 'Updating...' : 'Publishing...'}</>
                             ) : (
-                                <>
-                                    <Save size={18} /> {isEditMode ? 'Update Blog' : 'Publish Blog'}
-                                </>
+                                <><Save size={18} /> {isEditMode ? 'Update Blog' : 'Publish Blog'}</>
                             )}
                         </button>
                     </div>
-
                 </form>
             </div>
         </div>

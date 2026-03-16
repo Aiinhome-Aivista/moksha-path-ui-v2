@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
-import { NavLink, useSearchParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Save, Loader2, AlertCircle } from 'lucide-react';
+import { NavLink, useSearchParams, } from 'react-router-dom';
 import ApiServices from '../../../../services/ApiServices';
-import { useToast } from '../../../../app/providers/ToastProvider';
-
-
 
 export const AddSEO: React.FC = () => {
     const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
-    const { showToast } = useToast();
     const editId = searchParams.get('edit');
     const isEditMode = !!editId;
 
@@ -19,6 +14,8 @@ export const AddSEO: React.FC = () => {
     const [keywords, setKeywords] = useState('');
     const [canonicalUrl, setCanonicalUrl] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
     useEffect(() => {
         const fetchExistingData = async () => {
@@ -36,47 +33,42 @@ export const AddSEO: React.FC = () => {
                         }
                     }
                 } catch (error) {
-                    console.error("Error fetching SEO data for edit:", error);
+                    console.error("Error fetching SEO data:", error);
                 }
             }
         };
         fetchExistingData();
     }, [editId, isEditMode]);
 
-    const handleSave = async (e: React.FormEvent) => {
-        e.preventDefault();
-        
-        if (!routePath.trim() || !metaTitle.trim()) {
-            showToast("Page Route and SEO Title are required", "warning");
-            return;
-        }
+const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Create the error object
+    const newErrors: { [key: string]: string } = {};
+    
+    // Validate every field
+    if (!routePath.trim()) newErrors.routePath = "Page route is required.";
+    if (!metaTitle.trim()) newErrors.metaTitle = "SEO title is required.";
+    if (!metaDescription.trim()) newErrors.metaDescription = "SEO description is required.";
+    if (!keywords.trim()) newErrors.keywords = "Keywords are required.";
+    
+    // Canonical URL validation
+    if (!canonicalUrl.trim()) {
+        newErrors.canonicalUrl = "Canonical URL is required.";
+    } else if (!canonicalUrl.startsWith('http')) {
+        newErrors.canonicalUrl = "Please enter a valid absolute URL.";
+    }
 
-        setIsSubmitting(true);
-        try {
-            const payload = {
-                id: editId ? parseInt(editId) : null,
-                page_route: routePath.trim(),
-                seo_title: metaTitle,
-                seo_description: metaDescription,
-                seo_keywords: keywords,
-                canonical_url: canonicalUrl
-            };
+    // Update the state so the red borders appear
+    setErrors(newErrors);
 
-            const response = await ApiServices.insertUpdateBlogSeo(payload);
-            
-            if (response.data.code === 200 || response.data.status === 'success') {
-                showToast(response.data.message || `SEO ${isEditMode ? 'updated' : 'added'} successfully`, 'success');
-                navigate('/admin/manage-seo');
-            } else {
-                showToast(response.data.message || 'Failed to save SEO config', 'error');
-            }
-        } catch (error) {
-            console.error('Error saving SEO:', error);
-            showToast('Something went wrong. Please try again.', 'error');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+    if (Object.keys(newErrors).length > 0) {
+        // showToast("Please fill in all required fields", "warning");
+        return;
+    }
+
+    // ... Proceed with API call
+};
 
     return (
         <div className="space-y-6 max-w-8xl mx-auto">
@@ -84,82 +76,136 @@ export const AddSEO: React.FC = () => {
                 <NavLink to="/admin/manage-seo" className="p-2 hover:bg-secondary-100 dark:hover:bg-secondary-800 rounded-full transition-colors text-secondary-500">
                     <ArrowLeft size={20} />
                 </NavLink>
-                <div>
-                    <h1 className="text-2xl font-bold text-primary dark:text-white">
-                        {isEditMode ? 'Edit SEO Config' : 'Add New SEO Config'}
-                    </h1>
-                </div>
+                <h1 className="text-2xl font-bold text-primary dark:text-white">
+                    {isEditMode ? 'Edit SEO Config' : 'Add New SEO Config'}
+                </h1>
             </div>
 
             <div className="bg-white dark:bg-secondary-800 rounded-2xl p-6 shadow-sm border border-secondary-200 dark:border-secondary-700">
                 <form className="space-y-6" onSubmit={handleSave}>
+                    
+                    {/* Page Route */}
                     <div className="space-y-2">
-                        <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Page Route / Path</label>
+                        <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider flex items-center gap-1">
+                            Page Route / Path <span className="text-red-500">*</span>
+                        </label>
                         <input
                             type="text"
-                            style={{ color: 'black' }}
-                            className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 text-black dark:text-white"
-                            placeholder="e.g., /home or /courses"
+                            className={`w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 ${errors.routePath ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-black dark:text-white`}
+                            placeholder="e.g., /home"
                             value={routePath}
-                            onChange={(e) => setRoutePath(e.target.value)}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setRoutePath(val);
+                                setErrors(prev => ({ ...prev, routePath: val.trim() ? "" : "Page route is required." }));
+                            }}
                             disabled={isSubmitting}
                         />
-                        <p className="text-xs text-secondary-500">The exact URL path where this SEO metadata should apply.</p>
+                        {errors.routePath && <p className="text-xs text-red-500 flex items-center gap-1 mt-1"><AlertCircle size={12}/> {errors.routePath}</p>}
                     </div>
 
+                    {/* SEO Title */}
                     <div className="space-y-2">
-                        <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">SEO Title</label>
+                        <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider flex items-center gap-1">
+                            SEO Title <span className="text-red-500">*</span>
+                        </label>
                         <input
                             type="text"
-                            style={{ color: 'black' }}
-                            className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 text-black dark:text-white"
-                            placeholder="Enter the page title (optimized for search engines)"
+                            className={`w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 ${errors.metaTitle ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-black dark:text-white`}
+                            placeholder="Enter meta title..."
                             value={metaTitle}
-                            onChange={(e) => setMetaTitle(e.target.value)}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setMetaTitle(val);
+                                setErrors(prev => ({ ...prev, metaTitle: val.trim() ? "" : "SEO title is required." }));
+                            }}
                             disabled={isSubmitting}
                         />
+                        {errors.metaTitle && <p className="text-xs text-red-500 flex items-center gap-1 mt-1"><AlertCircle size={12}/> {errors.metaTitle}</p>}
                     </div>
 
+                    {/* SEO Description */}
                     <div className="space-y-2">
-                        <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">SEO Description</label>
+                        <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider flex items-center gap-1">
+                            SEO Description <span className="text-red-500">*</span>
+                        </label>
                         <textarea
                             rows={4}
-                            style={{ color: 'black' }}
-                            className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 text-black dark:text-white"
-                            placeholder="Write a concise max 160-character description..."
+                            className={`w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 ${errors.metaDescription ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-black dark:text-white`}
+                            placeholder="Write meta description..."
                             value={metaDescription}
-                            onChange={(e) => setMetaDescription(e.target.value)}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setMetaDescription(val);
+                                setErrors(prev => ({ ...prev, metaDescription: val.trim() ? "" : "SEO description is required." }));
+                            }}
                             disabled={isSubmitting}
                         ></textarea>
+                        {errors.metaDescription && <p className="text-xs text-red-500 flex items-center gap-1 mt-1"><AlertCircle size={12}/> {errors.metaDescription}</p>}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Keywords */}
                         <div className="space-y-2">
-                            <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Keywords</label>
+                            <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider flex items-center gap-1">
+                                Keywords <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="text"
-                                style={{ color: 'black' }}
-                                className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 text-black dark:text-white"
-                                placeholder="education, platform, learning, courses"
+                                className={`w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 ${errors.keywords ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-black dark:text-white`}
+                                placeholder="keyword1, keyword2"
                                 value={keywords}
-                                onChange={(e) => setKeywords(e.target.value)}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setKeywords(val);
+                                    setErrors(prev => ({ ...prev, keywords: val.trim() ? "" : "Keywords are required." }));
+                                }}
                                 disabled={isSubmitting}
                             />
+                            {errors.keywords && <p className="text-xs text-red-500 flex items-center gap-1 mt-1"><AlertCircle size={12}/> {errors.keywords}</p>}
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Canonical URL</label>
-                            <input
-                                type="text"
-                                style={{ color: 'black' }}
-                                className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 text-black dark:text-white"
-                                placeholder="https://example.com/page"
-                                value={canonicalUrl}
-                                onChange={(e) => setCanonicalUrl(e.target.value)}
-                                disabled={isSubmitting}
-                            />
-                        </div>
-                    </div>
+ {/* Canonical URL */}
+<div className="space-y-2">
+    <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider flex items-center gap-1">
+        Canonical URL <span className="text-red-500">*</span>
+    </label>
+    <input
+        type="text"
+        className={`w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 ${
+            errors.canonicalUrl 
+                ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' 
+                : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'
+        } text-black dark:text-white`}
+        placeholder="https://example.com/page"
+        value={canonicalUrl}
+        onChange={(e) => {
+            const val = e.target.value;
+            setCanonicalUrl(val);
+            
+            // Validate immediately on change
+            let errorMsg = "";
+            if (!val.trim()) {
+                errorMsg = "Canonical URL is required.";
+            } else if (!val.startsWith('http')) {
+                errorMsg = "Please enter a valid absolute URL (starting with http/https).";
+            }
+            
+            setErrors(prev => ({ 
+                ...prev, 
+                canonicalUrl: errorMsg 
+            }));
+        }}
+        disabled={isSubmitting}
+    />
+    {/* Explicit check to ensure message renders */}
+    {errors.canonicalUrl && (
+        <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+            <AlertCircle size={12}/> {errors.canonicalUrl}
+        </p>
+    )}
+</div>
+</div>
 
                     <div className="flex justify-end pt-4 border-t border-secondary-200 dark:border-secondary-700">
                         <button 
