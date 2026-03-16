@@ -19,6 +19,7 @@ export const AddBlog: React.FC = () => {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imageUrl, setImageUrl] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [availableCategories, setAvailableCategories] = useState<any[]>([]);
 
     useEffect(() => {
@@ -64,11 +65,23 @@ export const AddBlog: React.FC = () => {
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!title.trim() || !content.trim() || !categoryId || (!imageUrl && !imageFile)) {
-            showToast("Please fill in all required fields, including a featured image", "warning");
-            return;
+        const newErrors: { [key: string]: string } = {};
+        if (!title.trim()) {
+            newErrors.title = "Blog title is required.";
+        }
+        if (!content.trim() || content.trim() === '<p></p>') {
+            newErrors.content = "Blog content cannot be empty.";
+        }
+        if (!categoryId) {
+            newErrors.categoryId = "A category is required.";
         }
 
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            showToast("Please fill in all required fields.", "warning");
+            return;
+        }
+        setErrors({});
         setIsSubmitting(true);
         try {
             const formData = new FormData();
@@ -125,12 +138,13 @@ export const AddBlog: React.FC = () => {
                             <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Post Title</label>
                             <input
                                 type="text"
-                                className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-black dark:text-white"
+                                className={`w-full px-4 py-3 rounded-xl border ${errors.title ? 'border-red-500 focus:ring-red-500/50' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-primary dark:text-white focus:outline-none focus:ring-2 text-black dark:text-white`}
                                 placeholder="Enter a captivating title..."
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 disabled={isSubmitting}
                             />
+                            {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
                         </div>
 
                         {/* Author */}
@@ -150,10 +164,13 @@ export const AddBlog: React.FC = () => {
                     {/* Content (Rich Text Editor) */}
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Content</label>
-                        <TiptapEditor
-                            content={content}
-                            onChange={(html) => setContent(html)}
-                        />
+                        <div className={`rounded-xl ${errors.content ? 'ring-2 ring-red-500' : ''} transition-all`}>
+                            <TiptapEditor
+                                content={content}
+                                onChange={(html) => setContent(html)}
+                            />
+                        </div>
+                        {errors.content && <p className="text-xs text-red-500 mt-1">{errors.content}</p>}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -161,7 +178,7 @@ export const AddBlog: React.FC = () => {
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">Category</label>
                             <select
-                                className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-black dark:text-white"
+                                className={`w-full px-4 py-3 rounded-xl border ${errors.categoryId ? 'border-red-500 focus:ring-red-500/50' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-primary dark:text-white focus:outline-none focus:ring-2 text-black dark:text-white`}
                                 value={categoryId}
                                 onChange={(e) => setCategoryId(e.target.value)}
                                 disabled={isSubmitting}
@@ -171,6 +188,7 @@ export const AddBlog: React.FC = () => {
                                     <option key={cat.id} value={cat.id}>{cat.category_name}</option>
                                 ))}
                             </select>
+                            {errors.categoryId && <p className="text-xs text-red-500 mt-1">{errors.categoryId}</p>}
                         </div>
 
                         {/* Featured Image */}
