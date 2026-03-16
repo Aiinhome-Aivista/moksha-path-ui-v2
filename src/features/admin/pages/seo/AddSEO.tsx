@@ -76,7 +76,7 @@ const handleSave = async (e: React.FormEvent) => {
                 <NavLink to="/admin/manage-seo" className="p-2 hover:bg-secondary-100 dark:hover:bg-secondary-800 rounded-full transition-colors text-secondary-500">
                     <ArrowLeft size={20} />
                 </NavLink>
-                <h1 className="text-2xl font-bold text-primary dark:text-white">
+                <h1 className="text-2xl font-bold text-primary ">
                     {isEditMode ? 'Edit SEO Config' : 'Add New SEO Config'}
                 </h1>
             </div>
@@ -91,7 +91,7 @@ const handleSave = async (e: React.FormEvent) => {
                         </label>
                         <input
                             type="text"
-                            className={`w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 ${errors.routePath ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-black dark:text-white`}
+                            className={`w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 ${errors.routePath ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-black `}
                             placeholder="e.g., /home"
                             value={routePath}
                             onChange={(e) => {
@@ -111,7 +111,7 @@ const handleSave = async (e: React.FormEvent) => {
                         </label>
                         <input
                             type="text"
-                            className={`w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 ${errors.metaTitle ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-black dark:text-white`}
+                            className={`w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 ${errors.metaTitle ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-black `}
                             placeholder="Enter meta title..."
                             value={metaTitle}
                             onChange={(e) => {
@@ -131,7 +131,7 @@ const handleSave = async (e: React.FormEvent) => {
                         </label>
                         <textarea
                             rows={4}
-                            className={`w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 ${errors.metaDescription ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-black dark:text-white`}
+                            className={`w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 ${errors.metaDescription ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-black `}
                             placeholder="Write meta description..."
                             value={metaDescription}
                             onChange={(e) => {
@@ -152,7 +152,7 @@ const handleSave = async (e: React.FormEvent) => {
                             </label>
                             <input
                                 type="text"
-                                className={`w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 ${errors.keywords ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-black dark:text-white`}
+                                className={`w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 ${errors.keywords ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'} text-black `}
                                 placeholder="keyword1, keyword2"
                                 value={keywords}
                                 onChange={(e) => {
@@ -176,7 +176,7 @@ const handleSave = async (e: React.FormEvent) => {
             errors.canonicalUrl 
                 ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' 
                 : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'
-        } text-black dark:text-white`}
+        } text-black `}
         placeholder="https://example.com/page"
         value={canonicalUrl}
         onChange={(e) => {
