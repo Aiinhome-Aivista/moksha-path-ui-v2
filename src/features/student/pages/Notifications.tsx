@@ -3,7 +3,7 @@ import ApiServices from "../../../services/ApiServices";
 import { useNavigate } from "react-router-dom";
 
 type InvitationStatus = "Pending" | "Accepted" | "Rejected";
-type ProfileStatus = "Complete" | "Pending" | "Expired";
+type ProfileStatus = "Complete" | "Pending" | "Rejected";
 type ActiveTab = "subscription" | "test" | "profile";
 
 interface ReceivedInvitation {
@@ -75,11 +75,11 @@ const profileStatusConfig: Record<
     dot: "bg-green-500",
     label: "Complete",
   },
-  Expired: {
+  Rejected: {
     bg: "bg-red-50",
     text: "text-red-600",
     dot: "bg-red-500",
-    label: "Expired",
+    label: "Exp",
   },
 };
 
@@ -160,9 +160,11 @@ const Notifications: React.FC = () => {
   const [profileSummary, setProfileSummary] = useState<any>({
     all: 0,
     complete: 0,
-    expired: 0,
+    rejected: 0,
     pending: 0
   });
+  const [isUpdatingProfileRequest, setIsUpdatingProfileRequest] = useState<string | null>(null);
+
 
   const navigate = useNavigate();
   // ── fetch on mount ─────────────────────────────────────────────────────
@@ -422,24 +424,25 @@ const Notifications: React.FC = () => {
     }
   };
 
-  const manageProfileRequest = async (
-    linkId: number,
-    action: "ACCEPT" | "DELETE"
-  ) => {
+  const manageProfileRequest = async (linkId: number, reqStatus: string) => {
     try {
+      setIsUpdatingProfileRequest(`${linkId}-${reqStatus}`);
       const res = await ApiServices.manageParentStudentMapping({
         link_id: linkId,
-        action,
+        action: reqStatus,
       });
 
       if (res.data?.status === "success") {
         fetchProfileRequests();
+      } else {
+        // console.error("Failed to update profile request status");
       }
     } catch (error) {
-      console.error("Failed to update mapping", error);
+      // console.error("Error updating profile request status", error);
+    } finally {
+      setIsUpdatingProfileRequest(null);
     }
   };
-
 
 
   useEffect(() => {
@@ -1053,7 +1056,7 @@ const Notifications: React.FC = () => {
               { label: "All", key: "All" as const, countKey: "all" },
               { label: "Complete", key: "Complete" as const, countKey: "complete" },
               { label: "Pending", key: "Pending" as const, countKey: "pending" },
-              { label: "Expire", key: "Expired" as const, countKey: "expired" },
+              { label: "Expired", key: "Rejected" as const, countKey: "rejected" },
             ].map((f) => {
               const count = profileSummary?.[f.countKey] || 0;
               return (
@@ -1085,12 +1088,12 @@ const Notifications: React.FC = () => {
           {/*Profile Invitation Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
             {profileRequests
-              .filter((p) => profileFilter === "All" || p.status_label === profileFilter || (profileFilter === "Complete" && p.status_label === "Accepted") || (profileFilter === "Pending" && p.status_label === "Pending") || (profileFilter === "Expired" && p.status_label === "Rejected"))
+              .filter((p) => profileFilter === "All" || p.status_label === profileFilter || (profileFilter === "Complete" && p.status_label === "Accepted") || (profileFilter === "Pending" && p.status_label === "Pending") || (profileFilter === "Rejected" && p.status_label === "Rejected"))
               .map((p) => {
                 const isExpanded = profileExpandedId === p.link_id;
-                
+
                 // mapped backwards compatibility
-                const mappedStatus = p.status_label === "Accepted" ? "Complete" : p.status_label === "Rejected" ? "Expired" : p.status_label;
+                const mappedStatus = p.status_label === "Accepted" ? "Complete" : p.status_label === "Rejected" ? "Rejected" : p.status_label;
 
                 return (
                   <div
@@ -1141,7 +1144,7 @@ const Notifications: React.FC = () => {
                           </span>
                         </p> */}
                         <p className="text-xs text-gray-500 truncate">
-                          {p.request_type === "Received"
+                          {p.request_type?.toLowerCase() === "received"
                             ? "Sent you a mapping request"
                             : "You sent a mapping request"}
                         </p>
@@ -1207,10 +1210,10 @@ const Notifications: React.FC = () => {
                         <div className="flex items-center gap-2 mt-4">
                           <span
                             className={`material-symbols-outlined text-base ${mappedStatus === "Complete"
-                                ? "text-green-500"
-                                : mappedStatus === "Pending"
-                                  ? "text-amber-500"
-                                  : "text-red-500"
+                              ? "text-green-500"
+                              : mappedStatus === "Pending"
+                                ? "text-amber-500"
+                                : "text-red-500"
                               }`}
                             style={{
                               fontVariationSettings: "'wght' 500, 'FILL' 1",
@@ -1224,33 +1227,43 @@ const Notifications: React.FC = () => {
                           </span>
                           <span
                             className={`text-sm font-semibold ${mappedStatus === "Complete"
-                                ? "text-green-600"
-                                : mappedStatus === "Pending"
-                                  ? "text-amber-600"
-                                  : "text-red-600"
+                              ? "text-green-600"
+                              : mappedStatus === "Pending"
+                                ? "text-amber-600"
+                                : "text-red-600"
                               }`}
                           >
                             {mappedStatus === "Complete"
                               ? "You have accepted this invitation."
                               : mappedStatus === "Pending"
                                 ? "This invitation is pending your response."
-                                : "This invitation has expired."}
+                                : "This invitation has been rejected."}
                           </span>
                         </div>
-                        {p.request_type === "Received" && p.can_accept && !p.connected_on && (
+                        {mappedStatus === "Pending" && (
                           <div className="flex gap-3 pt-2">
                             <button
-                              onClick={() => manageProfileRequest(p.link_id, "DELETE")}
-                              className="flex-1 px-4 py-2 border border-red-200 text-red-500 rounded-xl text-sm font-semibold hover:bg-red-50"
+                              onClick={() => manageProfileRequest(p.link_id, "reject")}
+                              disabled={isUpdatingProfileRequest !== null}
+                              className="flex-1 px-4 py-2 border border-red-200 text-red-500 rounded-xl text-sm font-semibold hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
-                              Reject
+                              {isUpdatingProfileRequest === `${p.link_id}-reject` ? (
+                                <span className="material-symbols-outlined text-base animate-spin" style={{ fontVariationSettings: "'wght' 400" }}>
+                                  progress_activity
+                                </span>
+                              ) : "Reject"}
                             </button>
 
                             <button
-                              onClick={() => manageProfileRequest(p.link_id, "ACCEPT")}
-                              className="flex-1 px-4 py-2 bg-[#BADA55] text-gray-800 rounded-xl text-sm font-bold hover:bg-lime-400"
+                              onClick={() => manageProfileRequest(p.link_id, "accept")}
+                              disabled={isUpdatingProfileRequest !== null}
+                              className="flex-1 px-4 py-2 bg-[#BADA55] text-gray-800 rounded-xl text-sm font-bold hover:bg-lime-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
-                              Accept
+                              {isUpdatingProfileRequest === `${p.link_id}-accept` ? (
+                                <span className="material-symbols-outlined text-base animate-spin" style={{ fontVariationSettings: "'wght' 400" }}>
+                                  progress_activity
+                                </span>
+                              ) : "Accept"}
                             </button>
                           </div>
                         )}
