@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { ListPlus, Search, Edit, Trash2, Globe, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { ListPlus, Search, Edit, Trash2,Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import ApiServices from '../../../../services/ApiServices';
 import { useToast } from '../../../../app/providers/ToastProvider';
 
@@ -21,6 +21,27 @@ const searchAnyKey = (dataArray: any[], searchQuery: string) => {
       return String(value).toLowerCase().includes(query);
     });
   });
+};
+// ==========================================
+
+// ==========================================
+// GLOBAL DATE FORMATTER (DD/MM/YYYY)
+// ==========================================
+const formatDate = (dateString: string | undefined | null): string => {
+  if (!dateString) return 'N/A';
+  try {
+    const date = new Date(dateString);
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+    }
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  } catch (error) {
+    return 'Invalid Date';
+  }
 };
 // ==========================================
 
@@ -57,6 +78,7 @@ export const ManageSEO: React.FC = () => {
             const response = await ApiServices.getBlogSeoSettings();
             if (response.data.code === 200 || response.data.status === 'success') {
                 setAllSeoData(response.data.data || []);
+                showToast("Data refreshed", "success");
             } else {
                 showToast("Failed to refresh data", "error");
             }
@@ -230,7 +252,7 @@ export const ManageSEO: React.FC = () => {
                                             {seo.seo_keywords || seo.keywords}
                                         </td>
                                         <td className="px-6 py-4 text-center text-primary dark:text-gray-300 whitespace-nowrap align-middle">
-                                            {seo.created_at ? new Date(seo.created_at).toLocaleDateString() : 'N/A'}
+                                            {formatDate(seo.created_at)}
                                         </td>
                                         <td className="px-6 py-4 text-center align-middle">
                                             {/* Horizontal Action Buttons */}

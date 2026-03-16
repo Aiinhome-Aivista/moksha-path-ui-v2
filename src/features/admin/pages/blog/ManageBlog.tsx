@@ -33,6 +33,27 @@ const searchAnyKey = (dataArray: any[], searchQuery: string) => {
 };
 // ==========================================
 
+// ==========================================
+// GLOBAL DATE FORMATTER (DD/MM/YYYY)
+// ==========================================
+const formatDate = (dateString: string | undefined | null): string => {
+  if (!dateString) return 'N/A';
+  try {
+    const date = new Date(dateString);
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+    }
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  } catch (error) {
+    return 'Invalid Date';
+  }
+};
+// ==========================================
+
 export const ManageBlog: React.FC = () => {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [isTableLoading, setIsTableLoading] = useState(true); // For initial page load
@@ -277,9 +298,7 @@ export const ManageBlog: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center text-primary dark:text-gray-300">
-                      {blog.created_at
-                        ? new Date(blog.created_at).toLocaleDateString()
-                        : blog.publishDate || "N/A"}
+                      {formatDate(blog.created_at || blog.publishDate)}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center space-x-4">
