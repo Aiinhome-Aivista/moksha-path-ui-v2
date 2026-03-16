@@ -26,7 +26,7 @@ export default function Footer() {
               <img src="/logogod.svg" alt="logo" className="w-10 h-10" />
               <div>
                 <h3>
-                  Moksha<span className="text-xl text-[#E7842E]">Path</span>
+                  Moksh<span className="text-xl text-[#E7842E]">Path</span>
                 </h3>
                 <p className="text-xs leading-none">
                   Guided Path to True Learning
@@ -59,7 +59,7 @@ export default function Footer() {
               <img src={email} alt="email" className="w-8 h-8" />
               <div>
                 <p className="text-sm font-medium">Write to us:</p>
-                <p className="text-sm">mokshapath.org.com</p>
+                <p className="text-sm">mokshpath.org.com</p>
               </div>
             </div>
           </div>
