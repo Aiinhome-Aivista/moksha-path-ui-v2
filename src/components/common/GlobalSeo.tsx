@@ -16,9 +16,8 @@ import { useSeo } from "../../context/SeoContext";
 const GlobalSeo = () => {
   const location = useLocation();
   const seoData = useSeo();
-
-  // Normalize: strip trailing slash for reliable matching
   const currentPath = location.pathname.replace(/\/$/, "") || "/";
+  const canonicalUrl = `${window.location.origin}${currentPath}`;
 
   const seo = seoData.find((item) => {
     const route = (item.page_route || "").replace(/\/$/, "") || "/";
@@ -37,7 +36,7 @@ const GlobalSeo = () => {
         <meta name="keywords" content={seo.seo_keywords} />
       )}
       {seo.canonical_url && (
-        <link rel="canonical" href={seo.canonical_url} />
+        <link rel="canonical" href={canonicalUrl} />
       )}
     </Helmet>
   );
