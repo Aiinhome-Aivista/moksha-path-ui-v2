@@ -26,29 +26,50 @@ const searchAnyKey = (dataArray: any[], searchQuery: string) => {
 
 export const ManageSEO: React.FC = () => {
     const [allSeoData, setAllSeoData] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isTableLoading, setIsTableLoading] = useState(true); // For initial page load
+    const [isRefreshing, setIsRefreshing] = useState(false);    // For the refresh button only
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [seoToDelete, setSeoToDelete] = useState<number | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const { showToast } = useToast();
 
-    const fetchSeoData = async () => {
-        setIsLoading(true);
+    // Function 1: Initial Load
+    const loadInitialData = async () => {
+        setIsTableLoading(true);
         try {
             const response = await ApiServices.getBlogSeoSettings();
             if (response.data.code === 200 || response.data.status === 'success') {
                 setAllSeoData(response.data.data || []);
             }
         } catch (error) {
-            console.error("Error fetching SEO data:", error);
+            console.error("Error loading SEO data:", error);
             showToast("Failed to load SEO settings", "error");
         } finally {
-            setIsLoading(false);
+            setIsTableLoading(false);
+        }
+    };
+
+    // Function 2: Manual Refresh (Different Logic Path)
+    const handleManualRefresh = async () => {
+        if (isTableLoading || isRefreshing) return; // Block if already busy
+        setIsRefreshing(true);
+        try {
+            const response = await ApiServices.getBlogSeoSettings();
+            if (response.data.code === 200 || response.data.status === 'success') {
+                setAllSeoData(response.data.data || []);
+            } else {
+                showToast("Failed to refresh data", "error");
+            }
+        } catch (error) {
+            console.error("Error refreshing SEO data:", error);
+            showToast("Failed to refresh data", "error");
+        } finally {
+            setIsRefreshing(false);
         }
     };
 
     useEffect(() => {
-        fetchSeoData();
+        loadInitialData();
     }, []);
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -77,7 +98,7 @@ export const ManageSEO: React.FC = () => {
                 showToast(response.data.message || "SEO configuration deleted", "success");
                 setShowDeleteModal(false);
                 setSeoToDelete(null);
-                fetchSeoData();
+                loadInitialData(); // Refetch data after delete
             }
         } catch (error) {
             console.error("Error deleting SEO:", error);
@@ -131,23 +152,34 @@ export const ManageSEO: React.FC = () => {
                         <input
                             type="text"
                             placeholder="Search anything..."
-                            className="pl-10 pr-4 py-2 border border-gray-200 dark:border-secondary-600 rounded-md w-full text-primary dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#b0cb1f]/50 transition-shadow text-black dark:text-white"
+                            className="pl-10 pr-4 py-2 border border-gray-200 dark:border-secondary-600 rounded-md w-full text-primary dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#b0cb1f]/50 transition-shadow text-black dark:text-white disabled:opacity-70 disabled:cursor-not-allowed"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            disabled={isTableLoading || isRefreshing}
                         />
                     </div>
                     <button
-                        onClick={fetchSeoData}
-                        disabled={isLoading}
+                        onClick={handleManualRefresh}
+                        disabled={isTableLoading || isRefreshing}
                         className="p-2 rounded-full hover:bg-secondary-100 dark:hover:bg-secondary-700 text-secondary-500 dark:text-secondary-400 transition-colors disabled:opacity-50 disabled:cursor-wait"
                         title="Refresh"
                     >
-                        <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
+                        <RefreshCw size={18} className={isRefreshing ? 'animate-spin' : ''} />
                     </button>
                 </div>
 
                 {/* Table Layout */}
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto relative min-h-[300px]">
+                    {isTableLoading && (
+                        <div className="absolute inset-0 bg-white/50 dark:bg-secondary-800/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                            <div className="flex flex-col items-center gap-2">
+                                <Loader2 className="animate-spin text-[#b0cb1f]" size={40} />
+                                <span className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
+                                    Loading SEO settings...
+                                </span>
+                            </div>
+                        </div>
+                    )}
                     <table className="w-full text-sm text-left">
                         {/* GREEN Table Header */}
                         <thead className="bg-[#b0cb1f] text-gray-900 font-semibold border-b border-gray-200 dark:border-secondary-700">
@@ -164,16 +196,7 @@ export const ManageSEO: React.FC = () => {
                         
                         {/* Table Body */}
                         <tbody className="divide-y divide-gray-100 dark:divide-secondary-700">
-                            {isLoading ? (
-                                <tr>
-                                    <td colSpan={7}>
-                                        <div className="p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
-                                            <Loader2 size={40} className="text-[#b0cb1f] animate-spin mb-4" />
-                                            <p className="text-gray-500">Loading SEO settings...</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ) : currentItems.length > 0 ? (
+                            {currentItems.length > 0 ? (
                                 currentItems.map((seo) => (
                                     <tr key={seo.id} className="divide-x divide-gray-100 dark:divide-secondary-700 hover:bg-gray-50 dark:hover:bg-secondary-700/50 transition-colors">
                                         <td className="px-6 py-4 text-center text-primary dark:text-gray-300 align-middle">
@@ -212,7 +235,7 @@ export const ManageSEO: React.FC = () => {
                                     </tr>
                                 ))
                             ) : (
-                                /* Empty State (Hidden if there is data) */
+                                !isTableLoading && (
                                 <tr>
                                     <td colSpan={7}>
                                         <div className="p-12 text-center text-secondary-500 dark:text-secondary-400 flex flex-col items-center justify-center min-h-[300px]">
@@ -226,13 +249,14 @@ export const ManageSEO: React.FC = () => {
                                         </div>
                                     </td>
                                 </tr>
+                                )
                             )}
                         </tbody>
                     </table>
                 </div>
 
                 {/* Pagination Footer */}
-                {totalPages > 1 && (
+                {!isTableLoading && totalPages > 1 && (
                     <div className="p-4 border-t border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 flex justify-between items-center">
                         <span className="text-sm text-gray-500 dark:text-gray-400">
                             Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, totalItems)} of {totalItems} entries

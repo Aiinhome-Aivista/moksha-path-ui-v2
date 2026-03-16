@@ -35,7 +35,8 @@ const searchAnyKey = (dataArray: any[], searchQuery: string) => {
 
 export const ManageBlog: React.FC = () => {
   const [blogs, setBlogs] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isTableLoading, setIsTableLoading] = useState(true); // For initial page load
+  const [isRefreshing, setIsRefreshing] = useState(false);    // For the refresh button only
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -44,23 +45,43 @@ export const ManageBlog: React.FC = () => {
   const { showToast } = useToast();
   const POSTS_PER_PAGE = 5;
 
-  const fetchBlogs = async () => {
-    setIsLoading(true);
+  // Function 1: Initial Load
+  const loadInitialData = async () => {
+    setIsTableLoading(true);
     try {
       const response = await ApiServices.getBlogsList();
       if (response.data.code === 200 || response.data.status === "success") {
         setBlogs(response.data.data || []);
       }
     } catch (error) {
-      console.error("Error fetching blogs:", error);
+      console.error("Error loading blogs:", error);
       showToast("Failed to load blogs", "error");
     } finally {
-      setIsLoading(false);
+      setIsTableLoading(false);
+    }
+  };
+
+  // Function 2: Manual Refresh (Different Logic Path)
+  const handleManualRefresh = async () => {
+    if (isTableLoading || isRefreshing) return; // Block if already busy
+    setIsRefreshing(true);
+    try {
+      const response = await ApiServices.getBlogsList();
+      if (response.data.code === 200 || response.data.status === "success") {
+        setBlogs(response.data.data || []);
+      } else {
+        showToast("Failed to refresh blogs", "error");
+      }
+    } catch (error) {
+      console.error("Error refreshing blogs:", error);
+      showToast("Failed to refresh blogs", "error");
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
-    fetchBlogs();
+    loadInitialData();
   }, []);
 
   // Reset to page 1 when search query changes
@@ -104,7 +125,7 @@ export const ManageBlog: React.FC = () => {
         );
         setShowDeleteModal(false);
         setBlogToDelete(null);
-        fetchBlogs();
+        loadInitialData(); // Refetch data after delete
       } else {
         showToast(response.data.message || "Failed to delete blog", "error");
       }
@@ -147,23 +168,34 @@ export const ManageBlog: React.FC = () => {
             <input
               type="text"
               placeholder="Search anything..."
-              className="pl-10 pr-4 py-2 border border-gray-200 dark:border-secondary-600 rounded-md w-full text-primary dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#b0cb1f]/50 transition-shadow text-black dark:text-white"
+              className="pl-10 pr-4 py-2 border border-gray-200 dark:border-secondary-600 rounded-md w-full text-primary dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#b0cb1f]/50 transition-shadow text-black dark:text-white disabled:opacity-70 disabled:cursor-not-allowed"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              disabled={isTableLoading || isRefreshing}
             />
           </div>
           <button
-            onClick={fetchBlogs}
-            disabled={isLoading}
+            onClick={handleManualRefresh}
+            disabled={isTableLoading || isRefreshing}
             className="p-2 rounded-full hover:bg-secondary-100 dark:hover:bg-secondary-700 text-secondary-500 dark:text-secondary-400 transition-colors disabled:opacity-50 disabled:cursor-wait"
             title="Refresh"
           >
-            <RefreshCw size={18} className={isLoading ? "animate-spin" : ""} />
+            <RefreshCw size={18} className={isRefreshing ? "animate-spin" : ""} />
           </button>
         </div>
 
         {/* Table Layout */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto relative min-h-[300px]">
+          {isTableLoading && (
+            <div className="absolute inset-0 bg-white/50 dark:bg-secondary-800/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="animate-spin text-[#b0cb1f]" size={40} />
+                <span className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
+                  Loading blogs...
+                </span>
+              </div>
+            </div>
+          )}
           <table className="w-full text-sm text-left whitespace-nowrap">
             {/* GREEN Table Header */}
             <thead className="bg-[#b0cb1f] text-gray-900 font-semibold border-b border-gray-200 dark:border-secondary-700">
@@ -253,20 +285,8 @@ export const ManageBlog: React.FC = () => {
                     </td>
                   </tr>
                 ))
-              ) : isLoading ? (
-                <tr>
-                  <td colSpan={7}>
-                    <div className="p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
-                      <Loader2
-                        size={40}
-                        className="text-[#b0cb1f] animate-spin mb-4"
-                      />
-                      <p className="text-gray-500">Loading blogs...</p>
-                    </div>
-                  </td>
-                </tr>
               ) : (
-                /* Empty State (Hidden if there is data) */
+                !isTableLoading && (
                 <tr>
                   <td colSpan={7}>
                     <div className="p-12 text-center text-secondary-500 dark:text-secondary-400 flex flex-col items-center justify-center min-h-[300px]">
@@ -283,13 +303,14 @@ export const ManageBlog: React.FC = () => {
                     </div>
                   </td>
                 </tr>
+                )
               )}
             </tbody>
           </table>
         </div>
 
         {/* Pagination Footer */}
-        {totalPages > 1 && (
+        {!isTableLoading && totalPages > 1 && (
           <div className="p-4 border-t border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 flex justify-between items-center">
             <span className="text-sm text-gray-500 dark:text-gray-400">
               Showing {startIndex + 1} to{" "}

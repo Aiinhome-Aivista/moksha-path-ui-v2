@@ -13,13 +13,34 @@ import AddCategory from "./AddCategory";
 import ApiServices from "../../../../services/ApiServices";
 import { useToast } from "../../../../app/providers/ToastProvider";
 
+// ==========================================
+// GLOBAL SEARCH FUNCTION
+// This searches EVERY key in your API data automatically
+// ==========================================
+const searchAnyKey = (dataArray: any[], searchQuery: string) => {
+  if (!searchQuery) return dataArray;
+
+  const query = searchQuery.toLowerCase().trim();
+
+  return dataArray.filter((item) => {
+    // Object.values(item) gets all the data inside the object, regardless of the key names
+    return Object.values(item).some((value) => {
+      if (value === null || value === undefined) return false;
+      // Convert everything to a string and check if it matches the search query
+      return String(value).toLowerCase().includes(query);
+    });
+  });
+};
+// ==========================================
+
 export const ManageCategories: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(
     null,
   );
   const [allCategories, setAllCategories] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isTableLoading, setIsTableLoading] = useState(true); // For initial page load
+  const [isRefreshing, setIsRefreshing] = useState(false);    // For the refresh button only
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -29,40 +50,51 @@ export const ManageCategories: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 5;
 
-  const fetchCategories = async () => {
-    setIsLoading(true);
+  // Function 1: Initial Load
+  const loadInitialData = async () => {
+    setIsTableLoading(true);
+    try {
+      const response = await ApiServices.getBlogCategories();
+      if (response.data.code === 200 || response.data.status === "success") {
+        setAllCategories(response.data.data || []);
+      }
+    } catch (error) {
+      console.error("Error loading categories:", error);
+      showToast("Failed to load categories", "error");
+    } finally {
+      setIsTableLoading(false);
+    }
+  };
+
+  // Function 2: Manual Refresh (Different Logic Path)
+  const handleManualRefresh = async () => {
+    if (isTableLoading || isRefreshing) return; // Block if already busy
+    setIsRefreshing(true);
     try {
       const response = await ApiServices.getBlogCategories();
       if (response.data.code === 200 || response.data.status === "success") {
         setAllCategories(response.data.data || []);
       } else {
-        // showToast(response.data.message || 'Failed to fetch categories', 'error');
+        showToast("Failed to refresh categories", "error");
       }
     } catch (error) {
-      console.error("Error fetching categories:", error);
-      showToast("Error fetching categories", "error");
+      console.error("Error refreshing categories:", error);
+      showToast("Failed to refresh categories", "error");
     } finally {
-      setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
-    fetchCategories();
+    loadInitialData();
   }, []);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
 
-  const filteredCategories = allCategories.filter((cat) => {
-    const query = searchQuery.toLowerCase().trim();
-    if (!query) return true;
-    const catName = cat.category_name || cat.name || "";
-    return (
-      cat.id?.toString().includes(query) ||
-      catName.toLowerCase().includes(query)
-    );
-  });
+  // 👇 Apply the global search function here 👇
+  const filteredCategories = searchAnyKey(allCategories, searchQuery);
 
   const totalItems = filteredCategories.length;
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
@@ -108,7 +140,7 @@ export const ManageCategories: React.FC = () => {
         );
         setShowDeleteModal(false);
         setCategoryToDelete(null);
-        fetchCategories();
+        loadInitialData(); // Refetch data after delete
       } else {
         showToast(
           response.data.message || "Failed to delete category",
@@ -159,24 +191,25 @@ export const ManageCategories: React.FC = () => {
             <input
               type="text"
               placeholder="Search category..."
-              className="pl-10 pr-4 py-2 border border-gray-200 dark:border-secondary-600 rounded-md w-full bg-white dark:bg-secondary-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#b0cb1f]/50 transition-shadow text-primary dark:text-white"
+              className="pl-10 pr-4 py-2 border border-gray-200 dark:border-secondary-600 rounded-md w-full bg-white dark:bg-secondary-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#b0cb1f]/50 transition-shadow text-primary dark:text-white disabled:opacity-70 disabled:cursor-not-allowed"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              disabled={isTableLoading || isRefreshing}
             />
           </div>
           <button
-            onClick={fetchCategories}
-            disabled={isLoading}
+            onClick={handleManualRefresh}
+            disabled={isTableLoading || isRefreshing}
             className="p-2 rounded-full hover:bg-secondary-100 dark:hover:bg-secondary-700 text-secondary-500 dark:text-secondary-400 transition-colors disabled:opacity-50 disabled:cursor-wait"
             title="Refresh"
           >
-            <RefreshCw size={18} className={isLoading ? "animate-spin" : ""} />
+            <RefreshCw size={18} className={isRefreshing ? "animate-spin" : ""} />
           </button>
         </div>
 
         {/* Table Layout */}
         <div className="overflow-x-auto min-h-[300px] relative">
-          {isLoading && (
+          {isTableLoading && (
             <div className="absolute inset-0 bg-white/50 dark:bg-secondary-800/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
               <div className="flex flex-col items-center gap-2">
                 <Loader2 className="animate-spin text-[#b0cb1f]" size={40} />
@@ -232,7 +265,7 @@ export const ManageCategories: React.FC = () => {
                       </td>
                     </tr>
                   ))
-                : !isLoading && (
+                : !isTableLoading && (
                     /* Empty State */
                     <tr>
                       <td colSpan={3}>
@@ -260,7 +293,7 @@ export const ManageCategories: React.FC = () => {
         </div>
 
         {/* Pagination Footer */}
-        {!isLoading && totalPages > 1 && (
+        {!isTableLoading && totalPages > 1 && (
           <div className="p-4 border-t border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 flex justify-between items-center">
             <span className="text-sm text-gray-500 dark:text-gray-400">
               Showing {startIndex + 1} to{" "}
@@ -306,7 +339,7 @@ export const ManageCategories: React.FC = () => {
         onClose={handleCloseModal}
         editId={editingCategoryId}
         allCategories={allCategories}
-        onSuccess={fetchCategories}
+        onSuccess={loadInitialData}
       />
 
       {/* Modern Delete Confirmation Modal */}
