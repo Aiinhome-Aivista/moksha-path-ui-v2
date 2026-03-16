@@ -1236,18 +1236,20 @@ const Notifications: React.FC = () => {
                             {mappedStatus === "Complete"
                               ? "You have accepted this invitation."
                               : mappedStatus === "Pending"
-                                ? "This invitation is pending your response."
+                                ? p.request_type?.toLowerCase() === "received"
+                                  ? "This invitation is pending your response."
+                                  : "Waiting for the recipient to respond."
                                 : "This invitation has been rejected."}
                           </span>
                         </div>
-                        {mappedStatus === "Pending" && (
+                        {mappedStatus === "Pending" && p.request_type?.toLowerCase() === "received" && (
                           <div className="flex gap-3 pt-2">
                             <button
-                              onClick={() => manageProfileRequest(p.link_id, "reject")}
+                              onClick={() => manageProfileRequest(p.link_id, "DELETE")}
                               disabled={isUpdatingProfileRequest !== null}
                               className="flex-1 px-4 py-2 border border-red-200 text-red-500 rounded-xl text-sm font-semibold hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
-                              {isUpdatingProfileRequest === `${p.link_id}-reject` ? (
+                              {isUpdatingProfileRequest === `${p.link_id}-DELETE` ? (
                                 <span className="material-symbols-outlined text-base animate-spin" style={{ fontVariationSettings: "'wght' 400" }}>
                                   progress_activity
                                 </span>
@@ -1255,11 +1257,11 @@ const Notifications: React.FC = () => {
                             </button>
 
                             <button
-                              onClick={() => manageProfileRequest(p.link_id, "accept")}
+                              onClick={() => manageProfileRequest(p.link_id, "ACCEPT")}
                               disabled={isUpdatingProfileRequest !== null}
                               className="flex-1 px-4 py-2 bg-[#BADA55] text-gray-800 rounded-xl text-sm font-bold hover:bg-lime-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
-                              {isUpdatingProfileRequest === `${p.link_id}-accept` ? (
+                              {isUpdatingProfileRequest === `${p.link_id}-ACCEPT` ? (
                                 <span className="material-symbols-outlined text-base animate-spin" style={{ fontVariationSettings: "'wght' 400" }}>
                                   progress_activity
                                 </span>
