@@ -7,6 +7,24 @@ export const AdminDashboard: React.FC = () => {
     const [stats, setStats] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
 
+const formatDate = (dateString: string | undefined | null): string => {
+  if (!dateString) return 'N/A';
+  try {
+    const date = new Date(dateString);
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+    }
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  } catch (error) {
+    return 'Invalid Date';
+  }
+};
+
+
     const fetchDashboardData = async () => {
         setIsLoading(true);
         try {
@@ -151,7 +169,7 @@ export const AdminDashboard: React.FC = () => {
                                         <td className="px-6 py-4 font-medium text-primary dark:text-white">{blog.blog_title || blog.title}</td>
                                         <td className="px-6 py-4 text-center text-secondary-500 dark:text-secondary-400">{blog.category_name}</td>
                                         <td className="px-6 py-4 text-center text-secondary-500 dark:text-secondary-400">
-                                            {new Date(blog.created_at).toLocaleDateString()}
+                                            {formatDate(blog.created_at)}
                                         </td>
                                     </tr>
                                 ))}
