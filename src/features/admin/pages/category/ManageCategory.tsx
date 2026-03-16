@@ -74,6 +74,7 @@ export const ManageCategories: React.FC = () => {
       const response = await ApiServices.getBlogCategories();
       if (response.data.code === 200 || response.data.status === "success") {
         setAllCategories(response.data.data || []);
+        // showToast("Categories refreshed", "success");
       } else {
         showToast("Failed to refresh categories", "error");
       }
@@ -203,23 +204,16 @@ export const ManageCategories: React.FC = () => {
             className="p-2 rounded-full hover:bg-secondary-100 dark:hover:bg-secondary-700 text-secondary-500 dark:text-secondary-400 transition-colors disabled:opacity-50 disabled:cursor-wait"
             title="Refresh"
           >
-            <RefreshCw size={18} className={isRefreshing ? "animate-spin" : ""} />
+            {isRefreshing ? (
+              <div className="w-5 h-5 border-2 border-gray-300 dark:border-secondary-600 border-t-[#b0cb1f] rounded-full animate-spin" />
+            ) : (
+              <RefreshCw size={18} />
+            )}
           </button>
         </div>
 
         {/* Table Layout */}
-        <div className="overflow-x-auto min-h-[300px] relative">
-          {isTableLoading && (
-            <div className="absolute inset-0 bg-white/50 dark:bg-secondary-800/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
-              <div className="flex flex-col items-center gap-2">
-                <Loader2 className="animate-spin text-[#b0cb1f]" size={40} />
-                <span className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
-                  Loading categories...
-                </span>
-              </div>
-            </div>
-          )}
-
+        <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             {/* GREEN Table Header */}
             <thead className="bg-[#b0cb1f] text-gray-900 font-semibold border-b border-gray-200 dark:border-secondary-700">
@@ -232,8 +226,28 @@ export const ManageCategories: React.FC = () => {
 
             {/* Table Body */}
             <tbody className="divide-y divide-gray-100 dark:divide-secondary-700">
-              {currentCategories.length > 0
-                ? currentCategories.map((cat, index) => (
+              {isTableLoading ? (
+                // Initial Page Load Loader
+                <tr>
+                  <td colSpan={3} className="p-20 text-center min-h-[300px]">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <div className="w-10 h-10 border-4 border-secondary-200 dark:border-secondary-700 border-t-[#b0cb1f] rounded-full animate-spin" />
+                      <p className="text-secondary-500 dark:text-secondary-400 text-sm font-medium">Loading initial data...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : isRefreshing ? (
+                // Manual Refresh Table Loader
+                <tr>
+                  <td colSpan={3} className="p-20 text-center bg-gray-50/50 dark:bg-secondary-800/20 min-h-[300px]">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <div className="w-8 h-8 border-4 border-secondary-200 dark:border-secondary-700 border-t-[#b0cb1f] rounded-full animate-spin" />
+                      <p className="text-secondary-500 dark:text-secondary-400 font-medium">Refreshing table data...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : currentCategories.length > 0 ? (
+                currentCategories.map((cat, index) => (
                     <tr
                       key={cat.id}
                       className="divide-x divide-gray-100 dark:divide-secondary-700 hover:bg-gray-50 dark:hover:bg-secondary-700/50 transition-colors"
@@ -265,9 +279,9 @@ export const ManageCategories: React.FC = () => {
                       </td>
                     </tr>
                   ))
-                : !isTableLoading && (
+                ) : (
                     /* Empty State */
-                    <tr>
+                    <tr key="no-data">
                       <td colSpan={3}>
                         <div className="p-12 text-center text-secondary-500 dark:text-secondary-400 flex flex-col items-center justify-center min-h-[200px]">
                           <FolderTree
@@ -293,7 +307,7 @@ export const ManageCategories: React.FC = () => {
         </div>
 
         {/* Pagination Footer */}
-        {!isTableLoading && totalPages > 1 && (
+        {!isTableLoading && !isRefreshing && totalPages > 1 && (
           <div className="p-4 border-t border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 flex justify-between items-center">
             <span className="text-sm text-gray-500 dark:text-gray-400">
               Showing {startIndex + 1} to{" "}
