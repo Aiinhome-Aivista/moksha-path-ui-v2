@@ -892,7 +892,7 @@ export default function LandingPage() {
           <div className="max-w-md">
             <p className="text-gray-600 leading-relaxed">
               Clear plans, daily guidance, and stress-free completion the reason
-              I got through my exams was because of MokshaPath. You don’t have
+              I got through my exams was because of MokshPath. You don’t have
               to think about where to start with, just get your enrolment done.
               That’s it!
             </p>
