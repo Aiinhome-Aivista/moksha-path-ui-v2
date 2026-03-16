@@ -19,7 +19,7 @@ import { useToast } from "../../../../app/providers/ToastProvider";
 // ==========================================
 const searchAnyKey = (dataArray: any[], searchQuery: string) => {
   if (!searchQuery) return dataArray;
-  
+
   const query = searchQuery.toLowerCase().trim();
 
   return dataArray.filter((item) => {
@@ -158,7 +158,7 @@ export const ManageBlog: React.FC = () => {
             className="p-2 rounded-full hover:bg-secondary-100 dark:hover:bg-secondary-700 text-secondary-500 dark:text-secondary-400 transition-colors disabled:opacity-50 disabled:cursor-wait"
             title="Refresh"
           >
-            <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
+            <RefreshCw size={18} className={isLoading ? "animate-spin" : ""} />
           </button>
         </div>
 
@@ -189,10 +189,20 @@ export const ManageBlog: React.FC = () => {
                     <td className="px-6 py-4 text-center text-primary dark:text-gray-300">
                       {startIndex + index + 1}
                     </td>
-                    <td className="px-6 py-4 text-center font-medium text-primary dark:text-gray-200 max-w-xs truncate">
+                    <td
+                      className="px-6 py-4 text-center font-medium text-primary dark:text-gray-200 max-w-xs truncate cursor-pointer"
+                      title={blog.blog_title || blog.title}
+                    >
                       {blog.blog_title || blog.title}
                     </td>
-                    <td className="px-6 py-4 text-center text-primary dark:text-gray-400 text-xs max-w-xs truncate">
+                    <td
+                      className="px-6 py-4 text-center text-primary dark:text-gray-400 text-sm max-w-xs truncate cursor-pointer"
+                      title={
+                        blog.blog_content?.replace(/<[^>]*>?/gm, "") ||
+                        blog.excerpt ||
+                        "No content"
+                      }
+                    >
                       {blog.blog_content
                         ?.replace(/<[^>]*>?/gm, "")
                         .substring(0, 100) ||
@@ -324,24 +334,25 @@ export const ManageBlog: React.FC = () => {
       {/* Modern Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          <div 
+          <div
             className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
             onClick={() => !isDeleting && setShowDeleteModal(false)}
           />
-          
+
           <div className="relative bg-white dark:bg-secondary-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-secondary-100 dark:border-secondary-800">
             <div className="p-8 text-center">
               <div className="w-20 h-20 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <AlertTriangle size={40} className="text-red-500" />
               </div>
-              
+
               <h3 className="text-2xl font-bold text-secondary-900 dark:text-white mb-3">
                 Delete Blog?
               </h3>
               <p className="text-secondary-500 dark:text-secondary-400 mb-8 leading-relaxed">
-                Are you sure you want to remove this blog post? This action is permanent and cannot be undone.
+                Are you sure you want to remove this blog post? This action is
+                permanent and cannot be undone.
               </p>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <button
                   onClick={() => setShowDeleteModal(false)}
@@ -366,7 +377,7 @@ export const ManageBlog: React.FC = () => {
                 </button>
               </div>
             </div>
-            
+
             <div className="h-1.5 w-full bg-red-500" />
           </div>
         </div>
