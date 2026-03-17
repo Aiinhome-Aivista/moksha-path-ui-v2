@@ -1134,7 +1134,7 @@ export default function LandingPage() {
           1. HEADER / HERO SECTION (SPLIT LAYOUT WITH GRAY BACKGROUND)
       ════════════════════════════════════════════════════════════════════ */}
       <section id="section1" className="relative">
-        <div className="relative w-full">
+        <div className="relative w-full pt-5">
           <img
             src={Frame}
             alt="From Learning Facts to Leading Minds"
@@ -1792,8 +1792,8 @@ export default function LandingPage() {
           </div>
 
           {/* RIGHT SIDE TEXT */}
-          <div className="w-full lg:max-w-md mr-10 justify-center text-center flex flex-col">
-            <p className="text-gray-600 leading-relaxed">
+          <div className="w-full lg:max-w-md md:max-w-md justify-center text-start flex flex-col">
+            <p className="text-gray-600 leading-relaxed w-96">
               Clear plans, daily guidance, and stress-free completion the reason
               I got through my exams was because of MokshaPath. You don’t have
               to think about where to start with, just get your enrolment done.
