@@ -569,7 +569,7 @@ const Subscription: React.FC = () => {
 
         coupon_code: couponCode || undefined,
 
-        currency: "INR", 
+        currency: "INR",
       };
       setShowPaymentModal(false);
       navigate("/payment", {
@@ -645,18 +645,19 @@ const Subscription: React.FC = () => {
   //   return afterDiscount * sheetCount;
   // }, [selectedPlan, sheetCount, allSelectedSubjects]);
   const uiTotalAmount = React.useMemo(() => {
-    if (!selectedPlan) return 0;
-
     return profiles.reduce((total, profile) => {
       if (profile.selectedSubjects.length === 0) return total;
 
+      const plan = profile.selectedPlan || selectedPlan;
+      if (!plan) return total;
+
       const subjectTotal =
-        selectedPlan.subject_prices?.reduce(
+        plan.subject_prices?.reduce(
           (sum, sp) => sum + (sp.price || 0),
           0,
         ) || 0;
 
-      const discountPercent = selectedPlan.plan_discount_percent || 0;
+      const discountPercent = plan.plan_discount_percent || 0;
 
       const afterDiscount =
         subjectTotal - (subjectTotal * discountPercent) / 100;
@@ -869,6 +870,12 @@ const Subscription: React.FC = () => {
     setSheetCount(data.sheetCount);
     setShowSetupModal(false);
   };
+
+  useEffect(() => {
+    if (localUser.role === "teacher") {
+      navigate("/dashboard");
+    }
+  }, []);
 
   return (
     <div className="min-h-screen relative px-2 sm:px-4">
@@ -1710,44 +1717,17 @@ const Subscription: React.FC = () => {
               </div>
             );
           })}
-          <div className="flex items-center gap-4 relative z-[50] mt-4">
-            {" "}
-            <button
-              onClick={addProfile}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#BADA55] text-white rounded-xl text-sm font-bold shadow-sm shadow-[#BADA55]/40 hover:bg-lime-500 transition-all active:scale-95"
-            >
-              <span className="material-symbols-outlined text-[18px]">add</span>
-              Add More Profiles & Subjects
-            </button>
-            {/* Total Seat Counter (Moved here) */}
-            {/* <div className="flex items-center gap-3 ml-auto px-4 py-2 bg-gray-800 rounded-2xl shadow-lg">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                Total Seats
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setSheetCount((p) => Math.max(1, p - 1))}
-                  className="w-8 h-8 flex items-center justify-center text-white hover:bg-white/10 rounded-lg transition-colors"
-                >
-                  −
-                </button>
-                <input
-                  type="number"
-                  value={sheetCount}
-                  onChange={(e) =>
-                    setSheetCount(Math.max(1, parseInt(e.target.value) || 1))
-                  }
-                  className="w-10 bg-transparent text-white text-center font-bold outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
-                <button
-                  onClick={() => setSheetCount((p) => p + 1)}
-                  className="w-8 h-8 flex items-center justify-center text-white hover:bg-white/10 rounded-lg transition-colors"
-                >
-                  +
-                </button>
-              </div>
-            </div> */}
-          </div>
+          {localUser.role !== "student" && (
+            <div className="flex items-center gap-4 relative z-[50] mt-4">
+              <button
+                onClick={addProfile}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#BADA55] text-white rounded-xl text-sm font-bold shadow-sm shadow-[#BADA55]/40 hover:bg-lime-500 transition-all active:scale-95"
+              >
+                <span className="material-symbols-outlined text-[18px]">add</span>
+                Add More Planes
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
