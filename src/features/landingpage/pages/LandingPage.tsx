@@ -925,7 +925,7 @@
 // }
 
 
-// 
+//
 import React, { useEffect, useState } from "react";
 import "./Landing.css";
 // import HeroImg from "../../../assets/icon/herosection.svg";
@@ -1133,62 +1133,49 @@ export default function LandingPage() {
       {/* ════════════════════════════════════════════════════════════════════
           1. HEADER / HERO SECTION (SPLIT LAYOUT WITH GRAY BACKGROUND)
       ════════════════════════════════════════════════════════════════════ */}
-      <header
-        id="section1"
-        /* REMOVED overflow-hidden so the robot's head doesn't get cut off */
-        // ADDED pt-12 (padding-top) here 👇
-        className="relative font-['Montserrat'] w-full max-w-full mx-auto "
-      >
-        {/* Large Gray Rounded Container - Added back bg color and rounded corners */}
-        {/* Main content area acting as a stacking context */}
-        <div className="relative w-full h-[750px]">
-          {" "}
-          {/* Reduced height for the visual area */}
-          {/* HeroImg as background, covering the entire area */}
+      <section id="section1" className="relative">
+        <div className="relative w-full">
           <img
             src={Frame}
             alt="From Learning Facts to Leading Minds"
-            className="absolute inset-0 w-full h-100% object-cover z-0" // Covers the entire div
+            className=" w-full object-cover" // Covers the entire div
           />
-        </div>
-      </header>
 
-      {/* 2. DEMO BUTTON, SEARCH BAR & FEATURES GRID CONTAINER */}
-
-      <section
-        id="section2"
-        className="relative mb-20 scroll-mt-24 z-20 -mt-[60px] md:-mt-[140px] lg:-mt-[260px] xl:-mt-[340px] flex flex-col items-center"
-      >
-        {/* Demo Button & Search Bar Row */}
-        <div className="w-auto flex flex-col md:flex-row items-center justify-center gap-4 px-4 mb-16 lg:mb-20">
-          {/* <button className="bg-[#BADA55] hover:bg-lime-500 text-gray-800 px-8 py-3 rounded-full text-base lg:text-lg font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap">
+          {/* Demo Button & Search Bar Row */}
+          <div className="absolute -bottom-4 w-full flex flex-col md:flex-row items-center justify-center gap-4 px-4 mb-1">
+            {/* <button className="bg-[#BADA55] hover:bg-lime-500 text-gray-800 px-8 py-3 rounded-full text-base lg:text-lg font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap">
             Try a Demo
           </button> */}
 
-          <div className="relative w-full md:w-[500px] lg:w-[600px] h-[55px] lg:h-[60px]">
-            <img
-              src={IcoMenu}
-              alt="Menu"
-              className="absolute left-6 top-1/2 -translate-y-1/2 w-[18px] cursor-pointer opacity-60 z-20"
-            />
-            <input
-              type="text"
-              placeholder="Search by Learning Videos, Tests, Study Notes, Assessments, etc ..."
-              className="w-full h-full pr-[60px] pl-[55px] rounded-full border-none shadow-[0_4px_25px_rgba(0,0,0,0.08)] outline-none text-sm text-gray-700 focus:ring-2 focus:ring-[#BADA55]/40 transition-all bg-white"
-            />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 border-gray-100 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors bg-white shadow-sm rounded-full">
+            <div className="relative w-full md:w-1/2  h-12 lg:h-14">
               <img
-                src={IcoSearch}
-                alt="Search"
-                className="w-5 h-5 opacity-70"
+                src={IcoMenu}
+                alt="Menu"
+                className="absolute left-6 top-1/2 -translate-y-1/2 w-[18px] cursor-pointer opacity-60 z-20"
               />
+              <input
+                type="text"
+                placeholder="Search by Learning Videos, Tests, Study Notes, Assessments, etc ..."
+                className="w-full h-full pr-[60px] pl-[55px] rounded-full border-none shadow-[0_4px_25px_rgba(0,0,0,0.08)] outline-none text-sm text-gray-700 focus:ring-2 focus:ring-[#BADA55]/40 transition-all bg-white"
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 border-gray-100 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors bg-white shadow-sm rounded-full">
+                <img
+                  src={IcoSearch}
+                  alt="Search"
+                  className="w-5 h-5 opacity-70"
+                />
+              </div>
             </div>
           </div>
         </div>
+      </section>
 
+      {/* 2. DEMO BUTTON, SEARCH BAR & FEATURES GRID CONTAINER */}
+      {/* mb-20 scroll-mt-24 z-20 -mt-[60px] md:-mt-[140px] lg:-mt-[260px] xl:-mt-[340px] flex flex-col items-center */}
+      <section id="section2" className="relative ">
         {/* Features Area Wrapper to contain the background line properly */}
         <div className="w-full max-w-[1400px] mx-auto px-6 lg:px-20">
-          <div className="relative">
+          <div className="relative top-20">
             {/* Dashed Line Background for Features Grid (positioned relative to the grid now) */}
             <div className="absolute top-[35px] left-[8.33%] right-[8.33%] border-t-2 border-dashed border-[#d1d5db] z-0 hidden lg:block" />
 
@@ -1204,42 +1191,48 @@ export default function LandingPage() {
 
       {/* 3. Why MokshPath */}
 
-      <section id="section3" className="w-full bg-gray-100 py-20">
+      <section
+        id="section3"
+        className="w-full bg-gray-100 py-20 mt-10 2xl:mt-20"
+      >
         <div className="max-w-7xl mx-auto grid px-1 grid-cols-1 lg:grid-cols-3 gap-12 items-center">
           {/* LEFT IMAGE */}
-          <div className="flex justify-center lg:justify-start ml-4">
+          <div className="flex justify-center lg:justify-end items-end w-full ml-4">
             <img
               src={Layer_school}
               alt="School Illustration"
-              className="w-96 xl:w-[28rem]"
+              className="w-[30rem] xl:w-96"
             />
           </div>
 
           {/* RIGHT CONTENT */}
-          <div className="relative col-span-2 ml-2">
-            <div className="relative">
+          <div className="relative col-span-2 ml-2 px-40 lg:p-0">
+            <div className="">
               {/* LEFT QUOTE */}
-              <img
-                src={Start_comma}
-                alt="Start Quote"
-                className="absolute -left-32 -top-6 w-32 h-auto inline-block"
-              />
+              <div className="flex relative">
+                <img
+                  src={Start_comma}
+                  alt="Start Quote"
+                  className="absolute -left-32 -top-6 w-32 h-auto inline-block"
+                />
 
-              {/* TITLE */}
-              <span className="text-center text-4xl md:text-5xl lg:text-[60px] font-bold text-gray-700 leading-tight">
-                Why MokshPath
-              </span>
-              <br />
-              <span className="text-center text-4xl md:text-5xl lg:text-[60px] font-bold text-gray-700 leading-tight">
-                for Your School?
-              </span>
+                {/* TITLE */}
+                <span className="text-center text-4xl md:text-5xl lg:text-[60px] font-bold text-gray-700 leading-tight">
+                  Why MokshPath
+                </span>
+              </div>
+              <div className="flex relative">
+                <span className="text-center text-4xl md:text-5xl lg:text-[60px] font-bold text-gray-700 leading-tight">
+                  for Your School?
+                </span>
 
-              {/* RIGHT QUOTE */}
-              <img
-                src={Close_comma}
-                alt="end Quote"
-                className="absolute right-44 lg:right-12 xl:right-40 top-4 w-28 h-auto inline-block"
-              />
+                {/* RIGHT QUOTE */}
+                <img
+                  src={Close_comma}
+                  alt="end Quote"
+                  className="absolute right-0 lg:right-8 xl:right-40 -top-4 w-28 h-auto inline-block"
+                />
+              </div>
             </div>
 
             {/* DESCRIPTION */}
@@ -1299,7 +1292,7 @@ export default function LandingPage() {
               </div>
 
               <div className="w-80 lg:w-44 xl:w-[96%]">
-                <h4 className="font-bold text-gray-700 tracking-widest"> 
+                <h4 className="font-bold text-gray-700 tracking-widest">
                   Global Standards
                 </h4>
                 <p className="text-gray-500 mt-1">
@@ -1342,8 +1335,11 @@ export default function LandingPage() {
                 />
               </div>
             </h2>
-            <p className="mt-2 font-['Montserrat'] font-normal text-normal leading-relaxed tracking-wider text-primary w-96 mx-auto lg:ml-[50px]">
-              Our learning plans are intelligently mapped to official academic calendars, ensuring the right pace and structure for each education board; an exact fit for ICSE, CBSE and all the Indian State Boards.
+            <p className="font-['Montserrat'] font-normal text-normal leading-relaxed tracking-wider text-primary w-96 lg:w-52 xl:w-80 mx-auto lg:ml-12">
+              Our learning plans are intelligently mapped to official academic
+              calendars, ensuring the right pace and structure for each
+              education board; an exact fit for ICSE, CBSE and all the Indian
+              State Boards.
             </p>
           </div>
 
@@ -1356,7 +1352,7 @@ export default function LandingPage() {
             />
 
             {/* BOTTOM TEXT */}
-            <p className="flex flex-col justify-center text-left mb-20 xl:mb-40 font-['Montserrat'] font-bold text-xl leading-8 tracking-[0.14em] text-primary">
+            <p className="flex flex-col justify-center text-left mb-20 xl:mb-48 font-['Montserrat'] font-bold text-xl leading-8 tracking-[0.14em] text-primary">
               <span className="block">Different boards.</span>
               <span className="block">Different timelines.</span>
               <span className="block">One intelligent system.</span>
@@ -1420,9 +1416,7 @@ export default function LandingPage() {
                   className="w-12 h-auto"
                 />
                 <div>
-                  <h4 className="font-semibold text-primary">
-                    Lightning Fast
-                  </h4>
+                  <h4 className="font-semibold text-primary">Lightning Fast</h4>
                   <p className="text-sm text-primary  leading-tighter tracking-wider">
                     The adaptive engine serves the next question in under 1.5
                     seconds, even on low bandwidth.
@@ -1454,9 +1448,7 @@ export default function LandingPage() {
                   className="w-12 h-auto"
                 />
                 <div>
-                  <h4 className="font-semibold text-primary">
-                    Privacy First
-                  </h4>
+                  <h4 className="font-semibold text-primary">Privacy First</h4>
                   <p className="text-sm text-primary  leading-tighter tracking-wider">
                     Fully compliant with GDPR and COPPA; student data for
                     regulatory bodies is strictly anonymised.
@@ -1625,7 +1617,7 @@ export default function LandingPage() {
           <div className="col-span-2 ml-4 lg:ml-12">
             {/* USERS GRID */}
             <div className="grid grid-cols-2 xl:grid-cols-4 gap-2">
-                <div className=" w-32">
+              <div className=" w-32">
                 <h4 className="font-semibold text-primary mb-2">Students</h4>
                 <p className="text-sm text-primary">
                   Clear plans, daily guidance, and stress-free completion.
@@ -1639,14 +1631,14 @@ export default function LandingPage() {
                 </p>
               </div>
 
-               <div className=" w-32">
+              <div className=" w-32">
                 <h4 className="font-semibold text-primary mb-2">Teachers</h4>
                 <p className="text-sm text-primary">
                   Insight into student performance and learning gaps.
                 </p>
               </div>
 
-               <div className=" w-32">
+              <div className=" w-32">
                 <h4 className="font-semibold text-primary mb-2">
                   Institutions
                 </h4>
@@ -1770,7 +1762,7 @@ export default function LandingPage() {
       {/* 10. TESTIMONIALS */}
       <section
         id="section10"
-        className="flex flex-col items-center justify-center w-full pb-[50px] gap-1 mt-[50px] scroll-mt-24"
+        className="flex flex-col items-center justify-center w-full pb-[50px] bg-white gap-1 mt-[50px] scroll-mt-24"
       >
         {/* TITLE */}
         <div className="relative text-center gap-4 mt-20 mx-auto">
@@ -1831,8 +1823,6 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
-
-      
     </div>
   );
 }
