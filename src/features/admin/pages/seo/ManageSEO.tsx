@@ -205,6 +205,7 @@ export const ManageSEO: React.FC = () => {
                                 <th className="px-6 py-4 text-center whitespace-nowrap">Title</th>
                                 <th className="px-6 py-4 text-center whitespace-nowrap">Description</th>
                                 <th className="px-6 py-4 text-center whitespace-nowrap">Keywords</th>
+                                <th className="px-6 py-4 text-center whitespace-nowrap">Canonical URL</th>
                                 <th className="px-6 py-4 text-center whitespace-nowrap">Created Date</th>
                                 <th className="px-6 py-4 text-center whitespace-nowrap">Action</th>
                             </tr>
@@ -215,7 +216,7 @@ export const ManageSEO: React.FC = () => {
                             {isTableLoading ? (
                                 // Initial Page Load Loader
                                 <tr>
-                                    <td colSpan={7} className="p-20 text-center min-h-[300px]">
+                                    <td colSpan={8} className="p-20 text-center min-h-[300px]">
                                         <div className="flex flex-col items-center justify-center gap-3">
                                             <div className="w-10 h-10 border-4 border-secondary-200 dark:border-secondary-700 border-t-[#b0cb1f] rounded-full animate-spin" />
                                             <p className="text-secondary-500 dark:text-secondary-400 text-sm font-medium">Loading initial data...</p>
@@ -225,7 +226,7 @@ export const ManageSEO: React.FC = () => {
                             ) : isRefreshing ? (
                                 // Manual Refresh Table Loader
                                 <tr>
-                                    <td colSpan={7} className="p-20 text-center bg-gray-50/50 dark:bg-secondary-800/20 min-h-[300px]">
+                                    <td colSpan={8} className="p-20 text-center bg-gray-50/50 dark:bg-secondary-800/20 min-h-[300px]">
                                         <div className="flex flex-col items-center justify-center gap-3">
                                             <div className="w-8 h-8 border-4 border-secondary-200 dark:border-secondary-700 border-t-[#b0cb1f] rounded-full animate-spin" />
                                             <p className="text-secondary-500 dark:text-secondary-400 font-medium">Refreshing table data...</p>
@@ -239,7 +240,7 @@ export const ManageSEO: React.FC = () => {
                                         <td className="px-6 py-4 text-center text-primary dark:text-gray-300 align-middle">
                                             {startIndex + index + 1}
                                         </td>
-                                        <td className="px-6 py-4 text-center text-[#b0cb1f] font-mono text-xs align-middle">
+                                        <td className="px-6 py-4 text-center text-primary dark:text-gray-300 text-xs align-middle">
                                             {seo.page_route}
                                         </td>
                                         <td className="px-6 py-4 text-center font-medium text-primary dark:text-gray-200 min-w-[200px] align-middle">
@@ -250,6 +251,9 @@ export const ManageSEO: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4 text-center text-primary dark:text-gray-300 min-w-[200px] leading-relaxed align-middle">
                                             {seo.seo_keywords || seo.keywords}
+                                        </td>
+                                        <td className="px-6 py-4 text-center text-sky-500 dark:text-sky-400 min-w-[200px] text-xs align-middle break-all">
+                                            {seo.canonical_url}
                                         </td>
                                         <td className="px-6 py-4 text-center text-primary dark:text-gray-300 whitespace-nowrap align-middle">
                                             {formatDate(seo.created_at)}
@@ -274,7 +278,7 @@ export const ManageSEO: React.FC = () => {
                             ) : (
                                 // No Data Found
                                 <tr>
-                                    <td colSpan={7}>
+                                    <td colSpan={8}>
                                         <div className="p-12 text-center text-secondary-500 dark:text-secondary-400 flex flex-col items-center justify-center min-h-[300px]">
                                             <Search size={48} className="text-gray-300 dark:text-secondary-600 mb-4" />
                                             <p className="font-semibold text-lg text-gray-600 dark:text-secondary-300">
