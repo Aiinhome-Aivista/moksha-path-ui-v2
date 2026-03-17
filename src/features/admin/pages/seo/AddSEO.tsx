@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Loader2, AlertCircle } from 'lucide-react';
-import { NavLink, useSearchParams, } from 'react-router-dom';
+import { NavLink, useSearchParams, useNavigate } from 'react-router-dom';
 import ApiServices from '../../../../services/ApiServices';
+import { useToast } from '../../../../app/providers/ToastProvider';
 
 export const AddSEO: React.FC = () => {
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const { showToast } = useToast();
     const editId = searchParams.get('edit');
     const isEditMode = !!editId;
 
@@ -40,35 +43,55 @@ export const AddSEO: React.FC = () => {
         fetchExistingData();
     }, [editId, isEditMode]);
 
-const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Create the error object
-    const newErrors: { [key: string]: string } = {};
-    
-    // Validate every field
-    if (!routePath.trim()) newErrors.routePath = "Page route is required.";
-    if (!metaTitle.trim()) newErrors.metaTitle = "SEO title is required.";
-    if (!metaDescription.trim()) newErrors.metaDescription = "SEO description is required.";
-    if (!keywords.trim()) newErrors.keywords = "Keywords are required.";
-    
-    // Canonical URL validation
-    if (!canonicalUrl.trim()) {
-        newErrors.canonicalUrl = "Canonical URL is required.";
-    } else if (!canonicalUrl.startsWith('http')) {
-        newErrors.canonicalUrl = "Please enter a valid absolute URL.";
-    }
+    const handleSave = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        const newErrors: { [key: string]: string } = {};
+        
+        if (!routePath.trim()) newErrors.routePath = "Page route is required.";
+        if (!metaTitle.trim()) newErrors.metaTitle = "SEO title is required.";
+        if (!metaDescription.trim()) newErrors.metaDescription = "SEO description is required.";
+        if (!keywords.trim()) newErrors.keywords = "Keywords are required.";
+        
+        if (!canonicalUrl.trim()) {
+            newErrors.canonicalUrl = "Canonical URL is required.";
+        } else if (!canonicalUrl.startsWith('http')) {
+            newErrors.canonicalUrl = "Please enter a valid absolute URL.";
+        }
 
-    // Update the state so the red borders appear
-    setErrors(newErrors);
+        setErrors(newErrors);
 
-    if (Object.keys(newErrors).length > 0) {
-        // showToast("Please fill in all required fields", "warning");
-        return;
-    }
+        if (Object.keys(newErrors).length > 0) {
+            showToast("Please fill in all required fields", "warning");
+            return;
+        }
 
-    // ... Proceed with API call
-};
+        setIsSubmitting(true);
+        try {
+            const payload = {
+                id: editId ? parseInt(editId) : null,
+                page_route: routePath.trim(),
+                seo_title: metaTitle,
+                seo_description: metaDescription,
+                seo_keywords: keywords,
+                canonical_url: canonicalUrl
+            };
+
+            const response = await ApiServices.insertUpdateBlogSeo(payload);
+            
+            if (response.data.code === 200 || response.data.status === 'success') {
+                showToast(response.data.message || `SEO ${isEditMode ? 'updated' : 'added'} successfully`, 'success');
+                navigate('/admin/manage-seo');
+            } else {
+                showToast(response.data.message || 'Failed to save SEO config', 'error');
+            }
+        } catch (error) {
+            console.error('Error saving SEO:', error);
+            showToast('Something went wrong. Please try again.', 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <div className="space-y-6 max-w-8xl mx-auto">
@@ -76,7 +99,7 @@ const handleSave = async (e: React.FormEvent) => {
                 <NavLink to="/admin/manage-seo" className="p-2 hover:bg-secondary-100 dark:hover:bg-secondary-800 rounded-full transition-colors text-secondary-500">
                     <ArrowLeft size={20} />
                 </NavLink>
-                <h1 className="text-2xl font-bold text-primary ">
+                <h1 className="text-2xl font-bold text-primary">
                     {isEditMode ? 'Edit SEO Config' : 'Add New SEO Config'}
                 </h1>
             </div>
@@ -165,47 +188,45 @@ const handleSave = async (e: React.FormEvent) => {
                             {errors.keywords && <p className="text-xs text-red-500 flex items-center gap-1 mt-1"><AlertCircle size={12}/> {errors.keywords}</p>}
                         </div>
 
- {/* Canonical URL */}
-<div className="space-y-2">
-    <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider flex items-center gap-1">
-        Canonical URL <span className="text-red-500">*</span>
-    </label>
-    <input
-        type="text"
-        className={`w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 ${
-            errors.canonicalUrl 
-                ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' 
-                : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'
-        } text-black `}
-        placeholder="https://example.com/page"
-        value={canonicalUrl}
-        onChange={(e) => {
-            const val = e.target.value;
-            setCanonicalUrl(val);
-            
-            // Validate immediately on change
-            let errorMsg = "";
-            if (!val.trim()) {
-                errorMsg = "Canonical URL is required.";
-            } else if (!val.startsWith('http')) {
-                errorMsg = "Please enter a valid absolute URL (starting with http/https).";
-            }
-            
-            setErrors(prev => ({ 
-                ...prev, 
-                canonicalUrl: errorMsg 
-            }));
-        }}
-        disabled={isSubmitting}
-    />
-    {/* Explicit check to ensure message renders */}
-    {errors.canonicalUrl && (
-        <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
-            <AlertCircle size={12}/> {errors.canonicalUrl}
-        </p>
-    )}
-</div>
-</div>
+                        {/* Canonical URL */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider flex items-center gap-1">
+                                Canonical URL <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                className={`w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 ${
+                                    errors.canonicalUrl 
+                                        ? 'border-red-500 focus:ring-red-500/30 bg-red-50/10' 
+                                        : 'border-secondary-200 dark:border-secondary-700 focus:ring-primary-500'
+                                } text-black `}
+                                placeholder="https://example.com/page"
+                                value={canonicalUrl}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setCanonicalUrl(val);
+                                    
+                                    let errorMsg = "";
+                                    if (!val.trim()) {
+                                        errorMsg = "Canonical URL is required.";
+                                    } else if (!val.startsWith('http')) {
+                                        errorMsg = "Please enter a valid absolute URL (starting with http/https).";
+                                    }
+                                    
+                                    setErrors(prev => ({ 
+                                        ...prev, 
+                                        canonicalUrl: errorMsg 
+                                    }));
+                                }}
+                                disabled={isSubmitting}
+                            />
+                            {errors.canonicalUrl && (
+                                <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                                    <AlertCircle size={12}/> {errors.canonicalUrl}
+                                </p>
+                            )}
+                        </div>
+                    </div>
 
                     <div className="flex justify-end pt-4 border-t border-secondary-200 dark:border-secondary-700">
                         <button 
