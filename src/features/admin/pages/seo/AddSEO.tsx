@@ -13,7 +13,7 @@ export const AddSEO: React.FC = () => {
     const [metaDescription, setMetaDescription] = useState('');
     const [keywords, setKeywords] = useState('');
     const [canonicalUrl, setCanonicalUrl] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitting ] = useState(false);
     
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 

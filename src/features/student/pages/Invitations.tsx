@@ -91,7 +91,8 @@ const Invitations: React.FC = () => {
 
   // username search state
   const [usernameInput, setUsernameInput] = useState("");
-  const [filteredNames, setFilteredNames] = useState<UserListItem[]>([]);
+  // const [filteredNames, setFilteredNames] = useState<UserListItem[]>([]);
+  const [, setFilteredNames] = useState<UserListItem[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<UserListItem[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -119,7 +120,7 @@ const Invitations: React.FC = () => {
   const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
   const [instituteData, setInstituteData] = useState<InstituteHierarchy[]>([]);
   const [classOptions, setClassOptions] = useState<string[]>([]);
-  const [sectionOptions, setSectionOptions] = useState<string[]>([]);
+  const [, setSectionOptions] = useState<string[]>([]);
 
   const USER_DROPDOWN_LIMIT = 10;
   const [dropdownPage, setDropdownPage] = useState(1);
@@ -542,10 +543,10 @@ const Invitations: React.FC = () => {
     }
   };
 
-  const classDisplay =
-    selectedClasses.length > 2
-      ? `${selectedClasses.slice(0, 2).join(", ")}...`
-      : selectedClasses.join(", ");
+  // const classDisplay =
+  //   selectedClasses.length > 2
+  //     ? `${selectedClasses.slice(0, 2).join(", ")}...`
+  //     : selectedClasses.join(", ");
 
   return (
     <div className="min-h-screen p-6 space-y-6">

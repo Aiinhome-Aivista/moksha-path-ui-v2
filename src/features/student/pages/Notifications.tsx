@@ -149,8 +149,10 @@ const Notifications: React.FC = () => {
   const [profileFilter, setProfileFilter] = useState<ProfileStatus | "All">(
     "All",
   );
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [profileError, setProfileError] = useState("");
+  // const [profileLoading, setProfileLoading] = useState(false);
+  // const [profileError, setProfileError] = useState("");
+  const [, setProfileLoading] = useState(false);
+  const [, setProfileError] = useState("");
   const [profileExpandedId, setProfileExpandedId] = useState<number | null>(
     null,
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, FileText, Activity, Layers, Loader2 } from 'lucide-react';
+import { LayoutDashboard, FileText, Activity, Layers, Loader2 } from 'lucide-react';
 import ApiServices from '../../../services/ApiServices';
 
 export const AdminDashboard: React.FC = () => {
