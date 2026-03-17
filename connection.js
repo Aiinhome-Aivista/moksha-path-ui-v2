@@ -73,6 +73,28 @@ export const GET_APIS = {
   // Learning Planner for teacher and parent
   get_teacher_learning_planner: `${BASE_URL}learning/teacher/learning_planner`,
   parent_profile: `${BASE_URL}parent_teacher/dashboard/parent/parent-profile`,
+
+  // Blogs APIs
+  blog_categories: `${BASE_URL}blogs/categories`,
+  blogs_list: `${BASE_URL}blogs/blogs`,
+  blog_seo_settings: `${BASE_URL}blogs/seo-settings`,
+  blog_admin_dashboard: `${BASE_URL}blogs/admin-dashboard`,
+  blog_category_dropdown: `${BASE_URL}blogs/category-dropdown`,
+  public_blogs: `${BASE_URL}blogs/public-blogs`,
+  //invite modal instititute list
+  get_institute_list: `${BASE_URL}user/get_institute_hierarchy`,
+
+  //profile apis
+  // User Profile APIs
+  profile_info: `${BASE_URL}user/profile_info`,
+  user_academic_info: `${BASE_URL}user/user_academic_info`,
+  search_user_for_mapping: `${BASE_URL}user/search_user_for_mapping`,
+  active_user_connections: `${BASE_URL}user/get_active_user_student_parent_list`,
+
+  //profile notification
+  get_pending_mapping_requests: `${BASE_URL}user/get_pending_mapping_requests`,
+  get_active_user_student_parent_list: `${BASE_URL}user/get_active_user_student_parent_list`,
+  get_invitation_all_summary: `${BASE_URL}user/get_invitation_all_summary`,
 };
 
 export const POST_APIS = {
@@ -139,4 +161,20 @@ export const POST_APIS = {
   verify_account_v4: `${BASE_URL}auth/verify_account`,
   add_profile_v4: `${BASE_URL}auth/add_profile`,
   select_profile: `${BASE_URL}auth/select_profile`,
+
+  // Blogs APIs
+  blog_admin_login: `${BASE_URL}blogs/admin-login`,
+  blog_category_insert_update: `${BASE_URL}blogs/category/insert-update`,
+  blog_category_delete: `${BASE_URL}blogs/category/delete`,
+  blog_insert_update: `${BASE_URL}blogs/blog/insert-update`,
+  blog_delete: `${BASE_URL}blogs/blog/delete`,
+  blog_seo_insert_update: `${BASE_URL}blogs/seo/insert-update`,
+  blog_seo_delete: `${BASE_URL}blogs/seo/delete`,
+  all_user_by_pagination: `${BASE_URL}user/get_all_usernames_with_paginations`,
+
+  // Update User Profile
+  update_profile: `${BASE_URL}user/update_profile`,
+  add_mapping: `${BASE_URL}user/add_parent_student_mapping`,
+  //profile notification add/delete
+  manage_parent_student_mapping: `${BASE_URL}user/manage_parent_student_mapping`,
 };

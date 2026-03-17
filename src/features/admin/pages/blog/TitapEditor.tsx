@@ -15,6 +15,13 @@ import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
 import ListItem from "@tiptap/extension-list-item";
 import TextAlign from "@tiptap/extension-text-align";
+// NOTE: The following table extensions need to be installed for table functionality.
+// If you see a "Cannot find module" error, run this command in your terminal:
+// npm install @tiptap/extension-table @tiptap/extension-table-row @tiptap/extension-table-header @tiptap/extension-table-cell
+import { Table } from '@tiptap/extension-table';
+import { TableCell } from '@tiptap/extension-table-cell';
+import { TableHeader } from '@tiptap/extension-table-header';
+import { TableRow } from '@tiptap/extension-table-row';
 import Image from "@tiptap/extension-image";
 import { useEffect, useRef, } from "react";
 import {
@@ -24,6 +31,16 @@ import {
     AlignJustify,
     Image as ImageIcon,
     X,
+    Table as TableIcon,
+    Trash2,
+    Columns,
+    Rows,
+    ArrowUp,
+    ArrowDown,
+    ArrowLeft,
+    ArrowRight,
+    Combine,
+    Split,
 } from "lucide-react";
 
 // ─── Custom Image Component with Resize and Delete ─────────────────────────
@@ -233,6 +250,48 @@ const AlphaList = OrderedList.extend({
     },
 });
 
+// This custom extension ensures that the document always ends with a paragraph.
+// It's a workaround for when the official `@tiptap/extension-trailing-node`
+// cannot be installed due to environment issues. This prevents the cursor
+// from getting "stuck" in nodes like tables or images, and also helps with
+// pasting table data correctly.
+import { Extension } from '@tiptap/core';
+import { Plugin, PluginKey } from 'prosemirror-state';
+
+const TrailingParagraph = Extension.create({
+    name: 'trailingParagraph',
+
+    addProseMirrorPlugins() {
+        return [
+            new Plugin({
+                key: new PluginKey('trailingParagraph'),
+                appendTransaction: (transactions, _, newState) => {
+                    const docChanged = transactions.some(transaction => transaction.docChanged);
+                    if (!docChanged) {
+                        return null;
+                    }
+
+                    // Don't interfere with paste transactions, which allows table pasting to work correctly
+                    const isPaste = transactions.some(tr => tr.getMeta('paste'));
+                    if (isPaste) {
+                        return null;
+                    }
+
+                    const { doc, tr } = newState;
+                    const lastNode = doc.lastChild;
+                    const paragraph = newState.schema.nodes.paragraph;
+
+                    if (lastNode && lastNode.type !== paragraph) {
+                        tr.insert(doc.content.size, paragraph.create());
+                        return tr;
+                    }
+
+                    return null;
+                },
+            }),
+        ];
+    },
+});
 // ─── Editor Props ───────────────────────────────────────────────────────────
 interface TiptapEditorProps {
     content: string;
@@ -267,6 +326,14 @@ export default function TiptapEditor({
                 alignments: ["left", "center", "right", "justify"],
             }),
             CustomImage.configure({ allowBase64: true }),
+            Table.configure({
+                resizable: true,
+            }),
+            TableRow,
+            TableHeader,
+            TableCell,
+            // Custom extension to ensure a trailing paragraph
+            TrailingParagraph,
         ],
         content,
         editorProps: {
@@ -300,11 +367,18 @@ export default function TiptapEditor({
 
 
     useEffect(() => {
-        if (editor && content !== editor.getHTML()) {
-            editor.commands.setContent(content);
+        if (!editor || editor.isDestroyed) {
+            return;
         }
-     
-    }, [content]);
+
+        // A check to prevent a feedback loop. If the editor's content
+        // already matches the `content` prop, we do nothing. This prevents
+        // the cursor from jumping and breaking complex inputs like pasting.
+        if (editor.getHTML() === content) {
+            return;
+        }
+        editor.commands.setContent(content);
+    }, [content, editor]);
 
   
     const insertImageFromFile = (file: File) => {
@@ -385,6 +459,34 @@ export default function TiptapEditor({
 
                 <div className="w-px bg-secondary-200 dark:bg-secondary-700 mx-0.5" />
 
+                {/* Table Controls */}
+                <button type="button" onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} className={btn(false)} title="Insert Table"><TableIcon className="w-4 h-4" /></button>
+                {editor.isActive('table') && (
+                    <>
+                        <button type="button" onClick={() => editor.chain().focus().addColumnBefore().run()} className={btn(false)} title="Add Column Before"><div className="flex items-center gap-1"><ArrowLeft size={12}/><Columns className="w-3 h-3"/></div></button>
+                        <button type="button" onClick={() => editor.chain().focus().addColumnAfter().run()} className={btn(false)} title="Add Column After"><div className="flex items-center gap-1"><Columns className="w-3 h-3"/><ArrowRight size={12}/></div></button>
+                        <button type="button" onClick={() => editor.chain().focus().deleteColumn().run()} className={btn(false)} title="Delete Column"><div className="flex items-center gap-1 text-red-500"><Columns className="w-3 h-3"/><X size={12}/></div></button>
+                        
+                        <div className="w-px bg-secondary-200 dark:bg-secondary-700 mx-0.5" />
+
+                        <button type="button" onClick={() => editor.chain().focus().addRowBefore().run()} className={btn(false)} title="Add Row Before"><div className="flex items-center gap-1"><ArrowUp size={12}/><Rows className="w-3 h-3"/></div></button>
+                        <button type="button" onClick={() => editor.chain().focus().addRowAfter().run()} className={btn(false)} title="Add Row After"><div className="flex items-center gap-1"><Rows className="w-3 h-3"/><ArrowDown size={12}/></div></button>
+                        <button type="button" onClick={() => editor.chain().focus().deleteRow().run()} className={btn(false)} title="Delete Row"><div className="flex items-center gap-1 text-red-500"><Rows className="w-3 h-3"/><X size={12}/></div></button>
+                        
+                        <div className="w-px bg-secondary-200 dark:bg-secondary-700 mx-0.5" />
+
+                        {/* Merge/Split Cells */}
+                        <button type="button" onClick={() => editor.chain().focus().mergeCells().run()} disabled={!editor.can().mergeCells()} className={btn(false)} title="Merge Cells"><Combine className="w-4 h-4"/></button>
+                        <button type="button" onClick={() => editor.chain().focus().splitCell().run()} disabled={!editor.can().splitCell()} className={btn(false)} title="Split Cell"><Split className="w-4 h-4"/></button>
+
+                        <div className="w-px bg-secondary-200 dark:bg-secondary-700 mx-0.5" />
+
+                        <button type="button" onClick={() => editor.chain().focus().deleteTable().run()} className={btn(false)} title="Delete Table"><Trash2 className="w-4 h-4 text-red-500"/></button>
+                    </>
+                )}
+
+                <div className="w-px bg-secondary-200 dark:bg-secondary-700 mx-0.5" />
+
                 {/* Image Upload */}
                 <button
                     type="button"
@@ -420,6 +522,15 @@ export default function TiptapEditor({
           prose prose-sm dark:prose-invert max-w-none
           [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mb-4 [&_h1]:mt-6
           [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mb-3 [&_h2]:mt-5
+          /* Table Styles & Column Resizing */
+          [&_table]:w-full [&_table]:my-4 [&_table]:border-collapse [&_table]:table-fixed
+          [&_th]:relative [&_th]:border [&_th]:border-gray-300 dark:[&_th]:border-gray-600 [&_th]:p-2 [&_th]:font-bold [&_th]:text-left [&_th]:bg-gray-100 dark:[&_th]:bg-gray-700
+          [&_td]:relative [&_td]:border [&_td]:border-gray-300 dark:[&_td]:border-gray-600 [&_td]:p-2 [&_td]:align-top
+          /* This makes the table resizable */
+          /* This adds a visual indicator for selected cells, like in Excel */
+          [&_.selectedCell]:after:content-[''] [&_.selectedCell]:after:absolute [&_.selectedCell]:after:inset-0 [&_.selectedCell]:after:bg-[#b0cb1f]/30 [&_.selectedCell]:after:pointer-events-none
+          [&_.column-resize-handle]:absolute [&_.column-resize-handle]:right-[-2px] [&_.column-resize-handle]:top-0 [&_.column-resize-handle]:bottom-[-2px] [&_.column-resize-handle]:w-1 [&_.column-resize-handle]:z-20 [&_.column-resize-handle]:bg-[#b0cb1f] [&_.column-resize-handle]:pointer-events-none
+          [&.resize-cursor]:cursor-col-resize
           [&_h3]:text-xl  [&_h3]:font-bold [&_h3]:mb-2 [&_h3]:mt-4
           [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-4
           [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-4

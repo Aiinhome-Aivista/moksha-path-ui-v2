@@ -1,14 +1,18 @@
+// 
 import React, { useEffect, useState } from "react";
+<<<<<<< HEAD
 import "../LandingPage.css";
+=======
+import "./Landing.css";
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
 // import HeroImg from "../../../assets/icon/herosection.svg";
-import GuyImg from "../../../assets/icon/guy.svg";
+
+import IconBoard from "../../../assets/icon/curriculum_1.svg";
+import GuyImg from "../../../assets/icon/curriculum_2.svg";
+import start_comma_gray from "../../../assets/icon/start_comma_gray.svg";
+import end_comma_gray from "../../../assets/icon/end_comma_gray.svg";
 import IcoSearch from "../../../assets/icon/ico_search.svg";
 import IcoMenu from "../../../assets/icon/ico_menu.svg";
-import CbseIcon from "../../../assets/icon/cbsc.svg";
-import IcseIcon from "../../../assets/icon/icse.svg";
-import NiosIcon from "../../../assets/icon/nios.svg";
-import WbseIcon from "../../../assets/icon/wbse.svg";
-import CaieIcon from "../../../assets/icon/caie.svg";
 import IconPlan from "../../../assets/icon/group4.svg";
 import IconChat from "../../../assets/icon/chat2.svg";
 import Chat from "../../auth/modal/chat";
@@ -130,7 +134,11 @@ export default function LandingPage() {
     "section8",
     "section9",
     "section10",
+<<<<<<< HEAD
+    "section11",
+=======
     "section11"
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
   ];
   const [active, setActive] = useState(0);
 
@@ -278,17 +286,31 @@ export default function LandingPage() {
       {/* 3. Why MokshPath */}
 
       <section id="section3" className="w-full bg-gray-100 py-20">
+<<<<<<< HEAD
+        <div className="max-w-7xl mx-auto grid px-1 grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+=======
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-20 xl:gap-32 items-center">
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
           {/* LEFT IMAGE */}
-          <div className="flex justify-center lg:justify-start">
+          <div className="flex justify-center lg:justify-start ml-4">
             <img
               src={Layer_school}
               alt="School Illustration"
-              className="w-[420px] max-w-full"
+              className="w-96 max-w-96"
             />
           </div>
 
           {/* RIGHT CONTENT */}
+<<<<<<< HEAD
+          <div className="relative col-span-2 ml-2">
+            <div className="relative">
+              {/* LEFT QUOTE */}
+              <img
+                src={Start_comma}
+                alt="Start Quote"
+                className="absolute -left-32 -top-6 w-32 h-auto inline-block"
+              />
+=======
           <div className="relative col-span-2">
             <div className="relative">
               {/* LEFT QUOTE */}
@@ -297,6 +319,7 @@ export default function LandingPage() {
                   alt="Start Quote"
                   className="absolute -left-32 -top-6 w-32 h-auto inline-block"
                 />
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
 
               {/* TITLE */}
               <span className="text-center text-4xl md:text-5xl lg:text-[60px] font-bold text-gray-700 leading-tight">
@@ -309,10 +332,17 @@ export default function LandingPage() {
 
               {/* RIGHT QUOTE */}
               <img
+<<<<<<< HEAD
+                src={Close_comma}
+                alt="end Quote"
+                className="absolute right-44 lg:right-12 xl:right-40 top-4 w-28 h-auto inline-block"
+              />
+=======
                   src={Close_comma}
                   alt="end Quote"
                   className="absolute right-44 top-4 w-28 h-auto inline-block"
                 />
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
             </div>
 
             {/* DESCRIPTION */}
@@ -331,7 +361,11 @@ export default function LandingPage() {
 
             {/* FEATURES GRID */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 mt-10 text-sm">
+<<<<<<< HEAD
+              <div className="w-80 lg:w-44 xl:w-full">
+=======
               <div>
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
                 <h4 className="font-semibold text-gray-700">
                   Eliminate Malpractice
                 </h4>
@@ -341,7 +375,11 @@ export default function LandingPage() {
                 </p>
               </div>
 
+<<<<<<< HEAD
+              <div className="w-80 lg:w-44 xl:w-full">
+=======
               <div>
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
                 <h4 className="font-semibold text-gray-700">
                   Identify “Hidden” Gaps
                 </h4>
@@ -351,7 +389,11 @@ export default function LandingPage() {
                 </p>
               </div>
 
+<<<<<<< HEAD
+              <div className="w-80 lg:w-44 xl:w-full">
+=======
               <div>
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
                 <h4 className="font-semibold text-gray-700">
                   Empower Teachers
                 </h4>
@@ -361,7 +403,11 @@ export default function LandingPage() {
                 </p>
               </div>
 
+<<<<<<< HEAD
+              <div className="w-80 lg:w-44 xl:w-full">
+=======
               <div>
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
                 <h4 className="font-semibold text-gray-700">
                   Automated Remediation
                 </h4>
@@ -371,7 +417,11 @@ export default function LandingPage() {
                 </p>
               </div>
 
+<<<<<<< HEAD
+              <div className="w-80 lg:w-44 xl:w-full">
+=======
               <div>
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
                 <h4 className="font-semibold text-gray-700">
                   Global Standards
                 </h4>
@@ -388,80 +438,409 @@ export default function LandingPage() {
 
       <section
         id="section4"
-        className="flex flex-col lg:flex-row items-center justify-center w-full pb-[50px] gap-10 mt-[50px] scroll-mt-24"
+        className="flex flex-col lg:flex-row items-center justify-center w-full pb-12 gap-10 mt-12 scroll-mt-24"
       >
-        {/* Left Content */}
-        <div className="flex-1 text-center lg:text-left pt-2 pl-4 lg:pl-[50px]">
-          <h2 className="relative font-['Montserrat'] font-bold text-[55px] leading-[55px] tracking-[0.02em] text-primary ml-12">
-            {/* Opening Quote */}
-            <span className="absolute -left-[100px] -top-[-25px] font-['Montagu_Slab'] font-bold text-[200px] leading-[66px] tracking-[0.04em] opacity-80 select-none">
-              “
-            </span>
+        <div className="min-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+          {/* Left Content */}
+          <div className="flex-1 text-center lg:text-left pt-2 ml-24">
+            <div className="relative flex">
+              {/* Opening Quote */}
+              <h4 className="flex gap-5 font-['Montserrat'] font-bold text-3xl leading-10 tracking-tight text-primary ml-12">
+                Built around your
+              </h4>
+              <img
+                src={start_comma_gray}
+                alt="Start Quote"
+                className="absolute -left-24 -top-6 w-36 h-auto inline-block"
+              />
+            </div>
+            <h2 className=" gap-5 font-['Montserrat'] font-bold text-5xl tracking-tight text-primary ml-12">
+              <span className="block">school</span>
+              <div className="flex">
+                <span className="block">curriculum </span>
+                <img
+                  src={end_comma_gray}
+                  alt="End Quote"
+                  className="bsolute -left-32 -top-6 w-32 h-auto inline-block"
+                />
+              </div>
+            </h2>
+            <p className="mt-2 font-['Montserrat'] font-normal text-[18px] leading-[30px] tracking-[0.10em] text-primary max-w-[350px] mx-auto lg:ml-[50px]">
+              Our learning plans are intelligently mapped to official academic
+              calendars, ensuring the right pace and structure for each
+              education board.
+            </p>
+          </div>
 
-            <span className="block">Built</span>
-            <span className="block">around your</span>
-            <span className="block">school</span>
-            {/* Closing Quote Wrapper */}
-            <span className="block relative w-max">
-              curriculum
-              <span className="absolute left-[100%] -top-[-25px] font-['Montagu_Slab'] font-bold text-[200px] leading-[66px] tracking-[0.04em] opacity-80 select-none">
-                ”
-              </span>
-            </span>
-          </h2>
-          <p className="mt-2 font-['Montserrat'] font-normal text-[18px] leading-[30px] tracking-[0.10em] text-primary max-w-[350px] mx-auto lg:ml-[50px]">
-            Our learning plans are intelligently mapped to official academic
-            calendars, ensuring the right pace and structure for each education
-            board.
-          </p>
+          {/* Middle: Colored Board Bubbles */}
+          <div className="flex flex-col gap-2 items-center justify-center">
+            <img
+              src={IconBoard}
+              alt="Board Bubbles"
+              className="relative left-6 bottom-20 w-96 max-w-full h-auto "
+            />
+
+            {/* BOTTOM TEXT */}
+            <p className="flex flex-col justify-center text-left mb-20 font-['Montserrat'] font-bold text-xl leading-8 tracking-[0.14em] text-primary">
+              <span className="block">Different boards.</span>
+              <span className="block">Different timelines.</span>
+              <span className="block">One intelligent system.</span>
+            </p>
+          </div>
+
+          {/* Right: Guy with Orange Background */}
+          <div className="flex-1 flex lg:mt-0 px-2">
+            <img
+              src={GuyImg}
+              alt="Student"
+              className="relative  max-w-full h-auto"
+            />
+          </div>
         </div>
+      </section>
 
-        {/* Middle: Colored Board Bubbles */}
-        <div className="relative w-[350px] h-[350px] flex-shrink-0">
-          <div className="absolute left-[8%] bottom-[58%] w-[80px]">
-            <img src={CbseIcon} alt="CBSE" className="w-full h-auto " />
+      {/* 5. Technical Reliability & Safety */}
+      <section
+        id="section5"
+        className="flex flex-col lg:flex-row items-center justify-center w-full pb-12 gap-10 mt-12 scroll-mt-24"
+      >
+        <div className="min-w-7xl mx-auto px-6 grid lg:grid-cols-3 gap-12 items-center">
+          {/* LEFT IMAGE */}
+          <div className="flex justify-center ml-40">
+            <img src={Safety} alt="Security" className="max-w-[30rem] w-fit" />
           </div>
 
-          <div className="absolute left-[26%] bottom-[45%] w-[120px]">
-            <img src={IcseIcon} alt="ICSE" className="w-full h-auto" />
+          {/* RIGHT CONTENT */}
+          <div className="col-span-2 ml-28">
+            {/* TITLE */}
+            <div className="relative mb-10">
+              <div className="flex">
+                <img
+                  src={Start_comma}
+                  alt="Start Quote"
+                  className="absolute -left-36 -top-6 w-32 h-auto inline-block"
+                />
+                <h2 className="text-5xl font-bold text-[#464646] leading-tight">
+                  Technical
+                </h2>
+              </div>
+              <div className="flex gap-4">
+                <span className="text-5xl font-bold text-[#464646] leading-tight">
+                  Reliability & Safety
+                </span>
+                <img
+                  src={Close_comma}
+                  alt="End Quote"
+                  className="w-20 h-auto inline-block"
+                />
+              </div>
+            </div>
+
+            {/* FEATURES */}
+            <div className="grid grid-cols-2 gap-28 gap-y-8">
+              <div className="flex gap-4 w-60">
+                <img
+                  src={Safety_light}
+                  alt="Safety Light"
+                  className="w-12 h-auto"
+                />
+                <div>
+                  <h4 className="font-semibold text-[#464646]">
+                    Lightning Fast
+                  </h4>
+                  <p className="text-sm text-[#464646] leading-relaxed tracking-widest">
+                    The adaptive engine serves the next question in under 1.5
+                    seconds, even on low bandwidth.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 w-60">
+                <img
+                  src={Safety_arrow}
+                  alt="Scalability"
+                  className="w-12 h-auto"
+                />
+                <div>
+                  <h4 className="font-semibold text-[#464646]">
+                    High Scalability
+                  </h4>
+                  <p className="text-sm text-[#464646] leading-relaxed tracking-widest">
+                    Supports concurrent usage spikes for large-scale National
+                    Olympiads.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 w-60">
+                <img
+                  src={Safety_privacy}
+                  alt="Privacy"
+                  className="w-12 h-auto"
+                />
+                <div>
+                  <h4 className="font-semibold text-[#464646]">
+                    Privacy First
+                  </h4>
+                  <p className="text-sm text-[#464646] leading-relaxed tracking-widest">
+                    Fully compliant with GDPR and COPPA; student data for
+                    regulatory bodies is strictly anonymised.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 w-60">
+                <img
+                  src={Safety_meet}
+                  alt="Reliability"
+                  className="w-12 h-auto"
+                />
+
+                <div>
+                  <h4 className="font-semibold text-[#464646]">
+                    Inclusive Design
+                  </h4>
+                  <p className="text-sm text-[#464646] leading-relaxed tracking-widest">
+                    Platform meets WCAG 2.1 AA standards to ensure accessibility
+                    for all learners.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Subscription Model */}
+      <section
+        id="section6"
+        className="flex flex-col lg:flex-row items-center justify-center w-full pb-12 gap-10 mt-12 scroll-mt-24"
+      >
+        <div className="min-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+          {/* LEFT CONTENT */}
+          <div className="lg:col-span-2 ml-20">
+            <div className="grid grid-cols-2 gap-16 lg:gap-24 mb-10">
+              {/* TITLE */}
+              <div className="relative mb-1">
+                <img
+                  src={Start_comma}
+                  alt="Start Quote"
+                  className="absolute -left-24 -top-6 w-24 h-auto inline-block"
+                />
+                <h2 className="text-5xl font-bold text-[#464646]">
+                  Subscription <br /> Model
+                </h2>
+                <img
+                  src={Close_comma}
+                  alt="End Quote"
+                  className="absolute left-40 top-14 w-16 h-auto inline-block"
+                />
+              </div>
+
+              {/* DESCRIPTION */}
+              <p className="text-gray-600 max-w-72 mb-1 leading-relaxed tracking-tight">
+                We offer tiered pricing designed to scale with your
+                institution's size and customization needs.
+              </p>
+            </div>
+            {/* TABLE */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left border-collapse">
+                <thead>
+                  <tr className="text-[#464646] font-semibold text-lg border-b">
+                    <th className="py-3">Feature</th>
+                    <th className="py-3">Silver Tier</th>
+                    <th className="py-3">Gold Tier</th>
+                    <th className="py-3">Enterprise</th>
+                  </tr>
+                </thead>
+
+                <tbody className="text-gray-600">
+                  <tr className="border-b">
+                    <td className="py-3 font-semibold">Best For</td>
+                    <td>Standard Board Prep</td>
+                    <td>Custom School Needs</td>
+                    <td>Large School Networks</td>
+                  </tr>
+
+                  <tr className="border-b">
+                    <td className="py-3 font-semibold">Content Generation</td>
+                    <td>General Boards (CBSE/ICSE)</td>
+                    <td>Custom AI Fine-Tuning</td>
+                    <td>Bespoke Syllabus Integration</td>
+                  </tr>
+
+                  <tr className="border-b">
+                    <td className="py-3 font-semibold">Style Sync</td>
+                    <td>Standard Templates</td>
+                    <td>Learns School Teaching Style</td>
+                    <td>Full Brand White Labelling</td>
+                  </tr>
+
+                  <tr className="border-b">
+                    <td className="py-3 font-semibold">Analytics</td>
+                    <td>Standard Reporting</td>
+                    <td>Deep Pattern Analysis</td>
+                    <td>Regulatory Reporting</td>
+                  </tr>
+
+                  <tr>
+                    <td className="py-3 font-semibold">Pricing</td>
+                    <td>Monthly Flat Fee</td>
+                    <td>Custom Based on Volume</td>
+                    <td>Contract-Based</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <div className="absolute bottom-[68%] left-[55%] w-[70px]">
-            <img src={NiosIcon} alt="NIOS" className="w-full h-auto" />
+          {/* RIGHT SIDE */}
+          <div className="flex flex-col items-center mr-6">
+            <img
+              src={subscription_model}
+              alt="Subscription"
+              className="max-w-sm w-ful mb-6"
+            />
+
+            <button className="bg-[#B0CB1F] hover:bg-[#c6df35] text-gray-900 font-semibold px-3 py-2 rounded-full shadow-md">
+              Single Subscription
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. Who We Are */}
+      <section
+        id="section7"
+        className="flex flex-col lg:flex-row items-center justify-center w-full pb-12 gap-10 mt-12 scroll-mt-24"
+      >
+        <div className="min-w-7xl mx-auto px-6 grid lg:grid-cols-3 gap-12 items-center">
+          {/* LEFT IMAGE + QUOTE */}
+          <div className="relative ml-6">
+            <img
+              src={Start_comma}
+              alt="Start Quote"
+              className="absolute -left-10 top-0 w-40 lg:w-28 xl:w-40 h-auto"
+            />
+
+            <img
+              src={who_landing}
+              alt="Teacher Student"
+              className=" w-96 xl:h-96 rounded-full object-cover"
+            />
+
+            <div className="absolute top-0 -right-16 max-w-96">
+              <h2 className="text-4xl font-bold text-[#464646]">
+                Who <br /> it’s for <span className="text-5xl">?</span>
+              </h2>
+              <img
+                src={Close_comma}
+                alt="End Quote"
+                className="absolute -right-20 bottom-4 w-16 h-auto "
+              />
+            </div>
+
+            <div className="absolute mt-12 bottom-10 -right-12 text-xl font-semibold text-gray-700">
+              . . . for all.
+            </div>
           </div>
 
-          <div className="absolute bottom-[60%] left-[80%] w-[85px]">
-            <img src={WbseIcon} alt="WBSE" className="w-full h-auto" />
-          </div>
+          {/* RIGHT CONTENT */}
+          <div className="col-span-2 ml-4 lg:ml-40">
+            {/* USERS GRID */}
+            <div className="grid grid-cols-2 xl:grid-cols-4 gap-6">
+              <div>
+                <h4 className="font-semibold text-[#464646] mb-2">Students</h4>
+                <p className="text-sm text-[#464646] w-36">
+                  Clear plans, daily guidance, and stress-free completion.
+                </p>
+              </div>
 
-          <div className="absolute bottom-[45%] left-[58%] w-[100px]">
-            <img src={CaieIcon} alt="CAIE" className="w-full h-auto" />
-          </div>
+              <div>
+                <h4 className="font-semibold text-[#464646] mb-2">Parents</h4>
+                <p className="text-sm text-[#464646] w-36">
+                  Visibility into progress and early alerts for risks.
+                </p>
+              </div>
 
-          {/* BOTTOM TEXT */}
-          <div className="relative w-[550px] h-[320px] mx-auto mt-10">
-            <div className="absolute pt-14 left-1/2 -translate-x-1/2 w-full flex justify-center p-0 m-0">
-              <div className="text-left pt-40">
-                <p className="font-['Montserrat'] font-bold text-[20px] leading-[32px] tracking-[0.14em] text-primary">
-                  <span className="block">Different boards.</span>
-                  <span className="block">Different timelines.</span>
-                  <span className="block">One intelligent system.</span>
+              <div>
+                <h4 className="font-semibold text-[#464646] mb-2">Teachers</h4>
+                <p className="text-sm text-[#464646] w-36">
+                  Insight into student performance and learning gaps.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-[#464646] mb-2">
+                  Institutions
+                </h4>
+                <p className="text-sm text-[#464646] w-36">
+                  Standard-wise oversight and academic tracking.
                 </p>
               </div>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Right: Guy with Orange Background */}
-        <div className="flex-1 flex justify-end relative lg:mt-0 items-end">
+      {/* 8. At a Glance */}
+      <section
+        id="section8"
+        className="flex flex-col lg:flex-row items-center justify-center w-full pb-12 gap-10 mt-12 scroll-mt-24"
+      >
+        <div className="min-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
+          {/* LEFT TEXT */}
+          <div className="relative flex flex-col ml-40">
+            {/* Quotes */}
+            <div>
+              <img
+                src={Start_comma}
+                alt="Start Quote"
+                className="absolute -left-40 -top-16 w-40 h-auto"
+              />
+
+              <h2 className="text-5xl font-bold text-[#464646] mb-4">
+                At a Glance
+              </h2>
+            </div>
+            <div className="flex gap-12">
+              <span className="text-lg font-semibold text-[#464646]">
+                Everything You Need <br />
+                to Stay on Track.
+              </span>
+
+              <img
+                src={Close_comma}
+                alt="End Quote"
+                className=" w-24 h-auto "
+              />
+            </div>
+            <p className="text-[#464646] max-w-md mt-4 tracking-widest">
+              The dashboard brings together your learning plan, progress,
+              pending tasks, and insights helping you make the right study
+              decisions every day.
+            </p>
+          </div>
+
+          {/* RIGHT Image */}
+          {/* Robot Image */}
           <img
-            src={GuyImg}
-            alt="Student"
-            className="relative z-20 w-[800px] max-w-full h-auto"
+            src={Glance_landing}
+            alt="Glance Dashboard"
+            className="w-[35rem] relative z-10"
           />
         </div>
       </section>
 
+<<<<<<< HEAD
+      {/* 9. Vidya Kosh or the Knowledge Hub */}
+      <section
+        id="section9"
+        className="flex flex-col lg:flex-row items-center justify-center w-full pb-12 gap-10 mt-12 scroll-mt-24"
+      >
+        <div className="min-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
+=======
       {/* 5. Technical Reliability & Safety */}
       <section
         id="section5"
@@ -802,6 +1181,7 @@ export default function LandingPage() {
         className="flex flex-col lg:flex-row items-center justify-center w-full pb-[50px] gap-10 mt-[50px] scroll-mt-24"
       >
         <div className="min-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
           {/* LEFT IMAGE */}
           <div className="flex justify-center">
             <img
@@ -812,13 +1192,21 @@ export default function LandingPage() {
           </div>
 
           {/* RIGHT CONTENT */}
+<<<<<<< HEAD
+          <div className="mx-10 lg:mx-1 xl:mx-10">
+=======
           <div className="mx-10">
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
             {/* TITLE */}
             <div className="relative mb-10">
               <img
                 src={Start_comma}
                 alt="Start Quote"
+<<<<<<< HEAD
+                className="absolute left-3 lg:-left-9 xl:-left-2 -top-6 w-32 h-auto inline-block"
+=======
                 className="absolute left-3 -top-6 w-32 h-auto inline-block"
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
               />
               <h2 className="text-5xl text-center font-bold text-[#464646] leading-tight">
                 Vidya Kosh{" "}
@@ -830,7 +1218,11 @@ export default function LandingPage() {
               <img
                 src={Close_comma}
                 alt="End Quote"
+<<<<<<< HEAD
+                className="absolute right-12 lg:-right-4 xl:right-6 bottom-5 w-24 h-auto inline-block"
+=======
                 className="absolute right-12 bottom-5 w-24 h-auto inline-block"
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
               />
             </div>
 
@@ -844,7 +1236,11 @@ export default function LandingPage() {
                 </p>
               </div>
 
+<<<<<<< HEAD
+              <div className="flex gap-4 w-72 lg:w-60 xl:w-72">
+=======
               <div className="flex gap-4 w-72">
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
                 <p className="text-sm text-[#464646] leading-relaxed tracking-widest">
                   Access high-quality video lessons, learning materials, and
                   notes—organized by subject, chapter, and difficulty level.
@@ -878,20 +1274,36 @@ export default function LandingPage() {
         </div>
 
         {/* CONTENT */}
+<<<<<<< HEAD
+        <div className="min-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12 items-center justify-center">
+          {/* LEFT SIDE IMAGE DESIGN */}
+          <div className="lg:col-span-2">
+            <img
+              src={Testimonials_landing}
+              className="p-2 max-w-4xl lg:max-w-2xl xl:max-w-4xl"
+=======
         <div className="min-w-7xl mx-auto grid md:grid-cols-3 gap-10 items-center px-6">
           {/* LEFT SIDE IMAGE DESIGN */}
           <div className="col-span-2">
             <img
               src={Testimonials_landing}
               className="p-2 max-w-4xl"
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
             />
           </div>
 
           {/* RIGHT SIDE TEXT */}
-          <div className="max-w-md">
+<<<<<<< HEAD
+          <div className="w-full lg:max-w-md mr-10 justify-center text-center flex flex-col">
             <p className="text-gray-600 leading-relaxed">
               Clear plans, daily guidance, and stress-free completion the reason
               I got through my exams was because of MokshaPath. You don’t have
+=======
+          <div className="max-w-md">
+            <p className="text-gray-600 leading-relaxed">
+              Clear plans, daily guidance, and stress-free completion the reason
+              I got through my exams was because of MokshPath. You don’t have
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
               to think about where to start with, just get your enrolment done.
               That’s it!
             </p>
@@ -919,6 +1331,11 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+<<<<<<< HEAD
+
+      
+=======
+>>>>>>> 47f4eed39caea2070a3f83c757e9bcac5cb52a5a
     </div>
   );
 }

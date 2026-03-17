@@ -1,27 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import Header from "./Header";
 import AdminSidebar from "./AdminSidebar";
+import Header from "./Header";
 import Footer from "./Footer";
-import { useAuth } from "../../app/providers/AuthProvider";
 import { PageLoader } from "../common/Loader";
 
 export const AdminLayout: React.FC = () => {
-    // We are maintaining basic authentication checks, but ideally 
-    // you would check for an 'admin' role here later.
-    const { isLoading, isAuthenticated } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        const checkAuth = () => {
+            try {
+                const storedUser = localStorage.getItem("admin_user");
+                if (storedUser) {
+                    const userObj = JSON.parse(storedUser);
+                    // Check according to the new API response structure from AdminLogin
+                    if (userObj?.role_name === 'admin') {
+                        setIsAdmin(true);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to parse user session", error);
+            }
+            setIsLoading(false);
+        };
+        
+        checkAuth();
+    }, []);
 
     // Show loading state while checking auth
     if (isLoading) {
         return <PageLoader text="Loading Admin Workspace..." />;
     }
 
-    // Temporarily bypassing authentication for the admin panel during development
-    // NOTE: For true security, implement an admin login flow and role-check here.
-    // if (!isAuthenticated) {
-    //     return <Navigate to="/login" replace />;
-    // }
+    // Role-check for admin isolated session
+    if (!isAdmin) {
+        return <Navigate to="/admin/login" replace />;
+    }
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-background-dark flex">

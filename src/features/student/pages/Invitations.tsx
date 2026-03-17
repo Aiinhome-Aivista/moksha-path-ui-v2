@@ -32,6 +32,17 @@ interface UserListItem {
   mobile: string;
 }
 
+interface InstituteHierarchy {
+  board_id: number;
+  board_name: string;
+  class_id: number;
+  class_name: string;
+  institute_id: number;
+  institute_name: string;
+  section_id: number;
+  section_name: string;
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const statusStyle: Record<string, { bg: string; text: string; dot: string }> = {
@@ -101,6 +112,20 @@ const Invitations: React.FC = () => {
   const [userPage, setUserPage] = useState(1);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
+
+  //for filters and dropdown
+  const [classSearch, setClassSearch] = useState("");
+  const [showClassDropdown, setShowClassDropdown] = useState(false);
+  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
+  const [instituteData, setInstituteData] = useState<InstituteHierarchy[]>([]);
+  const [classOptions, setClassOptions] = useState<string[]>([]);
+  const [sectionOptions, setSectionOptions] = useState<string[]>([]);
+
+  const USER_DROPDOWN_LIMIT = 10;
+  const [dropdownPage, setDropdownPage] = useState(1);
+  const [dropdownTotalPages, setDropdownTotalPages] = useState(1);
+  const [instituteName, setInstituteName] = useState("");
+
   // ── fetch dashboard data ───────────────────────────────────────────────
   useEffect(() => {
     fetchDashboard();
@@ -157,6 +182,76 @@ const Invitations: React.FC = () => {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+
+  const fetchInstituteHierarchy = async () => {
+    try {
+      const res = await ApiServices.getInstituteList();
+
+      if (res.data?.status === "success") {
+        const data: InstituteHierarchy[] = res.data.data;
+
+        setInstituteData(data);
+
+        const classes = [...new Set(data.map((d) => d.class_name))];
+        setClassOptions(classes);
+
+        const sections = [...new Set(data.map((d) => d.section_name))];
+        setSectionOptions(sections);
+
+        if (data.length > 0) {
+          setInstituteName(data[0].institute_name);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load institute hierarchy");
+    }
+  };
+
+
+  const getSelectedClassIds = () => {
+    if (selectedClasses.length === 0) return [];
+
+    return instituteData
+      .filter((c) => selectedClasses.includes(c.class_name))
+      .map((c) => c.class_id);
+  };
+
+  const fetchDropdownUsers = async (page = 1, searchValue = "") => {
+    try {
+      setUsernamesLoading(true);
+
+      const payload = {
+        page: page,
+        limit: USER_DROPDOWN_LIMIT,
+        search: searchValue,
+        class_ids: getSelectedClassIds(),
+      };
+
+      const res = await ApiServices.allUserByPagination(payload);
+
+      if (res.data?.status === "success") {
+        const users = res.data.data.users || [];
+        const pagination = res.data.data.pagination;
+
+        const normalized = users.map((u: any) => ({
+          id: u.user_id,
+          username: u.username,
+          fullName: u.full_name,
+          email: u.email,
+          mobile: u.mobile,
+        }));
+
+        setAllUsers(normalized);
+        setDropdownPage(pagination.current_page);
+        setDropdownTotalPages(pagination.total_pages);
+      }
+    } catch (err) {
+      console.error("Dropdown users API failed");
+    } finally {
+      setUsernamesLoading(false);
     }
   };
 
@@ -223,7 +318,6 @@ const Invitations: React.FC = () => {
 
   // ── pagination ─────────────────────────────────────────────────────────
 
-
   const userTotalPages = Math.max(
     1,
     Math.ceil(tabFiltered.length / USER_PAGE_SIZE),
@@ -264,10 +358,31 @@ const Invitations: React.FC = () => {
     };
   }, [showModal, showDeleteConfirm]);
 
+  const classDropdownRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        classDropdownRef.current &&
+        !classDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowClassDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   // ── open modal: fetch username list once ───────────────────────────────
   const openModal = async () => {
     resetModal();
     setShowModal(true);
+    fetchInstituteHierarchy();
+    fetchDropdownUsers(1);
     if (allUsers.length === 0) {
       setUsernamesLoading(true);
       try {
@@ -307,27 +422,27 @@ const Invitations: React.FC = () => {
   };
 
   // ── username search: client-side filter ────────────────────────────────
+
   const handleUsernameChange = (val: string) => {
     setUsernameInput(val);
 
     if (val.trim().length === 0) {
-      setFilteredNames([]);
       setShowDropdown(false);
       return;
     }
 
-    const q = val.trim().toLowerCase();
-    const matches = allUsers
-      .filter(
-        (u) =>
-          u.username.toLowerCase().includes(q) ||
-          u.fullName.toLowerCase().includes(q) ||
-          u.email.toLowerCase().includes(q) ||
-          u.mobile.toLowerCase().includes(q),
-      )
-      .slice(0, 10);
-    setFilteredNames(matches);
-    setShowDropdown(matches.length > 0);
+    setShowDropdown(true);   // ⭐ ADD THIS
+    fetchDropdownUsers(1, val);
+  };
+
+  useEffect(() => {
+    if (showModal) {
+      fetchDropdownUsers(1, usernameInput);
+    }
+  }, [selectedClasses]);
+
+  const handleDropdownPageChange = (page: number) => {
+    fetchDropdownUsers(page, usernameInput);
   };
 
   // ── select a username from dropdown ────────────────────────────────────
@@ -367,8 +482,12 @@ const Invitations: React.FC = () => {
           } else {
             failCount++;
           }
-        } catch {
+        } catch (err: any) {
           failCount++;
+          const message =
+            err?.response?.data?.message || "Failed to send invitation.";
+
+          setSendError(message);
         }
       }
 
@@ -381,7 +500,7 @@ const Invitations: React.FC = () => {
           setSendSuccess("");
         }, 1200);
       } else if (failCount > 0) {
-        setSendError(`Failed to send ${failCount} invite(s).`);
+        // setSendError(`Failed to send ${failCount} invite(s).`);
       }
     } catch (err: any) {
       setSendError(err?.response?.data?.message || "Something went wrong.");
@@ -422,6 +541,11 @@ const Invitations: React.FC = () => {
       setDeleteLoading(false);
     }
   };
+
+  const classDisplay =
+    selectedClasses.length > 2
+      ? `${selectedClasses.slice(0, 2).join(", ")}...`
+      : selectedClasses.join(", ");
 
   return (
     <div className="min-h-screen p-6 space-y-6">
@@ -721,8 +845,12 @@ const Invitations: React.FC = () => {
                           <span className="text-sm font-bold text-gray-800 truncate">
                             {u.user}
                           </span>
-                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full ${st.bg} ${st.text}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
+                          <span
+                            className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full ${st.bg} ${st.text}`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${st.dot}`}
+                            />
                             {u.status}
                           </span>
                         </div>
@@ -741,27 +869,47 @@ const Invitations: React.FC = () => {
                       <div className="border-t border-gray-100 transition-transform duration-300 px-4 pb-5 pt-4 space-y-4">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                           <div className="bg-gray-50 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Plan</p>
-                            <p className="text-xs font-semibold text-gray-700">{u.subscriptionName}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
+                              Plan
+                            </p>
+                            <p className="text-xs font-semibold text-gray-700">
+                              {u.subscriptionName}
+                            </p>
                           </div>
                           <div className="bg-gray-50 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Invited On</p>
-                            <p className="text-xs font-semibold text-gray-700">{u.invitedOn}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">
+                              Invited On
+                            </p>
+                            <p className="text-xs font-semibold text-gray-700">
+                              {u.invitedOn}
+                            </p>
                           </div>
                           <div className="bg-gray-50 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Accepted</p>
-                            <p className="text-xs font-semibold text-gray-700">{u.requestAcceptedOn || "—"}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
+                              Accepted
+                            </p>
+                            <p className="text-xs font-semibold text-gray-700">
+                              {u.requestAcceptedOn || "—"}
+                            </p>
                           </div>
                           <div className="bg-gray-50 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Expires</p>
-                            <p className="text-xs font-semibold text-amber-600">{u.subscriptionExpiryDate || "—"}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
+                              Expires
+                            </p>
+                            <p className="text-xs font-semibold text-amber-600">
+                              {u.subscriptionExpiryDate || "—"}
+                            </p>
                           </div>
                         </div>
 
                         {u.phone && (
                           <div>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Phone</p>
-                            <p className="text-xs font-semibold text-gray-700">{u.phone}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">
+                              Phone
+                            </p>
+                            <p className="text-xs font-semibold text-gray-700">
+                              {u.phone}
+                            </p>
                           </div>
                         )}
 
@@ -790,21 +938,24 @@ const Invitations: React.FC = () => {
             {userTotalPages > 1 && (
               <div className="flex items-center justify-between gap-4 border-t border-gray-100 px-5 py-3 mt-6">
                 <p className="text-xs text-gray-400 font-medium whitespace-nowrap">
-                  {(userPage - 1) * USER_PAGE_SIZE + 1}–{Math.min(userPage * USER_PAGE_SIZE, tabFiltered.length)}
+                  {(userPage - 1) * USER_PAGE_SIZE + 1}–
+                  {Math.min(userPage * USER_PAGE_SIZE, tabFiltered.length)}
                   <span className="text-gray-300"> / </span>
                   {tabFiltered.length}
                 </p>
 
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: userTotalPages }, (_, i) => i + 1).map((pg) => (
-                    <button
-                      key={pg}
-                      onClick={() => setUserPage(pg)}
-                      className={`w-7 h-7 rounded-lg text-xs font-bold transition-all duration-150 ${pg === userPage ? "bg-[#BADA55] text-gray-800 shadow-sm" : "text-gray-400 hover:bg-gray-100"}`}
-                    >
-                      {pg}
-                    </button>
-                  ))}
+                  {Array.from({ length: userTotalPages }, (_, i) => i + 1).map(
+                    (pg) => (
+                      <button
+                        key={pg}
+                        onClick={() => setUserPage(pg)}
+                        className={`w-7 h-7 rounded-lg text-xs font-bold transition-all duration-150 ${pg === userPage ? "bg-[#BADA55] text-gray-800 shadow-sm" : "text-gray-400 hover:bg-gray-100"}`}
+                      >
+                        {pg}
+                      </button>
+                    ),
+                  )}
                 </div>
 
                 <div className="flex items-center gap-1">
@@ -813,16 +964,24 @@ const Invitations: React.FC = () => {
                     disabled={userPage === 1}
                     className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: "16px" }}
+                    >
                       chevron_left
                     </span>
                   </button>
                   <button
-                    onClick={() => setUserPage((p) => Math.min(userTotalPages, p + 1))}
+                    onClick={() =>
+                      setUserPage((p) => Math.min(userTotalPages, p + 1))
+                    }
                     disabled={userPage === userTotalPages}
                     className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: "16px" }}
+                    >
                       chevron_right
                     </span>
                   </button>
@@ -899,6 +1058,156 @@ const Invitations: React.FC = () => {
                 </div>
               )}
 
+              {/* ── Filters Row ── */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                {/* Institution Filter */}
+                <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-medium text-gray-600 max-w-[220px]">
+                  <input
+                    type="checkbox"
+                    checked={true}
+                    disabled
+                    className="w-4 h-4 accent-[#BADA55]"
+                  />
+
+                  <span
+                    className="truncate cursor-pointer"
+                    title={instituteName}
+                  >
+                    {instituteName || "Loading institute..."}
+                  </span>
+                </div>
+
+
+                {/* Class Dropdown */}
+                <div className="relative" ref={classDropdownRef}>
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+                      school
+                    </span>
+                    {/* 
+                    <input
+                      type="text"
+                      value={classSearch}
+                      title={selectedClasses.join(", ")}
+                      onChange={(e) => setClassSearch(e.target.value)}
+                      // onClick={() => setShowClassDropdown((prev) => !prev)}
+                      onFocus={() => setShowClassDropdown(true)}
+                      placeholder="Class"
+                      className="w-full border border-gray-200 rounded-xl pl-10 pr-9 py-2.5 text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 focus:border-[#BADA55] shadow-sm"
+                    /> */}
+                    <input
+                      type="text"
+                      value={
+                        classSearch ||
+                        (selectedClasses.length > 2
+                          ? `${selectedClasses.slice(0, 2).join(", ")}...`
+                          : selectedClasses.join(", "))
+                      }
+                      title={selectedClasses.join(", ")}
+                      onChange={(e) => {
+                        setClassSearch(e.target.value);
+                        setShowClassDropdown(true);
+                      }}
+                      onFocus={() => setShowClassDropdown(true)}
+                      placeholder="Class"
+                      className="w-full cursor-pointer border border-gray-200 rounded-xl pl-10 pr-9 py-2.5 text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 focus:border-[#BADA55] shadow-sm"
+                    />
+
+                    <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+                      expand_more
+                    </span>
+                  </div>
+
+                  {showClassDropdown && (
+                    <div
+                      onMouseDown={(e) => e.stopPropagation()}
+                      className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-44 overflow-y-auto"
+                    >
+                      {classOptions
+                        .filter((c) =>
+                          c.toLowerCase().includes(classSearch.toLowerCase())
+                        )
+                        .map((c) => (
+                          <label
+                            key={c}
+                            className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#BADA55]/10"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedClasses.includes(c)}
+                              onChange={() => {
+                                setSelectedClasses((prev) =>
+                                  prev.includes(c)
+                                    ? prev.filter((x) => x !== c)
+                                    : [...prev, c]
+                                );
+
+                                setClassSearch("");
+                              }}
+                              className="accent-[#BADA55]"
+                            />
+                            {c}
+                          </label>
+                        ))}
+                    </div>
+                  )}
+                </div>
+
+
+                {/* Section Dropdown */}
+                {/* <div className="relative">
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+                      view_list
+                    </span>
+
+                    <input
+                      type="text"
+                      value={sectionSearch}
+                      onChange={(e) => setSectionSearch(e.target.value)}
+                      onFocus={() => setShowSectionDropdown(true)}
+                      placeholder="Section"
+                      className="w-full border border-gray-200 rounded-xl pl-10 pr-9 py-2.5 text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 focus:border-[#BADA55] shadow-sm"
+                    />
+
+                    <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+                      expand_more
+                    </span>
+                  </div>
+
+                  {showSectionDropdown && (
+                    <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-44 overflow-y-auto">
+                      {sectionOptions
+                        .filter((s) =>
+                          s.toLowerCase().includes(sectionSearch.toLowerCase())
+                        )
+                        .map((s) => (
+                          <label
+                            key={s}
+                            className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#BADA55]/10"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedSections.includes(s)}
+                              onChange={() => {
+                                setSelectedSections((prev) =>
+                                  prev.includes(s)
+                                    ? prev.filter((x) => x !== s)
+                                    : [...prev, s]
+                                );
+                              }}
+                              className="accent-[#BADA55]"
+                            />
+                            {s}
+                          </label>
+                        ))}
+                    </div>
+                  )}
+                </div> */}
+
+              </div>
+
               {/* ── Username searchable field ── */}
               <div className="relative" ref={dropdownRef}>
                 <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">
@@ -917,12 +1226,14 @@ const Invitations: React.FC = () => {
                     value={usernameInput}
                     onChange={(e) => handleUsernameChange(e.target.value)}
                     onFocus={() => {
-                      if (filteredNames.length > 0) setShowDropdown(true);
+                      if (allUsers.length > 0) setShowDropdown(true);
                     }}
                     placeholder={
-                      usernamesLoading ? "Loading users…" : "Search username, full name, email or mobile…"
+                      usernamesLoading
+                        ? "Loading users…"
+                        : "Search username, full name, email or mobile…"
                     }
-                    disabled={usernamesLoading}
+                    // disabled={usernamesLoading}
                     className="w-full border border-gray-200 rounded-xl pl-10 pr-10 py-3 text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 focus:border-[#BADA55] transition-all disabled:bg-gray-50 disabled:cursor-wait"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -937,44 +1248,68 @@ const Invitations: React.FC = () => {
                   </span>
                 </div>
 
-                {showDropdown && filteredNames.length > 0 && (
+                {showDropdown && allUsers.length > 0 && (
                   <div
-                    className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-52 overflow-y-auto"
+                    className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg"
                     onWheel={(e) => e.stopPropagation()}
                   >
-                    {filteredNames.map((user) => (
-                      <button
-                        key={user.id ?? user.username}
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          handleSelectUsername(user);
-                        }}
-                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left hover:bg-[#BADA55]/10 transition-colors first:rounded-t-xl last:rounded-b-xl"
-                      >
-                        <span
-                          className="material-symbols-outlined text-gray-400 text-base"
-                          style={{
-                            fontVariationSettings: "'wght' 400, 'FILL' 1",
+
+                    {/* Users List */}
+                    <div className="max-h-52 overflow-y-auto">
+                      {allUsers.map((user) => (
+                        <button
+                          key={user.id ?? user.username}
+                          type="button"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleSelectUsername(user);
                           }}
+                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left hover:bg-[#BADA55]/10 transition-colors first:rounded-t-xl"
                         >
-                          person
-                        </span>
-                        <span className="flex-1 min-w-0">
-                          <span className="block text-sm font-medium text-gray-800 truncate">
-                            {user.fullName}
+                          <span
+                            className="material-symbols-outlined text-gray-400 text-base"
+                            style={{ fontVariationSettings: "'wght' 400, 'FILL' 1" }}
+                          >
+                            person
                           </span>
-                          <span className="block text-xs text-gray-500 truncate">
-                            @{user.username}
-                          </span>
-                          {(user.email || user.mobile) && (
-                            <span className="block text-[11px] text-gray-400 truncate mt-0.5">
-                              {[user.email, user.mobile].filter(Boolean).join(" • ")}
+
+                          <span className="flex-1 min-w-0">
+                            <span className="block text-sm font-medium text-gray-800 truncate">
+                              {user.fullName}
                             </span>
-                          )}
-                        </span>
-                      </button>
-                    ))}
+
+                            <span className="block text-xs text-gray-500 truncate">
+                              @{user.username}
+                            </span>
+
+                            {(user.email || user.mobile) && (
+                              <span className="block text-[11px] text-gray-400 truncate mt-0.5">
+                                {[user.email, user.mobile].filter(Boolean).join(" • ")}
+                              </span>
+                            )}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Pagination */}
+                    {dropdownTotalPages > 1 && (
+                      <div className="flex justify-center gap-1 border-t p-2">
+                        {Array.from({ length: dropdownTotalPages }, (_, i) => i + 1).map((pg) => (
+                          <button
+                            key={pg}
+                            onClick={() => handleDropdownPageChange(pg)}
+                            className={`px-2 py-1 text-xs rounded ${dropdownPage === pg
+                              ? "bg-[#BADA55] text-gray-800"
+                              : "bg-gray-100"
+                              }`}
+                          >
+                            {pg}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
                   </div>
                 )}
 
@@ -1005,7 +1340,9 @@ const Invitations: React.FC = () => {
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-sm flex-shrink-0">
-                          {u.fullName ? u.fullName.charAt(0).toUpperCase() : "U"}
+                          {u.fullName
+                            ? u.fullName.charAt(0).toUpperCase()
+                            : "U"}
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-bold text-gray-800 truncate">
@@ -1025,7 +1362,9 @@ const Invitations: React.FC = () => {
                         onClick={() => handleRemoveUser(u.id)}
                         className="text-gray-400 hover:text-red-500 p-1"
                       >
-                        <span className="material-symbols-outlined text-xl">close</span>
+                        <span className="material-symbols-outlined text-xl">
+                          close
+                        </span>
                       </button>
                     </div>
                   ))}
@@ -1069,7 +1408,10 @@ const Invitations: React.FC = () => {
               <h3 className="text-lg font-bold text-gray-800">Remove User</h3>
             </div>
             <div className="p-6 space-y-4">
-              <p className="text-sm text-gray-600">Are you sure you want to remove this user from the subscription? This action cannot be undone.</p>
+              <p className="text-sm text-gray-600">
+                Are you sure you want to remove this user from the subscription?
+                This action cannot be undone.
+              </p>
               {deleteError && (
                 <div className="text-sm text-red-600">{deleteError}</div>
               )}

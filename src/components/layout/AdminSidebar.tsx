@@ -8,6 +8,7 @@ import {
     FileText,
     Search,
     ChevronRight,
+    BookOpen
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -15,40 +16,43 @@ interface AdminSidebarProps {
     toggleSidebar: () => void;
 }
 
-const adminMenuItems = [
-    {
-        page_id: "admin-dashboard",
-        page_name: "Dashboard",
-        icon: <LayoutDashboard size={20} strokeWidth={1.5} />,
-        route: "/admin/dashboard",
-    },
-    {
-        page_id: "admin-manage-blog",
-        page_name: "Blog",
-        icon: <FileText size={20} strokeWidth={1.5} />,
-        route: "/admin/blog/manage",
-    },
-        {
-        page_id: "admin-manage-category",
-        page_name: "Category",
-        icon: <FileText size={20} strokeWidth={1.5} />,
-        route: "/admin/categories/manage",
-    },
-    {
-        page_id: "admin-manage-seo",
-        page_name: "SEO",
-        icon: <Search size={20} strokeWidth={1.5} />,
-        route: "/admin/seo/manage",
-    },
-];
+const getIconForPage = (pageName: string) => {
+    const name = pageName.toLowerCase();
+    if (name.includes('dashboard')) return <LayoutDashboard size={20} strokeWidth={1.5} />;
+    if (name.includes('blog')) return <BookOpen size={20} strokeWidth={1.5} />;
+    if (name.includes('category') || name.includes('categories')) return <FileText size={20} strokeWidth={1.5} />;
+    if (name.includes('seo')) return <Search size={20} strokeWidth={1.5} />;
+    return <FileText size={20} strokeWidth={1.5} />;
+};
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, toggleSidebar }) => {
+    const [menuItems, setMenuItems] = React.useState<any[]>([]);
+
+    React.useEffect(() => {
+        const storedUser = localStorage.getItem("admin_user");
+        if (storedUser) {
+            try {
+                const userObj = JSON.parse(storedUser);
+                if (userObj?.menus) {
+                    const mappedMenus = userObj.menus.map((item: any) => ({
+                        page_id: item.page_id,
+                        page_name: item.page_name,
+                        icon: getIconForPage(item.page_name),
+                        route: `/admin${item.page_route}`
+                    }));
+                    setMenuItems(mappedMenus);
+                }
+            } catch (error) {
+                console.error("Failed to parse menus", error);
+            }
+        }
+    }, []);
 
     const handleLogout = () => {
-        // Here you would typically clear the auth token and navigate to login
-        // Reusing standard sign out for now
-        localStorage.removeItem("auth_token");
-        window.location.href = "/";
+        // Clear all session/auth tokens related to admin manually
+        localStorage.removeItem("admin_user");
+        // Force redirect to login which clears state completely
+        window.location.href = "/admin/login";
     };
 
     return (
@@ -85,9 +89,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, toggleSideba
                         >
                             <X size={24} strokeWidth={2.5} />
                         </button>
-                        <div className="flex flex-col items-start justify-center">
-                            <span className="text-secondary-900 dark:text-white font-bold text-lg tracking-wide leading-tight">Admin CP</span>
-                            <span className="text-primary-500 text-[10px] font-bold uppercase tracking-widest text-[#b0cb1f]">Workspace</span>
+                        <div className="flex items-center gap-3">
+                            <img src="/Logo.svg" alt="App Logo" className="h-25 w-[80%]" />
                         </div>
                     </>
                 ) : (
@@ -108,7 +111,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, toggleSideba
                     Core Modules
                 </div>
                 <ul className="space-y-1">
-                    {adminMenuItems.map((item) => (
+                    {menuItems.map((item) => (
                         <li key={item.page_id}>
                             <NavLink
                                 to={item.route}

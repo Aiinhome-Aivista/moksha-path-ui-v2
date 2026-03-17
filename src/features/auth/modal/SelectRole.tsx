@@ -63,7 +63,7 @@ export const SelectRoleModal: React.FC = () => {
     // setProfilesList,
     openLogin,
     fetchMenu,
-    decodeUserToken,
+    // decodeUserToken,
     initialAuthIdentifier,
     handleSignInSuccess,
   } = useModal();
@@ -247,11 +247,14 @@ export const SelectRoleModal: React.FC = () => {
         }
 
         // Update tokens with the new profile's credentials
-        if (data?.token) {
-          localStorage.setItem("auth_token", data.token);
+        if (data?.auth_token) {
+          localStorage.setItem("auth_token", data.auth_token);
         }
         if (data?.refresh_token) {
           localStorage.setItem("refresh_token", data.refresh_token);
+        }
+        if (data?.subscription_token) {
+          localStorage.setItem("subscription_token", data.subscription_token);
         }
 
         if (data?.user) {
@@ -280,7 +283,6 @@ export const SelectRoleModal: React.FC = () => {
           });
 
           // 2. Refresh context data
-          await decodeUserToken();
           await fetchMenu(); // Always fetch menu
 
           handleSignInSuccess();
@@ -314,7 +316,7 @@ export const SelectRoleModal: React.FC = () => {
           }
         } else {
           // Fallback if user object is not in response
-          await decodeUserToken();
+          // await decodeUserToken();
           await fetchMenu(); // Always fetch menu
           closeSelectRole();
 

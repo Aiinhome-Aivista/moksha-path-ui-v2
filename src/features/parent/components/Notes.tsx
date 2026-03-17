@@ -29,6 +29,7 @@ const RenderNoteContent: React.FC<{ data: any; depth?: number }> = ({
   if (typeof data === "string") {
     // Handle bold text indicated by ** markers
     const parts = data.split(/(\*\*[^*]+\*\*)/g);
+    
     return (
       <p className="text-sm text-gray-700 leading-relaxed">
         {parts.map((part, i) => {
@@ -40,7 +41,6 @@ const RenderNoteContent: React.FC<{ data: any; depth?: number }> = ({
       </p>
     );
   }
-
   if (Array.isArray(data)) {
     // Different list styles based on depth
     const getBulletStyle = (lvl: number) => {
@@ -124,6 +124,19 @@ const RenderNoteContent: React.FC<{ data: any; depth?: number }> = ({
 const Notes: React.FC<NotesProps> = ({ notes = [], isLoading = false }) => {
   const [expandedNotes, setExpandedNotes] = useState<Set<number>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
+  const [uploadedNotes, setUploadedNotes] = useState<NoteData[]>([]);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const newNote: NoteData = {
+        topic_id: Date.now(),
+        topic_title: file.name,
+        content: "File uploaded locally.",
+      };
+      setUploadedNotes((prev) => [...prev, newNote]);
+    }
+  };
 
   const toggleNote = (topicId: number) => {
     setExpandedNotes((prev) => {
@@ -134,10 +147,12 @@ const Notes: React.FC<NotesProps> = ({ notes = [], isLoading = false }) => {
     });
   };
 
+  const allNotes = [...notes, ...uploadedNotes];
+
   // Pagination Logic
-  const totalPages = Math.ceil(notes.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(allNotes.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentNotes = notes.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const currentNotes = allNotes.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -156,7 +171,7 @@ const Notes: React.FC<NotesProps> = ({ notes = [], isLoading = false }) => {
     );
   }
 
-  if (notes.length === 0) {
+  if (allNotes.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-gray-400">
         <StickyNote size={40} className="mb-3 opacity-50" />
@@ -164,6 +179,17 @@ const Notes: React.FC<NotesProps> = ({ notes = [], isLoading = false }) => {
         <p className="text-xs mt-1">
           Select a chapter and topic from the sidebar to load notes
         </p>
+          <div className="mt-6">
+          <label className="flex items-center gap-2 cursor-pointer bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#A3C627] transition-colors">
+            <span>Upload PDF</span>
+            <input
+              type="file"
+              className="hidden"
+              accept="application/pdf"
+              onChange={handleFileUpload}
+            />
+          </label>
+        </div>
       </div>
     );
   }
@@ -175,7 +201,7 @@ const Notes: React.FC<NotesProps> = ({ notes = [], isLoading = false }) => {
           <StickyNote size={20} className="text-[#F27927]" />
           <h2 className="text-lg font-semibold text-gray-800">Notes</h2>
           <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-            {notes.length} notes
+            {allNotes.length} notes
           </span>
         </div>
 

@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import IconChat from "../../../assets/icon/chat2.svg";
 // @ts-ignore
 import ApiServices from "../../../services/ApiServices";
 import { useToast } from "../../../app/providers/ToastProvider";
-import { useModal } from "../../auth/context/AuthContext";
+// import { useModal } from "../../auth/context/AuthContext";
 import PaymentSummaryModal from "../components/PaymentSummaryModal";
 import SubscriptionSetupModal from "../components/SubscriptionSetupModal";
 import { defaultPlans } from "./defaultPlans";
@@ -108,16 +108,8 @@ const Subscription: React.FC = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [currentTotalAmount, setCurrentTotalAmount] = useState(0);
-  // const activeProfile = JSON.parse(localStorage.getItem("active_profile") || "{}");
-  // const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
-  // const storedSubId = localStorage.getItem("subscription_id");
-  // const hasSubscription =
-  //   (activeProfile.subscription_id !== null && activeProfile.subscription_id !== undefined) ||
-  //   (userData.subscription_id !== null && userData.subscription_id !== undefined) ||
-  //   (storedSubId !== null && storedSubId !== "");
-
   const [showSetupModal, setShowSetupModal] = useState(false);
-  const [profileImage, setProfileImage] = useState<string>(" ");
+  const [profileImage, setProfileImage] = useState<string>("");
 
   const [boards, setBoards] = useState<Board[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
@@ -126,15 +118,9 @@ const Subscription: React.FC = () => {
   const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
   const [dependencyMap, setDependencyMap] = useState<DependencyMapItem[]>([]);
 
-  const [selectedBoard, setSelectedBoard] = useState<number | "">(
-    location.state?.preselectedAcademicDetails?.board_id || "",
-  );
-  const [selectedSchool, setSelectedSchool] = useState<number | "">(
-    location.state?.preselectedAcademicDetails?.institute_id || "",
-  );
-  const [selectedClass, setSelectedClass] = useState<number | "">(
-    location.state?.preselectedAcademicDetails?.class_id || "",
-  );
+  const [selectedBoard, setSelectedBoard] = useState<number | "">("");
+  const [selectedSchool, setSelectedSchool] = useState<number | "">("");
+  const [selectedClass, setSelectedClass] = useState<number | "">("");
   // const [selectedSection, setSelectedSection] = useState<number | "">("");
   const [selectedYear, setSelectedYear] = useState<string>("");
 
@@ -142,53 +128,76 @@ const Subscription: React.FC = () => {
   const [newSchoolName, setNewSchoolName] = useState("");
   const [isAddingSchool, setIsAddingSchool] = useState(false);
 
-  const { user: modalUser } = useModal();
-  const userName = modalUser?.name || "User";
+  // const { user: modalUser } = useModal();
 
-  const defaultRole =
-    modalUser?.roles?.find((role: any) => role.is_default === true) ||
-    modalUser?.roles?.[0];
-
-  const licenses_used = defaultRole?.role_id === 1 ? 1 : 0;
+  const profile = JSON.parse(localStorage.getItem("active_profile") || "{}");
+  const role = profile?.role_id || null;
+  const licenses_used = role === 1 ? 1 : 0;
 
   const localUser = JSON.parse(localStorage.getItem("user") || "{}");
   const isStudent = localUser.role === "student";
 
+  useEffect(() => {
+    const preselected = location.state?.preselectedAcademicDetails;
+
+    if (preselected) {
+      setSelectedBoard(preselected.board_id || "");
+      setSelectedClass(preselected.class_id || "");
+      setSelectedSchool(preselected.institute_id || "");
+    }
+  }, [location.state]);
+  useEffect(() => {
+    if (selectedBoard && !boards.some((b) => b.id === selectedBoard)) {
+      setSelectedBoard("");
+    }
+
+    if (selectedSchool && !schools.some((s) => s.id === selectedSchool)) {
+      setSelectedSchool("");
+    }
+
+    if (selectedClass && !classes.some((c) => c.id === selectedClass)) {
+      setSelectedClass("");
+    }
+
+    if (selectedYear && !academicYears.some((y) => y.year === selectedYear)) {
+      setSelectedYear("");
+    }
+  }, [boards, schools, classes, academicYears]);
   // Fetch academic details from backend (JWT based)
   React.useEffect(() => {
-    const fetchAcademicDetails = async () => {
-      try {
-        const response = await ApiServices.getUserAcademicDetails();
+    // const fetchAcademicDetails = async () => {
+    //   try {
+    //     const response = await ApiServices.getUserAcademicDetails();
 
-        if (response.data?.status === "success") {
-          const data = response.data.data[0];
+    //     if (response.data?.status === "success") {
+    //       const data = response.data.data[0];
 
-          setAcademicDetails(data);
+    //       setAcademicDetails(data);
 
-          // PRESELECT DROPDOWNS FOR STUDENT
-          if (isStudent) {
-            setSelectedBoard(data.board_id);
-            setSelectedClass(data.class_id);
-            setSelectedSchool(data.institute_id || "");
-            // Academic year is left empty for student to select: "academic year bad e"
-            setSelectedYear("");
+    //       // PRESELECT DROPDOWNS FOR STUDENT
+    //       if (isStudent) {
+    //         setSelectedBoard(data.board_id);
+    //         setSelectedClass(data.class_id);
+    //         setSelectedSchool(data.institute_id || "");
+    //         // Academic year is left empty for student to select: "academic year bad e"
+    //         setSelectedYear("");
 
-            // Set selected subjects from API
-            if (Array.isArray(data.subjects)) {
-              setSelectedSubjects(data.subjects);
-            }
-          }
-          setAcademicDetails(data);
-        } else {
-          setIsPageLoading(false);
-        }
-      } catch (error) {
-        // console.error("Failed to load academic details", error);
-        setIsPageLoading(false);
-      }
-    };
+    //         // Set selected subjects from API
+    //         if (Array.isArray(data.subjects)) {
+    //           setSelectedSubjects(data.subjects);
+    //         }
+    //       }
+    //       setAcademicDetails(data);
+    //     } else {
+    //       setIsPageLoading(false);
+    //     }
+    //   } catch (error) {
+    //     // console.error("Failed to load academic details", error);
+    //     setIsPageLoading(false);
+    //   }
+    // };
 
-    fetchAcademicDetails();
+    // fetchAcademicDetails();
     fetchProfileImage();
     fetchAcademicMasterData();
     transformData(defaultPlans);
@@ -207,7 +216,9 @@ const Subscription: React.FC = () => {
         // setSections(data.sections || []);
 
         const rawYears = data.academic_years || [];
-        const formattedYears = rawYears.map((y: any) => typeof y === "string" ? { year: y } : y);
+        const formattedYears = rawYears.map((y: any) =>
+          typeof y === "string" ? { year: y } : y,
+        );
         setAcademicYears(formattedYears);
 
         setDependencyMap(data.dependency_map || []);
@@ -263,6 +274,7 @@ const Subscription: React.FC = () => {
   };
 
   React.useEffect(() => {
+    if (!selectedBoard || !selectedClass || !selectedYear) return;
     fetchAvailableSubjects();
   }, [selectedBoard, selectedClass, selectedSchool, selectedYear]);
 
@@ -535,7 +547,7 @@ const Subscription: React.FC = () => {
         academic_year: selectedYear,
         subject_ids: selectedSubjects.map((s) => s.subject_id),
         ui_total_amount: uiTotalAmount,
-        total_licenses: sheetCount,
+        total_licences: sheetCount,
         coupon_code: couponCode,
       };
 
@@ -620,7 +632,8 @@ const Subscription: React.FC = () => {
   };
 
   const calculatePlanDisplayPrice = (plan: ApiPlan, licenses: number) => {
-    if (!plan.subject_prices || selectedSubjects.length === 0) return 0;
+    // if (!plan.subject_prices || selectedSubjects.length === 0) return 0;
+    if (selectedSubjects.length === 0 || !plan.subject_prices?.length) return 0;
     const subjectTotal = plan.subject_prices.reduce(
       (sum, sp) => sum + (sp.price || 0),
       0,
@@ -646,7 +659,7 @@ const Subscription: React.FC = () => {
     const afterDiscount = subjectTotal - (subjectTotal * discountPercent) / 100;
     const total = afterDiscount * sheetCount;
     return total;
-  }, [selectedPlan, sheetCount]);
+  }, [selectedPlan, sheetCount, selectedSubjects]);
 
   const handleSave = async () => {
     if (!selectedPlan) {
@@ -713,7 +726,7 @@ const Subscription: React.FC = () => {
   };
 
   const getInitial = () => {
-    return userName?.charAt(0).toUpperCase();
+    return profile?.username?.charAt(0).toUpperCase();
   };
 
   const handleSetupConfirm = (data: {
@@ -805,7 +818,7 @@ const Subscription: React.FC = () => {
               Subscription
             </p>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
-              Hi {userName} !
+              Hi {localUser.name} !
             </h1>
           </div>
         </div>
@@ -814,40 +827,78 @@ const Subscription: React.FC = () => {
           {/* Dropdowns + Seat Counter — all in one row */}
           {(() => {
             // Filter logic based on dependency_map
-            const validDependencies = dependencyMap.filter(dep => {
-              if (selectedBoard && dep.board_id !== Number(selectedBoard)) return false;
-              if (selectedSchool && dep.school_id !== Number(selectedSchool)) return false;
-              if (selectedClass && dep.class_id !== Number(selectedClass)) return false;
-              if (selectedYear && dep.academic_year !== selectedYear) return false;
+            const validDependencies = dependencyMap.filter((dep) => {
+              if (selectedBoard && dep.board_id !== Number(selectedBoard))
+                return false;
+              if (selectedSchool && dep.school_id !== Number(selectedSchool))
+                return false;
+              if (selectedClass && dep.class_id !== Number(selectedClass))
+                return false;
+              if (selectedYear && dep.academic_year !== selectedYear)
+                return false;
               return true;
             });
 
             // Extract valid options if filtered, otherwise show all
-            const useFilter = selectedBoard !== "" || selectedSchool !== "" || selectedClass !== "" || selectedYear !== "";
+            const useFilter =
+              selectedBoard !== "" ||
+              selectedSchool !== "" ||
+              selectedClass !== "" ||
+              selectedYear !== "";
 
-            const validBoards = useFilter ? Array.from(new Set(validDependencies.map(d => d.board_id))) : boards.map(b => b.id);
-            const validSchools = useFilter ? Array.from(new Set(validDependencies.map(d => d.school_id))) : schools.map(s => s.id);
-            const validClasses = useFilter ? Array.from(new Set(validDependencies.map(d => d.class_id))) : classes.map(c => c.id);
-            const validYears = useFilter ? Array.from(new Set(validDependencies.map(d => d.academic_year))) : academicYears.map(y => y.year);
+            const validBoards = useFilter
+              ? Array.from(new Set(validDependencies.map((d) => d.board_id)))
+              : boards.map((b) => b.id);
+            const validSchools = useFilter
+              ? Array.from(new Set(validDependencies.map((d) => d.school_id)))
+              : schools.map((s) => s.id);
+            const validClasses = useFilter
+              ? Array.from(new Set(validDependencies.map((d) => d.class_id)))
+              : classes.map((c) => c.id);
+            const validYears = useFilter
+              ? Array.from(
+                  new Set(validDependencies.map((d) => d.academic_year)),
+                )
+              : academicYears.map((y) => y.year);
 
-            const filteredBoards = useFilter ? boards.filter(b => validBoards.includes(b.id)) : boards;
-            const filteredSchools = useFilter ? schools.filter(s => validSchools.includes(s.id)) : schools;
-            const filteredClasses = useFilter ? classes.filter(c => validClasses.includes(c.id)) : classes;
-            const filteredYears = useFilter ? academicYears.filter(y => validYears.includes(y.year)) : academicYears;
+            const filteredBoards = useFilter
+              ? boards.filter((b) => validBoards.includes(b.id))
+              : boards;
+            const filteredSchools = useFilter
+              ? schools.filter((s) => validSchools.includes(s.id))
+              : schools;
+            const filteredClasses = useFilter
+              ? classes.filter((c) => validClasses.includes(c.id))
+              : classes;
+            const filteredYears = useFilter
+              ? academicYears.filter((y) => validYears.includes(y.year))
+              : academicYears;
 
             // Automatically clear selections if they are no longer in the valid options
-            if (selectedBoard !== "" && !filteredBoards.some(b => b.id === selectedBoard)) {
-              setSelectedBoard("");
-            }
-            if (selectedSchool !== "" && !filteredSchools.some(s => s.id === selectedSchool)) {
-              setSelectedSchool("");
-            }
-            if (selectedClass !== "" && !filteredClasses.some(c => c.id === selectedClass)) {
-              setSelectedClass("");
-            }
-            if (selectedYear !== "" && !filteredYears.some(y => y.year === selectedYear)) {
-              setSelectedYear("");
-            }
+            // if (
+            //   selectedBoard !== "" &&
+            //   !filteredBoards.some((b) => b.id === selectedBoard)
+            // ) {
+            //   setSelectedBoard("");
+            // }
+            // if (
+            //   selectedSchool !== "" &&
+            //   !filteredSchools.some((s) => s.id === selectedSchool)
+            // ) {
+            //   setSelectedSchool("");
+            // }
+            // if (
+            //   selectedClass !== "" &&
+            //   !filteredClasses.some((c) => c.id === selectedClass)
+            // ) {
+            //   setSelectedClass("");
+            // }
+            // if (
+            //   selectedYear !== "" &&
+            //   !filteredYears.some((y) => y.year === selectedYear)
+            // ) {
+            //   setSelectedYear("");
+            // }
 
             return (
               <div className="flex flex-wrap items-end gap-2">
@@ -872,7 +923,10 @@ const Subscription: React.FC = () => {
                           setSelectedBoard(Number(val));
                         }
                       }}
-                      options={filteredBoards.map((b) => ({ value: b.id, label: b.name }))}
+                      options={filteredBoards.map((b) => ({
+                        value: b.id,
+                        label: b.name,
+                      }))}
                       placeholder="Board"
                       className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all"
                       dropdownClassName="min-w-[200px]"
@@ -911,7 +965,10 @@ const Subscription: React.FC = () => {
                           setShowAddSchoolInput(false);
                         }
                       }}
-                      options={filteredSchools.map((s) => ({ value: s.id, label: s.name }))}
+                      options={filteredSchools.map((s) => ({
+                        value: s.id,
+                        label: s.name,
+                      }))}
                       placeholder="School"
                       className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all"
                       dropdownClassName="min-w-[200px]"
@@ -919,7 +976,10 @@ const Subscription: React.FC = () => {
                   </div>
                   {selectedSchool && (
                     <div className="absolute top-full left-0 mt-1 z-50 hidden group-hover:block bg-gray-800 text-white text-[10px] rounded-lg px-2 py-1 whitespace-nowrap shadow-lg pointer-events-none">
-                      {schools.find((s) => s.id === Number(selectedSchool))?.name}
+                      {
+                        schools.find((s) => s.id === Number(selectedSchool))
+                          ?.name
+                      }
                     </div>
                   )}
                   {showAddSchoolInput && (
@@ -962,7 +1022,10 @@ const Subscription: React.FC = () => {
                           setSelectedClass(Number(val));
                         }
                       }}
-                      options={filteredClasses.map((c) => ({ value: c.id, label: c.name }))}
+                      options={filteredClasses.map((c) => ({
+                        value: c.id,
+                        label: c.name,
+                      }))}
                       placeholder="Class"
                       className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all"
                       dropdownClassName="min-w-[200px]"
@@ -970,7 +1033,10 @@ const Subscription: React.FC = () => {
                   </div>
                   {selectedClass && (
                     <div className="absolute top-full left-0 mt-1 z-50 hidden group-hover:block bg-gray-800 text-white text-[10px] rounded-lg px-2 py-1 whitespace-nowrap shadow-lg pointer-events-none">
-                      {classes.find((c) => c.id === Number(selectedClass))?.name}
+                      {
+                        classes.find((c) => c.id === Number(selectedClass))
+                          ?.name
+                      }
                     </div>
                   )}
                 </div>
@@ -1025,7 +1091,10 @@ const Subscription: React.FC = () => {
                           setSelectedYear(String(val));
                         }
                       }}
-                      options={filteredYears.map((y) => ({ value: y.year, label: y.year }))}
+                      options={filteredYears.map((y) => ({
+                        value: y.year,
+                        label: y.year,
+                      }))}
                       placeholder="Year"
                       className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none focus:border-[#BADA55] focus:ring-1 focus:ring-[#BADA55]/30 transition-all"
                       dropdownClassName="min-w-[200px]"
@@ -1052,7 +1121,9 @@ const Subscription: React.FC = () => {
                       className="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-red-50 text-red-600 border border-red-100 rounded-xl text-xs font-semibold hover:bg-red-100 transition-colors h-[36px]"
                       title="Clear Filters"
                     >
-                      <span className="material-symbols-outlined text-[14px]">refresh</span>
+                      <span className="material-symbols-outlined text-[14px]">
+                        refresh
+                      </span>
                       Clear
                     </button>
                   </div>
@@ -1100,64 +1171,61 @@ const Subscription: React.FC = () => {
                     </button>
                   </div>
                 </div>
-
-
               </div>
             );
           })()}
 
           {/* Subject chips */}
-          {
-            (availableSubjects.length > 0 || isSubjectsLoading) && (
-              <div className="flex flex-col gap-2">
-                {/* <p className="text-[10px] uppercase tracking-widest text-gray-400 font-semibold px-1">
+          {(availableSubjects.length > 0 || isSubjectsLoading) && (
+            <div className="flex flex-col gap-2">
+              {/* <p className="text-[10px] uppercase tracking-widest text-gray-400 font-semibold px-1">
                 Subjects
                 <span className="ml-2 normal-case tracking-normal font-normal text-gray-400">— tap to select / deselect</span>
               </p> */}
 
-                {isSubjectsLoading ? (
-                  <div className="flex items-center gap-2 px-1">
-                    <div className="w-4 h-4 border-2 border-gray-200 border-t-[#BADA55] rounded-full animate-spin"></div>
-                    <span className="text-xs text-gray-400">
-                      Loading subjects...
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {availableSubjects.map((subject) => {
-                      const isSelected = selectedSubjects.some(
-                        (s) => s.subject_id === subject.subject_id,
-                      );
-                      return (
-                        <button
-                          key={subject.subject_id}
-                          onClick={() => {
+              {isSubjectsLoading ? (
+                <div className="flex items-center gap-2 px-1">
+                  <div className="w-4 h-4 border-2 border-gray-200 border-t-[#BADA55] rounded-full animate-spin"></div>
+                  <span className="text-xs text-gray-400">
+                    Loading subjects...
+                  </span>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {availableSubjects.map((subject) => {
+                    const isSelected = selectedSubjects.some(
+                      (s) => s.subject_id === subject.subject_id,
+                    );
+                    return (
+                      <button
+                        key={subject.subject_id}
+                        onClick={() => {
+                          isSelected
+                            ? handleRemoveSubject(subject.subject_id)
+                            : handleAddSubject(subject);
+                        }}
+                        className={`relative px-3 py-1.5 sm:px-4 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 border
+                          ${
                             isSelected
-                              ? handleRemoveSubject(subject.subject_id)
-                              : handleAddSubject(subject);
-                          }}
-                          className={`relative px-3 py-1.5 sm:px-4 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 border
-                          ${isSelected
                               ? "bg-[#b0cb1f] text-gray-800 border-[#9ab515] shadow-sm shadow-[#b0cb1f]/40"
                               : "bg-white text-gray-600 border-gray-200 hover:border-[#b0cb1f] hover:text-gray-800"
-                            }`}
-                        >
-                          {isSelected && (
-                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#464646] rounded-full flex items-center justify-center">
-                              <span className="text-white text-[9px] leading-none font-bold">
-                                ✓
-                              </span>
+                          }`}
+                      >
+                        {isSelected && (
+                          <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#464646] rounded-full flex items-center justify-center">
+                            <span className="text-white text-[9px] leading-none font-bold">
+                              ✓
                             </span>
-                          )}
-                          {subject.subject_name}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )
-          }
+                          </span>
+                        )}
+                        {subject.subject_name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -1191,12 +1259,13 @@ const Subscription: React.FC = () => {
                 {plans.map((plan, index) => (
                   <div
                     key={`bg-${plan.plan_id}`}
-                    className={`mx-1 lg:mx-2 transition-all duration-300 cursor-pointer ${selectedPlan?.plan_id === plan.plan_id
-                      ? "bg-lime-200"
-                      : hoveredPlanId === plan.plan_id
-                        ? "bg-lime-100"
-                        : "bg-[#F7FAE9]"
-                      }`}
+                    className={`mx-1 lg:mx-2 transition-all duration-300 cursor-pointer ${
+                      selectedPlan?.plan_id === plan.plan_id
+                        ? "bg-lime-200"
+                        : hoveredPlanId === plan.plan_id
+                          ? "bg-lime-100"
+                          : "bg-[#F7FAE9]"
+                    }`}
                     style={{
                       gridColumn: index + 2,
                       gridRow: "1 / -1",
@@ -1272,15 +1341,17 @@ const Subscription: React.FC = () => {
                         );
                       }
                     }}
-                    className={`mx-1 lg:mx-2 text-center z-10 pb-3 pt-7 lg:pt-9 px-2 transition-all rounded-t-full duration-200 ${selectedSubjects.length > 0
-                      ? "cursor-pointer"
-                      : "cursor-not-allowed"
-                      } ${selectedPlan?.plan_id === plan.plan_id
+                    className={`mx-1 lg:mx-2 text-center z-10 pb-3 pt-7 lg:pt-9 px-2 transition-all rounded-t-full duration-200 ${
+                      selectedSubjects.length > 0
+                        ? "cursor-pointer"
+                        : "cursor-not-allowed"
+                    } ${
+                      selectedPlan?.plan_id === plan.plan_id
                         ? "bg-lime-200"
                         : selectedSubjects.length > 0
                           ? "hover:bg-red-100"
                           : ""
-                      }`}
+                    }`}
                     style={{ gridColumn: index + 2, gridRow: 1 }}
                   >
                     <p className="text-black text-xs lg:text-xl font-thin uppercase tracking-tight leading-none mb-2">
@@ -1416,13 +1487,15 @@ const Subscription: React.FC = () => {
                         );
                       }
                     }}
-                    className={`w-full rounded-3xl border-2 transition-all duration-200 overflow-hidden ${selectedSubjects.length > 0
-                      ? "cursor-pointer"
-                      : "cursor-not-allowed opacity-90"
-                      } ${selectedPlan?.plan_id === plan.plan_id
+                    className={`w-full rounded-3xl border-2 transition-all duration-200 overflow-hidden ${
+                      selectedSubjects.length > 0
+                        ? "cursor-pointer"
+                        : "cursor-not-allowed opacity-90"
+                    } ${
+                      selectedPlan?.plan_id === plan.plan_id
                         ? "border-[#b0cb1f] bg-lime-50"
                         : "border-gray-100 bg-[#F7FAE9]"
-                      }`}
+                    }`}
                   >
                     {/* Card header */}
                     <div
@@ -1534,50 +1607,50 @@ const Subscription: React.FC = () => {
         <button
           onClick={handleSave}
           disabled={isSaving || selectedSubjects.length === 0}
-          className={`w-full sm:w-auto px-8 py-2.5 rounded-full font-medium transition-colors text-sm ${selectedSubjects.length === 0
-            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-            : "bg-primary text-white hover:bg-gray-800"
-            }`}
+          className={`w-full sm:w-auto px-8 py-2.5 rounded-full font-medium transition-colors text-sm ${
+            selectedSubjects.length === 0
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-primary text-white hover:bg-gray-800"
+          }`}
         >
           {isSaving ? "Saving..." : "Save"}
         </button>
         <button
           onClick={handleOpenPaymentModal}
           disabled={isValidating || selectedSubjects.length === 0}
-          className={`w-full sm:w-auto px-8 py-2.5 rounded-full font-medium transition-colors text-sm ${selectedSubjects.length === 0
-            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-            : selectedPlan
-              ? "bg-button-primary text-white hover:bg-[#d4e66e]"
-              : "bg-primary text-white hover:bg-gray-400"
-            }`}
+          className={`w-full sm:w-auto px-8 py-2.5 rounded-full font-medium transition-colors text-sm ${
+            selectedSubjects.length === 0
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : selectedPlan
+                ? "bg-button-primary text-white hover:bg-[#d4e66e]"
+                : "bg-primary text-white hover:bg-gray-400"
+          }`}
         >
           {isValidating ? "Processing..." : "Pay Now"}
         </button>
       </div>
 
       {/* Payment Summary Modal */}
-      {
-        selectedPlan && (
-          <PaymentSummaryModal
-            isOpen={showPaymentModal}
-            onClose={() => setShowPaymentModal(false)}
-            selectedPlan={selectedPlan}
-            selectedSubjects={selectedSubjects}
-            sheetCount={sheetCount}
-            uiTotalAmount={uiTotalAmount}
-            academicDetails={academicDetails}
-            onProceedToPay={handlePayNow}
-            onApplyCoupon={handleApplyCoupon}
-            isProcessing={isValidating}
-          />
-        )
-      }
+      {selectedPlan && (
+        <PaymentSummaryModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          selectedPlan={selectedPlan}
+          selectedSubjects={selectedSubjects}
+          sheetCount={sheetCount}
+          uiTotalAmount={uiTotalAmount}
+          academicDetails={academicDetails}
+          onProceedToPay={handlePayNow}
+          onApplyCoupon={handleApplyCoupon}
+          isProcessing={isValidating}
+        />
+      )}
 
       {/* Chat Bot Icon */}
       <div className="fixed bottom-6 right-6 z-[100]">
         <img src={IconChat} alt="Chat" className="w-[95px]" />
       </div>
-    </div >
+    </div>
   );
 };
 

@@ -72,7 +72,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
     localStorage.removeItem("user");
     localStorage.removeItem("auth_token");
-    localStorage.removeItem("user_data");
     localStorage.removeItem("page_access");
     localStorage.removeItem("active_profile");
     localStorage.removeItem("selected_subjects_payload");
@@ -80,6 +79,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem("academic_payload");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("subscription_id");
+    localStorage.removeItem("subscription_token");
   };
 
   useEffect(() => {

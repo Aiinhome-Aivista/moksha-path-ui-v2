@@ -237,7 +237,7 @@ const LearningPlanner: React.FC = () => {
         );
       }
     } catch (error) {
-      console.error("Learning Planner Error:", error);
+      // console.error("Learning Planner Error:", error);
     } finally {
       setIsLoading(false);
     }

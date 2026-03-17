@@ -5,30 +5,63 @@ import { GET_APIS, POST_APIS } from "../../connection";
 const axiosInstance = axios.create();
 
 // Add request interceptor for token-based authentication
+// axiosInstance.interceptors.request.use(
+//   (config) => {
+//     const token = localStorage.getItem("auth_token");
+//     if (token) {
+//       config.headers.Authorization = `Bearer ${token}`;
+//     }
+//     return config;
+//   },
+//   (error) => {
+//     return Promise.reject(error);
+//   },
+// );
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("auth_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const authToken = localStorage.getItem("auth_token");
+    const subscriptionToken = localStorage.getItem("subscription_token");
+
+    if (!config.headers) config.headers = {};
+
+    // AUTH TOKEN
+    if (authToken) {
+      config.headers["Authorization"] = `Bearer ${authToken}`;
+    }
+
+    // SUBSCRIPTION TOKEN
+    if (subscriptionToken) {
+      config.headers["subscription-token"] = subscriptionToken;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error)
 );
-
 // Add response interceptor for error handling
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized - clear token and redirect to login
-      localStorage.removeItem("auth_token");
-      // window.location.href = "/login";
-    }
+    // if (error.response?.status === 401) {
+    //   // Handle unauthorized - clear token and redirect to login
+    //   localStorage.removeItem("auth_token");
+    //   // window.location.href = "/login";
+    // }
     // Allow 400 responses to be resolved instead of rejected (for coupon validation)
-    if (error.response?.status === 400 && error.response?.data) {
+    if ((error.response?.status === 400) || (error.response?.status === 400) && error.response?.data) {
+      return Promise.resolve(error.response);
+    }
+    return Promise.reject(error);
+  },
+);
+
+// Create another axios instance without request interceptors (no tokens)
+const publicAxiosInstance = axios.create();
+
+// Add response interceptor for error handling
+publicAxiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if ((error.response?.status === 400) && error.response?.data) {
       return Promise.resolve(error.response);
     }
     return Promise.reject(error);
@@ -486,10 +519,128 @@ class ApiServices {
   getTeacherLearningPlanner() {
     return axiosInstance.get(GET_APIS.get_teacher_learning_planner);
   }
+
   getParentProfile() {
     return axiosInstance.get(GET_APIS.parent_profile);
   }
 
+
+  // =======================
+  // BLOGS APIs
+  // =======================
+
+  blogAdminLogin(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_admin_login, data);
+  }
+
+  getBlogCategories() {
+    return publicAxiosInstance.get(GET_APIS.blog_categories);
+  }
+
+  insertUpdateBlogCategory(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_category_insert_update, data);
+  }
+
+  deleteBlogCategory(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_category_delete, data);
+  }
+
+  getBlogsList() {
+    return publicAxiosInstance.get(GET_APIS.blogs_list);
+  }
+
+  insertUpdateBlog(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_insert_update, data);
+  }
+
+  deleteBlog(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_delete, data);
+  }
+
+  getBlogSeoSettings() {
+    return publicAxiosInstance.get(GET_APIS.blog_seo_settings);
+  }
+
+  insertUpdateBlogSeo(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_seo_insert_update, data);
+  }
+
+  deleteBlogSeo(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_seo_delete, data);
+  }
+
+  getBlogAdminDashboard() {
+    return publicAxiosInstance.get(GET_APIS.blog_admin_dashboard);
+  }
+  getBlogCategoryDropdown() {
+    return publicAxiosInstance.get(GET_APIS.blog_category_dropdown);
+  }
+  getPublicBlogs() {
+    return publicAxiosInstance.get(GET_APIS.public_blogs);
+  }
+  getInstituteList() {
+    return axiosInstance.get(GET_APIS.get_institute_list);
+  }
+
+
+  allUserByPagination(payload) {
+    return axiosInstance.post(POST_APIS.all_user_by_pagination, payload);
+  }
+
+
+  // =======================
+  // USER PROFILE APIs
+  // =======================
+
+  // Get Profile Info
+  getProfileInfo() {
+    return axiosInstance.get(GET_APIS.profile_info);
+  }
+
+  // Update Profile
+  updateUserProfile(payload) {
+    return axiosInstance.post(POST_APIS.update_profile, payload);
+  }
+
+  // Get User Academic Info
+  getUserAcademicInfo() {
+    return axiosInstance.get(GET_APIS.user_academic_info);
+  }
+
+  searchUserForMapping(name) {
+    return axiosInstance.get(GET_APIS.search_user_for_mapping, {
+      params: { name }
+    });
+  }
+
+  addParentStudentMapping(payload) {
+    return axiosInstance.post(POST_APIS.add_mapping, payload);
+  }
+
+  getActiveUserConnections() {
+    return axiosInstance.get(GET_APIS.active_user_connections);
+  }
+  // =======================
+  // Parent Student notification APIs
+  // =======================
+
+  // Get pending mapping requests (Now using all summary)
+  getPendingMappingRequests() {
+    return axiosInstance.get(GET_APIS.get_invitation_all_summary);
+  }
+
+  // Accept / Delete mapping request
+  manageParentStudentMapping(payload) {
+    return axiosInstance.post(
+      POST_APIS.manage_parent_student_mapping,
+      payload
+    );
+  }
+
+  // Get active parent/student connections
+  getActiveUserStudentParentList() {
+    return axiosInstance.get(GET_APIS.get_active_user_student_parent_list);
+  }
 }
 
 export default new ApiServices();

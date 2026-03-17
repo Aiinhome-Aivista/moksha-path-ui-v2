@@ -30,7 +30,7 @@ export const AppLayout: React.FC = () => {
   }
 
   // Render a simpler layout for public pages (no sidebar, no main padding)
-  if (isPublicPage) {
+  if (isPublicPage && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-100 dark:bg-background-dark flex flex-col">
         <Header isSidebarOpen={isSidebarOpen} />

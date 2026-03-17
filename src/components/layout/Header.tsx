@@ -132,7 +132,7 @@
 // export default Header;
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useModal } from "../../features/auth/context/AuthContext";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { LogoutConfirmationModal } from "../../features/auth/modal/LogoutConfirmationModal";
@@ -149,6 +149,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
   const { openSignIn, clearMenu } = useModal();
   const { isAuthenticated, logout, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const { showToast } = useToast();
@@ -193,9 +194,20 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
       <header className="sticky top-0 z-40 h-14 bg-gray-100 dark:bg-secondary-900 border-secondary-200 dark:border-secondary-700 shadow-sm">
         <div className="h-full px-4 lg:px-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={handleLogoClick} className="flex items-center animate-fade-in cursor-pointer">
+            {/* <button onClick={handleLogoClick} className="flex items-center animate-fade-in cursor-pointer">
               <img src="/Logo.svg" alt="App Logo" className="h-[90%] w-[80%]" />
-            </button>
+            </button> */}
+            <div className="flex items-center gap-2 font-bold text-lg" onClick={handleLogoClick}>
+              <img src="/logogod.svg" alt="logo" className="w-10 h-10" />
+              <div>
+                <h3>
+                  Moksh<span className="text-xl text-[#E7842E]">Path</span>
+                </h3>
+                <p className="text-xs leading-none font-normal">
+                  Guided Path to True Learning
+                </p>
+              </div>
+            </div>
           </div>
           <div className="flex-1 flex justify-center">
             <div className="flex items-center absolute left-1/2 -translate-x-full z-10 bg-yellow-500 rounded-b-full pl-10 pr-12 gap-3">
@@ -220,13 +232,13 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
               <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
                 Institutional Access
               </button>
-                            <button
+              <button
                 onClick={() => navigate("/blogs")}
                 className="text-sm font-semibold text-gray-700 hover:text-gray-900"
               >
                 Blogs
               </button>
-              {!isAuthenticated && (
+              {!isAuthenticated && !location.pathname.startsWith('/admin') && (
                 <button
                   onClick={openSignIn}
                   className="text-sm font-semibold text-gray-700 hover:text-gray-900"
@@ -239,7 +251,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
             {/* THIS IS THE ONLY CHANGE: Wrapper made relative, Dropdown moved inside */}
             {/* Outer container can keep gap if you have other items, but remove relative from here */}
             <div className="flex items-center justify-end ml-4">
-              {isAuthenticated && (
+              {isAuthenticated && user?.role !== 'admin' && (
                 <div className="relative flex items-center justify-center">
                   <button
                     onClick={() =>

@@ -179,8 +179,7 @@ const Notes: React.FC<NotesProps> = ({ notes = [], isLoading = false }) => {
           Select a chapter and topic from the sidebar to load notes
         </p>
         <div className="mt-6">
-          <label className="flex items-center gap-2 cursor-pointer bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
-            <Upload size={16} />
+          <label className="flex items-center gap-2 cursor-pointer bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#A3C627] transition-colors">
             <span>Upload PDF</span>
             <input
               type="file"

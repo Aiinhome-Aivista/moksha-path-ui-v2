@@ -114,13 +114,15 @@ export const ProfileSelectionModal: React.FC = () => {
 
         // The backend might return a new token on switch.
         // If it does, store it:
-        if (res.data.data?.token) {
-          localStorage.setItem("auth_token", res.data.data.token);
+        if (res.data.data?.auth_token) {
+          localStorage.setItem("auth_token", res.data.data.auth_token);
         }
         if (res.data.data?.refresh_token) {
           localStorage.setItem("refresh_token", res.data.data.refresh_token);
         }
-
+        if (res.data.data?.subscription_token) {
+          localStorage.setItem("subscription_token", res.data.data.subscription_token);
+        }
         const activeRole = resolveRole(
           profile.role_name || profile.roles?.[0]?.role_name || "student",
         );
@@ -415,10 +417,11 @@ export const ProfileSelectionModal: React.FC = () => {
                     handleProfileSelect(forceLoginModal.profile, true)
                   }
                   disabled={!!loadingProfileId}
-                  className={`flex-1 px-4 py-3 rounded-xl font-semibold shadow-md transition-colors flex items-center justify-center gap-2 ${loadingProfileId
+                  className={`flex-1 px-4 py-3 rounded-xl font-semibold shadow-md transition-colors flex items-center justify-center gap-2 ${
+                    loadingProfileId
                       ? "bg-button-primary opacity-70 text-primary cursor-not-allowed" // Fixed here
                       : "bg-button-primary text-primary hover:opacity-90"
-                    }`}
+                  }`}
                 >
                   {loadingProfileId ? (
                     <>

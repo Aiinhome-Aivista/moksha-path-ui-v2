@@ -74,7 +74,8 @@ const ParentDashboard: React.FC = () => {
   const [isChildrenLoading, setIsChildrenLoading] = useState(true);
   const [isParentProfileLoading, setIsParentProfileLoading] = useState(true);
   const [isImageLoading, setIsImageLoading] = useState(true);
-  const [isLearningPlannerLoading, setIsLearningPlannerLoading] = useState(true);
+  const [isLearningPlannerLoading, setIsLearningPlannerLoading] =
+    useState(true);
   const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(true);
   const [isStrengthLoading, setIsStrengthLoading] = useState(true);
   const [isPendingTasksLoading, setIsPendingTasksLoading] = useState(true);
@@ -172,7 +173,7 @@ const ParentDashboard: React.FC = () => {
           }
         }
       } catch (err: any) {
-        console.error("Failed to fetch children", err);
+        // console.error("Failed to fetch children", err);
       } finally {
         setIsChildrenLoading(false);
       }
@@ -189,11 +190,14 @@ const ParentDashboard: React.FC = () => {
             parent_name: data.parent_name || "",
             school_name: data.school_name || "",
             board_name: data.board_name || "",
-            subjects: data.subjects || [],
+            // subjects: data.subjects || [],
+            subjects: data.subjects
+              ? data.subjects.split(",").map((s: string) => s.trim())
+              : [],
           });
         }
       } catch (err) {
-        console.error("Error fetching parent profile", err);
+        // console.error("Error fetching parent profile", err);
       } finally {
         setIsParentProfileLoading(false);
       }
@@ -205,7 +209,16 @@ const ParentDashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedChildId === null) return;
+    // if (selectedChildId === null) return;
+
+    if (children.length === 0) {
+      setIsLearningPlannerLoading(false);
+      setIsAnalyticsLoading(false);
+      setIsStrengthLoading(false);
+      setIsPendingTasksLoading(false);
+      return;
+    }
+    if (!selectedChildId) return;
 
     const fetchDashboardData = async (studentId: number) => {
       // 1. Fetch Basic Student Info & Planner Stats
@@ -215,18 +228,23 @@ const ParentDashboard: React.FC = () => {
           const response = await ApiServices.getStudentLearningPlanner();
           if (response.data?.status === "success") {
             const stats = response.data.data.stats;
-            setStudentData(prev => ({
+            setStudentData((prev) => ({
               ...prev,
               name: stats.student_name,
               school: stats.institute_name,
               board: stats.board_name,
               class: stats.class_name,
               daysLeft: stats.days_left,
-              progressScore: stats.chapters_assigned > 0 ? Math.round((stats.completed_count / stats.chapters_assigned) * 100) : 0,
+              progressScore:
+                stats.chapters_assigned > 0
+                  ? Math.round(
+                      (stats.completed_count / stats.chapters_assigned) * 100,
+                    )
+                  : 0,
             }));
           }
         } catch (error) {
-          console.error("Failed to fetch planner stats", error);
+          // console.error("Failed to fetch planner stats", error);
         } finally {
           setIsLearningPlannerLoading(false);
         }
@@ -251,35 +269,48 @@ const ParentDashboard: React.FC = () => {
           ]);
 
           const scores: SubjectScore[] = scoresRes.data?.data || [];
-          const subjectNames = scores.map((s: SubjectScore) => s.subject_name).join(", ");
-          const mathScore = scores.find((s: SubjectScore) => s.subject_name === "Mathematics")?.average_percentage || 0;
+          const subjectNames = scores
+            .map((s: SubjectScore) => s.subject_name)
+            .join(", ");
+          const mathScore =
+            scores.find((s: SubjectScore) => s.subject_name === "Mathematics")
+              ?.average_percentage || 0;
           const confidenceList: Confidence[] = confidenceRes.data?.data || [];
 
           // Calculate Science Average
           const scienceSubjects = ["Physics", "Chemistry", "Biology"];
-          const scienceScores = scores.filter((s: SubjectScore) => scienceSubjects.includes(s.subject_name));
+          const scienceScores = scores.filter((s: SubjectScore) =>
+            scienceSubjects.includes(s.subject_name),
+          );
           const scienceAvg = scienceScores.length
-            ? scienceScores.reduce((acc: number, curr: SubjectScore) => acc + curr.average_percentage, 0) / scienceScores.length
+            ? scienceScores.reduce(
+                (acc: number, curr: SubjectScore) =>
+                  acc + curr.average_percentage,
+                0,
+              ) / scienceScores.length
             : 0;
 
-          setStudentData(prev => ({
+          setStudentData((prev) => ({
             ...prev,
-            progressScore: progressRes.data?.data?.progress_percentage || prev.progressScore,
+            progressScore:
+              progressRes.data?.data?.progress_percentage || prev.progressScore,
             subjects: subjectNames,
             subjectsArray: scores,
             scienceAvg: Math.round(scienceAvg),
-            mathematicsScore: Math.round(mathScore)
+            mathematicsScore: Math.round(mathScore),
           }));
 
-          setAnalyticsData(prev => ({
+          setAnalyticsData((prev) => ({
             ...prev,
             confidence: confidenceList,
-            consistency: consistencyRes.data?.data?.consistency_score_percentage || 0,
-            examReadiness: readinessRes.data?.data?.exam_readiness_percentage || 0,
+            consistency:
+              consistencyRes.data?.data?.consistency_score_percentage || 0,
+            examReadiness:
+              readinessRes.data?.data?.exam_readiness_percentage || 0,
             subjectScores: scores,
           }));
         } catch (error) {
-          console.error("Failed to fetch analytics", error);
+          // console.error("Failed to fetch analytics", error);
         } finally {
           setIsAnalyticsLoading(false);
         }
@@ -292,16 +323,21 @@ const ParentDashboard: React.FC = () => {
           const strengthRes = await ApiServices.getParentStrengthWeakness(sId);
           const strengthsData = strengthRes.data?.data?.strengths || [];
           const weaknessesData = strengthRes.data?.data?.weaknesses || [];
-          const derivedStrengths = strengthsData.slice(0, 5).map((s: any) => s.chapter_name);
-          const derivedImprovements = weaknessesData.slice(0, 5).map((s: any) => s.chapter_name);
+          const derivedStrengths = strengthsData
+            .slice(0, 5)
+            .map((s: any) => s.chapter_name);
+          const derivedImprovements = weaknessesData
+            .slice(0, 5)
+            .map((s: any) => s.chapter_name);
 
-          setAnalyticsData(prev => ({
+          setAnalyticsData((prev) => ({
             ...prev,
             strengths: derivedStrengths.length > 0 ? derivedStrengths : [],
-            improvements: derivedImprovements.length > 0 ? derivedImprovements : []
+            improvements:
+              derivedImprovements.length > 0 ? derivedImprovements : [],
           }));
         } catch (error) {
-          console.error("Failed to fetch strengths", error);
+          // console.error("Failed to fetch strengths", error);
         } finally {
           setIsStrengthLoading(false);
         }
@@ -312,12 +348,12 @@ const ParentDashboard: React.FC = () => {
         try {
           setIsPendingTasksLoading(true);
           const pendingRes = await ApiServices.getAnalyticsPendingTasks();
-          setAnalyticsData(prev => ({
+          setAnalyticsData((prev) => ({
             ...prev,
             pendingTasks: pendingRes.data?.data || [],
           }));
         } catch (error) {
-          console.error("Failed to fetch pending tasks", error);
+          // console.error("Failed to fetch pending tasks", error);
         } finally {
           setIsPendingTasksLoading(false);
         }
@@ -330,7 +366,7 @@ const ParentDashboard: React.FC = () => {
     };
 
     fetchDashboardData(selectedChildId!);
-  }, [selectedChildId]);
+  }, [, children, selectedChildId]);
 
   const getProgressColor = (value: number) => {
     if (value >= 80) return "bg-green-500";
@@ -339,14 +375,16 @@ const ParentDashboard: React.FC = () => {
   };
 
   const getInitial = () => {
-    return studentData.name?.charAt(0).toUpperCase();
+    return parentProfile.parent_name?.charAt(0).toUpperCase();
   };
 
   // Mini loader component for inline use
   const SectionLoader = ({ message }: { message?: string }) => (
     <div className="flex flex-col items-center gap-2 py-4">
       <div className="w-6 h-6 border-2 border-gray-200 border-t-[#BADA55] rounded-full animate-spin"></div>
-      {message && <span className="text-[10px] text-gray-400 font-medium">{message}</span>}
+      {message && (
+        <span className="text-[10px] text-gray-400 font-medium">{message}</span>
+      )}
     </div>
   );
 
@@ -434,8 +472,14 @@ const ParentDashboard: React.FC = () => {
                   >
                     {children.length === 0 && <option value="">None</option>}
                     {children.map((child) => (
-                      <option key={child.student_id} value={child.student_id} title={child.full_name}>
-                        {child.full_name.length > 20 ? child.full_name.substring(0, 20) + '...' : child.full_name}
+                      <option
+                        key={child.student_id}
+                        value={child.student_id}
+                        title={child.full_name}
+                      >
+                        {child.full_name.length > 20
+                          ? child.full_name.substring(0, 20) + "..."
+                          : child.full_name}
                       </option>
                     ))}
                   </select>
@@ -475,9 +519,29 @@ const ParentDashboard: React.FC = () => {
               </div>
             ) : (
               <>
-                <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="40" cy="40" r="38" fill="#FFED00" stroke="#E5D600" strokeWidth="1" />
-                  <line x1="12" y1="68" x2="68" y2="12" stroke="white" strokeWidth="3" />
+                <svg
+                  width="80"
+                  height="80"
+                  viewBox="0 0 80 80"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="38"
+                    fill="#FFED00"
+                    stroke="#E5D600"
+                    strokeWidth="1"
+                  />
+                  <line
+                    x1="12"
+                    y1="68"
+                    x2="68"
+                    y2="12"
+                    stroke="white"
+                    strokeWidth="3"
+                  />
                 </svg>
                 <span className="absolute top-[12px] left-[18px] text-xl font-bold text-red-500">
                   {studentData.progressScore}
@@ -506,9 +570,14 @@ const ParentDashboard: React.FC = () => {
               </div>
             ) : studentData.subjectsArray?.length > 0 ? (
               studentData.subjectsArray.map((subject, index) => {
-                const subjectScore = analyticsData.subjectScores.find(s => s.subject_name === subject.subject_name)?.average_percentage;
+                const subjectScore = analyticsData.subjectScores.find(
+                  (s) => s.subject_name === subject.subject_name,
+                )?.average_percentage;
                 return (
-                  <div key={index} className="flex flex-col items-center justify-end text-center min-h-[120px] w-[100px]">
+                  <div
+                    key={index}
+                    className="flex flex-col items-center justify-end text-center min-h-[120px] w-[100px]"
+                  >
                     <div className="flex items-center justify-center bg-highlighter w-[70px] h-[70px] rounded-full mb-2">
                       {isAnalyticsLoading && subjectScore === undefined ? (
                         <div className="w-4 h-4 border-2 border-gray-200 border-t-[#BADA55] rounded-full animate-spin"></div>
@@ -549,7 +618,10 @@ const ParentDashboard: React.FC = () => {
                 <ul className="list-none p-0 m-0">
                   {analyticsData.confidence?.length > 0 ? (
                     analyticsData.confidence.map((subject, index) => (
-                      <li key={index} className="flex justify-between items-center py-1 text-xs text-gray-600">
+                      <li
+                        key={index}
+                        className="flex justify-between items-center py-1 text-xs text-gray-600"
+                      >
                         <span>• {subject.subject_name}</span>
                         <span className="font-bold text-gray-800 w-10 text-right pr-20">
                           {Math.round(subject.confidence_score)}%
@@ -557,7 +629,9 @@ const ParentDashboard: React.FC = () => {
                       </li>
                     ))
                   ) : (
-                    <p className="text-xs text-gray-400 py-2">No confidence data</p>
+                    <p className="text-xs text-gray-400 py-2">
+                      No confidence data
+                    </p>
                   )}
                 </ul>
               )}
@@ -633,7 +707,9 @@ const ParentDashboard: React.FC = () => {
             ) : analyticsData.subjectScores?.length > 0 ? (
               analyticsData.subjectScores.map((subject, index) => (
                 <div key={index} className="flex items-center gap-2 mb-2">
-                  <span className="w-20 text-xs text-gray-800 flex-shrink-0">{subject.subject_name}</span>
+                  <span className="w-20 text-xs text-gray-800 flex-shrink-0">
+                    {subject.subject_name}
+                  </span>
                   <div className="flex-1 h-[18px] bg-gray-200 rounded overflow-hidden">
                     <div
                       className={`h-full rounded transition-all duration-500 ${getProgressColor(subject.average_percentage)}`}
@@ -663,11 +739,18 @@ const ParentDashboard: React.FC = () => {
           ) : (
             <div className="grid grid-cols-2 gap-6 mb-4">
               <div>
-                <h3 className="text-sm font-semibold text-gray-800 mb-2">Strengths</h3>
+                <h3 className="text-sm font-semibold text-gray-800 mb-2">
+                  Strengths
+                </h3>
                 <ul className="list-none p-0 m-0">
                   {analyticsData.strengths?.length > 0 ? (
                     analyticsData.strengths.map((item, index) => (
-                      <li key={index} className="text-xs text-gray-500 py-0.5 leading-relaxed">• {item}</li>
+                      <li
+                        key={index}
+                        className="text-xs text-gray-500 py-0.5 leading-relaxed"
+                      >
+                        • {item}
+                      </li>
                     ))
                   ) : (
                     <li className="text-xs text-gray-400">No strengths</li>
@@ -675,11 +758,18 @@ const ParentDashboard: React.FC = () => {
                 </ul>
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-gray-800 mb-2">Needs Improvement</h3>
+                <h3 className="text-sm font-semibold text-gray-800 mb-2">
+                  Needs Improvement
+                </h3>
                 <ul className="list-none p-0 m-0">
                   {analyticsData.improvements?.length > 0 ? (
                     analyticsData.improvements.map((item, index) => (
-                      <li key={index} className="text-xs text-gray-500 py-0.5 leading-relaxed">• {item}</li>
+                      <li
+                        key={index}
+                        className="text-xs text-gray-500 py-0.5 leading-relaxed"
+                      >
+                        • {item}
+                      </li>
                     ))
                   ) : (
                     <li className="text-xs text-gray-400">No improvements</li>
@@ -703,8 +793,14 @@ const ParentDashboard: React.FC = () => {
             <ul className="list-none p-0 m-0 mb-4">
               {analyticsData.pendingTasks?.length > 0 ? (
                 analyticsData.pendingTasks.slice(0, 5).map((action, index) => (
-                  <li key={index} className="text-xs text-gray-500 py-1 leading-relaxed">
-                    {action.task_name} <span className="text-[10px] text-gray-400">({action.subject_name})</span>
+                  <li
+                    key={index}
+                    className="text-xs text-gray-500 py-1 leading-relaxed"
+                  >
+                    {action.task_name}{" "}
+                    <span className="text-[10px] text-gray-400">
+                      ({action.subject_name})
+                    </span>
                   </li>
                 ))
               ) : (
@@ -724,7 +820,10 @@ const ParentDashboard: React.FC = () => {
       </div>
 
       <div className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100]">
-        <button onClick={() => setIsChatOpen(true)} className="p-0 bg-transparent border-0 cursor-pointer">
+        <button
+          onClick={() => setIsChatOpen(true)}
+          className="p-0 bg-transparent border-0 cursor-pointer"
+        >
           <img src={IconChat} alt="Chat" className="w-[95px]" />
         </button>
       </div>
