@@ -79,7 +79,7 @@ const profileStatusConfig: Record<
     bg: "bg-red-50",
     text: "text-red-600",
     dot: "bg-red-500",
-    label: "Exp",
+    label: "Rejected",
   },
 };
 
@@ -149,10 +149,8 @@ const Notifications: React.FC = () => {
   const [profileFilter, setProfileFilter] = useState<ProfileStatus | "All">(
     "All",
   );
-  // const [profileLoading, setProfileLoading] = useState(false);
-  // const [profileError, setProfileError] = useState("");
-  const [, setProfileLoading] = useState(false);
-  const [, setProfileError] = useState("");
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState("");
   const [profileExpandedId, setProfileExpandedId] = useState<number | null>(
     null,
   );
@@ -1058,7 +1056,7 @@ const Notifications: React.FC = () => {
               { label: "All", key: "All" as const, countKey: "all" },
               { label: "Complete", key: "Complete" as const, countKey: "complete" },
               { label: "Pending", key: "Pending" as const, countKey: "pending" },
-              { label: "Expired", key: "Rejected" as const, countKey: "rejected" },
+              { label: "Rejected", key: "Rejected" as const, countKey: "rejected" },
             ].map((f) => {
               const count = profileSummary?.[f.countKey] || 0;
               return (
