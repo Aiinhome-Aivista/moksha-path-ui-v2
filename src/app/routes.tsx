@@ -37,6 +37,11 @@ import InstituteAdminMaterials from "../features/institute-admin/pages/Institute
 import InstituteadminLearningPlanner from "../features/institute-admin/pages/InstituteadminLearningPlanner";
 import InstituteAdminNotification from "../features/institute-admin/pages/InstituteAdminNotification";
 import InstituteAdminProfile from "../features/institute-admin/pages/InstituteAdminProfile";
+import TutorProfile from "../features/private-tutor/pages/TutorProfile";
+import TutorDashboard from "../features/private-tutor/pages/TutorDashboard";
+import TutorLearningPlanner from "../features/private-tutor/pages/TutorLearningPlanner";
+import TutorNotifications from "../features/private-tutor/pages/TutorNotification";
+import TutorMaterials from "../features/private-tutor/pages/TutorMaterials";
 
 const routes: RouteObject[] = [
   // Standalone Routes
@@ -97,6 +102,17 @@ const routes: RouteObject[] = [
       {path:"institute-admin/videos",element:<InstituteAdminMaterials/>},
       {path:"institute-admin/notes",element:<InstituteAdminMaterials/>},
       {path:"institute-admin/notification",element:<InstituteAdminNotification/>},
+
+
+      //private-tutor
+      { path: "private-tutor/profile", element: <TutorProfile /> },
+      { path: "private-tutor/dashboard", element: <TutorDashboard /> },
+      { path: "private-tutor/learning-planner", element: <TutorLearningPlanner /> },
+      {path:"private-tutor/materials",element:<TutorMaterials/>},
+      {path:"private-tutor/tests",element:<TutorMaterials/>},
+      {path:"private-tutor/videos",element:<TutorMaterials/>},
+      {path:"private-tutor/notes",element:<TutorMaterials/>},
+      {path:"private-tutor/notification",element:<TutorNotifications/>},
     ],
   },
 

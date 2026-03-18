@@ -20,8 +20,11 @@ const resolveRole = (roleName?: string) => {
     case "student":
     case "teacher":
     case "institute_admin":
+    case "institute admin":
     case "admin":
     case "parent":
+    case "private_tutor":
+    case "private tutor":
       return normalized as any;
     default:
       return "student" as any;
@@ -173,6 +176,8 @@ export const ProfileSelectionModal: React.FC = () => {
             navigate("/parent/dashboard", { replace: true });
           } else if (role === "institute_admin" || role === "institute admin") {
              navigate("/institute-admin/dashboard", { replace: true });
+             }else if (role === "private_tutor" || role === "private tutor") {
+             navigate("/private-tutor/dashboard", { replace: true });
           }else {
             navigate("/dashboard", { replace: true });
           }
