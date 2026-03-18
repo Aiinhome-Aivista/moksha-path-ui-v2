@@ -217,8 +217,40 @@ const Subscription: React.FC = () => {
     }
   };
 
+  // const addProfile = () => {
+  //   const newProfile = createEmptyProfile();
+
+  //   setProfiles((prev) => [
+  //     ...prev.map((p) => ({ ...p, isExpanded: false })),
+  //     newProfile,
+  //   ]);
+
+  //   setActiveProfileIndex(profiles.length);
+
+  //   setPlans(defaultPlans);
+
+  //   transformData(defaultPlans);
+  // };
   const addProfile = () => {
-    const newProfile = createEmptyProfile();
+    const baseProfile = profiles[activeProfileIndex] || createEmptyProfile();
+
+    const newProfile: AcademicProfile = {
+      ...createEmptyProfile(),
+
+      // ✅ ONLY copy these two
+      board_id: baseProfile.board_id,
+      school_id: baseProfile.school_id,
+
+      // ❌ reset everything else
+      class_id: "",
+      academic_year: "",
+      selectedSubjects: [],
+      availableSubjects: [],
+      selectedPlan: null,
+
+      // ✅ seats rule
+      seats: localUser.role === "student" ? 1 : 1,
+    };
 
     setProfiles((prev) => [
       ...prev.map((p) => ({ ...p, isExpanded: false })),
@@ -228,9 +260,9 @@ const Subscription: React.FC = () => {
     setActiveProfileIndex(profiles.length);
 
     setPlans(defaultPlans);
-
     transformData(defaultPlans);
   };
+
   const toggleProfile = (profileId: string) => {
     setProfiles((prev) =>
       prev.map((p, i) => {
@@ -916,11 +948,11 @@ const Subscription: React.FC = () => {
     setShowSetupModal(false);
   };
 
-  useEffect(() => {
-    if (localUser.role === "teacher") {
-      navigate("/dashboard");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (localUser.role === "teacher") {
+  //     navigate("/dashboard");
+  //   }
+  // }, []);
 
   return (
     <div className="min-h-screen relative px-2 sm:px-4">
