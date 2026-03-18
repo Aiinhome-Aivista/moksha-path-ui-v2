@@ -8,12 +8,12 @@ export interface YouTubeLink {
 }
 
 interface ResourceMaterialsProps {
-  youtubeLinks: YouTubeLink[];
+  youtubeLinks?: YouTubeLink[];
   isLoading?: boolean;
 }
 
 const InstituteAdminMaterialVideos: React.FC<ResourceMaterialsProps> = ({
-  youtubeLinks,
+  youtubeLinks = [],
   isLoading = false,
 }) => {
   const [uploadedVideos, setUploadedVideos] = useState<YouTubeLink[]>([]);

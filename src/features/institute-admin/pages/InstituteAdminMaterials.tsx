@@ -81,11 +81,11 @@ const InstituteAdminMaterials = () => {
 
 
   useEffect(() => {
-    if (location.pathname.includes("teacher-videos")) {
+    if (location.pathname.includes("institute-admin/videos")) {
       setActiveResourceType("Videos");
-    } else if (location.pathname.includes("teacher-tests")) {
+    } else if (location.pathname.includes("institute-admin/tests")) {
       setActiveResourceType("Tests");
-    } else if (location.pathname.includes("teacher-notes")) {
+    } else if (location.pathname.includes("institute-admin/notes")) {
       setActiveResourceType("Notes");
     }
   }, [location.pathname]);
