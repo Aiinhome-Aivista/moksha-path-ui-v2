@@ -242,32 +242,32 @@ const Subscription: React.FC = () => {
   // }, [boards, schools, classes, academicYears]);
 
   useEffect(() => {
-  if (!boards.length || !schools.length || !classes.length) return;
+    if (!boards.length || !schools.length || !classes.length) return;
 
-  setProfiles((prev) =>
-    prev.map((profile) => ({
-      ...profile,
+    setProfiles((prev) =>
+      prev.map((profile) => ({
+        ...profile,
 
-      board_id: boards.some((b) => String(b.id) === String(profile.board_id))
-        ? profile.board_id
-        : profile.board_id,
+        board_id: boards.some((b) => String(b.id) === String(profile.board_id))
+          ? profile.board_id
+          : profile.board_id,
 
-      school_id: schools.some((s) => String(s.id) === String(profile.school_id))
-        ? profile.school_id
-        : profile.school_id,
+        school_id: schools.some((s) => String(s.id) === String(profile.school_id))
+          ? profile.school_id
+          : profile.school_id,
 
-      class_id: classes.some((c) => String(c.id) === String(profile.class_id))
-        ? profile.class_id
-        : profile.class_id,
+        class_id: classes.some((c) => String(c.id) === String(profile.class_id))
+          ? profile.class_id
+          : profile.class_id,
 
-      academic_year: academicYears.some(
-        (y) => String(y.year) === String(profile.academic_year)
-      )
-        ? profile.academic_year
-        : profile.academic_year,
-    }))
-  );
-}, [boards, schools, classes, academicYears]);
+        academic_year: academicYears.some(
+          (y) => String(y.year) === String(profile.academic_year)
+        )
+          ? profile.academic_year
+          : profile.academic_year,
+      }))
+    );
+  }, [boards, schools, classes, academicYears]);
 
   React.useEffect(() => {
     fetchProfileImage();
@@ -894,14 +894,27 @@ const Subscription: React.FC = () => {
       //   subscription_name: "",
       // };
       const payload = {
-        profiles: buildProfilesPayload(),
+        profiles: buildProfilesPayload().map((p) => ({
+          plan_id: p.plan_id,
+          board_id: p.board_id,
+          class_id: p.class_id,
+          academic_year: p.academic_year,
+          institute_id: p.institute_id,
+          subject_ids: p.subject_ids,
+          total_licenses: p.total_licenses,
+          licenses_used: p.licenses_used,
+        })),
 
+        subscription_name: `Plan_${selectedPlan?.plan_id}_${new Date()
+          .toLocaleString("en-IN", { month: "long", year: "numeric" })
+          .replace(" ", "")}`,
+
+        // ✅ ADD THIS (VERY IMPORTANT)
+        total_amount: Number(uiTotalAmount.toFixed(2)),
+
+        // ✅ ADD THESE (backend still expects)
         ui_total_amount: Number(uiTotalAmount.toFixed(2)),
-
         total_licenses: totalSeats,
-
-        subscription_name: "", // ✅ keep empty if backend requires
-
       };
       const response = await ApiServices.saveSubscriptionDraft(payload);
       if (response.data?.status === "success") {
