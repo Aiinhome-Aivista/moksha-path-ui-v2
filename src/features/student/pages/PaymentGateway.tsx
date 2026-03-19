@@ -80,6 +80,8 @@ const PaymentGateway: React.FC = () => {
 
         ui_total_amount: Number(paymentData.ui_total_amount.toFixed(2)), // ✅ ADD THIS
 
+        payment_gateway: "RAZORPAY",
+
         currency: "INR",
 
         ...(paymentData.coupon_code && {
