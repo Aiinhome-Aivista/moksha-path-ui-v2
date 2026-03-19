@@ -95,6 +95,10 @@ export const GET_APIS = {
   get_pending_mapping_requests: `${BASE_URL}user/get_pending_mapping_requests`,
   get_active_user_student_parent_list: `${BASE_URL}user/get_active_user_student_parent_list`,
   get_invitation_all_summary: `${BASE_URL}user/get_invitation_all_summary`,
+
+  // Institute Admin - Faculty Management
+  get_assigned_teacher_list: `${BASE_URL}institute_admin/assigned_teacher_list`,
+  get_available_teachers: `${BASE_URL}institute_admin/available_teachers`,
 };
 
 export const POST_APIS = {
@@ -177,4 +181,8 @@ export const POST_APIS = {
   add_mapping: `${BASE_URL}user/add_parent_student_mapping`,
   //profile notification add/delete
   manage_parent_student_mapping: `${BASE_URL}user/manage_parent_student_mapping`,
+
+  // Institute Admin - Faculty Management
+  assign_teacher: `${BASE_URL}institute_admin/assign_teacher`,
+  remove_teacher: `${BASE_URL}institute_admin/remove_teacher`,
 };
