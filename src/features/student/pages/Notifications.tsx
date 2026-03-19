@@ -1144,9 +1144,9 @@ const Notifications: React.FC = () => {
                           </span>
                         </p> */}
                         <p className="text-xs text-gray-500 truncate">
-                          {p.request_type?.toLowerCase() === "received"
-                            ? "Sent you a mapping request"
-                            : "You sent a mapping request"}
+                          {p.request_type?.toLowerCase() === "sent"
+                            ? "You sent a mapping request"
+                            : "Sent you a mapping request"}
                         </p>
                         {p.request_date || p.connected_on ? (
                           <div className="flex items-center gap-1 mt-1">
@@ -1236,13 +1236,13 @@ const Notifications: React.FC = () => {
                             {mappedStatus === "Complete"
                               ? "You have accepted this invitation."
                               : mappedStatus === "Pending"
-                                ? p.request_type?.toLowerCase() === "received"
-                                  ? "This invitation is pending your response."
-                                  : "Waiting for the recipient to respond."
+                                ? p.request_type?.toLowerCase() === "sent"
+                                  ? "Waiting for the recipient to respond."
+                                  : "This invitation is pending your response."
                                 : "This invitation has been rejected."}
                           </span>
                         </div>
-                        {mappedStatus === "Pending" && p.request_type?.toLowerCase() === "received" && (
+                        {mappedStatus === "Pending" && (
                           <div className="flex gap-3 pt-2">
                             <button
                               onClick={() => manageProfileRequest(p.link_id, "DELETE")}
@@ -1256,17 +1256,19 @@ const Notifications: React.FC = () => {
                               ) : "Reject"}
                             </button>
 
-                            <button
-                              onClick={() => manageProfileRequest(p.link_id, "ACCEPT")}
-                              disabled={isUpdatingProfileRequest !== null}
-                              className="flex-1 px-4 py-2 bg-[#BADA55] text-gray-800 rounded-xl text-sm font-bold hover:bg-lime-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            >
-                              {isUpdatingProfileRequest === `${p.link_id}-ACCEPT` ? (
-                                <span className="material-symbols-outlined text-base animate-spin" style={{ fontVariationSettings: "'wght' 400" }}>
-                                  progress_activity
-                                </span>
-                              ) : "Accept"}
-                            </button>
+                            {p.request_type?.toLowerCase() !== "sent" && (
+                              <button
+                                onClick={() => manageProfileRequest(p.link_id, "ACCEPT")}
+                                disabled={isUpdatingProfileRequest !== null}
+                                className="flex-1 px-4 py-2 bg-[#BADA55] text-gray-800 rounded-xl text-sm font-bold hover:bg-lime-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                              >
+                                {isUpdatingProfileRequest === `${p.link_id}-ACCEPT` ? (
+                                  <span className="material-symbols-outlined text-base animate-spin" style={{ fontVariationSettings: "'wght' 400" }}>
+                                    progress_activity
+                                  </span>
+                                ) : "Accept"}
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>

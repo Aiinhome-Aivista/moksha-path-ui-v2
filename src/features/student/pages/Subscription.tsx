@@ -101,7 +101,6 @@ const createEmptyProfile = (): AcademicProfile => ({
   isSubjectsLoading: false,
   isExpanded: true,
   seats: 1,
-  selectedPlan: null,
 });
 const Subscription: React.FC = () => {
   const navigate = useNavigate();
@@ -218,8 +217,40 @@ const Subscription: React.FC = () => {
     }
   };
 
+  // const addProfile = () => {
+  //   const newProfile = createEmptyProfile();
+
+  //   setProfiles((prev) => [
+  //     ...prev.map((p) => ({ ...p, isExpanded: false })),
+  //     newProfile,
+  //   ]);
+
+  //   setActiveProfileIndex(profiles.length);
+
+  //   setPlans(defaultPlans);
+
+  //   transformData(defaultPlans);
+  // };
   const addProfile = () => {
-    const newProfile = createEmptyProfile();
+    const baseProfile = profiles[activeProfileIndex] || createEmptyProfile();
+
+    const newProfile: AcademicProfile = {
+      ...createEmptyProfile(),
+
+      // ✅ ONLY copy these two
+      board_id: baseProfile.board_id,
+      school_id: baseProfile.school_id,
+
+      // ❌ reset everything else
+      class_id: "",
+      academic_year: "",
+      selectedSubjects: [],
+      availableSubjects: [],
+      selectedPlan: null,
+
+      // ✅ seats rule
+      seats: localUser.role === "student" ? 1 : 1,
+    };
 
     setProfiles((prev) => [
       ...prev.map((p) => ({ ...p, isExpanded: false })),
@@ -229,9 +260,9 @@ const Subscription: React.FC = () => {
     setActiveProfileIndex(profiles.length);
 
     setPlans(defaultPlans);
-
     transformData(defaultPlans);
   };
+
   const toggleProfile = (profileId: string) => {
     setProfiles((prev) =>
       prev.map((p, i) => {
@@ -255,9 +286,26 @@ const Subscription: React.FC = () => {
     setProfiles((prev) => prev.filter((p) => p.id !== profileId));
   };
 
+  // const updateProfile = (index: number, updates: Partial<AcademicProfile>) => {
+  //   setProfiles((prev) =>
+  //     prev.map((p, i) => (i === index ? { ...p, ...updates } : p)),
+  //   );
+  // };
+
   const updateProfile = (index: number, updates: Partial<AcademicProfile>) => {
     setProfiles((prev) =>
-      prev.map((p, i) => (i === index ? { ...p, ...updates } : p)),
+      prev.map((p, i) => {
+        if (i !== index) return p;
+
+        const updatedProfile = { ...p, ...updates };
+
+        // ✅ FORCE seat = 1 for student
+        if (localUser.role === "student") {
+          updatedProfile.seats = 1;
+        }
+
+        return updatedProfile;
+      }),
     );
   };
 
@@ -609,19 +657,34 @@ const Subscription: React.FC = () => {
       };
       const response = await ApiServices.validatePlanAmount(payload);
       if (response.data?.status === "success") {
-        const newAmount =
-          response.data?.data?.verified_amount ||
-          response.data?.data?.db_amount ||
-          currentTotalAmount;
-        // ✅ ADD THIS LINE
-        const discountAmount = uiTotalAmount - newAmount;
+        // const newAmount =
+        //   response.data?.data?.verified_amount ||
+        //   response.data?.data?.db_amount ||
+        //   currentTotalAmount;
+        // // ✅ ADD THIS LINE
+        // const discountAmount = uiTotalAmount - newAmount;
 
-        // ✅ ADD THIS LINE
-        setDiscountedAmount(Number(discountAmount.toFixed(2)));
+        // // ✅ ADD THIS LINE
+        // setDiscountedAmount(Number(discountAmount.toFixed(2)));
 
-        setCurrentTotalAmount(newAmount);
+        // setCurrentTotalAmount(newAmount);
+        // showToast("Coupon applied successfully!", "success");
+        // return { success: true, newAmount };
+        const data = response.data?.data;
+
+        setDiscountedAmount(Number((data?.db_discount || 0).toFixed(2)));
+        setCurrentTotalAmount(Number((data?.db_final || 0).toFixed(2)));
+
         showToast("Coupon applied successfully!", "success");
-        return { success: true, newAmount };
+
+        return {
+          success: true,
+          data: {
+            db_discount: data?.db_discount || 0,
+            db_final: data?.db_final || 0,
+            db_total: data?.db_total || 0,
+          },
+        };
       } else {
         const errorMessage = response.data?.message || "Invalid coupon code";
         showToast(errorMessage, "error");
@@ -651,11 +714,18 @@ const Subscription: React.FC = () => {
       const plan = profile.selectedPlan || selectedPlan;
       if (!plan) return total;
 
+      // const subjectTotal =
+      //   plan.subject_prices?.reduce(
+      //     (sum, sp) => sum + (sp.price || 0),
+      //     0,
+      //   ) || 0;
+
+      const selectedSubjectIds = profile.selectedSubjects.map(s => s.subject_id);
+
       const subjectTotal =
-        plan.subject_prices?.reduce(
-          (sum, sp) => sum + (sp.price || 0),
-          0,
-        ) || 0;
+        plan.subject_prices
+          ?.filter(sp => selectedSubjectIds.includes(sp.subject_id))
+          .reduce((sum, sp) => sum + (sp.price || 0), 0) || 0;
 
       const discountPercent = plan.plan_discount_percent || 0;
 
@@ -685,11 +755,18 @@ const Subscription: React.FC = () => {
     return profiles.map((p) => {
       const plan = p.selectedPlan || selectedPlan;
 
+      // const subjectTotal =
+      //   plan?.subject_prices?.reduce(
+      //     (sum, sp) => sum + (sp.price || 0),
+      //     0,
+      //   ) || 0;
+
+      const selectedSubjectIds = p.selectedSubjects.map(s => s.subject_id);
+
       const subjectTotal =
-        plan?.subject_prices?.reduce(
-          (sum, sp) => sum + (sp.price || 0),
-          0,
-        ) || 0;
+        plan?.subject_prices
+          ?.filter(sp => selectedSubjectIds.includes(sp.subject_id))
+          .reduce((sum, sp) => sum + (sp.price || 0), 0) || 0;
 
       const discountPercent = plan?.plan_discount_percent || 0;
 
@@ -871,11 +948,11 @@ const Subscription: React.FC = () => {
     setShowSetupModal(false);
   };
 
-  useEffect(() => {
-    if (localUser.role === "teacher") {
-      navigate("/dashboard");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (localUser.role === "teacher") {
+  //     navigate("/dashboard");
+  //   }
+  // }, []);
 
   return (
     <div className="min-h-screen relative px-2 sm:px-4">
@@ -898,7 +975,7 @@ const Subscription: React.FC = () => {
       )}
 
       {/* ─── TOP HEADER ─────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5 mb-6">
+      <div className="flex flex-col sm:flex-col sm:items-start sm:justify-between gap-5 mb-6">
         {/* User Info */}
         <div className="flex items-center gap-3 shrink-0">
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-gray-200 flex items-center justify-center bg-gray-100 shrink-0">
@@ -1001,7 +1078,7 @@ const Subscription: React.FC = () => {
                       chevron_right
                     </span>
                     <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
-                      Profile #{profileIndex + 1}
+                      Plan #{profileIndex + 1}
                     </span>
                     {!p.isExpanded && useFilter && (
                       <div className="flex items-center gap-2 overflow-hidden max-w-[550px]">
@@ -1279,7 +1356,7 @@ const Subscription: React.FC = () => {
                       </span>
 
                       <div className="flex items-center gap-2 bg-gray-800 rounded-xl px-3 py-1.5">
-                        <button
+                        {/* <button
                           onClick={() =>
                             updateProfile(profileIndex, {
                               seats: Math.max(1, p.seats - 1),
@@ -1301,6 +1378,41 @@ const Subscription: React.FC = () => {
                             })
                           }
                           className="text-white px-2"
+                        >
+                          +
+                        </button> */}
+                        <button
+                          onClick={() => {
+                            if (localUser.role !== "student") {
+                              updateProfile(profileIndex, {
+                                seats: Math.max(1, p.seats - 1),
+                              });
+                            }
+                          }}
+                          disabled={localUser.role === "student"}
+                          className={`px-2 ${localUser.role === "student"
+                            ? "text-gray-100 cursor-not-allowed"
+                            : "text-white"
+                            }`}
+                        >
+                          −
+                        </button>
+                        <span className="text-white font-bold text-sm">
+                          {p.seats}
+                        </span>
+                        <button
+                          onClick={() => {
+                            if (localUser.role !== "student") {
+                              updateProfile(profileIndex, {
+                                seats: p.seats + 1,
+                              });
+                            }
+                          }}
+                          disabled={localUser.role === "student"}
+                          className={`px-2 ${localUser.role === "student"
+                            ? "text-gray-100 cursor-not-allowed"
+                            : "text-white"
+                            }`}
                         >
                           +
                         </button>
