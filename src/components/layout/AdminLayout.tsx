@@ -4,6 +4,7 @@ import AdminSidebar from "./AdminSidebar";
 import Header from "./Header";
 import Footer from "./Footer";
 import { PageLoader } from "../common/Loader";
+import GlobalSeo from "../common/GlobalSeo";
 
 export const AdminLayout: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -42,6 +43,7 @@ export const AdminLayout: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-background-dark flex">
+            <GlobalSeo />
             {/* Admin Specific Sidebar */}
             <AdminSidebar
                 isOpen={isSidebarOpen}
