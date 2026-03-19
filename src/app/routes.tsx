@@ -2,7 +2,7 @@ import { createBrowserRouter, type RouteObject, Navigate } from "react-router-do
 import AppLayout from "../components/layout/AppLayout";
 import Login from "../features/auth/modal/Login";
 import { SelectRole } from "../features/auth/modal/SelectRole";
-import StudentDashboard from "../features/student/pages/Dashboard";
+import { Dashboard } from "../features/student/pages/dashboard/Dashboard";
 import StudentProfile from "../features/student/pages/Profile";
 import Subscription from "../features/student/pages/Subscription";
 import SubscriptionDetails from "../features/student/pages/SubscriptionDetails";
@@ -16,7 +16,7 @@ import Invitations from "../features/student/pages/Invitations";
 import ParentDashboard from "../features/parent/pages/ParentDashboard";
 import ParentMaterials from "../features/parent/pages/ParentMaterials";
 import TeacherMaterials from "../features/teacher/pages/TeacherMaterials";
-import  TeacherDashboard  from "../features/teacher/pages/dashboard/TeacherDashboard";
+import TeacherDashboard from "../features/teacher/pages/dashboard/TeacherDashboard";
 import ParentLearningPlanner from "../features/parent/pages/ParentLearningPlanner";
 import TeacherLearningPlanner from "../features/teacher/pages/TeacherLearningPlanner";
 import Blogs from "../features/blog/blogpage";
@@ -58,7 +58,7 @@ const routes: RouteObject[] = [
       { path: "blogs/:title", element: <BlogDetail /> },
 
       // Student Routes
-      { path: "dashboard", element: <StudentDashboard /> },
+      { path: "dashboard", element: <Dashboard /> },
       { path: "profile", element: <StudentProfile /> },
 
       // Student Features
@@ -97,22 +97,22 @@ const routes: RouteObject[] = [
       { path: "institute-admin/profile", element: <InstituteAdminProfile /> },
       { path: "institute-admin/dashboard", element: <InstituteAdminDashboard /> },
       { path: "institute-admin/learning-planner", element: <InstituteadminLearningPlanner /> },
-      {path:"institute-admin/materials",element:<InstituteAdminMaterials/>},
-      {path:"institute-admin/tests",element:<InstituteAdminMaterials/>},
-      {path:"institute-admin/videos",element:<InstituteAdminMaterials/>},
-      {path:"institute-admin/notes",element:<InstituteAdminMaterials/>},
-      {path:"institute-admin/notification",element:<InstituteAdminNotification/>},
+      { path: "institute-admin/materials", element: <InstituteAdminMaterials /> },
+      { path: "institute-admin/tests", element: <InstituteAdminMaterials /> },
+      { path: "institute-admin/videos", element: <InstituteAdminMaterials /> },
+      { path: "institute-admin/notes", element: <InstituteAdminMaterials /> },
+      { path: "institute-admin/notification", element: <InstituteAdminNotification /> },
 
 
       //private-tutor
       { path: "private-tutor/profile", element: <TutorProfile /> },
       { path: "private-tutor/dashboard", element: <TutorDashboard /> },
       { path: "private-tutor/learning-planner", element: <TutorLearningPlanner /> },
-      {path:"private-tutor/materials",element:<TutorMaterials/>},
-      {path:"private-tutor/tests",element:<TutorMaterials/>},
-      {path:"private-tutor/videos",element:<TutorMaterials/>},
-      {path:"private-tutor/notes",element:<TutorMaterials/>},
-      {path:"private-tutor/notification",element:<TutorNotifications/>},
+      { path: "private-tutor/materials", element: <TutorMaterials /> },
+      { path: "private-tutor/tests", element: <TutorMaterials /> },
+      { path: "private-tutor/videos", element: <TutorMaterials /> },
+      { path: "private-tutor/notes", element: <TutorMaterials /> },
+      { path: "private-tutor/notification", element: <TutorNotifications /> },
     ],
   },
 
