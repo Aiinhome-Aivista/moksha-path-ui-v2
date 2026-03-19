@@ -16,7 +16,7 @@ import Invitations from "../features/student/pages/Invitations";
 import ParentDashboard from "../features/parent/pages/ParentDashboard";
 import ParentMaterials from "../features/parent/pages/ParentMaterials";
 import TeacherMaterials from "../features/teacher/pages/TeacherMaterials";
-import { TeacherDashboard } from "../features/teacher/pages/TeacherDashboard";
+import  TeacherDashboard  from "../features/teacher/pages/dashboard/TeacherDashboard";
 import ParentLearningPlanner from "../features/parent/pages/ParentLearningPlanner";
 import TeacherLearningPlanner from "../features/teacher/pages/TeacherLearningPlanner";
 import Blogs from "../features/blog/blogpage";
