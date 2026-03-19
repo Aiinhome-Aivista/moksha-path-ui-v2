@@ -48,7 +48,17 @@ interface PaymentSummaryModalProps {
     subscriptionName: string,
     couponCode: string,
   ) => void;
-  onApplyCoupon: (couponCode: string) => Promise<{ success: boolean; newAmount?: number; message?: string }>;
+  // onApplyCoupon: (couponCode: string) => Promise<{ success: boolean; newAmount?: number; message?: string }>;
+
+  onApplyCoupon: (couponCode: string) => Promise<{
+    success: boolean;
+    data?: {
+      db_discount: number;
+      db_final: number;
+      db_total: number;
+    };
+    message?: string;
+  }>;
   isProcessing: boolean;
 }
 
@@ -71,6 +81,7 @@ const PaymentSummaryModal: React.FC<PaymentSummaryModalProps> = ({
   const [originalAmount, setOriginalAmount] = useState(0);
   const [currentDisplayAmount, setCurrentDisplayAmount] = useState(0);
   const [couponError, setCouponError] = useState("");
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   // Reset state when modal opens
   useEffect(() => {
@@ -81,6 +92,7 @@ const PaymentSummaryModal: React.FC<PaymentSummaryModalProps> = ({
       setCouponError("");
       setOriginalAmount(uiTotalAmount);
       setCurrentDisplayAmount(uiTotalAmount); // Initialize display amount
+      setDiscountAmount(0);
     }
   }, [isOpen, selectedPlan, sheetCount, uiTotalAmount]);
 
@@ -131,8 +143,10 @@ const PaymentSummaryModal: React.FC<PaymentSummaryModalProps> = ({
       setCouponError("");
       try {
         const result = await onApplyCoupon(couponCode);
-        if (result.success) {
-          setCurrentDisplayAmount(result.newAmount || currentDisplayAmount);
+        if (result.success && result.data) {
+          setOriginalAmount(result.data.db_total);
+          setCurrentDisplayAmount(result.data.db_final);
+          setDiscountAmount(result.data.db_discount);
           setCouponApplied(true);
           setCouponError("");
         } else {
@@ -184,7 +198,7 @@ const PaymentSummaryModal: React.FC<PaymentSummaryModalProps> = ({
               Subscription Summary
             </h3>
 
-            <div className="grid grid-cols-2 gap-y-2 text-sm">
+            {/* <div className="grid grid-cols-2 gap-y-2 text-sm">
               <span className="text-gray-500">Plan</span>
               <span className="text-gray-800 font-medium text-right">
                 {selectedPlan.plan_name}
@@ -227,7 +241,7 @@ const PaymentSummaryModal: React.FC<PaymentSummaryModalProps> = ({
                   </span>
                 </>
               )}
-            </div>
+            </div> */}
 
             <div className="border-t border-gray-200 pt-3 flex items-center justify-between">
               <span className="text-gray-700 font-semibold text-sm sm:text-base">Total Amount</span>
@@ -240,9 +254,14 @@ const PaymentSummaryModal: React.FC<PaymentSummaryModalProps> = ({
                 <span className="text-lg sm:text-xl font-bold text-[#5C5082]">
                   ₹ {currentDisplayAmount.toFixed(2)}
                 </span>
-                {couponApplied && originalAmount > currentDisplayAmount && (
+                {/* {couponApplied && originalAmount > currentDisplayAmount && (
                   <div className="text-[10px] sm:text-xs text-green-600 font-semibold mt-0.5 sm:mt-1">
                     Discount: ₹ {(originalAmount - currentDisplayAmount).toFixed(2)}
+                  </div>
+                )} */}
+                {couponApplied && discountAmount > 0 && (
+                  <div className="text-[10px] sm:text-xs text-green-600 font-semibold mt-0.5 sm:mt-1">
+                    Discount: ₹ {discountAmount.toFixed(2)}
                   </div>
                 )}
               </div>
@@ -266,22 +285,20 @@ const PaymentSummaryModal: React.FC<PaymentSummaryModalProps> = ({
                     setCouponError("");
                   }}
                   placeholder="Enter coupon code"
-                  className={`flex-1 px-4 py-3 sm:py-2.5 border rounded-xl text-base sm:text-sm focus:outline-none focus:ring-2 transition-all ${
-                    couponError
-                      ? "border-red-300 focus:ring-red-500/50 focus:border-red-500"
-                      : "border-gray-200 focus:ring-[#b0cb1f]/50 focus:border-[#b0cb1f]"
-                  }`}
+                  className={`flex-1 px-4 py-3 sm:py-2.5 border rounded-xl text-base sm:text-sm focus:outline-none focus:ring-2 transition-all ${couponError
+                    ? "border-red-300 focus:ring-red-500/50 focus:border-red-500"
+                    : "border-gray-200 focus:ring-[#b0cb1f]/50 focus:border-[#b0cb1f]"
+                    }`}
                 />
                 <button
                   onClick={handleApplyCoupon}
                   disabled={!couponCode.trim() || couponApplied || isApplyingCoupon}
-                  className={`w-full sm:w-auto px-5 py-3 sm:py-2.5 rounded-xl text-base sm:text-sm font-semibold transition-all ${
-                    couponApplied
-                      ? "bg-green-100 text-green-700 cursor-default"
-                      : couponCode.trim()
-                        ? "bg-[#b0cb1f] text-gray-800 hover:bg-[#c5de3a] hover:scale-[1.02]"
-                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  }`}
+                  className={`w-full sm:w-auto px-5 py-3 sm:py-2.5 rounded-xl text-base sm:text-sm font-semibold transition-all ${couponApplied
+                    ? "bg-green-100 text-green-700 cursor-default"
+                    : couponCode.trim()
+                      ? "bg-[#b0cb1f] text-gray-800 hover:bg-[#c5de3a] hover:scale-[1.02]"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    }`}
                 >
                   {isApplyingCoupon ? (
                     <span className="flex items-center justify-center gap-2">
@@ -331,11 +348,10 @@ const PaymentSummaryModal: React.FC<PaymentSummaryModalProps> = ({
               onProceedToPay(subscriptionName, couponCode)
             }
             disabled={isProcessing || !subscriptionName.trim()}
-            className={`w-full sm:flex-1 px-4 py-3 sm:py-2.5 rounded-xl text-base sm:text-sm font-medium transition-all hover:scale-[1.02] ${
-              isProcessing || !subscriptionName.trim()
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-button-primary text-white shadow-lg shadow-[#b0cb1f]/20 hover:bg-[#c5de3a]"
-            }`}
+            className={`w-full sm:flex-1 px-4 py-3 sm:py-2.5 rounded-xl text-base sm:text-sm font-medium transition-all hover:scale-[1.02] ${isProcessing || !subscriptionName.trim()
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-button-primary text-white shadow-lg shadow-[#b0cb1f]/20 hover:bg-[#c5de3a]"
+              }`}
           >
             {isProcessing ? (
               <span className="flex items-center justify-center gap-2">
