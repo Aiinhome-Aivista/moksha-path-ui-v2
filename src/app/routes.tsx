@@ -1,4 +1,8 @@
-import { createBrowserRouter, type RouteObject, Navigate } from "react-router-dom";
+import {
+  createBrowserRouter,
+  type RouteObject,
+  Navigate,
+} from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
 import Login from "../features/auth/modal/Login";
 import { SelectRole } from "../features/auth/modal/SelectRole";
@@ -42,6 +46,11 @@ import TutorDashboard from "../features/private-tutor/pages/TutorDashboard";
 import TutorLearningPlanner from "../features/private-tutor/pages/TutorLearningPlanner";
 import TutorNotifications from "../features/private-tutor/pages/TutorNotification";
 import TutorMaterials from "../features/private-tutor/pages/TutorMaterials";
+import { DashboardStudent } from "../features/new-student/DashboardStudent";
+import { MockExamDashboard } from "../features/new-student/Exam/MockExamDashboard";
+import SubjectGrid from "../features/new-student/subject/SubjectGrid";
+import { PerformanceCards } from "../features/new-student/performonce/PerformanceCards";
+import Remediation from "../features/new-student/remediation/Remediation";
 
 const routes: RouteObject[] = [
   // Standalone Routes
@@ -61,6 +70,20 @@ const routes: RouteObject[] = [
       { path: "dashboard", element: <StudentDashboard /> },
       { path: "profile", element: <StudentProfile /> },
 
+      // new dashboard route for student
+
+      // <Route path="/" element={} />
+      {
+        path: "new-dashboard",
+        element: <DashboardStudent />,
+        children: [
+          { path: "/new-dashboard/performance", element: <PerformanceCards />},
+          { path: "/new-dashboard/subject", element: <SubjectGrid /> },
+          { path: "/new-dashboard/exam", element: <MockExamDashboard /> },
+          { path: "/new-dashboard/remediation", element: <Remediation /> },
+        ],
+      },
+
       // Student Features
       // { path: 'subscription', element: <Subscription /> },
       { path: "subscription", element: <Subscription /> },
@@ -79,40 +102,59 @@ const routes: RouteObject[] = [
       { path: "invitation", element: <Invitations /> },
       { path: "teacher-material", element: <TeacherMaterials /> },
       { path: "teacher/dashboard", element: <TeacherDashboard /> },
-      { path: "teacher/teacherlearning-planner", element: <TeacherLearningPlanner /> },
+      {
+        path: "teacher/teacherlearning-planner",
+        element: <TeacherLearningPlanner />,
+      },
       { path: "teacher-tests", element: <TeacherMaterials /> },
       { path: "teacher-videos", element: <TeacherMaterials /> },
       { path: "teacher-notes", element: <TeacherMaterials /> },
 
       //parent routes
       { path: "parent/dashboard", element: <ParentDashboard /> },
-      { path: "parent/parentlearning-planner", element: <ParentLearningPlanner /> },
+      {
+        path: "parent/parentlearning-planner",
+        element: <ParentLearningPlanner />,
+      },
       { path: "parent-material", element: <ParentMaterials /> },
       { path: "parent-tests", element: <ParentMaterials /> },
       { path: "parent-videos", element: <ParentMaterials /> },
       { path: "parent-notes", element: <ParentMaterials /> },
 
-
       //institute-admin
       { path: "institute-admin/profile", element: <InstituteAdminProfile /> },
-      { path: "institute-admin/dashboard", element: <InstituteAdminDashboard /> },
-      { path: "institute-admin/learning-planner", element: <InstituteadminLearningPlanner /> },
-      {path:"institute-admin/materials",element:<InstituteAdminMaterials/>},
-      {path:"institute-admin/tests",element:<InstituteAdminMaterials/>},
-      {path:"institute-admin/videos",element:<InstituteAdminMaterials/>},
-      {path:"institute-admin/notes",element:<InstituteAdminMaterials/>},
-      {path:"institute-admin/notification",element:<InstituteAdminNotification/>},
-
+      {
+        path: "institute-admin/dashboard",
+        element: <InstituteAdminDashboard />,
+      },
+      {
+        path: "institute-admin/learning-planner",
+        element: <InstituteadminLearningPlanner />,
+      },
+      {
+        path: "institute-admin/materials",
+        element: <InstituteAdminMaterials />,
+      },
+      { path: "institute-admin/tests", element: <InstituteAdminMaterials /> },
+      { path: "institute-admin/videos", element: <InstituteAdminMaterials /> },
+      { path: "institute-admin/notes", element: <InstituteAdminMaterials /> },
+      {
+        path: "institute-admin/notification",
+        element: <InstituteAdminNotification />,
+      },
 
       //private-tutor
       { path: "private-tutor/profile", element: <TutorProfile /> },
       { path: "private-tutor/dashboard", element: <TutorDashboard /> },
-      { path: "private-tutor/learning-planner", element: <TutorLearningPlanner /> },
-      {path:"private-tutor/materials",element:<TutorMaterials/>},
-      {path:"private-tutor/tests",element:<TutorMaterials/>},
-      {path:"private-tutor/videos",element:<TutorMaterials/>},
-      {path:"private-tutor/notes",element:<TutorMaterials/>},
-      {path:"private-tutor/notification",element:<TutorNotifications/>},
+      {
+        path: "private-tutor/learning-planner",
+        element: <TutorLearningPlanner />,
+      },
+      { path: "private-tutor/materials", element: <TutorMaterials /> },
+      { path: "private-tutor/tests", element: <TutorMaterials /> },
+      { path: "private-tutor/videos", element: <TutorMaterials /> },
+      { path: "private-tutor/notes", element: <TutorMaterials /> },
+      { path: "private-tutor/notification", element: <TutorNotifications /> },
     ],
   },
 
@@ -131,7 +173,12 @@ const routes: RouteObject[] = [
           { path: "manage-seo", element: <ManageSEO /> },
           { path: "add-seo", element: <AddSEO /> },
           { path: "manage-categories", element: <ManageCategory /> },
-          { path: "add-category", element: <AddCategory isOpen={true} onClose={() => { }} editId={null} /> },
+          {
+            path: "add-category",
+            element: (
+              <AddCategory isOpen={true} onClose={() => {}} editId={null} />
+            ),
+          },
         ],
       },
     ],
