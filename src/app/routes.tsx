@@ -32,7 +32,7 @@ import AddSEO from "../features/admin/pages/seo/AddSEO";
 import AddCategory from "../features/admin/pages/category/AddCategory";
 import ManageCategory from "../features/admin/pages/category/ManageCategory";
 import AdminLogin from "../features/admin/pages/category/AdminLogin";
-import InstituteAdminDashboard from "../features/institute-admin/pages/InstituteAdminDashboard";
+import InstituteAdminDashboard from "../features/institute-admin/pages/dashboard/InstituteAdminDashboard";
 import InstituteAdminMaterials from "../features/institute-admin/pages/InstituteAdminMaterials";
 import InstituteadminLearningPlanner from "../features/institute-admin/pages/InstituteadminLearningPlanner";
 import InstituteAdminNotification from "../features/institute-admin/pages/InstituteAdminNotification";
