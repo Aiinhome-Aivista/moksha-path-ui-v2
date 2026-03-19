@@ -12,6 +12,7 @@ import { SelectRoleModal } from "../../features/auth/modal/SelectRole";
 import { ProfileSelectionModal } from "../../features/auth/modal/ProfileSelection";
 import Footer from "./Footer";
 import { useLocation } from "react-router-dom";
+import GlobalSeo from "../common/GlobalSeo";
 
 export const AppLayout: React.FC = () => {
   const { isLoading, isAuthenticated } = useAuth();
@@ -33,6 +34,7 @@ export const AppLayout: React.FC = () => {
   if (isPublicPage && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-100 dark:bg-background-dark flex flex-col">
+        <GlobalSeo />
         <Header isSidebarOpen={isSidebarOpen} />
         <main className="flex-1 overflow-x-hidden">
           <Outlet />
@@ -57,6 +59,7 @@ export const AppLayout: React.FC = () => {
   // Render the full app layout for authenticated pages
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-background-dark flex">
+      <GlobalSeo />
       {/* Sidebar - Fixed Position */}
       <Sidebar
         isOpen={isSidebarOpen}
