@@ -11,9 +11,15 @@ const PaymentGateway: React.FC = () => {
   const { showToast } = useToast();
   // const { decodeUserToken } = useModal();
   const [isProcessing, setIsProcessing] = React.useState(false);
+  const [localUser, setLocalUser] = React.useState<any>({});
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    setLocalUser(user);
   }, []);
 
   // Retrieve data passed from Subscription page
@@ -103,11 +109,7 @@ const PaymentGateway: React.FC = () => {
           );
           // console.log("idd",subscriptionId)
           if (subscriptionId) {
-            const profile = JSON.parse(
-              localStorage.getItem("active_profile") || "{}",
-            );
-
-            const role = profile?.role_name?.toLowerCase();
+            const role = localUser?.role?.toLowerCase();
 
             if (role === "teacher") {
               navigate("/teacher/dashboard", { replace: true });

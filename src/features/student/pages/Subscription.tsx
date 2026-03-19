@@ -60,10 +60,10 @@ interface ClassItem {
   name: string;
 }
 
-// interface Section {
-//   id: number;
-//   name: string;
-// }
+interface Section {
+  id: number;
+  name: string;
+}
 
 interface AcademicYear {
   year: string;
@@ -82,6 +82,7 @@ interface AcademicProfile {
   board_id: number | "";
   school_id: number | "";
   class_id: number | "";
+  section_id: number | "";
   academic_year: string;
   selectedSubjects: Subject[];
   availableSubjects: Subject[];
@@ -95,6 +96,7 @@ const createEmptyProfile = (): AcademicProfile => ({
   board_id: "",
   school_id: "",
   class_id: "",
+  section_id: "",
   academic_year: "",
   selectedSubjects: [],
   availableSubjects: [],
@@ -134,6 +136,7 @@ const Subscription: React.FC = () => {
   const [dependencyMap, setDependencyMap] = useState<DependencyMapItem[]>([]);
   const [activeProfileIndex, setActiveProfileIndex] = useState(0);
   const [isPlansLoading, setIsPlansLoading] = useState(false);
+  const [sections, setSections] = useState<Section[]>([]);
 
   const [showAddSchoolInput, setShowAddSchoolInput] = useState<{
     index: number;
@@ -188,6 +191,7 @@ const Subscription: React.FC = () => {
           board_id: preselected.board_id || "",
           class_id: preselected.class_id || "",
           school_id: preselected.institute_id || "",
+          section_id: preselected.section_id || "",
           academic_year: preselected.academic_year || "",
           selectedSubjects: [],
           availableSubjects: [],
@@ -208,6 +212,7 @@ const Subscription: React.FC = () => {
           board_id: activeProfile.board_id || "",
           class_id: activeProfile.class_id || "",
           school_id: activeProfile.institute_id || "",
+          section_id: preselected.section_id || "",
           academic_year: "",
           selectedSubjects: [],
           availableSubjects: [],
@@ -283,6 +288,7 @@ const Subscription: React.FC = () => {
         setBoards(data.boards || []);
         setSchools(data.schools || []);
         setClasses(data.classes || []);
+        setSections(data.sections || []);
         const rawYears = data.academic_years || [];
         const formattedYears = rawYears.map((y: any) =>
           typeof y === "string" ? { year: y } : y,
@@ -1126,11 +1132,15 @@ const Subscription: React.FC = () => {
             const validClasses = useFilter
               ? Array.from(new Set(validDependencies.map((d) => d.class_id)))
               : classes.map((c) => c.id);
+            const validSections = useFilter
+              ? Array.from(new Set(validDependencies.map((d) => d.section_id)))
+              : sections.map((s) => s.id);
             const validYears = useFilter
               ? Array.from(
                 new Set(validDependencies.map((d) => d.academic_year)),
               )
               : academicYears.map((y) => y.year);
+
 
             const filteredBoards = useFilter
               ? boards.filter((b) => validBoards.includes(b.id))
@@ -1141,6 +1151,9 @@ const Subscription: React.FC = () => {
             const filteredClasses = useFilter
               ? classes.filter((c) => validClasses.includes(c.id))
               : classes;
+            const filteredSections = useFilter
+              ? sections.filter((s) => validSections.includes(s.id))
+              : sections;
             const filteredYears = useFilter
               ? academicYears.filter((y) => validYears.includes(y.year))
               : academicYears;
@@ -1350,6 +1363,30 @@ const Subscription: React.FC = () => {
                         </div>
                       </div>
 
+                      {/* Section */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[9px] tracking-widest text-gray-400 font-bold px-1 uppercase">
+                          Section
+                        </label>
+                        <div className="relative w-[120px]">
+                          <SearchableSelect
+                            value={p.section_id}
+                            onChange={(val) => {
+                              updateProfile(profileIndex, {
+                                section_id: val === "" ? "" : Number(val),
+                              });
+                            }}
+                            options={filteredSections.map((s) => ({
+                              value: s.id,
+                              label: s.name,
+                            }))}
+                            placeholder="Section"
+                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs"
+                            dropdownClassName="min-w-[120px]"
+                          />
+                        </div>
+                      </div>
+
                       {/* Academic Year */}
                       <div className="flex flex-col gap-1">
                         <label className="text-[9px] tracking-widest text-gray-400 font-bold px-1 uppercase">
@@ -1382,6 +1419,7 @@ const Subscription: React.FC = () => {
                               board_id: "",
                               school_id: "",
                               class_id: "",
+                              section_id: "", 
                               academic_year: "",
                               selectedSubjects: [],
                               availableSubjects: [],
