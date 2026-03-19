@@ -36,19 +36,46 @@ const PaymentGateway: React.FC = () => {
     try {
       // console.log("Received paymentData:", paymentData);
       // Construct the final payload for complete_subscription
+      // const finalPayload = {
+      //   plan_id: paymentData.plan_id,
+      //   board_id: paymentData.board_id,
+      //   class_id: paymentData.class_id,
+      //   academic_year: paymentData.academic_year,
+      //   institute_id: paymentData.institute_id,
+      //   subject_ids: paymentData.subject_ids,
+      //   total_licenses: paymentData.total_licenses,
+      //   licenses_used: paymentData.licenses_used,
+      //   transaction_id: "TXN-RAZORPAY-" + Math.floor(Math.random() * 100000000),
+      //   subscription_name: paymentData.subscription_name,
+      //   ui_total_amount: paymentData.ui_total_amount,
+      //   // section: paymentData.section || undefined,
+      //   ...(paymentData.coupon_code && {
+      //     coupon_code: paymentData.coupon_code,
+      //   }),
+      // };
+
       const finalPayload = {
-        plan_id: paymentData.plan_id,
-        board_id: paymentData.board_id,
-        class_id: paymentData.class_id,
-        academic_year: paymentData.academic_year,
-        institute_id: paymentData.institute_id,
-        subject_ids: paymentData.subject_ids,
-        total_licenses: paymentData.total_licenses,
-        licenses_used: paymentData.licenses_used,
-        transaction_id: "TXN-RAZORPAY-" + Math.floor(Math.random() * 100000000),
+        profiles: paymentData.profiles,
+
+        transaction_id:
+          "TXN-RAZORPAY-" + Math.floor(Math.random() * 100000000),
+
         subscription_name: paymentData.subscription_name,
-        ui_total_amount: paymentData.ui_total_amount,
-        // section: paymentData.section || undefined,
+
+        db_total: Number(
+          (paymentData.final_amount + (paymentData.discounted_amount || 0)).toFixed(2)
+        ),
+
+        db_discount: Number(
+          (paymentData.discounted_amount || 0).toFixed(2)
+        ),
+
+        db_final: Number(paymentData.final_amount.toFixed(2)),
+
+        ui_total_amount: Number(paymentData.ui_total_amount.toFixed(2)), // ✅ ADD THIS
+
+        currency: "INR",
+
         ...(paymentData.coupon_code && {
           coupon_code: paymentData.coupon_code,
         }),

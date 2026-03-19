@@ -142,13 +142,45 @@ const Subscription: React.FC = () => {
   const [newSchoolName, setNewSchoolName] = useState("");
   const [isAddingSchool, setIsAddingSchool] = useState(false);
 
-  const localUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const [localUser, setLocalUser] = useState<any>({});
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    setLocalUser(user);
+  }, [location.pathname]); // triggers on navigation
   const [plansExpanded, setPlansExpanded] = useState(true);
   const togglePlansAccordion = () => {
     setPlansExpanded((prev) => !prev);
   };
+  // useEffect(() => {
+  //   const preselected = location.state?.preselectedAcademicDetails;
+  //   if (preselected) {
+  //     setProfiles([
+  //       {
+  //         id: "primary",
+  //         board_id: preselected.board_id || "",
+  //         class_id: preselected.class_id || "",
+  //         school_id: preselected.institute_id || "",
+  //         academic_year: preselected.academic_year || "",
+  //         selectedSubjects: [],
+  //         availableSubjects: [],
+  //         isSubjectsLoading: false,
+  //         isExpanded: true,
+  //         seats: 1,
+  //         selectedPlan: null,
+  //       },
+  //     ]);
+  //   }
+  // }, [location.state]);
+
   useEffect(() => {
     const preselected = location.state?.preselectedAcademicDetails;
+
+    const activeProfile = JSON.parse(
+      localStorage.getItem("active_profile") || "null"
+    );
+
+    // ✅ Priority 1: navigation state
     if (preselected) {
       setProfiles([
         {
@@ -165,30 +197,77 @@ const Subscription: React.FC = () => {
           selectedPlan: null,
         },
       ]);
+      return;
     }
-  }, [location.state]);
+
+    // ✅ Priority 2: student from localStorage
+    if (localUser.role === "student" && activeProfile) {
+      setProfiles([
+        {
+          id: "primary",
+          board_id: activeProfile.board_id || "",
+          class_id: activeProfile.class_id || "",
+          school_id: activeProfile.institute_id || "",
+          academic_year: "",
+          selectedSubjects: [],
+          availableSubjects: [],
+          isSubjectsLoading: false,
+          isExpanded: true,
+          seats: 1,
+          selectedPlan: null,
+        },
+      ]);
+    }
+  }, [location.state, localUser.role]); // ✅ FIXED
+  // useEffect(() => {
+  //   setProfiles((prev) =>
+  //     prev.map((profile) => ({
+  //       ...profile,
+  //       board_id: boards.some((b) => b.id === profile.board_id)
+  //         ? profile.board_id
+  //         : "",
+  //       school_id: schools.some((s) => s.id === profile.school_id)
+  //         ? profile.school_id
+  //         : "",
+  //       class_id: classes.some((c) => c.id === profile.class_id)
+  //         ? profile.class_id
+  //         : "",
+  //       academic_year: academicYears.some(
+  //         (y) => y.year === profile.academic_year,
+  //       )
+  //         ? profile.academic_year
+  //         : "",
+  //     })),
+  //   );
+  // }, [boards, schools, classes, academicYears]);
 
   useEffect(() => {
-    setProfiles((prev) =>
-      prev.map((profile) => ({
-        ...profile,
-        board_id: boards.some((b) => b.id === profile.board_id)
-          ? profile.board_id
-          : "",
-        school_id: schools.some((s) => s.id === profile.school_id)
-          ? profile.school_id
-          : "",
-        class_id: classes.some((c) => c.id === profile.class_id)
-          ? profile.class_id
-          : "",
-        academic_year: academicYears.some(
-          (y) => y.year === profile.academic_year,
-        )
-          ? profile.academic_year
-          : "",
-      })),
-    );
-  }, [boards, schools, classes, academicYears]);
+  if (!boards.length || !schools.length || !classes.length) return;
+
+  setProfiles((prev) =>
+    prev.map((profile) => ({
+      ...profile,
+
+      board_id: boards.some((b) => String(b.id) === String(profile.board_id))
+        ? profile.board_id
+        : profile.board_id,
+
+      school_id: schools.some((s) => String(s.id) === String(profile.school_id))
+        ? profile.school_id
+        : profile.school_id,
+
+      class_id: classes.some((c) => String(c.id) === String(profile.class_id))
+        ? profile.class_id
+        : profile.class_id,
+
+      academic_year: academicYears.some(
+        (y) => String(y.year) === String(profile.academic_year)
+      )
+        ? profile.academic_year
+        : profile.academic_year,
+    }))
+  );
+}, [boards, schools, classes, academicYears]);
 
   React.useEffect(() => {
     fetchProfileImage();
