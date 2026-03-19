@@ -784,14 +784,12 @@
 
 import { useState } from "react";
 import { HeaderProfile } from "./HeaderProfile";
-import { StatsOverview } from "./StatsOverview";
 import { PerformanceCards } from "./PerformanceCards";
 import { MockExamDashboard } from "./MockExamDashboard";
 import SubjectGrid from "./subject/SubjectGrid";
 import Remediation from "./remediation/Remediation";
 
 const tabComponents: Record<string, React.ReactElement> = {
-  dashboard: <StatsOverview />,
   performance: <PerformanceCards />,
   subject: <SubjectGrid />,
   exam: <MockExamDashboard />,
@@ -799,10 +797,10 @@ const tabComponents: Record<string, React.ReactElement> = {
 };
 
 export const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("performance");
 
   return (
-    <div className="p-6 space-y-6 bg-gray-100 min-h-screen">
+    <div className="p-1 space-y-1 bg-gray-100 min-h-screen">
       <HeaderProfile activeTab={activeTab} onTabChange={setActiveTab} />
       {tabComponents[activeTab]}
     </div>
