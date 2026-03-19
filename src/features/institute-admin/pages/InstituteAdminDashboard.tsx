@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import ManageFacultyModal from "../components/ManageFacultyModal";
 
 // --- Types ---
 interface TeacherPerformance {
@@ -67,7 +66,6 @@ const MetricCard: React.FC<MetricCardProps> = ({ label, value, icon, color, bgCo
 
 const InstituteAdminDashboard: React.FC = () => {
   const [filter, setFilter] = useState("all");
-  const [isFacultyModalOpen, setIsFacultyModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen p-6 space-y-8">
@@ -82,13 +80,13 @@ const InstituteAdminDashboard: React.FC = () => {
             {/* <button className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-xl font-bold hover:bg-white/20 transition-all">
               Download Report
             </button> */}
-            <button
+            {/* <button
               onClick={() => setIsFacultyModalOpen(true)}
               className="px-6 py-3 bg-[#b0cb1f] text-gray-900 rounded-xl font-bold hover:opacity-90 shadow-lg shadow-[#b0cb1f]/20 transition-all flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>manage_accounts</span>
               Manage Faculty
-            </button>
+            </button> */}
           </div>
         </div>
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#b0cb1f] opacity-5 blur-[100px] -mr-32 -mt-32 rounded-full"></div>
@@ -266,10 +264,6 @@ const InstituteAdminDashboard: React.FC = () => {
           </section>
         </div>
       </div>
-      <ManageFacultyModal
-        isOpen={isFacultyModalOpen}
-        onClose={() => setIsFacultyModalOpen(false)}
-      />
     </div>
   );
 };
