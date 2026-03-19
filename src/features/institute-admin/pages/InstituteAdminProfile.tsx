@@ -429,7 +429,7 @@ const InstituteAdminProfile: React.FC = () => {
         <div className="flex items-center justify-between gap-2 px-5 py-3 border-b border-gray-100">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-sm text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>group</span>
-            <h3 className="text-sm font-bold text-primary">Faculty</h3>
+            <h3 className="text-sm font-bold text-primary">Faculty Information</h3>
           </div>
           {/* <button
             type="button"
