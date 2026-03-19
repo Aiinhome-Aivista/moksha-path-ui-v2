@@ -1301,6 +1301,7 @@ const Subscription: React.FC = () => {
                               } else {
                                 updateProfile(profileIndex, {
                                   school_id: val === "" ? "" : Number(val),
+                                  section_id: "",
                                 });
                                 setShowAddSchoolInput({
                                   index: -1,
@@ -1350,6 +1351,7 @@ const Subscription: React.FC = () => {
                             onChange={(val) => {
                               updateProfile(profileIndex, {
                                 class_id: val === "" ? "" : Number(val),
+                                section_id: "",
                               });
                             }}
                             options={filteredClasses.map((c) => ({
