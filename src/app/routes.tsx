@@ -1,4 +1,4 @@
-import { createBrowserRouter, type RouteObject, Navigate } from "react-router-dom";
+import { createBrowserRouter, type RouteObject, Navigate, useRouteError, isRouteErrorResponse } from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
 import Login from "../features/auth/modal/Login";
 import { SelectRole } from "../features/auth/modal/SelectRole";
@@ -20,6 +20,11 @@ import { TeacherDashboard } from "../features/teacher/pages/TeacherDashboard";
 import ParentLearningPlanner from "../features/parent/pages/ParentLearningPlanner";
 import TeacherLearningPlanner from "../features/teacher/pages/TeacherLearningPlanner";
 import Blogs from "../features/blog/blogpage";
+import TDashboard from "../components/t_dashboard/dashboard";
+import OverviewTab from "../components/t_dashboard/overviewTab";
+import SyllabusTab from "../components/t_dashboard/syllabusTab";
+import MockExamsTab from "../components/t_dashboard/mockExamsTab";
+import RemediationTab from "../components/t_dashboard/remediationTab";
 import BlogDetail from "../features/blog/blogdetail";
 
 // Admin Imports
@@ -43,12 +48,11 @@ import TutorLearningPlanner from "../features/private-tutor/pages/TutorLearningP
 import TutorNotifications from "../features/private-tutor/pages/TutorNotification";
 import TutorMaterials from "../features/private-tutor/pages/TutorMaterials";
 
+
 const routes: RouteObject[] = [
   // Standalone Routes
   { path: "/login", element: <Login /> },
   { path: "/select-role", element: <SelectRole /> },
-
-  // App Routes (Header + Sidebar + Content)
   {
     element: <AppLayout />,
     children: [
@@ -56,6 +60,20 @@ const routes: RouteObject[] = [
       { path: "/", element: <LandingPage /> },
       { path: "blogs", element: <Blogs /> },
       { path: "blogs/:title", element: <BlogDetail /> },
+
+      // Teacher Dashboard (now under AppLayout)
+      {
+        path: "t_dashboard",
+        errorElement: <GeneralError />, // Re-added error element
+        element: <TDashboard />,
+        children: [
+          { path: "", element: <Navigate to="overview" replace /> },
+          { path: "overview", element: <OverviewTab /> },
+          { path: "syllabus", element: <SyllabusTab /> },
+          { path: "mock-exams", element: <MockExamsTab /> },
+          { path: "remediation", element: <RemediationTab /> },
+        ],
+      },
 
       // Student Routes
       { path: "dashboard", element: <StudentDashboard /> },
@@ -73,46 +91,64 @@ const routes: RouteObject[] = [
       { path: "videos", element: <StudentMaterials /> },
       { path: "notes", element: <StudentMaterials /> },
       { path: "practice", element: <StudentMaterials /> },
-
-      //teacher routes
       { path: "notification", element: <Notifications /> },
       { path: "invitation", element: <Invitations /> },
-      { path: "teacher-material", element: <TeacherMaterials /> },
-      { path: "teacher/dashboard", element: <TeacherDashboard /> },
-      { path: "teacher/teacherlearning-planner", element: <TeacherLearningPlanner /> },
-      { path: "teacher-tests", element: <TeacherMaterials /> },
-      { path: "teacher-videos", element: <TeacherMaterials /> },
-      { path: "teacher-notes", element: <TeacherMaterials /> },
 
-      //parent routes
-      { path: "parent/dashboard", element: <ParentDashboard /> },
-      { path: "parent/parentlearning-planner", element: <ParentLearningPlanner /> },
-      { path: "parent-material", element: <ParentMaterials /> },
-      { path: "parent-tests", element: <ParentMaterials /> },
-      { path: "parent-videos", element: <ParentMaterials /> },
-      { path: "parent-notes", element: <ParentMaterials /> },
+      // Teacher Routes
+      {
+        path: "teacher",
+        children: [
+          { path: "dashboard", element: <TeacherDashboard /> },
+          { path: "learning-planner", element: <TeacherLearningPlanner /> },
+          { path: "materials", element: <TeacherMaterials /> },
+          { path: "tests", element: <TeacherMaterials /> },
+          { path: "videos", element: <TeacherMaterials /> },
+          { path: "notes", element: <TeacherMaterials /> },
+        ],
+      },
 
+      // Parent Routes
+      {
+        path: "parent",
+        children: [
+          { path: "dashboard", element: <ParentDashboard /> },
+          { path: "learning-planner", element: <ParentLearningPlanner /> },
+          { path: "materials", element: <ParentMaterials /> },
+          { path: "tests", element: <ParentMaterials /> },
+          { path: "videos", element: <ParentMaterials /> },
+          { path: "notes", element: <ParentMaterials /> },
+        ],
+      },
 
-      //institute-admin
-      { path: "institute-admin/profile", element: <InstituteAdminProfile /> },
-      { path: "institute-admin/dashboard", element: <InstituteAdminDashboard /> },
-      { path: "institute-admin/learning-planner", element: <InstituteadminLearningPlanner /> },
-      {path:"institute-admin/materials",element:<InstituteAdminMaterials/>},
-      {path:"institute-admin/tests",element:<InstituteAdminMaterials/>},
-      {path:"institute-admin/videos",element:<InstituteAdminMaterials/>},
-      {path:"institute-admin/notes",element:<InstituteAdminMaterials/>},
-      {path:"institute-admin/notification",element:<InstituteAdminNotification/>},
+      // Institute Admin Routes
+      {
+        path: "institute-admin",
+        children: [
+          { path: "profile", element: <InstituteAdminProfile /> },
+          { path: "dashboard", element: <InstituteAdminDashboard /> },
+          { path: "learning-planner", element: <InstituteadminLearningPlanner /> },
+          { path: "materials", element: <InstituteAdminMaterials /> },
+          { path: "tests", element: <InstituteAdminMaterials /> },
+          { path: "videos", element: <InstituteAdminMaterials /> },
+          { path: "notes", element: <InstituteAdminMaterials /> },
+          { path: "notification", element: <InstituteAdminNotification /> },
+        ],
+      },
 
-
-      //private-tutor
-      { path: "private-tutor/profile", element: <TutorProfile /> },
-      { path: "private-tutor/dashboard", element: <TutorDashboard /> },
-      { path: "private-tutor/learning-planner", element: <TutorLearningPlanner /> },
-      {path:"private-tutor/materials",element:<TutorMaterials/>},
-      {path:"private-tutor/tests",element:<TutorMaterials/>},
-      {path:"private-tutor/videos",element:<TutorMaterials/>},
-      {path:"private-tutor/notes",element:<TutorMaterials/>},
-      {path:"private-tutor/notification",element:<TutorNotifications/>},
+      // Private Tutor Routes
+      {
+        path: "private-tutor",
+        children: [
+          { path: "profile", element: <TutorProfile /> },
+          { path: "dashboard", element: <TutorDashboard /> },
+          { path: "learning-planner", element: <TutorLearningPlanner /> },
+          { path: "materials", element: <TutorMaterials /> },
+          { path: "tests", element: <TutorMaterials /> },
+          { path: "videos", element: <TutorMaterials /> },
+          { path: "notes", element: <TutorMaterials /> },
+          { path: "notification", element: <TutorNotifications /> },
+        ],
+      },
     ],
   },
 
@@ -145,7 +181,6 @@ const routes: RouteObject[] = [
   { path: "*", element: <NotFoundPage /> },
 ];
 
-// --- Helper Components ---
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -178,3 +213,33 @@ function NotFoundPage() {
 
 export const router = createBrowserRouter(routes);
 export default router;
+
+function GeneralError() {
+  const error = useRouteError();
+  let title = "An unexpected error occurred";
+  let message = "We're sorry, something went wrong.";
+
+  if (isRouteErrorResponse(error)) {
+    title = `${error.status} ${error.statusText}`;
+    message = error.data?.message || "Sorry, an unexpected error has occurred.";
+  } else if (error instanceof Error) {
+    title = "Application Error";
+    message = error.message;
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-red-50 text-red-800 p-4">
+      <div className="text-center bg-white p-8 rounded-2xl shadow-lg border-2 border-red-200">
+        <h1 className="text-4xl font-bold mb-2">🚧 {title} 🚧</h1>
+        <p className="text-lg mb-4">{message}</p>
+        <p className="text-sm text-gray-500 mb-6">Please try refreshing the page, or contact support if the problem persists.</p>
+        <a
+          href="/"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors font-semibold"
+        >
+          Go Back Home
+        </a>
+      </div>
+    </div>
+  );
+}

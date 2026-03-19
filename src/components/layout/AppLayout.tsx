@@ -17,20 +17,24 @@ export const AppLayout: React.FC = () => {
   const { isLoading, isAuthenticated } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
-  // Any path starting with /blogs is considered public, as is the root path.
-  const isPublicPage = location.pathname === "/" || location.pathname.startsWith("/blogs");
+
+  // Define which pages are truly public (no sidebar needed when not logged in)
+  const isTrulyPublicPage = location.pathname === "/" || location.pathname.startsWith("/blogs");
+  // Special case for the teacher dashboard to always show the full layout for development
+  const isDevDashboard = location.pathname.startsWith("/t_dashboard");
 
   // Show loading state while checking auth
   if (isLoading) {
     return <PageLoader text="Loading your workspace..." />;
   }
 
-  if (!isAuthenticated && !isPublicPage) {
+  // Redirect away from protected pages if not authenticated
+  if (!isAuthenticated && !isTrulyPublicPage && !isDevDashboard) {
     return <Navigate to="/" replace />;
   }
 
   // Render a simpler layout for public pages (no sidebar, no main padding)
-  if (isPublicPage && !isAuthenticated) {
+  if (isTrulyPublicPage && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-100 dark:bg-background-dark flex flex-col">
         <Header isSidebarOpen={isSidebarOpen} />
@@ -65,7 +69,9 @@ export const AppLayout: React.FC = () => {
 
       {/* Main Content Wrapper - Fixed margin, Sidebar floats over when expanded */}
       <div
-        className={`flex-1 flex flex-col min-h-screen ml-0 ${isAuthenticated ? "md:ml-[88px]" : ""} transition-all duration-300 ease-in-out`}
+        className={`flex-1 flex flex-col min-h-screen ml-0 ${
+          isAuthenticated || isDevDashboard ? 'md:ml-[88px]' : ''
+        } transition-all duration-300 ease-in-out`}
       >
         {/* Header - Sticky at the top of the content area */}
         <Header isSidebarOpen={isSidebarOpen} />

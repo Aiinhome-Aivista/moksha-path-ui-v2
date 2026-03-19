@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../app/providers/AuthProvider";
 import {
   useModal,
@@ -55,6 +55,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const { logout, isAuthenticated } = useAuth();
   const { menuItems, isMenuLoaded, fetchMenu, clearMenu } = useModal();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const { showToast } = useToast();
 
@@ -133,9 +134,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     // },
   ];
 
+  // For development, show some static items on the t_dashboard if not logged in
+  const isDevDashboard = location.pathname.startsWith('/t_dashboard');
+  const devDashboardMenuItems: PageAccessItem[] = [
+    { page_id: 101, page_name: "Teacher Dashboard", icon: "home", route: "/t_dashboard" },
+    { page_id: 102, page_name: "Learning Planner", icon: "calendar", route: "/teacher/learning-planner" },
+    { page_id: 103, page_name: "Materials", icon: "book", route: "/teacher/materials" },
+  ];
+
   const effectiveMenu =
     isAuthenticated && menuItems && menuItems.length > 0
       ? menuItems
+      : isDevDashboard && !isAuthenticated
+      ? devDashboardMenuItems
       : staticMenuItems;
   // Fetch menu when user is authenticated and menu is not yet loaded
   useEffect(() => {
@@ -171,7 +182,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
   return (
     <>
-    {isAuthenticated && (
+    {(isAuthenticated || isDevDashboard) && (
     <aside
       onMouseLeave={() => {
         if (isOpen) toggleSidebar();
