@@ -131,6 +131,8 @@ const PaymentGateway: React.FC = () => {
             navigate("/parent/dashboard", { replace: true });
           } else if (role === "institute_admin" || role === "institute admin") {
             navigate("/institute-admin/dashboard", { replace: true });
+          } else if (role === "private_tutor" || role === "private tutor") {
+            navigate("/private-tutor/dashboard", { replace: true });
           } else {
             navigate("/dashboard", { replace: true });
           }

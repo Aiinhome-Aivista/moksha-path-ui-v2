@@ -642,6 +642,31 @@ class ApiServices {
   getBlogAuthorDropdown() {
     return publicAxiosInstance.get(GET_APIS.blog_author_dropdown);
   }
+  // =======================
+  // Institute Admin - Faculty Management APIs
+  // =======================
+
+  // Get list of currently assigned teachers (with class_ids, assigned_on, etc.)
+  getAssignedTeacherList() {
+    return axiosInstance.get(GET_APIS.get_assigned_teacher_list);
+  }
+
+  // Get list of available (unassigned) teachers
+  getAvailableTeachers() {
+    return axiosInstance.get(GET_APIS.get_available_teachers);
+  }
+
+  // Assign teacher to class(es)
+  assignTeacher(payload) {
+    // payload: { teacher_user_id: number, class_ids: number[] }
+    return axiosInstance.post(POST_APIS.assign_teacher, payload);
+  }
+
+  // Remove teacher from institute
+  removeTeacher(payload) {
+    // payload: { teacher_user_id: number }
+    return axiosInstance.post(POST_APIS.remove_teacher, payload);
+  }
 }
 
 export default new ApiServices();

@@ -2,7 +2,7 @@ import { createBrowserRouter, type RouteObject, Navigate } from "react-router-do
 import AppLayout from "../components/layout/AppLayout";
 import Login from "../features/auth/modal/Login";
 import { SelectRole } from "../features/auth/modal/SelectRole";
-import StudentDashboard from "../features/student/pages/Dashboard";
+import { Dashboard } from "../features/student/pages/dashboard/Dashboard";
 import StudentProfile from "../features/student/pages/Profile";
 import Subscription from "../features/student/pages/Subscription";
 import SubscriptionDetails from "../features/student/pages/SubscriptionDetails";
@@ -16,10 +16,9 @@ import Invitations from "../features/student/pages/Invitations";
 import ParentDashboard from "../features/parent/pages/ParentDashboard";
 import ParentMaterials from "../features/parent/pages/ParentMaterials";
 import TeacherMaterials from "../features/teacher/pages/TeacherMaterials";
-import { TeacherDashboard } from "../features/teacher/pages/TeacherDashboard";
+import TeacherDashboard from "../features/teacher/pages/dashboard/TeacherDashboard";
 import ParentLearningPlanner from "../features/parent/pages/ParentLearningPlanner";
 import TeacherLearningPlanner from "../features/teacher/pages/TeacherLearningPlanner";
-
 import Blogs from "../features/blog/blogpage";
 import BlogDetail from "../features/blog/blogdetail";
 
@@ -33,7 +32,16 @@ import AddSEO from "../features/admin/pages/seo/AddSEO";
 import AddCategory from "../features/admin/pages/category/AddCategory";
 import ManageCategory from "../features/admin/pages/category/ManageCategory";
 import AdminLogin from "../features/admin/pages/category/AdminLogin";
-import InstituteAdminDashboard from "../features/institute-admin/pages/InstituteAdminDashboard";
+import InstituteAdminDashboard from "../features/institute-admin/pages/dashboard/InstituteAdminDashboard";
+import InstituteAdminMaterials from "../features/institute-admin/pages/InstituteAdminMaterials";
+import InstituteadminLearningPlanner from "../features/institute-admin/pages/InstituteadminLearningPlanner";
+import InstituteAdminNotification from "../features/institute-admin/pages/InstituteAdminNotification";
+import InstituteAdminProfile from "../features/institute-admin/pages/InstituteAdminProfile";
+import TutorProfile from "../features/private-tutor/pages/TutorProfile";
+import TutorDashboard from "../features/private-tutor/pages/TutorDashboard";
+import TutorLearningPlanner from "../features/private-tutor/pages/TutorLearningPlanner";
+import TutorNotifications from "../features/private-tutor/pages/TutorNotification";
+import TutorMaterials from "../features/private-tutor/pages/TutorMaterials";
 
 const routes: RouteObject[] = [
   // Standalone Routes
@@ -50,7 +58,7 @@ const routes: RouteObject[] = [
       { path: "blogs/:title", element: <BlogDetail /> },
 
       // Student Routes
-      { path: "dashboard", element: <StudentDashboard /> },
+      { path: "dashboard", element: <Dashboard /> },
       { path: "profile", element: <StudentProfile /> },
 
       // Student Features
@@ -61,7 +69,6 @@ const routes: RouteObject[] = [
       { path: "payment", element: <PaymentGateway /> },
       { path: "learning-planner", element: <LearningPlanner /> },
       { path: "student-materials", element: <StudentMaterials /> },
-      // clean direct routes (optional but recommended)
       { path: "tests", element: <StudentMaterials /> },
       { path: "videos", element: <StudentMaterials /> },
       { path: "notes", element: <StudentMaterials /> },
@@ -86,20 +93,27 @@ const routes: RouteObject[] = [
       { path: "parent-notes", element: <ParentMaterials /> },
 
 
-      //institute-admin/dashboard
+      //institute-admin
+      { path: "institute-admin/profile", element: <InstituteAdminProfile /> },
       { path: "institute-admin/dashboard", element: <InstituteAdminDashboard /> },
-      
-    ],
-  },
+      { path: "institute-admin/learning-planner", element: <InstituteadminLearningPlanner /> },
+      { path: "institute-admin/materials", element: <InstituteAdminMaterials /> },
+      { path: "institute-admin/tests", element: <InstituteAdminMaterials /> },
+      { path: "institute-admin/videos", element: <InstituteAdminMaterials /> },
+      { path: "institute-admin/notes", element: <InstituteAdminMaterials /> },
+      { path: "institute-admin/notification", element: <InstituteAdminNotification /> },
 
-  // Role Portals (Placeholders)
-  {
-    path: "teacher/",
-    element: <PlaceholderPage title="Teacher Portal - Coming Soon" />,
-  },
-  {
-    path: "principal/",
-    element: <PlaceholderPage title="Principal Portal - Coming Soon" />,
+
+      //private-tutor
+      { path: "private-tutor/profile", element: <TutorProfile /> },
+      { path: "private-tutor/dashboard", element: <TutorDashboard /> },
+      { path: "private-tutor/learning-planner", element: <TutorLearningPlanner /> },
+      { path: "private-tutor/materials", element: <TutorMaterials /> },
+      { path: "private-tutor/tests", element: <TutorMaterials /> },
+      { path: "private-tutor/videos", element: <TutorMaterials /> },
+      { path: "private-tutor/notes", element: <TutorMaterials /> },
+      { path: "private-tutor/notification", element: <TutorNotifications /> },
+    ],
   },
 
   // Independent Admin Routes Structure
@@ -121,12 +135,6 @@ const routes: RouteObject[] = [
         ],
       },
     ],
-  },
-
-  { path: "parent/", element: <ParentDashboard /> },
-  {
-    path: "institute-admin/dashboard",
-    element: <PlaceholderPage title="Institution Portal - Coming Soon" />,
   },
   {
     path: "group/",

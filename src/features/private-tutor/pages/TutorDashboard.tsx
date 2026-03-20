@@ -64,7 +64,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ label, value, icon, color, bgCo
   </div>
 );
 
-const InstituteAdminDashboard: React.FC = () => {
+const TutorDashboard: React.FC = () => {
   const [filter, setFilter] = useState("all");
 
   return (
@@ -73,7 +73,7 @@ const InstituteAdminDashboard: React.FC = () => {
       <header className="relative overflow-hidden rounded-3xl p-8">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <h1 className="text-primary text-4xl font-extrabold tracking-tight">Academic Performance Dashboard</h1>
+            <h1 className="text-primary text-4xl font-extrabold tracking-tight">Tutor Dashboard</h1>
             <p className="text-primary font-medium">Providing real-time insights into faculty excellence and curriculum progress.</p>
           </div>
           <div className="flex gap-3">
@@ -137,7 +137,7 @@ const InstituteAdminDashboard: React.FC = () => {
               <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center">
                 <span className="material-symbols-outlined text-indigo-500">leaderboard</span>
               </div>
-              <h2 className="text-xl font-bold text-gray-800">Faculty Performance Ranking</h2>
+              <h2 className="text-xl font-bold text-gray-800">Student Performance Ranking</h2>
             </div>
             <select
               className="bg-gray-50 border-none text-sm font-bold py-2 px-4 rounded-xl focus:ring-2 focus:ring-[#b0cb1f]"
@@ -154,7 +154,7 @@ const InstituteAdminDashboard: React.FC = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-gray-50/50 text-primary text-xs font-medium uppercase tracking-widest">
-                  <th className="px-6 py-4">Teacher</th>
+                  <th className="px-6 py-4">Student</th>
                   <th className="px-6 py-4">Subject</th>
                   <th className="px-6 py-4">Rating</th>
                   <th className="px-6 py-4">Avg Student Score</th>
@@ -264,4 +264,4 @@ const InstituteAdminDashboard: React.FC = () => {
   );
 };
 
-export default InstituteAdminDashboard;
+export default TutorDashboard;
