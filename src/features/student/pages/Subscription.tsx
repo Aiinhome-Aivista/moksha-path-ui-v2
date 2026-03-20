@@ -1997,14 +1997,15 @@ const Subscription: React.FC = () => {
         <PaymentSummaryModal
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
-          selectedPlan={selectedPlan}
-          selectedSubjects={activeProfile?.selectedSubjects || []}
-          sheetCount={totalSeats}
+          // selectedPlan={selectedPlan}
+          // selectedSubjects={activeProfile?.selectedSubjects || []}
+          // sheetCount={totalSeats}
           uiTotalAmount={uiTotalAmount}
-          academicDetails={null}
+          // academicDetails={null}
           onProceedToPay={handlePayNow}
           onApplyCoupon={handleApplyCoupon}
           isProcessing={isValidating}
+          profiles={profiles} 
         />
       )}
 
