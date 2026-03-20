@@ -58,9 +58,9 @@ const InstituteAdminDashboard: React.FC = () => {
           </div>
 </div>
 </div>
-<div className="flex px-80">
+<div className="flex flex-col gap-5 px-12 py-6">
   {/* Stat row */}
-  <div className="flex w-full justify-between">
+  <div className="flex w-full justify-end gap-16">
     {statCards.map((stat, i) => (
       <div key={i} className=" text-start">
         <p

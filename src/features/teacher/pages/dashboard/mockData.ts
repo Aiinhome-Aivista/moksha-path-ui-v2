@@ -1,6 +1,6 @@
 export const dashboardData = {
   // Stats for the very top of the Dashboard
-  topStats: [
+ topStats: [
     { label: 'Total Students', value: 147, sub: 'Across 6 sections', color: 'text-gray-600' },
     { label: 'Subjects Taught', value: 3, sub: 'Maths • Science • EVS', color: 'text-cyan-600' },
     { label: 'Syllabus On-track', value: '83%', sub: 'Avg across subjects', color: 'text-orange-400' },
@@ -21,6 +21,19 @@ export const dashboardData = {
       { section: 'Class 8-B', students: 26, avg: 71, benchmark: 79, status: 'Watch' },
       { section: 'Class 9-A', students: 32, avg: 74, benchmark: 81, status: 'On Track' },
       { section: 'Class 9-B', students: 29, avg: 63, benchmark: 71, status: 'Action' },
+    ],
+    // ADD THIS NEW EVS DATA HERE:
+    evs: [
+      { 
+        section: 'Class 8-A', 
+        students: 28, 
+        avg: 80, 
+        benchmark: 86, 
+        status: 'Watch',
+        syllabus: 95,
+        mock: 88,
+        recommendation: 'Strong coverage - extension mock recommended for Class 8-A'
+      }
     ]
   },
 

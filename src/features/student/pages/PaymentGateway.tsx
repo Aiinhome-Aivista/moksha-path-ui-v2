@@ -61,20 +61,22 @@ const PaymentGateway: React.FC = () => {
       // };
 
       const finalPayload = {
-        profiles: paymentData.profiles,
+        profiles: paymentData.profiles.map((p: any) => ({
+          ...p,
+          section_id: p.section_id || null, // ✅ ensure passing
+        })),
 
-        transaction_id:
-          "TXN-RAZORPAY-" + Math.floor(Math.random() * 100000000),
+        transaction_id: "TXN-RAZORPAY-" + Math.floor(Math.random() * 100000000),
 
         subscription_name: paymentData.subscription_name,
 
         db_total: Number(
-          (paymentData.final_amount + (paymentData.discounted_amount || 0)).toFixed(2)
+          (
+            paymentData.final_amount + (paymentData.discounted_amount || 0)
+          ).toFixed(2),
         ),
 
-        db_discount: Number(
-          (paymentData.discounted_amount || 0).toFixed(2)
-        ),
+        db_discount: Number((paymentData.discounted_amount || 0).toFixed(2)),
 
         db_final: Number(paymentData.final_amount.toFixed(2)),
 
@@ -96,7 +98,7 @@ const PaymentGateway: React.FC = () => {
       if (response.data?.status === "success") {
         localStorage.removeItem("selected_subjects_payload");
         // // Verify subscription_id is actually set in localStorage
-        const subscriptionId = response?.data?.data?.subscription_id;
+        // const subscriptionId = response?.data?.data?.subscription_id;
         const subscriptionToken = response?.data?.data?.subscription_token;
         if (subscriptionToken) {
           localStorage.setItem("subscription_token", subscriptionToken);
@@ -110,21 +112,29 @@ const PaymentGateway: React.FC = () => {
             "success",
           );
           // console.log("idd",subscriptionId)
-          if (subscriptionId) {
-            const role = localUser?.role?.toLowerCase();
+          // if (subscriptionId) {
+          //   const role = localUser?.role?.toLowerCase();
 
-            if (role === "teacher") {
-              navigate("/teacher/dashboard", { replace: true });
-            } else if (role === "parent") {
-              navigate("/parent/dashboard", { replace: true });
-            }else if (role === "institute_admin" || role === "institute admin") {
-             navigate("/institute-admin/dashboard", { replace: true });
-             }else if (role === "private_tutor" || role === "private tutor") {
-             navigate("/private-tutor/dashboard", { replace: true });
+          //   if (role === "teacher") {
+          //     navigate("/teacher/dashboard", { replace: true });
+          //   } else if (role === "parent") {
+          //     navigate("/parent/dashboard", { replace: true });
+          //   } else {
+          //     navigate("/dashboard", { replace: true });
+          //   }
+          // }
+          const role = localUser?.role?.toLowerCase();
 
-            }else {
-              navigate("/dashboard", { replace: true });
-            }
+          if (role === "teacher") {
+            navigate("/teacher/dashboard", { replace: true });
+          } else if (role === "parent") {
+            navigate("/parent/dashboard", { replace: true });
+          } else if (role === "institute_admin" || role === "institute admin") {
+            navigate("/institute-admin/dashboard", { replace: true });
+          } else if (role === "private_tutor" || role === "private tutor") {
+            navigate("/private-tutor/dashboard", { replace: true });
+          } else {
+            navigate("/dashboard", { replace: true });
           }
         }
       } else {
