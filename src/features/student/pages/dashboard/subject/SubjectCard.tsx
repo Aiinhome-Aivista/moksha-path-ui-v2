@@ -66,11 +66,6 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
         Accuracy by Level
       </p>
 
-      {/* <div className="flex justify-around text-center text-xs text-gray-500 mb-1 ml-1">
-        {levels.map((lvl, i) => (
-          <span key={i}>{lvl.value}%</span>
-        ))}
-      </div> */}
 
       {/* Small Bars */}
       <div className="flex gap-1 mb-2 justify-around">

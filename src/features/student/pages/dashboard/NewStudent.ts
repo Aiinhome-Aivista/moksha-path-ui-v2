@@ -55,7 +55,7 @@ export const performanceStatsData = [
     },
     { label: "Hard (L5)", value: 80, color: "#ea4335", avg: "2.4 avg" },
   ];
-export const subjects = [
+export const mathSubjects = [
     {
         title: "Set Theory",
         score: 82,

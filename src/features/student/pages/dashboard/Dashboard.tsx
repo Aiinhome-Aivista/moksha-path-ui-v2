@@ -789,19 +789,25 @@ import { MockExamDashboard } from "./MockExamDashboard";
 import SubjectGrid from "./subject/SubjectGrid";
 import Remediation from "./remediation/Remediation";
 
-const tabComponents: Record<string, React.ReactElement> = {
-  performance: <PerformanceCards />,
-  subject: <SubjectGrid />,
-  exam: <MockExamDashboard />,
-  remediation: <Remediation />,
-};
-
 export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("performance");
+  const [selectedSubject, setSelectedSubject] = useState("");
+
+  const tabComponents: Record<string, React.ReactElement> = {
+    performance: <PerformanceCards />,
+    subject: <SubjectGrid selectedSubject={selectedSubject} />,
+    exam: <MockExamDashboard />,
+    remediation: <Remediation />,
+  };
 
   return (
     <div className="space-y-1 bg-gray-100 min-h-screen">
-      <HeaderProfile activeTab={activeTab} onTabChange={setActiveTab} />
+      <HeaderProfile
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        selectedSubject={selectedSubject}
+        onSubjectSelect={setSelectedSubject}
+      />
       {tabComponents[activeTab]}
     </div>
   );

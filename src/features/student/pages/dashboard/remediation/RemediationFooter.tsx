@@ -19,11 +19,14 @@ const FooterCard: React.FC<FooterCardProps> = ({
   color,
 }) => {
   return (
-    <div className="bg-white p-4 rounded-xl shadow border flex flex-col justify-between">
+    <div className=" p-4 flex flex-col justify-between">
       {/* Top */}
-      <div className="flex justify-between items-center mt-2">
-        <h3 className="font-semibold text-xl text-[#4DA1B3]">{title}</h3>
-        <span className="text-sm text-gray-500">{value}</span>
+      <div className="flex justify-between items-end mt-2">
+        <div className="flex gap-2 items-end">
+          <img src="https://static.vecteezy.com/system/resources/thumbnails/071/242/165/small/pixelated-human-head-with-brain-inside-a-minimalist-illustration-for-mental-health-awareness-free-vector.jpg" alt="icon" className="h-12" />
+          <h3 className="font-semibold text-xl text-[#4DA1B3]">{title}</h3>
+        </div>
+        <span className="text-sm text-[#fcc40d] font-semibold">{value}</span>
       </div>
 
       {/* Progress Bar */}
@@ -42,8 +45,8 @@ const FooterCard: React.FC<FooterCardProps> = ({
       {/* Description */}
 
       {/* Button */}
-      <div className="flex gap-1 justify-between items-center">
-        <span className="material-symbols-outlined text-yellow-500 text-6xl">
+      <div className="flex gap-1 justify-around items-center">
+        <span className="material-symbols-outlined text-yellow-500 text-5xl font-extrabold">
           keyboard_arrow_right
         </span>
         <p className="text-xs text-primary leading-tight mb-3 w-80">
