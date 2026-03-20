@@ -210,8 +210,14 @@ const TutorDashboard: React.FC = () => {
       setIsImageLoading(true);
       const response = await ApiServices.getUserProfileImage();
 
-      if (response.data?.status === "success" && response.data?.data?.image) {
-        setProfileImage(response.data.data.image); // base64 image
+      if (response.data?.status === "success") {
+        const imgData = response.data.data?.image || response.data.data?.profile_image;
+        if (imgData) {
+          const profileImg = imgData.startsWith("data:")
+            ? imgData
+            : `data:image/jpeg;base64,${imgData}`;
+          setProfileImage(profileImg);
+        }
       }
     } catch (error) {
       // console.error("Failed to fetch profile image", error);
