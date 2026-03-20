@@ -800,7 +800,7 @@ export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("performance");
 
   return (
-    <div className="p-1 space-y-1 bg-gray-100 min-h-screen">
+    <div className="space-y-1 bg-gray-100 min-h-screen">
       <HeaderProfile activeTab={activeTab} onTabChange={setActiveTab} />
       {tabComponents[activeTab]}
     </div>

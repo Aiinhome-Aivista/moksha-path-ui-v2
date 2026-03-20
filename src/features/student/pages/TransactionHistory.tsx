@@ -144,7 +144,7 @@ const TransactionHistory: React.FC = () => {
                                         <td className="px-6 py-4">
                                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#b0cb1f]/10 text-[#6b7a0e] text-xs font-semibold border border-[#b0cb1f]/20">
                                                 <Receipt size={12} />
-                                                {txn.plan_name || txn.subscription_name}
+                                                {txn.plan_name}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-600">

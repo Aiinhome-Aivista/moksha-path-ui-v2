@@ -1,10 +1,66 @@
+export const performanceStatsData = [
+    {
+      value: 82,
+      suffix: "%",
+      valueColor: "#505050", // default (you missed class)
+      title: "Difficulty Adapt Rate",
+      titleColor: "#474747",
+      icon: "up",
+      subText: "+ 5% mock ill",
+      subTextColor: "#3B8263",
+      borderColor: "#7BA6B3",
+    },
+    {
+      value: 90,
+      suffix: "%",
+      valueColor: "#D3A251",
+      title: "On-time Completion",
+      titleColor: "#474747",
+      icon: "",
+      subText: "Tergate 20 mins max",
+      subTextColor: "#D3A251",
+      borderColor: "#7BA6B3",
+    },
+    {
+      value: 78,
+      suffix: "%",
+      valueColor: "#B7C356",
+      title: "Accuracy After Adapt",
+      titleColor: "#474747",
+      icon: "",
+      subText: "Above chart avg 71%",
+      subTextColor: "#3B8263",
+      borderColor: "#7BA6B3",
+    },
+    {
+      value: 8,
+      suffix: "%",
+      valueColor: "#B7C356",
+      title: "Question Skip Rate",
+      titleColor: "#474747",
+      icon: "down",
+      subText: "Well managed",
+      subTextColor: "#3B8263",
+      borderColor: "#7BA6B3",
+    },
+  ];
 
-
+ export const performanceDataTimeDistribution  = [
+    { label: "Easy (L1-2)", value: 70, color: "#b0cb1f", avg: "1.1 avg" },
+    {
+      label: "Medium (L3-4)",
+      value: 55,
+      color: "#EB8E02",
+      avg: "1.8 avg",
+    },
+    { label: "Hard (L5)", value: 80, color: "#ea4335", avg: "2.4 avg" },
+  ];
 export const subjects = [
     {
         title: "Set Theory",
         score: 82,
-        level: "L3 - Hard",
+        level: "L3",
+        difficulty: "Hard",
         statusColor: "#568F14",
         levels: [
             { label: "L1", value: 96, color: "#578E12", time: "5 sec" },
@@ -16,7 +72,8 @@ export const subjects = [
     {
         title: "Algebra",
         score: 91,
-        level: "L3 - Hard",
+        level: "L3",
+        difficulty: "Hard",
         statusColor: "#568F14",
         levels: [
             { label: "L1", value: 96, color: "#568F14", time: "5 sec" },
@@ -28,7 +85,8 @@ export const subjects = [
     {
         title: "Logarithm",
         score: 58,
-        level: "L3 - Hard",
+        level: "L3",
+        difficulty: "Hard",
         statusColor: "#FF7361",
         levels: [
             { label: "L1", value: 96, color: "#568F14", time: "5 sec" },
@@ -171,7 +229,7 @@ export const remediationFooterData = [
       description:
         "Re-balance study loads with planned breaks, structured shorter study blocks and guided revision by spacing mock tests.",
       progress: 51,
-      color: "#f59e0b", // orange
+      color: "#EA8E06", // orange
     },
     {
       title: "Resilience",
@@ -180,7 +238,7 @@ export const remediationFooterData = [
       description:
         "Sustain momentum by maintaining routines gradually increasing challenges and reinforcing positive study habits.",
       progress: 82,
-      color: "#22c55e", // green
+      color: "#548B12", // green
     },
     {
       title: "Focus Quality",

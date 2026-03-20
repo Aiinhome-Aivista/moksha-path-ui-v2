@@ -8,6 +8,7 @@ import {
   actionInsights,
 } from "./data/teacherReview.data";
 import type { ActionInsight } from "./data/teacherReview.types";
+import { DashboardHeader } from "../../../../components/common/DashboardHeader";
 
 // --- Helpers ---
 const gradeColor = (grade: string) => {
@@ -30,37 +31,14 @@ const insightIcon = (type: ActionInsight["type"]) => {
 const InstituteAdminDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="flex flex-row">
-      <div className="flex items-stretch gap-0">
-
-        {/* LEFT — Profile card with pill-right shape */}
-        <div className="flex items-center gap-3 bg-gray-800 text-white px-5 py-4 shrink-0 rounded-tr-full rounded-br-full z-10"
-          style={{ minWidth: "300px" }}>
-          <img
-            src={principalProfile.avatarUrl}
-            alt="Principal"
-            className="w-16 h-16 rounded-full border-2 border-gray-500 object-cover shrink-0"
-          />
-          <div>
-            <p className="text-xs text-gray-400 leading-none mb-0.5">{principalProfile.greeting}</p>
-            <p className="font-extrabold text-lg leading-tight">{principalProfile.name}</p>
-            <p className="text-xs text-gray-400 mt-0.5">{principalProfile.school}</p>
-          </div>
-        </div>
-</div>
-        {/* RIGHT — Title bar + stats */}
-        <div className="flex-1 bg-gray-200 rounded-r-full flex max-h-16 mt-5 justify-start py-3 pr-6">
-          {/* Title row */}
-          <div className="pl-5">
-            <span className="text-lg font-bold text-cyan-600">{dashboardMeta.title}</span>
-            <span className="text-gray-400 mx-2 font-light">|</span>
-            <span className="text-sm font-semibold text-primary">{dashboardMeta.academicYear}</span>
-          </div>
-</div>
-</div>
-<div className="flex px-80">
+      <DashboardHeader
+        profile={principalProfile}
+        meta={dashboardMeta}
+        profileAltText="Principal Profile"
+      />
+      <div className="flex flex-col gap-5 px-12 py-6">
   {/* Stat row */}
-  <div className="flex w-full justify-between">
+  <div className="flex w-full justify-end gap-16">
     {statCards.map((stat, i) => (
       <div key={i} className=" text-start">
         <p

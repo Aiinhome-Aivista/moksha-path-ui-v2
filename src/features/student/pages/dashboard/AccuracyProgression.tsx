@@ -2,7 +2,7 @@ import { subjectAccuracies } from "./NewStudent";
 
 export const AccuracyProgression = () => {
   return (
-    <div className="bg-white p-4 rounded-xl shadow">
+    <div className="p-4">
       <h2 className="font-semibold text-lg">
         Accuracy by Difficulty Mock Progression
       </h2>

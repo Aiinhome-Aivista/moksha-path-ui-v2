@@ -2,23 +2,23 @@ import { dashboardData } from "./mockData";
 
 const RemediationTab = () => {
   return (
-    <div className="space-y-2 animate-in fade-in duration-500">
+    <div className="space-y-2 animate-in fade-in duration-500 pr-6 pl-6">
       
       {/* 1. TOP SECTION: Title and Student Buckets */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-gray-100">
         
         {/* Left Side: Title & Subtitle */}
-<div className="flex-shrink-0 pt-4">
-  <h2 className="text-[1.3rem] font-bold text-cyan-600 leading-tight tracking-tight whitespace-nowrap">
+<div className="flex-shrink-0 pb-4">
+  <h2 className="text-1xl font-black text-cyan-600">
     Remediation Plan & Student Buckets
   </h2>
-  <p className="text-[9px] text-gray-400 font-bold tracking-tight mt-1 whitespace-nowrap">
+  <p className="text-[10px] text-gray-400 font-bold tracking-tight">
     Priority actions, at-risk matrix and improvement strategies
   </p>
 </div>
 
         {/* Right Side: 4 Student Bucket Stats (No Cards, just text on bg) */}
-<div className="flex flex-1 items-center justify-around max-w-6xl">
+<div className="flex flex-1 items-start justify-around pb-4">
   {(dashboardData?.remediationSummary || []).map((item: any, i: number) => {
     // Map exact brand colors
     const colorClass = 
@@ -33,7 +33,7 @@ const RemediationTab = () => {
 
     return (
       // Removed "flex-1 px-4" to stop them from stretching apart
-      <div key={i} className="flex flex-col w-36">
+      <div key={i} className="flex flex-col w-52">
         <span className={`text-4xl font-medium leading-none tracking-tighter ${colorClass}`}>
           {item.value}
         </span>
