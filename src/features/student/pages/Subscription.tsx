@@ -205,7 +205,7 @@ const Subscription: React.FC = () => {
     }
 
     // ✅ Priority 2: student from localStorage
-    if (localUser.role_name === "student" && activeProfile) {
+    if (localUser.role === "student" && activeProfile) {
       setProfiles([
         {
           id: "primary",
@@ -223,7 +223,7 @@ const Subscription: React.FC = () => {
         },
       ]);
     }
-  }, [location.state, localUser.role_name]); // ✅ FIXED
+  }, [location.state, localUser.role]); // ✅ FIXED
   // useEffect(() => {
   //   setProfiles((prev) =>
   //     prev.map((profile) => ({
@@ -334,7 +334,7 @@ const Subscription: React.FC = () => {
       selectedPlan: null,
 
       // ✅ seats rule
-      seats: localUser.role_name === "student" ? 1 : 1,
+      seats: localUser.role === "student" ? 1 : 1,
     };
 
     setProfiles((prev) => [
@@ -385,7 +385,7 @@ const Subscription: React.FC = () => {
         const updatedProfile = { ...p, ...updates };
 
         // ✅ FORCE seat = 1 for student
-        if (localUser.role_name === "student") {
+        if (localUser.role === "student") {
           updatedProfile.seats = 1;
         }
 
@@ -679,7 +679,7 @@ const Subscription: React.FC = () => {
       //   subject_ids: allSelectedSubjects.map((s) => s.subject_id),
       //   institute_id: firstValidProfile.school_id || null,
       //   subscription_id: "",
-      //   licenses_used: localUser.role_name === "student" ? 1 : 0,
+      //   licenses_used: localUser.role === "student" ? 1 : 0,
       //   subscription_name: subscriptionName,
       //   total_licenses: totalSeats,
       //   ui_total_amount: currentTotalAmount,
@@ -832,7 +832,7 @@ const Subscription: React.FC = () => {
 
   //     total_licenses: p.seats,
 
-  //     licenses_used: localUser.role_name === "student" ? 1 : 0,
+  //     licenses_used: localUser.role === "student" ? 1 : 0,
   //   }));
   // };
 
@@ -873,7 +873,7 @@ const Subscription: React.FC = () => {
 
         total_licenses: p.seats,
 
-        licenses_used: localUser.role_name === "student" ? 1 : 0,
+        licenses_used: localUser.role === "student" ? 1 : 0,
 
         profile_amount: Number(profileAmount.toFixed(2)), // ✅ NEW
       };
@@ -897,7 +897,7 @@ const Subscription: React.FC = () => {
       //   institute_id: firstValidProfile.school_id || null,
       //   ui_total_amount: uiTotalAmount,
       //   total_licenses: totalSeats,
-      //   licenses_used: localUser.role_name === "student" ? 1 : 0,
+      //   licenses_used: localUser.role === "student" ? 1 : 0,
       //   subscription_name: "",
       // };
       const payload = {
@@ -1048,7 +1048,7 @@ const Subscription: React.FC = () => {
   };
 
   // useEffect(() => {
-  //   if (localUser.role_name === "teacher") {
+  //   if (localUser.role === "teacher") {
   //     navigate("/dashboard");
   //   }
   // }, []);
@@ -1108,7 +1108,7 @@ const Subscription: React.FC = () => {
           </div>
 
           {/* RIGHT: Button */}
-          {localUser.role_name !== "student" && (
+          {localUser.role !== "student" && (
             <button
               onClick={addProfile}
               className="inline-flex items-center gap-2 px-4 py-2 bg-[#BADA55] text-white rounded-xl text-sm font-bold shadow-sm shadow-[#BADA55]/40 hover:bg-lime-500 transition-all active:scale-95"
@@ -1182,7 +1182,7 @@ const Subscription: React.FC = () => {
             return (
               <div
                 key={p.id}
-                className={`flex flex-col bg-white/40 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm ${p.isExpanded ? "overflow-visible" : "overflow-hidden"}`}
+                className={`flex flex-col rounded-xl border border-white/60 shadow-sm ${p.isExpanded ? "overflow-visible" : "overflow-hidden"}`}
               >
                 {/* Header Section */}
                 <div
@@ -1199,7 +1199,7 @@ const Subscription: React.FC = () => {
                     >
                       chevron_right
                     </span>
-                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
+                    <span className="text-sm font-bold text-primary uppercase tracking-widest">
                       Plan #{profileIndex + 1}
                     </span>
                     {!p.isExpanded && useFilter && (
@@ -1270,13 +1270,13 @@ const Subscription: React.FC = () => {
                     }`}
                 >
                   <div className="px-4 flex flex-col gap-3">
-                    <div className="flex flex-wrap items-end gap-3">
+                    <div className="grid grid-cols-7 gap-3 w-full">
                       {/* Board */}
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] tracking-widest text-gray-400 font-bold px-1 uppercase">
+                        <label className="text-sm tracking-widest text-primary font-bold px-1 uppercase">
                           Board
                         </label>
-                        <div className="relative w-[180px]">
+                        <div className="relative w-full">
                           <SearchableSelect
                             value={p.board_id ? String(p.board_id) : ""}
                             onChange={(val) => {
@@ -1303,10 +1303,10 @@ const Subscription: React.FC = () => {
 
                       {/* School */}
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] tracking-widest text-gray-400 font-bold px-1 uppercase">
+                        <label className="text-sm tracking-widest text-primary font-bold px-1 uppercase">
                           School
                         </label>
-                        <div className="relative w-[180px]">
+                        <div className="relative w-full">
                           <SearchableSelect
                             value={p.school_id}
                             onChange={(val) => {
@@ -1360,10 +1360,10 @@ const Subscription: React.FC = () => {
 
                       {/* Class */}
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] tracking-widest text-gray-400 font-bold px-1 uppercase">
+                        <label className="text-sm tracking-widest text-primary font-bold px-1 uppercase">
                           Class
                         </label>
-                        <div className="relative w-[140px]">
+                        <div className="relative w-full">
                           <SearchableSelect
                             value={p.class_id}
                             onChange={(val) => {
@@ -1385,10 +1385,10 @@ const Subscription: React.FC = () => {
 
                       {/* Section */}
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] tracking-widest text-gray-400 font-bold px-1 uppercase">
+                        <label className="text-sm tracking-widest text-primary font-bold px-1 uppercase">
                           Section
                         </label>
-                        <div className="relative w-[120px]">
+                        <div className="relative w-full">
                           <SearchableSelect
                             value={p.section_id}
                             onChange={(val) => {
@@ -1409,10 +1409,10 @@ const Subscription: React.FC = () => {
 
                       {/* Academic Year */}
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] tracking-widest text-gray-400 font-bold px-1 uppercase">
+                        <label className="text-sm tracking-widest text-primary font-bold px-1 uppercase">
                           Year
                         </label>
-                        <div className="relative w-[110px]">
+                        <div className="relative w-full">
                           <SearchableSelect
                             value={p.academic_year}
                             onChange={(val) => {
@@ -1433,24 +1433,24 @@ const Subscription: React.FC = () => {
 
                       {/* Seats per profile */}
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] tracking-widest text-gray-400 font-bold px-1 uppercase">
+                        <label className="text-sm tracking-widest text-primary font-bold px-1 uppercase">
                           Seats
                         </label>
 
-                        <div className="flex items-center justify-between w-[110px] h-[32px] bg-gray-800 rounded-lg px-2">
+                        <div className="flex items-center justify-between w-full h-[32px] bg-gray-800 rounded-lg px-2">
 
                           <button
                             onClick={() => {
-                              if (localUser.role_name !== "student") {
+                              if (localUser.role !== "student") {
                                 updateProfile(profileIndex, {
                                   seats: Math.max(1, p.seats - 1),
                                 });
                               }
                             }}
-                            disabled={localUser.role_name === "student"}
-                            className={`text-sm px-2 ${localUser.role_name === "student"
-                                ? "text-gray-400 cursor-not-allowed"
-                                : "text-white"
+                            disabled={localUser.role === "student"}
+                            className={`text-sm px-2 ${localUser.role === "student"
+                              ? "text-gray-400 cursor-not-allowed"
+                              : "text-white"
                               }`}
                           >
                             −
@@ -1462,16 +1462,16 @@ const Subscription: React.FC = () => {
 
                           <button
                             onClick={() => {
-                              if (localUser.role_name !== "student") {
+                              if (localUser.role !== "student") {
                                 updateProfile(profileIndex, {
                                   seats: p.seats + 1,
                                 });
                               }
                             }}
-                            disabled={localUser.role_name === "student"}
-                            className={`text-sm px-2 ${localUser.role_name === "student"
-                                ? "text-gray-400 cursor-not-allowed"
-                                : "text-white"
+                            disabled={localUser.role === "student"}
+                            className={`text-sm px-2 ${localUser.role === "student"
+                              ? "text-gray-400 cursor-not-allowed"
+                              : "text-white"
                               }`}
                           >
                             +
@@ -1481,32 +1481,34 @@ const Subscription: React.FC = () => {
                       </div>
 
                       {/* Clear for this profile */}
-                      {useFilter && (
-                        <button
-                          onClick={() =>
-                            updateProfile(profileIndex, {
-                              board_id: "",
-                              school_id: "",
-                              class_id: "",
-                              section_id: "",
-                              academic_year: "",
-                              selectedSubjects: [],
-                              availableSubjects: [],
-                              selectedPlan: null,
-                            })
-                          }
-                          className="px-3 py-1.5 bg-gray-100/50 text-gray-500 border border-gray-200 rounded-lg text-[10px] font-bold hover:bg-gray-100 transition-colors h-[32px] uppercase tracking-wider"
-                        >
-                          Clear
-                        </button>
-                      )}
+                      <div className="flex items-end">
+                        {useFilter && (
+                          <button
+                            onClick={() =>
+                              updateProfile(profileIndex, {
+                                board_id: "",
+                                school_id: "",
+                                class_id: "",
+                                section_id: "",
+                                academic_year: "",
+                                selectedSubjects: [],
+                                availableSubjects: [],
+                                selectedPlan: null,
+                              })
+                            }
+                            className="w-full h-[32px] px-3 py-1.5 bg-gray-100/50 text-gray-500 border border-gray-200 rounded-lg text-[10px] font-bold hover:bg-gray-100 transition-colors uppercase tracking-wider"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Subject Selection for this profile */}
                     {(p.availableSubjects.length > 0 ||
                       p.isSubjectsLoading) && (
                         <div className="mt-1 border-t border-white/40 pt-2">
-                          <p className="text-[9px] uppercase tracking-widest text-gray-400 font-bold px-1 mb-2">
+                          <p className="text-sm uppercase tracking-widest text-primary font-bold px-1 mb-2">
                             Select Subjects
                           </p>
                           {p.isSubjectsLoading ? (
@@ -1517,32 +1519,34 @@ const Subscription: React.FC = () => {
                               </span>
                             </div>
                           ) : (
-                            <div className="flex flex-wrap gap-1.5">
-                              {p.availableSubjects.map((subject) => {
-                                const isSelected = p.selectedSubjects.some(
-                                  (s) => s.subject_id === subject.subject_id,
-                                );
-                                return (
-                                  <button
-                                    key={subject.subject_id}
-                                    onClick={() => {
-                                      isSelected
-                                        ? handleRemoveSubject(
-                                          profileIndex,
-                                          subject.subject_id,
-                                        )
-                                        : handleAddSubject(profileIndex, subject);
-                                    }}
-                                    className={`relative px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all duration-200 border
+                            <div className="mt-3 w-full md:w-[85%]">
+                              <div className="flex flex-wrap gap-1.5">
+                                {p.availableSubjects.map((subject) => {
+                                  const isSelected = p.selectedSubjects.some(
+                                    (s) => s.subject_id === subject.subject_id,
+                                  );
+                                  return (
+                                    <button
+                                      key={subject.subject_id}
+                                      onClick={() => {
+                                        isSelected
+                                          ? handleRemoveSubject(
+                                            profileIndex,
+                                            subject.subject_id,
+                                          )
+                                          : handleAddSubject(profileIndex, subject);
+                                      }}
+                                      className={`relative px-3 py-1 rounded-full text-sm font-bold transition-all duration-200 border
                                     ${isSelected
-                                        ? "bg-[#b0cb1f] text-gray-800 border-[#9ab515]"
-                                        : "bg-white text-gray-500 border-gray-200 hover:border-[#b0cb1f] hover:text-gray-800"
-                                      }`}
-                                  >
-                                    {subject.subject_name}
-                                  </button>
-                                );
-                              })}
+                                          ? "bg-[#b0cb1f] text-gray-800 border-[#9ab515]"
+                                          : "bg-white text-gray-500 border-gray-200 hover:border-[#b0cb1f] hover:text-gray-800"
+                                        }`}
+                                    >
+                                      {subject.subject_name}
+                                    </button>
+                                  );
+                                })}
+                              </div>
                             </div>
                           )}
                         </div>
