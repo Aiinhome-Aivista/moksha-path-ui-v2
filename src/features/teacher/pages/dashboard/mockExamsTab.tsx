@@ -2,11 +2,11 @@ import { dashboardData } from "./mockData";
 
 const MockExamsTab = () => {
   return (
-    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-700 pt-4 pb-4">
+    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-700 pt-4  pb-4 pr-6 pl-6">
       {/* 1. Header Title Section */}
       <div className="flex flex-col gap-1 ">
-        <h2 className="text-2xl font-black text-[#00a8cc]">Mock Exam Performance</h2>
-        <p className="text-[11px] text-gray-400 font-bold uppercase tracking-tight">
+        <h2 className="text-1xl font-black text-[#00a8cc]">Mock Exam Performance</h2>
+        <p className="text-[10px] text-gray-400 font-bold tracking-tight">
           Class-wise mock scores, trends & chapter accuracy • Mock V Latest
         </p>
       </div>

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ApiServices from '../../../../services/ApiServices';
 import OverviewTab from './overviewTab';
 import SyllabusTab from './syllabusTab';
 import MockExamsTab from './mockExamsTab';
@@ -22,36 +23,80 @@ const tabComponents: Record<TabName, React.ReactElement> = {
 
 const TeacherDashboard = () => {
   const [activeTab, setActiveTab] = useState<TabName>('Overview');
+  const [profileData, setProfileData] = useState<any>(null);
+  const [profileImage, setProfileImage] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setIsLoading(true);
+        const [profileRes, imageRes] = await Promise.all([
+          ApiServices.getTeacherProfile(),
+          ApiServices.getUserProfileImage()
+        ]);
+
+        if (profileRes.data?.status === 'success') {
+          setProfileData(profileRes.data.data);
+        }
+        if (imageRes.data?.status === 'success' && imageRes.data?.data?.image) {
+          setProfileImage(imageRes.data.data.image);
+        }
+      } catch (error) {
+        console.error('Failed to fetch teacher profile', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  const teacher_name = profileData?.teacher_name || 'Teacher';
+  const school_name = profileData?.school_name || 'Moksha Path';
+  const class_name = profileData?.class_name || '';
 
   return (
     // Single wrapper for the entire dashboard
     <div className="flex flex-col">
       
       {/* 1. THE HEADER ROW */}
-      <div className="flex items-center w-full relative pl-2 pt-2">
+<div className="flex items-center w-full relative pt-2 -ml-6">
         
         {/* Left: Dark Profile Pill */}
-        <div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-2 pl-4 pr-12 rounded-r-[2rem] shadow-md z-10 relative flex-shrink-0">
-          <img
-            src="https://www.picsman.ai/blog/wp-content/uploads/2025/01/free-passport-photo-maker-1.webp"
-            className="w-14 h-14 rounded-full border-2 border-white object-cover shadow-sm flex-shrink-0"
-            alt="profile"
-          />
+        <div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-4 pl-6 pr-16 rounded-r-[10rem] shadow-md z-10 relative flex-shrink-0 min-w-[320px]">
+          <div className="relative flex-shrink-0">
+            {profileImage ? (
+              <img
+                src={profileImage}
+                className="w-14 h-14 rounded-full border-2 border-white object-cover shadow-sm"
+                alt="profile"
+              />
+            ) : (
+              <div className="w-14 h-14 rounded-full border-2 border-white bg-gradient-to-br from-[#BADA55] to-lime-400 flex items-center justify-center text-white text-xl font-black shadow-sm">
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  teacher_name.charAt(0).toUpperCase()
+                )}
+              </div>
+            )}
+          </div>
           <div className="flex flex-col justify-center">
-            <span className="text-[11px] font-bold text-gray-200 leading-none mb-0.5">
+            <span className="text-xl font-bold text-gray-200 leading-none mb-0.5">
               Greetings
             </span>
             <h2 className="text-xl font-black leading-none tracking-tight">
-              Ms. Priya Sharma
+              {teacher_name}
             </h2>
             <p className="text-[10px] text-gray-300 font-medium mt-1 tracking-wide">
-              St. Thomas School for Boys (CICSE)
+              {school_name} {class_name ? `(${class_name})` : ""}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-20 px-14 bg-[#E9E9E9] h-12 rounded-tr-full rounded-br-full lg:col-span-2 xl:col-span-3">
-          <h1 className="text-[#00bcd4] font-black text-lg tracking-tight uppercase whitespace-nowrap">
+        <div className="flex flex-1 items-center justify-between px-6 py-2 bg-[#E9E9E9] h-14 rounded-tr-full rounded-br-full lg:col-span-2 xl:col-span-3">
+          <h1 className="text-[#00bcd4] font-black text-lg tracking-tight  whitespace-nowrap">
             My Dashboard
           </h1>
           <div className="flex gap-3">

@@ -98,7 +98,7 @@ const PaymentGateway: React.FC = () => {
       if (response.data?.status === "success") {
         localStorage.removeItem("selected_subjects_payload");
         // // Verify subscription_id is actually set in localStorage
-        const subscriptionId = response?.data?.data?.subscription_id;
+        // const subscriptionId = response?.data?.data?.subscription_id;
         const subscriptionToken = response?.data?.data?.subscription_token;
         if (subscriptionToken) {
           localStorage.setItem("subscription_token", subscriptionToken);
