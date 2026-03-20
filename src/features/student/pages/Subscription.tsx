@@ -1119,7 +1119,7 @@ const Subscription: React.FC = () => {
           )}
         </div>
 
-        <div className="flex flex-col gap-4 w-full flex-1 relative z-[40]">
+        <div className="flex flex-col gap-4 w-full flex-1 relative">
           {" "}
           {profiles.map((p, profileIndex) => {
             const validDependencies = dependencyMap.filter((dep) => {
