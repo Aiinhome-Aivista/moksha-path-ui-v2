@@ -20,7 +20,6 @@ const FooterCard: React.FC<FooterCardProps> = ({
 }) => {
   return (
     <div className="bg-white p-4 rounded-xl shadow border flex flex-col justify-between">
-      
       {/* Top */}
       <div className="flex justify-between items-center mt-2">
         <h3 className="font-semibold text-xl text-[#4DA1B3]">{title}</h3>
@@ -36,19 +35,21 @@ const FooterCard: React.FC<FooterCardProps> = ({
       </div>
 
       {/* Subtitle */}
-      <p className="text-xs font-medium text-gray-600 mb-1">
+      <p className="text-sm font-bold tracking-tight text-primary mb-1">
         {subtitle}
       </p>
 
       {/* Description */}
-      <p className="text-[11px] text-gray-400 leading-relaxed mb-3">
-        {description}
-      </p>
 
       {/* Button */}
-      <div className="flex justify-between items-center">
-        <span className="text-yellow-500 text-lg">➜</span>
-        <button className="text-xs bg-[#4DA1B3] text-white px-3 py-1 rounded-full">
+      <div className="flex gap-1 justify-between items-center">
+        <span className="material-symbols-outlined text-yellow-500 text-6xl">
+          keyboard_arrow_right
+        </span>
+        <p className="text-xs text-primary leading-tight mb-3 w-80">
+          {description}
+        </p>
+        <button className="text-normal bg-[#4DA1B3] text-white font-semibold px-4 py-2 rounded-full">
           Buy a Plan
         </button>
       </div>
@@ -59,8 +60,6 @@ const FooterCard: React.FC<FooterCardProps> = ({
 /* ------------------ Main Footer ------------------ */
 
 const RemediationFooter = () => {
-  
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {remediationFooterData.map((item, i) => (
