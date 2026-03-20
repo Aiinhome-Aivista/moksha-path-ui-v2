@@ -37,19 +37,19 @@ const searchAnyKey = (dataArray: any[], searchQuery: string) => {
 // GLOBAL DATE FORMATTER (DD/MM/YYYY)
 // ==========================================
 const formatDate = (dateString: string | undefined | null): string => {
-  if (!dateString) return 'N/A';
+  if (!dateString) return "N/A";
   try {
     const date = new Date(dateString);
     // Check if date is valid
     if (isNaN(date.getTime())) {
-        return 'Invalid Date';
+      return "Invalid Date";
     }
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Month is 0-indexed
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   } catch (error) {
-    return 'Invalid Date';
+    return "Invalid Date";
   }
 };
 // ==========================================
@@ -57,7 +57,7 @@ const formatDate = (dateString: string | undefined | null): string => {
 export const ManageBlog: React.FC = () => {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [isTableLoading, setIsTableLoading] = useState(true); // For initial page load
-  const [isRefreshing, setIsRefreshing] = useState(false);    // For the refresh button only
+  const [isRefreshing, setIsRefreshing] = useState(false); // For the refresh button only
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -160,7 +160,7 @@ export const ManageBlog: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full px-4">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -182,7 +182,7 @@ export const ManageBlog: React.FC = () => {
       </div>
 
       {/* Table Card Container */}
-      <div className="bg-white dark:bg-secondary-800 rounded-xl shadow-sm border border-secondary-200 dark:border-secondary-700 overflow-hidden">
+      <div className="w-full bg-white dark:bg-secondary-800">
         {/* Search & Refresh Bar */}
         <div className="p-4 border-b border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800/50 flex items-center justify-between gap-4">
           <div className="relative max-w-md flex items-center w-full">
@@ -211,8 +211,8 @@ export const ManageBlog: React.FC = () => {
         </div>
 
         {/* Table Layout */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left whitespace-nowrap">
+        <div className="w-full">
+          <table className="w-full text-sm text-left table-fixed">
             {/* GREEN Table Header */}
             <thead className="bg-[#b0cb1f] text-gray-900 font-semibold border-b border-gray-200 dark:border-secondary-700">
               <tr className="divide-x divide-gray-900/20">
@@ -220,6 +220,7 @@ export const ManageBlog: React.FC = () => {
                 <th className="px-6 py-4 text-center">Title</th>
                 <th className="px-6 py-4 text-center">Content Preview</th>
                 <th className="px-6 py-4 text-center">Category</th>
+                <th className="px-6 py-4 text-center">Author</th>
                 <th className="px-6 py-4 text-center">Featured Image</th>
                 <th className="px-6 py-4 text-center">Created Date</th>
                 <th className="px-6 py-4 text-center">Action</th>
@@ -234,17 +235,24 @@ export const ManageBlog: React.FC = () => {
                   <td colSpan={7} className="p-20 text-center min-h-[300px]">
                     <div className="flex flex-col items-center justify-center gap-3">
                       <div className="w-10 h-10 border-4 border-secondary-200 dark:border-secondary-700 border-t-[#b0cb1f] rounded-full animate-spin" />
-                      <p className="text-secondary-500 dark:text-secondary-400 text-sm font-medium">Loading initial data...</p>
+                      <p className="text-secondary-500 dark:text-secondary-400 text-sm font-medium">
+                        Loading initial data...
+                      </p>
                     </div>
                   </td>
                 </tr>
               ) : isRefreshing ? (
                 // Manual Refresh Table Loader
                 <tr>
-                  <td colSpan={7} className="p-20 text-center bg-gray-50/50 dark:bg-secondary-800/20 min-h-[300px]">
+                  <td
+                    colSpan={7}
+                    className="p-20 text-center bg-gray-50/50 dark:bg-secondary-800/20 min-h-[300px]"
+                  >
                     <div className="flex flex-col items-center justify-center gap-3">
                       <div className="w-8 h-8 border-4 border-secondary-200 dark:border-secondary-700 border-t-[#b0cb1f] rounded-full animate-spin" />
-                      <p className="text-secondary-500 dark:text-secondary-400 font-medium">Refreshing table data...</p>
+                      <p className="text-secondary-500 dark:text-secondary-400 font-medium">
+                        Refreshing table data...
+                      </p>
                     </div>
                   </td>
                 </tr>
@@ -280,6 +288,9 @@ export const ManageBlog: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 text-center text-primary dark:text-gray-300">
                       {blog.category_name || blog.category}
+                    </td>
+                    <td className="px-6 py-4 text-center text-primary dark:text-gray-300">
+                      {blog.blog_author}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-center">

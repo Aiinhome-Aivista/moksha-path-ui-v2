@@ -81,6 +81,7 @@ export const GET_APIS = {
   blog_admin_dashboard: `${BASE_URL}blogs/admin-dashboard`,
   blog_category_dropdown: `${BASE_URL}blogs/category-dropdown`,
   public_blogs: `${BASE_URL}blogs/public-blogs`,
+  blog_author_dropdown: `${BASE_URL}blogs/authors-dropdown`,
   //invite modal instititute list
   get_institute_list: `${BASE_URL}user/get_institute_hierarchy`,
 
