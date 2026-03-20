@@ -53,15 +53,15 @@ const OverviewTab = () => {
       
       {/* 1. Page Sub-Header and Top Stats in one responsive row */}
       <div className="bg-color-secondary dark:bg-secondary-800 rounded-3xl border border-gray-100 dark:border-secondary-700 flex flex-col xl:flex-row justify-between items-center gap-8">
-        <div className="flex-shrink-0 pt-2 ">
-          <h2 className="text-2xl font-black text-cyan-600 dark:text-cyan-400 tracking-tight leading-none">Student & Subject Overview</h2>
-          <div className="text-[11px] text-gray-400 dark:text-gray-500 font-bold tracking-tight mt-1">
+        <div className="flex-shrink-0 pt-2 px-6 ">
+          <h2 className="text-1xl font-black text-cyan-600 dark:text-cyan-400 tracking-tight leading-none">Student & Subject Overview</h2>
+          <div className="text-[10px] text-gray-400 dark:text-gray-500 font-bold tracking-tight mt-1">
             <p>Performance summary across all classes</p>
             <p>March 2026</p>
           </div>
         </div>
 
-<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 flex-1 w-full max-w-5xl">
+<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-16 flex-1 w-full max-w-7xl pl-20">
   {(dashboardData?.topStats || []).map((stat, i) => (
     <div key={i} className="flex flex-col justify-center">
       {/* 1. Large Number (Value) */}
@@ -86,7 +86,7 @@ const OverviewTab = () => {
       </div>
 
       {/* 2. Subject Tables Grid (Mathematics & Science) */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 ">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 pl-6 pr-6">
         {renderTable("Mathematics", dashboardData?.overview?.mathematics, "78%", "91%")}
         {renderTable("Science", dashboardData?.overview?.science, "78%", "91%")}
       </div>
@@ -94,7 +94,7 @@ const OverviewTab = () => {
 
 {/* 3. EVS FOOTER ALERT BAR (Fully Dynamic) */}
 {(dashboardData?.overview?.evs || []).map((item: any, i: number) => (
-  <div key={i} className="bg-[#FCEA0A] rounded-[1rem] p-5 flex items-center justify-between shadow-sm w-full border border-yellow-300 ">
+  <div key={i} className="bg-[#FCEA0A] rounded-[1rem] p-6 pb-2 flex items-center justify-between shadow-sm mx-6 border border-yellow-300 ">
     
     <div className="flex items-start gap-4">
       {/* Orange Chevron Icon Box */}

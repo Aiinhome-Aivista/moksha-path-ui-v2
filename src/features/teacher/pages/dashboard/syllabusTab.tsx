@@ -9,7 +9,7 @@ const SyllabusTab = () => {
         <h3 className="text-xl font-black text-gray-800 tracking-tight">
           {title} <span className="text-gray-800 font-medium">| Class 10-a</span>
         </h3>
-        <div className="flex items-center gap-4 mt-1 text-[11px] font-bold  tracking-wider text-gray-800">
+        <div className="flex items-center gap-4 mt-1 text-[10px] font-bold  tracking-wider text-gray-800 ">
           <span>Syllabus: <span className="text-gray-500">78% complete</span></span>
           <span className="h-3 w-[1px] bg-gray-800"></span>
           <span>7 of 9 chapters</span>
@@ -47,12 +47,12 @@ const SyllabusTab = () => {
   );
 
   return (
-    <div className="animate-in fade-in duration-500">
+    <div className="animate-in fade-in duration-500 pr-6 pl-6">
       {/* 2. Main White Card */}
-      <div className="bg-gray-100 rounded-[2rem] border border-gray-100 pt-2">
+      <div className="bg-gray-100 rounded-[2rem] border border-gray-100 pt-4">
         {/* 1. Page Title */}
         <div className="mb-4">
-          <h2 className="text-2xl font-black text-cyan-600">Syllabus Progress</h2>
+          <h2 className="text-1xl font-black text-cyan-600 ">Syllabus Progress</h2>
           <p className="text-[10px] text-gray-400 font-bold  tracking-tight">
             Chapter-level coverage and performance vs CICSE benchmark
           </p>
