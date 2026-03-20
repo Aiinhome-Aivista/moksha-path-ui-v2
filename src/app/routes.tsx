@@ -33,6 +33,7 @@ import AddSEO from "../features/admin/pages/seo/AddSEO";
 import AddCategory from "../features/admin/pages/category/AddCategory";
 import ManageCategory from "../features/admin/pages/category/ManageCategory";
 import AdminLogin from "../features/admin/pages/category/AdminLogin";
+import InstituteAdminDashboard from "../features/institute-admin/pages/InstituteAdminDashboard";
 
 const routes: RouteObject[] = [
   // Standalone Routes
@@ -83,18 +84,11 @@ const routes: RouteObject[] = [
       { path: "parent-tests", element: <ParentMaterials /> },
       { path: "parent-videos", element: <ParentMaterials /> },
       { path: "parent-notes", element: <ParentMaterials /> },
-      {
-        path: "principal/",
-        element: <PlaceholderPage title="Principal Portal - Coming Soon" />,
-      },
-      {
-        path: "institution/",
-        element: <PlaceholderPage title="Institution Portal - Coming Soon" />,
-      },
-      {
-        path: "group/",
-        element: <PlaceholderPage title="Group Portal - Coming Soon" />,
-      },
+
+
+      //institute-admin/dashboard
+      { path: "institute-admin/dashboard", element: <InstituteAdminDashboard /> },
+      
     ],
   },
 
@@ -123,7 +117,7 @@ const routes: RouteObject[] = [
           { path: "manage-seo", element: <ManageSEO /> },
           { path: "add-seo", element: <AddSEO /> },
           { path: "manage-categories", element: <ManageCategory /> },
-          { path: "add-category", element: <AddCategory isOpen={true} onClose={() => {}} editId={null} /> },
+          { path: "add-category", element: <AddCategory isOpen={true} onClose={() => { }} editId={null} /> },
         ],
       },
     ],
@@ -131,7 +125,7 @@ const routes: RouteObject[] = [
 
   { path: "parent/", element: <ParentDashboard /> },
   {
-    path: "institution/",
+    path: "institute-admin/dashboard",
     element: <PlaceholderPage title="Institution Portal - Coming Soon" />,
   },
   {
