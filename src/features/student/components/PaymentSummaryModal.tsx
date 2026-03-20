@@ -32,23 +32,25 @@ interface ApiPlan {
   base_subject_total: number;
   monthly_divisor: number;
 }
+interface ProfileItem {
+  selectedPlan?: ApiPlan | null;
+  selectedSubjects: Subject[];
+  seats: number;
+  board_id: number | "";
+  class_id: number | "";
+}
 
 interface PaymentSummaryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedPlan: ApiPlan;
-  selectedSubjects: Subject[];
-  sheetCount: number;
+  profiles: ProfileItem[]; // ✅ ONLY THIS
+
   uiTotalAmount: number;
-  academicDetails: {
-    board_name: string;
-    class_name: string;
-  } | null;
+
   onProceedToPay: (
     subscriptionName: string,
     couponCode: string,
   ) => void;
-  // onApplyCoupon: (couponCode: string) => Promise<{ success: boolean; newAmount?: number; message?: string }>;
 
   onApplyCoupon: (couponCode: string) => Promise<{
     success: boolean;
@@ -59,17 +61,15 @@ interface PaymentSummaryModalProps {
     };
     message?: string;
   }>;
+
   isProcessing: boolean;
 }
 
 const PaymentSummaryModal: React.FC<PaymentSummaryModalProps> = ({
   isOpen,
   onClose,
-  selectedPlan,
-  selectedSubjects,
-  sheetCount,
+  profiles,
   uiTotalAmount,
-  academicDetails,
   onProceedToPay,
   onApplyCoupon,
   isProcessing,
@@ -82,10 +82,11 @@ const PaymentSummaryModal: React.FC<PaymentSummaryModalProps> = ({
   const [currentDisplayAmount, setCurrentDisplayAmount] = useState(0);
   const [couponError, setCouponError] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
 
   // Reset state when modal opens
   useEffect(() => {
-    if (isOpen && selectedPlan) {
+    if (isOpen && profiles?.length) {
       setSubscriptionName("");
       setCouponCode("");
       setCouponApplied(false);
@@ -94,7 +95,7 @@ const PaymentSummaryModal: React.FC<PaymentSummaryModalProps> = ({
       setCurrentDisplayAmount(uiTotalAmount); // Initialize display amount
       setDiscountAmount(0);
     }
-  }, [isOpen, selectedPlan, sheetCount, uiTotalAmount]);
+  }, [isOpen, profiles, uiTotalAmount]);
 
   // Prevent background scroll (Bulletproof Mobile Fix)
   useEffect(() => {
@@ -122,20 +123,20 @@ const PaymentSummaryModal: React.FC<PaymentSummaryModalProps> = ({
 
   if (!isOpen) return null;
 
-  const getDurationLabel = (plan: ApiPlan) => {
-    const months = Math.round(plan.duration_days / 30);
-    switch (plan.billing_cycle) {
-      case "trial":
-        return `${plan.duration_days / 7} Week`;
-      case "quarterly":
-      case "half_yearly":
-        return `${months} Months`;
-      case "yearly":
-        return "Yearly";
-      default:
-        return `${plan.duration_days} Days`;
-    }
-  };
+  // const getDurationLabel = (plan: ApiPlan) => {
+  //   const months = Math.round(plan.duration_days / 30);
+  //   switch (plan.billing_cycle) {
+  //     case "trial":
+  //       return `${plan.duration_days / 7} Week`;
+  //     case "quarterly":
+  //     case "half_yearly":
+  //       return `${months} Months`;
+  //     case "yearly":
+  //       return "Yearly";
+  //     default:
+  //       return `${plan.duration_days} Days`;
+  //   }
+  // };
 
   const handleApplyCoupon = async () => {
     if (couponCode.trim()) {
@@ -193,78 +194,120 @@ const PaymentSummaryModal: React.FC<PaymentSummaryModalProps> = ({
         {/* Body — Scrollable */}
         <div className="p-4 sm:px-6 sm:py-5 overflow-y-auto space-y-5">
           {/* ── Subscription Summary ── */}
-          <div className="bg-[#F7FAE9] rounded-2xl p-4 space-y-3">
+          <div className="space-y-3">
             <h3 className="text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">
               Subscription Summary
             </h3>
 
-            {/* <div className="grid grid-cols-2 gap-y-2 text-sm">
-              <span className="text-gray-500">Plan</span>
-              <span className="text-gray-800 font-medium text-right">
-                {selectedPlan.plan_name}
-              </span>
+            {profiles.map((profile, index) => {
+              const plan = profile.selectedPlan;
+              if (!plan) return null;
 
-              <span className="text-gray-500">Duration</span>
-              <span className="text-gray-800 font-medium text-right">
-                {getDurationLabel(selectedPlan)}
-              </span>
+              const subjectNames = profile.selectedSubjects
+                .map((s) => s.subject_name)
+                .join(", ");
 
-              {academicDetails && (
-                <>
-                  <span className="text-gray-500">Board</span>
-                  <span className="text-gray-800 font-medium text-right">
-                    {academicDetails.board_name}
-                  </span>
+              return (
+                <div
+                  key={index}
+                  className="border border-gray-200 rounded-xl overflow-hidden"
+                >
+                  {/* Header */}
+                  <div
+                    className="flex justify-between items-center px-4 py-3 bg-[#F7FAE9] cursor-pointer"
+                    onClick={() =>
+                      setExpandedIndex(expandedIndex === index ? null : index)
+                    }
+                  >
+                    <div>
+                      <p className="font-semibold text-gray-800 text-sm">
+                        Plan #{index + 1} - {plan.plan_name}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {profile.selectedSubjects.length} subjects • {profile.seats} seats
+                      </p>
+                    </div>
 
-                  <span className="text-gray-500">Class</span>
-                  <span className="text-gray-800 font-medium text-right">
-                    {academicDetails.class_name}
-                  </span>
-                </>
-              )}
-
-              <span className="text-gray-500">Subjects</span>
-              <span className="text-gray-800 font-medium text-right">
-                {selectedSubjects.map((s) => s.subject_name).join(", ")}
-              </span>
-
-              <span className="text-gray-500">Seats</span>
-              <span className="text-gray-800 font-medium text-right">
-                {sheetCount}
-              </span>
-
-              {selectedPlan.plan_discount_percent > 0 && (
-                <>
-                  <span className="text-gray-500">Discount</span>
-                  <span className="text-green-600 font-medium text-right">
-                    {selectedPlan.plan_discount_percent}% off
-                  </span>
-                </>
-              )}
-            </div> */}
-
-            <div className="border-t border-gray-200 pt-3 flex items-center justify-between">
-              <span className="text-gray-700 font-semibold text-sm sm:text-base">Total Amount</span>
-              <div className="text-right">
-                {couponApplied && originalAmount > currentDisplayAmount && (
-                  <div className="text-xs sm:text-sm text-gray-500 line-through mb-0.5 sm:mb-1">
-                    ₹ {originalAmount.toFixed(2)}
+                    <span
+                      className={`material-symbols-outlined text-gray-600 transition-transform duration-200 ${expandedIndex === index ? "rotate-180" : "rotate-0"
+                        }`}
+                    >
+                      expand_more
+                    </span>
                   </div>
-                )}
-                <span className="text-lg sm:text-xl font-bold text-[#5C5082]">
-                  ₹ {currentDisplayAmount.toFixed(2)}
+
+                  {/* Content */}
+                  {expandedIndex === index && (
+                    <div className="p-4 text-sm space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Subjects</span>
+                        <span className="text-gray-800 text-right">
+                          {subjectNames}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Seats</span>
+                        <span className="text-gray-800">{profile.seats}</span>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Amount</span>
+                        <span className="text-gray-800 font-semibold">
+                          ₹ {(
+                            (plan.subject_prices || [])
+                              .filter(sp =>
+                                profile.selectedSubjects.some(s => s.subject_id === sp.subject_id)
+                              )
+                              .reduce((sum, sp) => sum + (sp.price || 0), 0) *
+                            profile.seats *
+                            (1 - (plan.plan_discount_percent || 0) / 100)
+                          ).toFixed(2)}
+                        </span>
+                      </div>
+
+                      {plan.plan_discount_percent > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Discount</span>
+                          <span className="text-green-600">
+                            {plan.plan_discount_percent}% off
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── TOTAL SUMMARY ── */}
+          <div className="bg-[#F7FAE9] rounded-2xl p-4 space-y-3">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">
+              Payment Details
+            </h3>
+
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Total Amount</span>
+              <span className="text-gray-800 font-medium">
+                ₹ {originalAmount.toFixed(2)}
+              </span>
+            </div>
+
+            {couponApplied && discountAmount > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Discount</span>
+                <span className="text-green-600 font-medium">
+                  − ₹ {discountAmount.toFixed(2)}
                 </span>
-                {/* {couponApplied && originalAmount > currentDisplayAmount && (
-                  <div className="text-[10px] sm:text-xs text-green-600 font-semibold mt-0.5 sm:mt-1">
-                    Discount: ₹ {(originalAmount - currentDisplayAmount).toFixed(2)}
-                  </div>
-                )} */}
-                {couponApplied && discountAmount > 0 && (
-                  <div className="text-[10px] sm:text-xs text-green-600 font-semibold mt-0.5 sm:mt-1">
-                    Discount: ₹ {discountAmount.toFixed(2)}
-                  </div>
-                )}
               </div>
+            )}
+
+            <div className="border-t pt-2 flex justify-between text-base font-bold">
+              <span className="text-gray-800">Final Amount</span>
+              <span className="text-[#5C5082]">
+                ₹ {currentDisplayAmount.toFixed(2)}
+              </span>
             </div>
           </div>
 
