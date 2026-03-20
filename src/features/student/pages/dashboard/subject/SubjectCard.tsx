@@ -23,22 +23,20 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
   levels,
 }) => {
   return (
-    <div className="bg-white p-4 shadow-sm border-b-2 border-amber-300">
+    <div className=" p-4 border-b-4 border-[#EDEDED]">
       {/* Top Section */}
       <div className="flex items-end gap-2 mb-2">
-        <h2 className="text-7xl font-thin" style={{ color: statusColor }}>
+        <h2 className="text-7xl font-light" style={{ color: statusColor }}>
           {score}
-          <span className="text-3xl">%</span>
+          <span className="text-3xl font-normal">%</span>
         </h2>
         <div className="w-full items-end">
-          <span className="text-xs font-medium text-gray-500 pb-4">
-            {level}
-          </span>
+          <span className="text-xs font-medium text-primary pb-4">{level}</span>
 
           {/* Progress Bar */}
-          <div className="w-full h-3 bg-gray-200 rounded-full my-2">
+          <div className="w-full h-4 bg-gray-200 rounded-full my-2">
             <div
-              className="h-3 rounded-full"
+              className="h-4 rounded-full"
               style={{
                 width: `${score}%`,
                 backgroundColor: statusColor,
@@ -52,7 +50,9 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
       <h3 className="font-bold text-2xl text-gray-700 mb-2">{title}</h3>
 
       {/* Accuracy by Level */}
-      <p className="text-xs text-gray-400 mb-2">Accuracy by Level</p>
+      <p className="text-xs text-primary font-semibold  mb-2">
+        Accuracy by Level
+      </p>
 
       {/* <div className="flex justify-around text-center text-xs text-gray-500 mb-1 ml-1">
         {levels.map((lvl, i) => (
@@ -64,9 +64,15 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
       <div className="flex gap-1 mb-2 justify-around">
         {levels.map((lvl, i) => (
           <div key={i} className="flex-1">
-            <p className="text-lg text-center mt-1"  style={{
-                  color: lvl.color,
-                }}>{lvl.value}%</p>
+            <p
+              className="text-xl text-center mt-1"
+              style={{
+                color: lvl.color,
+              }}
+            >
+              {lvl.value}
+              <span className="text-sm">%</span>
+            </p>
             <p className="text-sm font-bold text-center mt-1">{lvl.label}</p>
             <div className="h-2 bg-gray-200 rounded-full">
               <div
@@ -82,7 +88,7 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
       </div>
 
       {/* Mean Time */}
-      <div className="flex justify-around mt-2 text-gray-400">
+      <div className="flex justify-around mt-2 text-primary text-sm font-medium tracking-tight">
         {levels.map((lvl, i) => (
           <div className="text-center">
             <p className="text-sm text-center">Mean Time:</p>
