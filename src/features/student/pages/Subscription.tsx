@@ -60,10 +60,10 @@ interface ClassItem {
   name: string;
 }
 
-// interface Section {
-//   id: number;
-//   name: string;
-// }
+interface Section {
+  id: number;
+  name: string;
+}
 
 interface AcademicYear {
   year: string;
@@ -82,6 +82,7 @@ interface AcademicProfile {
   board_id: number | "";
   school_id: number | "";
   class_id: number | "";
+  section_id: number | "";
   academic_year: string;
   selectedSubjects: Subject[];
   availableSubjects: Subject[];
@@ -95,6 +96,7 @@ const createEmptyProfile = (): AcademicProfile => ({
   board_id: "",
   school_id: "",
   class_id: "",
+  section_id: "",
   academic_year: "",
   selectedSubjects: [],
   availableSubjects: [],
@@ -134,6 +136,7 @@ const Subscription: React.FC = () => {
   const [dependencyMap, setDependencyMap] = useState<DependencyMapItem[]>([]);
   const [activeProfileIndex, setActiveProfileIndex] = useState(0);
   const [isPlansLoading, setIsPlansLoading] = useState(false);
+  const [sections, setSections] = useState<Section[]>([]);
 
   const [showAddSchoolInput, setShowAddSchoolInput] = useState<{
     index: number;
@@ -142,13 +145,45 @@ const Subscription: React.FC = () => {
   const [newSchoolName, setNewSchoolName] = useState("");
   const [isAddingSchool, setIsAddingSchool] = useState(false);
 
-  const localUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const [localUser, setLocalUser] = useState<any>({});
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    setLocalUser(user);
+  }, [location.pathname]); // triggers on navigation
   const [plansExpanded, setPlansExpanded] = useState(true);
   const togglePlansAccordion = () => {
     setPlansExpanded((prev) => !prev);
   };
+  // useEffect(() => {
+  //   const preselected = location.state?.preselectedAcademicDetails;
+  //   if (preselected) {
+  //     setProfiles([
+  //       {
+  //         id: "primary",
+  //         board_id: preselected.board_id || "",
+  //         class_id: preselected.class_id || "",
+  //         school_id: preselected.institute_id || "",
+  //         academic_year: preselected.academic_year || "",
+  //         selectedSubjects: [],
+  //         availableSubjects: [],
+  //         isSubjectsLoading: false,
+  //         isExpanded: true,
+  //         seats: 1,
+  //         selectedPlan: null,
+  //       },
+  //     ]);
+  //   }
+  // }, [location.state]);
+
   useEffect(() => {
     const preselected = location.state?.preselectedAcademicDetails;
+
+    const activeProfile = JSON.parse(
+      localStorage.getItem("active_profile") || "null"
+    );
+
+    // ✅ Priority 1: navigation state
     if (preselected) {
       setProfiles([
         {
@@ -156,6 +191,7 @@ const Subscription: React.FC = () => {
           board_id: preselected.board_id || "",
           class_id: preselected.class_id || "",
           school_id: preselected.institute_id || "",
+          section_id: preselected.section_id || "",
           academic_year: preselected.academic_year || "",
           selectedSubjects: [],
           availableSubjects: [],
@@ -165,28 +201,76 @@ const Subscription: React.FC = () => {
           selectedPlan: null,
         },
       ]);
+      return;
     }
-  }, [location.state]);
+
+    // ✅ Priority 2: student from localStorage
+    if (localUser.role === "student" && activeProfile) {
+      setProfiles([
+        {
+          id: "primary",
+          board_id: activeProfile.board_id || "",
+          class_id: activeProfile.class_id || "",
+          school_id: activeProfile.institute_id || "",
+          section_id: preselected.section_id || "",
+          academic_year: "",
+          selectedSubjects: [],
+          availableSubjects: [],
+          isSubjectsLoading: false,
+          isExpanded: true,
+          seats: 1,
+          selectedPlan: null,
+        },
+      ]);
+    }
+  }, [location.state, localUser.role]); // ✅ FIXED
+  // useEffect(() => {
+  //   setProfiles((prev) =>
+  //     prev.map((profile) => ({
+  //       ...profile,
+  //       board_id: boards.some((b) => b.id === profile.board_id)
+  //         ? profile.board_id
+  //         : "",
+  //       school_id: schools.some((s) => s.id === profile.school_id)
+  //         ? profile.school_id
+  //         : "",
+  //       class_id: classes.some((c) => c.id === profile.class_id)
+  //         ? profile.class_id
+  //         : "",
+  //       academic_year: academicYears.some(
+  //         (y) => y.year === profile.academic_year,
+  //       )
+  //         ? profile.academic_year
+  //         : "",
+  //     })),
+  //   );
+  // }, [boards, schools, classes, academicYears]);
 
   useEffect(() => {
+    if (!boards.length || !schools.length || !classes.length) return;
+
     setProfiles((prev) =>
       prev.map((profile) => ({
         ...profile,
-        board_id: boards.some((b) => b.id === profile.board_id)
+
+        board_id: boards.some((b) => String(b.id) === String(profile.board_id))
           ? profile.board_id
-          : "",
-        school_id: schools.some((s) => s.id === profile.school_id)
+          : profile.board_id,
+
+        school_id: schools.some((s) => String(s.id) === String(profile.school_id))
           ? profile.school_id
-          : "",
-        class_id: classes.some((c) => c.id === profile.class_id)
+          : profile.school_id,
+
+        class_id: classes.some((c) => String(c.id) === String(profile.class_id))
           ? profile.class_id
-          : "",
+          : profile.class_id,
+
         academic_year: academicYears.some(
-          (y) => y.year === profile.academic_year,
+          (y) => String(y.year) === String(profile.academic_year)
         )
           ? profile.academic_year
-          : "",
-      })),
+          : profile.academic_year,
+      }))
     );
   }, [boards, schools, classes, academicYears]);
 
@@ -204,6 +288,7 @@ const Subscription: React.FC = () => {
         setBoards(data.boards || []);
         setSchools(data.schools || []);
         setClasses(data.classes || []);
+        setSections(data.sections || []);
         const rawYears = data.academic_years || [];
         const formattedYears = rawYears.map((y: any) =>
           typeof y === "string" ? { year: y } : y,
@@ -815,14 +900,27 @@ const Subscription: React.FC = () => {
       //   subscription_name: "",
       // };
       const payload = {
-        profiles: buildProfilesPayload(),
+        profiles: buildProfilesPayload().map((p) => ({
+          plan_id: p.plan_id,
+          board_id: p.board_id,
+          class_id: p.class_id,
+          academic_year: p.academic_year,
+          institute_id: p.institute_id,
+          subject_ids: p.subject_ids,
+          total_licenses: p.total_licenses,
+          licenses_used: p.licenses_used,
+        })),
 
+        subscription_name: `Plan_${selectedPlan?.plan_id}_${new Date()
+          .toLocaleString("en-IN", { month: "long", year: "numeric" })
+          .replace(" ", "")}`,
+
+        // ✅ ADD THIS (VERY IMPORTANT)
+        total_amount: Number(uiTotalAmount.toFixed(2)),
+
+        // ✅ ADD THESE (backend still expects)
         ui_total_amount: Number(uiTotalAmount.toFixed(2)),
-
         total_licenses: totalSeats,
-
-        subscription_name: "", // ✅ keep empty if backend requires
-
       };
       const response = await ApiServices.saveSubscriptionDraft(payload);
       if (response.data?.status === "success") {
@@ -1034,11 +1132,15 @@ const Subscription: React.FC = () => {
             const validClasses = useFilter
               ? Array.from(new Set(validDependencies.map((d) => d.class_id)))
               : classes.map((c) => c.id);
+            const validSections = useFilter
+              ? Array.from(new Set(validDependencies.map((d) => d.section_id)))
+              : sections.map((s) => s.id);
             const validYears = useFilter
               ? Array.from(
                 new Set(validDependencies.map((d) => d.academic_year)),
               )
               : academicYears.map((y) => y.year);
+
 
             const filteredBoards = useFilter
               ? boards.filter((b) => validBoards.includes(b.id))
@@ -1049,6 +1151,9 @@ const Subscription: React.FC = () => {
             const filteredClasses = useFilter
               ? classes.filter((c) => validClasses.includes(c.id))
               : classes;
+            const filteredSections = useFilter
+              ? sections.filter((s) => validSections.includes(s.id))
+              : sections;
             const filteredYears = useFilter
               ? academicYears.filter((y) => validYears.includes(y.year))
               : academicYears;
@@ -1196,6 +1301,7 @@ const Subscription: React.FC = () => {
                               } else {
                                 updateProfile(profileIndex, {
                                   school_id: val === "" ? "" : Number(val),
+                                  section_id: "",
                                 });
                                 setShowAddSchoolInput({
                                   index: -1,
@@ -1245,6 +1351,7 @@ const Subscription: React.FC = () => {
                             onChange={(val) => {
                               updateProfile(profileIndex, {
                                 class_id: val === "" ? "" : Number(val),
+                                section_id: "",
                               });
                             }}
                             options={filteredClasses.map((c) => ({
@@ -1254,6 +1361,30 @@ const Subscription: React.FC = () => {
                             placeholder="Class"
                             className="w-full bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-700 font-medium shadow-sm hover:border-[#BADA55] focus:outline-none transition-all"
                             dropdownClassName="min-w-[140px]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Section */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[9px] tracking-widest text-gray-400 font-bold px-1 uppercase">
+                          Section
+                        </label>
+                        <div className="relative w-[120px]">
+                          <SearchableSelect
+                            value={p.section_id}
+                            onChange={(val) => {
+                              updateProfile(profileIndex, {
+                                section_id: val === "" ? "" : Number(val),
+                              });
+                            }}
+                            options={filteredSections.map((s) => ({
+                              value: s.id,
+                              label: s.name,
+                            }))}
+                            placeholder="Section"
+                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs"
+                            dropdownClassName="min-w-[120px]"
                           />
                         </div>
                       </div>
@@ -1290,6 +1421,7 @@ const Subscription: React.FC = () => {
                               board_id: "",
                               school_id: "",
                               class_id: "",
+                              section_id: "", 
                               academic_year: "",
                               selectedSubjects: [],
                               availableSubjects: [],

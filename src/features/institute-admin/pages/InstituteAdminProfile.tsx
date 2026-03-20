@@ -3,16 +3,15 @@ import { useFormik } from "formik";
 import { useAuth } from "../../../app/providers/AuthProvider";
 // import { useModal } from '../../../features/auth/context/AuthContext';
 import ApiServices from "../../../services/ApiServices";
+import ManageFacultyModal from "../components/ManageFacultyModal";
 import {
   Mail,
   Phone,
   Edit3,
   CheckCircle2,
   GraduationCap,
-  Users,
   Lock,
   MapPin,
-  PlusCircle,
   X,
 } from "lucide-react";
 
@@ -23,9 +22,7 @@ interface Course {
 }
 
 interface ProfileFormValues {
-  // Contact (email & phone always read-only)
   address: string;
-  // Academic
   academic: string;
   board: string;
   school: string;
@@ -33,12 +30,6 @@ interface ProfileFormValues {
   grade: string;
   section: string;
   enrollmentDate: string;
-  // Guardian
-  guardianName: string;
-  guardianRelation: string;
-  guardianEmail: string;
-  guardianPhone: string;
-  // Lists
   courses: Course[];
 }
 
@@ -48,11 +39,17 @@ const InstituteAdminProfile: React.FC = () => {
   const [isEditingBasic, setIsEditingBasic] = useState(false);
   // const [isEditingGuardian, setIsEditingGuardian] = useState(false);
   // const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [profileImage, setProfileImage] = useState<string>("");
   const [uploading, setUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isFacultyModalOpen, setIsFacultyModalOpen] = useState(false);
+
+  // faculty inline tabs
+  const [facultyTab, setFacultyTab] = useState<"assigned" | "available">("assigned");
+  const [assignedTeachers, setAssignedTeachers] = useState<any[]>([]);
+  const [availableTeachers, setAvailableTeachers] = useState<any[]>([]);
+  const [facultyLoading, setFacultyLoading] = useState(false);
 
   //for academic info
   const [academicInfo, setAcademicInfo] = useState<any>(null);
@@ -60,9 +57,25 @@ const InstituteAdminProfile: React.FC = () => {
   //for basic info
   const [profileInfo, setProfileInfo] = useState<any>(null);
 
-  // for active connections (Guardian/Student)
-  const [activeConnections, setActiveConnections] = useState<any[]>([]);
-  const [loadingConnections, setLoadingConnections] = useState(false);
+  // ── Fetch faculty lists ─────────────────────────────────────
+  useEffect(() => {
+    const fetchFaculty = async () => {
+      try {
+        setFacultyLoading(true);
+        const [assignedRes, availableRes] = await Promise.all([
+          ApiServices.getAssignedTeacherList(),
+          ApiServices.getAvailableTeachers(),
+        ]);
+        if (assignedRes.data?.status === "success") setAssignedTeachers(assignedRes.data.data || []);
+        if (availableRes.data?.status === "success") setAvailableTeachers(availableRes.data.data || []);
+      } catch {
+        // silently fail
+      } finally {
+        setFacultyLoading(false);
+      }
+    };
+    fetchFaculty();
+  }, [isFacultyModalOpen]); // refresh when modal closes
 
   // ── Profile image ──────────────────────────
   useEffect(() => {
@@ -121,26 +134,7 @@ const InstituteAdminProfile: React.FC = () => {
     fetchProfileInfo();
   }, []);
 
-  useEffect(() => {
-    const fetchConnections = async () => {
-      try {
-        setLoadingConnections(true);
-        const res = await ApiServices.getActiveUserConnections();
-        if (res.data?.status === "success") {
-          const connections = res.data.data || [];
-          setActiveConnections(connections);
 
-          // removed formik prefilling since we're using ReadOnlyField mapping directly
-        }
-      } catch (error) {
-        console.error("Connections fetch failed", error);
-      } finally {
-        setLoadingConnections(false);
-      }
-    };
-
-    fetchConnections();
-  }, []);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -174,17 +168,7 @@ const InstituteAdminProfile: React.FC = () => {
   //     }
   // };
 
-  // ── Role-based Action Button ────────────────
-  const getProfileBtnProps = () => {
-    const role = user?.role;
-    if (role === "student")
-      return { label: "Add Parent", show: true, targetRole: "parent" as const };
-    if (role === "parent")
-      return { label: "Add Child", show: true, targetRole: "student" as const };
-    return { label: "", show: false, targetRole: null };
-  };
 
-  const profileBtn = getProfileBtnProps();
 
   // ── Formik ─────────────────────────────────
   const initialValues: ProfileFormValues = {
@@ -196,47 +180,8 @@ const InstituteAdminProfile: React.FC = () => {
     grade: "",
     section: "",
     enrollmentDate: "",
-    guardianName: "",
-    guardianRelation: "",
-    guardianEmail: "",
-    guardianPhone: "",
     courses: [],
   };
-
-  // const formik = useFormik<ProfileFormValues>({
-  //   initialValues,
-  //   onSubmit: async () => {
-  //     // values
-  //     try {
-  //       setIsSaving(true);
-  //       // API payload — ready to send
-  //       // const payload = {
-  //       //     address: values.address,
-  //       //     academic: values.academic,
-  //       //     board: values.board,
-  //       //     dateOfBirth: values.dateOfBirth,
-  //       //     grade: values.grade,
-  //       //     section: values.section,
-  //       //     enrollmentDate: values.enrollmentDate,
-  //       //     guardianName: values.guardianName,
-  //       //     guardianRelation: values.guardianRelation,
-  //       //     guardianEmail: values.guardianEmail,
-  //       //     guardianPhone: values.guardianPhone,
-  //       //     courses: values.courses,
-  //       // };
-  //       // TODO: await ApiServices.updateStudentProfile(payload);
-  //       // console.log('[Profile] API Payload ready:', payload);
-  //       setIsEditingBasic(false);
-  //       setIsEditingGuardian(false);
-  //     } catch {
-  //       // silently fail
-  //     } finally {
-  //       setIsSaving(false);
-  //     }
-  //   },
-  // });
-
-  // ── Helpers ────────────────────────────────
 
   const formik = useFormik<ProfileFormValues>({
     initialValues,
@@ -264,18 +209,6 @@ const InstituteAdminProfile: React.FC = () => {
   });
 
   const handleSave = () => formik.submitForm();
-
-  const isTeacher = user?.role === "teacher";
-  const isParent = user?.role === "parent";
-
-  const secondSectionConfig = {
-    title: isParent ? "Child Info" : "Guardian Info",
-    labels: {
-      name: isParent ? "Child Name" : "Name",
-      email: isParent ? "Child Email" : "Email",
-      phone: isParent ? "Child Phone" : "Phone",
-    },
-  };
 
   const handleCancel = (section: "basic" | "guardian") => {
     formik.resetForm();
@@ -410,30 +343,38 @@ const InstituteAdminProfile: React.FC = () => {
               </span>
             </div>
           </div>
-          {/* Action buttons */}
-          <div className="relative flex gap-1.5 shrink-0">
-            {profileBtn.show && (
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(true)}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-white/25 hover:bg-white/35 text-primary text-xs font-semibold transition-all"
-              >
-                <PlusCircle size={11} />
-                {profileBtn.label}
-              </button>
-            )}
-          </div>
+
+        {/* ── Action buttons in header ── */}
+        <div className="relative flex gap-1.5 shrink-0 pr-2">
+          <button
+            type="button"
+            onClick={() => setIsFacultyModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/25 hover:bg-white/40 text-primary text-xs font-bold transition-all"
+          >
+            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>manage_accounts</span>
+            Manage Faculty
+          </button>
+        </div>
+
         </div>
         <SectionCard
           icon={<GraduationCap size={14} className="text-primary" />}
-          title="Academic Information"
+          title="Basic Information"
+          action={
+            <EditButtons
+              isEditing={isEditingBasic}
+              onEdit={() => setIsEditingBasic(true)}
+              onCancel={() => handleCancel('basic')}
+              onSave={handleSave}
+              isSaving={isSaving}
+            />
+          }
         >
           <div className="px-5 py-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
               <FormField
                 label="Board"
                 name="board"
-                // value={formik.values.board}
                 value={academicInfo?.board_name || ""}
                 onChange={formik.handleChange}
                 isEditing={false}
@@ -442,20 +383,6 @@ const InstituteAdminProfile: React.FC = () => {
                 label="School"
                 name="school"
                 value={academicInfo?.institute_name || ""}
-                onChange={formik.handleChange}
-                isEditing={false}
-              />
-              <FormField
-                label="Class"
-                name="grade"
-                value={academicInfo?.class_name || ""}
-                onChange={formik.handleChange}
-                isEditing={false}
-              />
-              <FormField
-                label="Section"
-                name="section"
-                value={academicInfo?.section_name || ""}
                 onChange={formik.handleChange}
                 isEditing={false}
               />
@@ -473,148 +400,124 @@ const InstituteAdminProfile: React.FC = () => {
                 onChange={formik.handleChange}
                 isEditing={false}
               />
+               <ReadOnlyField
+                label="Email Address"
+                value={profileInfo?.email || ""}
+                icon={<Mail size={10} className="text-primary" />}
+              />
+              <ReadOnlyField
+                label="Mobile Number"
+                value={profileInfo?.mobile || ""}
+                icon={<Phone size={10} className="text-primary" />}
+              />
+              <FormField
+                label="Address"
+                name="address"
+                value={formik.values.address}
+                onChange={formik.handleChange}
+                isEditing={isEditingBasic}
+                icon={<MapPin size={10} className="text-primary" />}
+              />
             </div>
           </div>
         </SectionCard>
       </div>
-      <div className="space-y-4">
-        {/* Row 1: Contact Information + Guardian Info */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <SectionCard
-            icon={<Mail size={14} className="text-primary" />}
-            title="Basic Information"
-            action={
-              <EditButtons
-                isEditing={isEditingBasic}
-                onEdit={() => setIsEditingBasic(true)}
-                onCancel={() => handleCancel('basic')}
-                onSave={handleSave}
-                isSaving={isSaving}
-              />
-            }
-          >
-            <div className="p-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                {user?.role === "student" && (
-                  <FormField
-                    label="Date of Birth"
-                    name="dateOfBirth"
-                    value={formik.values.dateOfBirth}
-                    onChange={formik.handleChange}
-                    isEditing={isEditingBasic}
-                  />
-                )}
-                <ReadOnlyField
-                  label="Email Address"
-                  value={profileInfo?.email || ""}
-                  icon={<Mail size={10} className="text-primary" />}
-                />
-                <ReadOnlyField
-                  label="Mobile Number"
-                  value={profileInfo?.mobile || ""}
-                  icon={<Phone size={10} className="text-primary" />}
-                />
-                <FormField
-                  label="Address"
-                  name="address"
-                  value={formik.values.address}
-                  onChange={formik.handleChange}
-                  isEditing={isEditingBasic}
-                  icon={<MapPin size={10} className="text-primary" />}
-                />
-              </div>
-            </div>
-          </SectionCard>
-          {!isTeacher && (
-            <SectionCard
-              icon={<Users size={14} className="text-primary" />}
-              title={secondSectionConfig.title}
-            >
-              <div className="p-4 space-y-4">
-                {loadingConnections ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="w-6 h-6 border-2 border-gray-200 border-t-[#b0cb1f] rounded-full animate-spin" />
-                  </div>
-                ) : activeConnections.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-6 text-gray-400">
-                    <Users size={24} className="mb-2 opacity-20" />
-                    <p className="text-xs italic">No linked {isParent ? "student" : "guardian"} found</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2 max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
-                    {activeConnections.map((connection: any, index: number) => (
-                      <React.Fragment key={connection.link_id || connection.user_id}>
-                        <div className="rounded-xl p-4 relative">
-                          {/* Optional Number badge like "Child 1" / "Guardian 1" */}
-                          <div className="absolute -top-1 left-4 px-2 py-0.5 bg-white text-[10px] font-bold text-primary uppercase tracking-wider border border-gray-100 rounded-full">
-                            {isParent ? "Child" : "Guardian"} {index + 1}
-                          </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                            <ReadOnlyField
-                              label={secondSectionConfig.labels.name}
-                              value={connection.name || ""}
-                            />
-                            {isParent ? (
-                              <ReadOnlyField
-                                label="Date of Birth"
-                                value={connection.dob || "NA"}
-                              />
-                            ) : (
-                              <ReadOnlyField
-                                label="Relation"
-                                value={connection.role || ""}
-                              />
-                            )}
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                            <ReadOnlyField
-                              label={secondSectionConfig.labels.email}
-                              value={connection.email || ""}
-                              icon={<Mail size={10} className="text-primary" />}
-                            />
-                            <ReadOnlyField
-                              label={secondSectionConfig.labels.phone}
-                              value={connection.phone || ""}
-                              icon={<Phone size={10} className="text-primary" />}
-                            />
-                            {isParent && (
-                              <ReadOnlyField
-                                label="Address"
-                                value={connection.address || ""}
-                                icon={<MapPin size={10} className="text-primary" />}
-                              />
-                            )}
-                          </div>
-                        </div>
-                        {/* Divider between items */}
-                        {index < activeConnections.length - 1 && (
-                          <div className="relative flex items-center py-2">
-                            <div className="flex-grow border-t border-gray-100"></div>
-                            <span className="flex-shrink-0 mx-4 bg-white text-gray-300">
-                              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'wght' 300" }}>
-                                link
-                              </span>
-                            </span>
-                            <div className="flex-grow border-t border-gray-100"></div>
-                          </div>
-                        )}
-                      </React.Fragment>
-                    ))}
+      {/* ── Faculty Inline Section ── */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-2 px-5 py-3 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-sm text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>group</span>
+            <h3 className="text-sm font-bold text-primary">Faculty Information</h3>
+          </div>
+          {/* <button
+            type="button"
+            onClick={() => setIsFacultyModalOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold bg-[#b0cb1f] text-gray-800 hover:bg-lime-400 transition-all"
+          >
+            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>manage_accounts</span>
+            Manage Faculty
+          </button> */}
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 bg-gray-50 mx-5 mt-4 p-1 rounded-xl">
+          {(["assigned", "available"] as const).map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setFacultyTab(tab)}
+              className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all duration-200 capitalize ${
+                facultyTab === tab
+                  ? "bg-[#b0cb1f] text-gray-800 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {tab === "assigned" ? `Assigned Faculty (${assignedTeachers.length})` : `Available Teachers (${availableTeachers.length})`}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        <div className="px-5 py-4">
+          {facultyLoading ? (
+            <div className="flex items-center justify-center py-8 text-gray-400 gap-2">
+              <div className="w-5 h-5 border-2 border-gray-200 border-t-[#b0cb1f] rounded-full animate-spin" />
+              <span className="text-xs">Loading…</span>
+            </div>
+          ) : facultyTab === "assigned" ? (
+            assignedTeachers.length === 0 ? (
+              <p className="text-xs text-center text-gray-400 italic py-6">No teachers assigned yet.</p>
+            ) : (
+              <div className="space-y-2 max-h-[260px] overflow-y-auto">
+                {assignedTeachers.map((t: any) => (
+                  <div key={t.teacher_user_id} className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                      {(t.name || "T").charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-gray-800 truncate">{t.name}</p>
+                      <p className="text-[11px] text-gray-400 truncate">{t.email}</p>
+                    </div>
+                    <p className="text-[11px] text-gray-400">{t.mobile}</p>
+                    {t.section_names?.length > 0 && (
+                      <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-purple-50 text-purple-700">
+                        {t.section_names.join(", ")}
+                      </span>
+                    )}
                   </div>
-                )}
+                ))}
               </div>
-            </SectionCard>
+            )
+          ) : (
+            availableTeachers.length === 0 ? (
+              <p className="text-xs text-center text-gray-400 italic py-6">No available teachers found.</p>
+            ) : (
+              <div className="space-y-2 max-h-[260px] overflow-y-auto">
+                {availableTeachers.map((t: any) => (
+                  <div key={t.teacher_user_id} className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                      {(t.name || "T").charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-gray-800 truncate">{t.name}</p>
+                      <p className="text-[11px] text-gray-400 truncate">{t.email}</p>
+                    </div>
+                    <p className="text-[11px] text-gray-400">{t.mobile}</p>
+                  </div>
+                ))}
+              </div>
+            )
           )}
         </div>
       </div>
-      {profileBtn.targetRole && (
-        <AddProfileModal
-          isOpen={isAddModalOpen}
-          onClose={() => setIsAddModalOpen(false)}
-          targetRole={profileBtn.targetRole}
-        />
-      )}
+
+      {/* Manage Faculty Modal */}
+      <ManageFacultyModal
+        isOpen={isFacultyModalOpen}
+        onClose={() => setIsFacultyModalOpen(false)}
+      />
     </form>
   );
 };
@@ -686,185 +589,5 @@ const ReadOnlyField: React.FC<{
     </div>
   </div>
 );
-
-const AddProfileModal: React.FC<{
-  isOpen: boolean;
-  onClose: () => void;
-  targetRole: "parent" | "student";
-}> = ({ isOpen, onClose, targetRole }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-
-  if (!isOpen) return null;
-
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
-    try {
-      setIsSearching(true);
-      setError("");
-      setSearchResults([]);
-      const response = await ApiServices.searchUserForMapping(searchQuery);
-      if (response.data?.status === "success") {
-        setSearchResults(response.data.data || []);
-        if (response.data.data?.length === 0) {
-          setError("No users found matching your search.");
-        }
-      } else {
-        setError(response.data?.message || "Search failed");
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Search failed");
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedUser) {
-      setError("Please select a user to map.");
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setError("");
-
-      const payload: any = {};
-      if (targetRole === "parent") {
-        payload.parent_user_id = selectedUser.user_id;
-      } else {
-        payload.student_user_id = selectedUser.user_id;
-      }
-
-      const response = await ApiServices.addParentStudentMapping(payload);
-      if (response.data?.status === "success") {
-        setSuccess("Mapping request sent successfully!");
-        setTimeout(() => {
-          onClose();
-          window.location.reload();
-        }, 1500);
-      } else {
-        setError(response.data?.message || "Failed to add mapping");
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Something went wrong");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 animate-in fade-in zoom-in duration-200">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-primary hover:text-gray-600 transition-colors"
-        >
-          <X size={20} />
-        </button>
-
-        <h2 className="text-xl font-bold text-gray-900 mb-1">
-          Add {targetRole === "parent" ? "Parent" : "Child"}
-        </h2>
-        <p className="text-sm text-gray-500 mb-6">
-          Find and link your {targetRole === "parent" ? "guardian" : "child"} by searching their name, email, or phone.
-        </p>
-
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <label className="text-[10px] font-bold text-primary uppercase tracking-wider block mb-1">
-                Search User
-              </label>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                placeholder="Name, Email or Phone..."
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:border-[#b0cb1f] focus:ring-2 focus:ring-[#b0cb1f]/20 transition-all"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={handleSearch}
-              disabled={isSearching}
-              className="mt-5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5"
-            >
-              {isSearching ? <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> : "Search"}
-            </button>
-          </div>
-
-          {searchResults.length > 0 && (
-            <div className="max-h-48 overflow-y-auto border border-gray-100 rounded-lg divide-y divide-gray-50">
-              {searchResults
-                .filter((user) => {
-                  const query = searchQuery.toLowerCase().trim();
-                  return (
-                    user.full_name?.toLowerCase().includes(query) ||
-                    user.email?.toLowerCase().includes(query) ||
-                    user.phone?.includes(query)
-                  );
-                })
-                .map((user) => (
-                  <div
-                    key={user.user_id}
-                    onClick={() => setSelectedUser(user)}
-                    className={`p-3 cursor-pointer transition-colors hover:bg-lime-50/50 ${selectedUser?.user_id === user.user_id ? "bg-lime-50 border-l-4 border-l-[#b0cb1f]" : ""}`}
-                  >
-                    <p className="text-sm font-bold text-gray-900">{user.full_name}</p>
-                    <div className="flex items-center gap-3 mt-0.5">
-                      <p className="text-[11px] text-gray-500">{user.email}</p>
-                      <p className="text-[11px] text-gray-500">•</p>
-                      <p className="text-[11px] text-gray-500">{user.phone}</p>
-                      <span className="ml-auto px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-[9px] font-bold uppercase">{user.role_type}</span>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          )}
-
-          {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
-          {success && <p className="text-xs text-green-600 font-bold flex items-center gap-1"><CheckCircle2 size={12} /> {success}</p>}
-
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isLoading || !selectedUser}
-              className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-[#b0cb1f] hover:bg-[#a0ba1c] rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <PlusCircle size={14} />
-                  Add Profile
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default InstituteAdminProfile;
