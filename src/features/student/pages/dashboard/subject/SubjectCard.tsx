@@ -11,6 +11,7 @@ interface SubjectCardProps {
   title: string;
   score: number;
   level: string;
+  difficulty: string;
   statusColor: string;
   levels: Level[];
 }
@@ -19,11 +20,12 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
   title,
   score,
   level,
+  difficulty,
   statusColor,
   levels,
 }) => {
   return (
-    <div className=" p-4 border-b-4 border-[#EDEDED]">
+    <div className=" p-1 border-b-4 border-[#EDEDED]">
       {/* Top Section */}
       <div className="flex items-end gap-2 mb-2">
         <h2 className="text-7xl font-light" style={{ color: statusColor }}>
@@ -31,8 +33,18 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
           <span className="text-3xl font-normal">%</span>
         </h2>
         <div className="w-full items-end">
-          <span className="text-xs font-medium text-primary pb-4">{level}</span>
-
+          {/* <span className="text-xs font-medium text-primary pb-4">{level}-{difficulty}</span> */}
+<span
+  className={`text-xs font-semibold pb-4 ${
+    difficulty === "Hard"
+      ? "text-[#578E12]"
+      : difficulty === "Medium"
+      ? "text-[#EA9003]"
+      : "text-[#80975F]"
+  }`}
+>
+  {level} - {difficulty}
+</span>
           {/* Progress Bar */}
           <div className="w-full h-4 bg-gray-200 rounded-full my-2">
             <div
