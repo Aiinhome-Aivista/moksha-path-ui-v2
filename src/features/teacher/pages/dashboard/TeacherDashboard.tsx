@@ -24,52 +24,59 @@ const TeacherDashboard = () => {
   const [activeTab, setActiveTab] = useState<TabName>('Overview');
 
   return (
-    <div className="space-y-6">
-      {/* 1. THE SINGLE DIV HEADER */}
-      <div className="flex items-center gap-4 w-full pr-4">
-        {/* Profile Greeting Card */}
-        <div className="bg-[#3a3a3a] text-white px-8 py-3 rounded-r-full flex items-center gap-4 shadow-xl flex-shrink-0">
-          <div className="w-12 h-12 rounded-full bg-gray-400 border-2 border-white overflow-hidden flex-shrink-0">
-            <img
-              src="https://via.placeholder.com/150"
-              alt="Priya Sharma"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="whitespace-nowrap">
-            <h2 className="font-bold text-sm lg:text-[16px] leading-tight">Greetings Ms. Priya Sharma</h2>
-            <p className="text-[10px] opacity-60 font-medium">St. Thomas School for Boys (CICSE)</p>
+    // Single wrapper for the entire dashboard
+    <div className="flex flex-col">
+      
+      {/* 1. THE HEADER ROW */}
+      <div className="flex items-center w-full relative pl-2 pt-2">
+        
+        {/* Left: Dark Profile Pill */}
+        <div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-2 pl-4 pr-12 rounded-r-[2rem] shadow-md z-10 relative flex-shrink-0">
+          <img
+            src="https://www.picsman.ai/blog/wp-content/uploads/2025/01/free-passport-photo-maker-1.webp"
+            className="w-14 h-14 rounded-full border-2 border-white object-cover shadow-sm flex-shrink-0"
+            alt="profile"
+          />
+          <div className="flex flex-col justify-center">
+            <span className="text-[11px] font-bold text-gray-200 leading-none mb-0.5">
+              Greetings
+            </span>
+            <h2 className="text-xl font-black leading-none tracking-tight">
+              Ms. Priya Sharma
+            </h2>
+            <p className="text-[10px] text-gray-300 font-medium mt-1 tracking-wide">
+              St. Thomas School for Boys (CICSE)
+            </p>
           </div>
         </div>
 
-        {/* Nav Tab Bar */}
-        <nav className="flex-1 flex items-center justify-between bg-gray-100 dark:bg-secondary-800 p-1 rounded-full border border-gray-200 shadow-sm ml-4 px-6">
-          <h1 className="text-[#00bcd4] font-black text-sm lg:text-lg tracking-tight uppercase whitespace-nowrap">
+        <div className="flex items-center gap-20 px-14 bg-[#E9E9E9] h-12 rounded-tr-full rounded-br-full lg:col-span-2 xl:col-span-3">
+          <h1 className="text-[#00bcd4] font-black text-lg tracking-tight uppercase whitespace-nowrap">
             My Dashboard
           </h1>
-
-          <div className="flex items-center gap-1">
+          <div className="flex gap-3">
             {tabs.map((tab) => (
               <button
                 key={tab.name}
                 onClick={() => setActiveTab(tab.name)}
-                className={`px-8 py-2.5 rounded-full text-xs lg:text-sm font-black transition-all duration-300 ${
+                className={`px-10 py-2 rounded-full text-sm font-medium transition-colors ${
                   activeTab === tab.name
-                    ? 'bg-[#f39c12] text-white shadow-lg scale-105'
-                    : 'text-gray-400 hover:text-gray-800 dark:text-gray-300'
+                    ? "bg-yellow-500  text-black"
+                    : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
                 {tab.name}
               </button>
             ))}
           </div>
-        </nav>
+        </div>
       </div>
 
       {/* 2. DYNAMIC CONTENT AREA */}
-      <main className="px-2">
+      <main className="px-2 w-full animate-in fade-in duration-500">
         {tabComponents[activeTab]}
       </main>
+      
     </div>
   );
 };
