@@ -113,16 +113,25 @@ const PaymentGateway: React.FC = () => {
             "success",
           );
           // console.log("idd",subscriptionId)
-          if (subscriptionId) {
-            const role = localUser?.role?.toLowerCase();
+          // if (subscriptionId) {
+          //   const role = localUser?.role?.toLowerCase();
 
-            if (role === "teacher") {
-              navigate("/teacher/dashboard", { replace: true });
-            } else if (role === "parent") {
-              navigate("/parent/dashboard", { replace: true });
-            } else {
-              navigate("/dashboard", { replace: true });
-            }
+          //   if (role === "teacher") {
+          //     navigate("/teacher/dashboard", { replace: true });
+          //   } else if (role === "parent") {
+          //     navigate("/parent/dashboard", { replace: true });
+          //   } else {
+          //     navigate("/dashboard", { replace: true });
+          //   }
+          // }
+          const role = localUser?.role?.toLowerCase();
+
+          if (role === "teacher") {
+            navigate("/teacher/dashboard", { replace: true });
+          } else if (role === "parent") {
+            navigate("/parent/dashboard", { replace: true });
+          } else {
+            navigate("/dashboard", { replace: true });
           }
         }
       } else {
