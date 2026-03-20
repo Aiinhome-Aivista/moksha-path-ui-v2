@@ -52,8 +52,9 @@ const TeacherDashboard = () => {
     fetchProfile();
   }, []);
 
-  const teacherName = profileData?.name || 'Teacher';
-  const schoolName = profileData?.institute_name || 'Moksha Path';
+  const teacher_name = profileData?.teacher_name || 'Teacher';
+  const school_name = profileData?.school_name || 'Moksha Path';
+  const class_name = profileData?.class_name || '';
 
   return (
     // Single wrapper for the entire dashboard
@@ -76,20 +77,20 @@ const TeacherDashboard = () => {
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  teacherName.charAt(0).toUpperCase()
+                  teacher_name.charAt(0).toUpperCase()
                 )}
               </div>
             )}
           </div>
           <div className="flex flex-col justify-center">
-            <span className="text-[11px] font-bold text-gray-200 leading-none mb-0.5">
+            <span className="text-xl font-bold text-gray-200 leading-none mb-0.5">
               Greetings
             </span>
             <h2 className="text-xl font-black leading-none tracking-tight">
-              {teacherName}
+              {teacher_name}
             </h2>
             <p className="text-[10px] text-gray-300 font-medium mt-1 tracking-wide">
-              {schoolName}
+              {school_name} {class_name ? `(${class_name})` : ""}
             </p>
           </div>
         </div>
