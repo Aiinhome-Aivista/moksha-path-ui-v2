@@ -35,7 +35,7 @@ axiosInstance.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 // Add response interceptor for error handling
 axiosInstance.interceptors.response.use(
@@ -47,7 +47,10 @@ axiosInstance.interceptors.response.use(
     //   // window.location.href = "/login";
     // }
     // Allow 400 responses to be resolved instead of rejected (for coupon validation)
-    if ((error.response?.status === 400) || (error.response?.status === 400) && error.response?.data) {
+    if (
+      error.response?.status === 400 ||
+      (error.response?.status === 400 && error.response?.data)
+    ) {
       return Promise.resolve(error.response);
     }
     return Promise.reject(error);
@@ -61,7 +64,7 @@ const publicAxiosInstance = axios.create();
 publicAxiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if ((error.response?.status === 400) && error.response?.data) {
+    if (error.response?.status === 400 && error.response?.data) {
       return Promise.resolve(error.response);
     }
     return Promise.reject(error);
@@ -336,7 +339,6 @@ class ApiServices {
   //   return axiosInstance.post(POST_APIS.update_student_profile, payload);
   // }
 
-
   // Subscription Invite APIs
   // getInviteList() {
   //   return axiosInstance.get(GET_APIS.subscription_invite_list);
@@ -429,7 +431,6 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.student_notification_assessment);
   }
 
-
   getTeacherBucketPerformance() {
     return axiosInstance.get(GET_APIS.teacher_bucket_performance);
   }
@@ -476,28 +477,27 @@ class ApiServices {
 
   getParentConfidence(student_id) {
     return axiosInstance.get(GET_APIS.parent_confidence, {
-      params: { student_id }
+      params: { student_id },
     });
   }
 
   getParentConsistency(student_id) {
     return axiosInstance.get(GET_APIS.parent_consistency, {
-      params: { student_id }
+      params: { student_id },
     });
   }
 
   getParentExamReadiness(student_id) {
     return axiosInstance.get(GET_APIS.parent_exam_readiness, {
-      params: { student_id }
+      params: { student_id },
     });
   }
 
   getParentAverageScore(student_id) {
     return axiosInstance.get(GET_APIS.parent_average_score, {
-      params: { student_id }
+      params: { student_id },
     });
   }
-
 
   getTeacherTopBottomStudents(subject_id) {
     return axiosInstance.get(GET_APIS.teacher_top_bottom_students, {
@@ -511,7 +511,7 @@ class ApiServices {
 
   getParentStrengthWeakness(student_id) {
     return axiosInstance.get(GET_APIS.parent_strength_weakness, {
-      params: { student_id }
+      params: { student_id },
     });
   }
 
@@ -523,7 +523,6 @@ class ApiServices {
   getParentProfile() {
     return axiosInstance.get(GET_APIS.parent_profile);
   }
-
 
   // =======================
   // BLOGS APIs
@@ -538,7 +537,10 @@ class ApiServices {
   }
 
   insertUpdateBlogCategory(data) {
-    return publicAxiosInstance.post(POST_APIS.blog_category_insert_update, data);
+    return publicAxiosInstance.post(
+      POST_APIS.blog_category_insert_update,
+      data,
+    );
   }
 
   deleteBlogCategory(data) {
@@ -582,11 +584,9 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.get_institute_list);
   }
 
-
   allUserByPagination(payload) {
     return axiosInstance.post(POST_APIS.all_user_by_pagination, payload);
   }
-
 
   // =======================
   // USER PROFILE APIs
@@ -609,7 +609,7 @@ class ApiServices {
 
   searchUserForMapping(name) {
     return axiosInstance.get(GET_APIS.search_user_for_mapping, {
-      params: { name }
+      params: { name },
     });
   }
 
@@ -631,15 +631,41 @@ class ApiServices {
 
   // Accept / Delete mapping request
   manageParentStudentMapping(payload) {
-    return axiosInstance.post(
-      POST_APIS.manage_parent_student_mapping,
-      payload
-    );
+    return axiosInstance.post(POST_APIS.manage_parent_student_mapping, payload);
   }
 
   // Get active parent/student connections
   getActiveUserStudentParentList() {
     return axiosInstance.get(GET_APIS.get_active_user_student_parent_list);
+  }
+
+  getBlogAuthorDropdown() {
+    return publicAxiosInstance.get(GET_APIS.blog_author_dropdown);
+  }
+  // =======================
+  // Institute Admin - Faculty Management APIs
+  // =======================
+
+  // Get list of currently assigned teachers (with class_ids, assigned_on, etc.)
+  getAssignedTeacherList() {
+    return axiosInstance.get(GET_APIS.get_assigned_teacher_list);
+  }
+
+  // Get list of available (unassigned) teachers
+  getAvailableTeachers() {
+    return axiosInstance.get(GET_APIS.get_available_teachers);
+  }
+
+  // Assign teacher to class(es)
+  assignTeacher(payload) {
+    // payload: { teacher_user_id: number, class_ids: number[] }
+    return axiosInstance.post(POST_APIS.assign_teacher, payload);
+  }
+
+  // Remove teacher from institute
+  removeTeacher(payload) {
+    // payload: { teacher_user_id: number }
+    return axiosInstance.post(POST_APIS.remove_teacher, payload);
   }
 }
 

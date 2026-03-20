@@ -126,7 +126,7 @@ function normalize(item: any, type: "received" | "sent"): ReceivedInvitation {
   };
 }
 
-const Notifications: React.FC = () => {
+const TutorNotifications: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>("subscription");
   const [invitations, setInvitations] = useState<ReceivedInvitation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1284,4 +1284,4 @@ const Notifications: React.FC = () => {
   );
 };
 
-export default Notifications;
+export default TutorNotifications;
