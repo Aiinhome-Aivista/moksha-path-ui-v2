@@ -28,10 +28,10 @@ const TeacherDashboard = () => {
     <div className="flex flex-col">
       
       {/* 1. THE HEADER ROW */}
-      <div className="flex items-center w-full relative pl-2 pt-2">
+<div className="flex items-center w-full relative pt-2 -ml-6">
         
         {/* Left: Dark Profile Pill */}
-        <div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-2 pl-4 pr-12 rounded-r-[2rem] shadow-md z-10 relative flex-shrink-0">
+<div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-4 pl-6 pr-16 rounded-r-[10rem] shadow-md z-10 relative flex-shrink-0">
           <img
             src="https://www.picsman.ai/blog/wp-content/uploads/2025/01/free-passport-photo-maker-1.webp"
             className="w-14 h-14 rounded-full border-2 border-white object-cover shadow-sm flex-shrink-0"
@@ -50,8 +50,8 @@ const TeacherDashboard = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-20 px-14 bg-[#E9E9E9] h-12 rounded-tr-full rounded-br-full lg:col-span-2 xl:col-span-3">
-          <h1 className="text-[#00bcd4] font-black text-lg tracking-tight uppercase whitespace-nowrap">
+        <div className="flex flex-1 items-center justify-between px-6 py-2 bg-[#E9E9E9] h-14 rounded-tr-full rounded-br-full lg:col-span-2 xl:col-span-3">
+          <h1 className="text-[#00bcd4] font-black text-lg tracking-tight  whitespace-nowrap">
             My Dashboard
           </h1>
           <div className="flex gap-3">
