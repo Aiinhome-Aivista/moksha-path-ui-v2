@@ -212,7 +212,7 @@ const Subscription: React.FC = () => {
           board_id: activeProfile.board_id || "",
           class_id: activeProfile.class_id || "",
           school_id: activeProfile.institute_id || "",
-          section_id: preselected.section_id || "",
+          section_id: activeProfile.section_id || "",
           academic_year: "",
           selectedSubjects: [],
           availableSubjects: [],
@@ -867,6 +867,7 @@ const Subscription: React.FC = () => {
         class_id: p.class_id,
         academic_year: p.academic_year,
         institute_id: p.school_id || null,
+        section_id: p.section_id || null,
 
         subject_ids: p.selectedSubjects.map((s) => s.subject_id),
 
@@ -1267,6 +1268,7 @@ const Subscription: React.FC = () => {
                                 board_id: val ? Number(val) : "",
                                 school_id: "",
                                 class_id: "",
+                                section_id: "", 
                                 academic_year: "",
                                 selectedSubjects: [],
                                 availableSubjects: [],

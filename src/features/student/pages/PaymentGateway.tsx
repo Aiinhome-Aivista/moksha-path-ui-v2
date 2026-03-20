@@ -61,7 +61,10 @@ const PaymentGateway: React.FC = () => {
       // };
 
       const finalPayload = {
-        profiles: paymentData.profiles,
+        profiles: paymentData.profiles.map((p: any) => ({
+          ...p,
+          section_id: p.section_id || null, // ✅ ensure passing
+        })),
 
         transaction_id:
           "TXN-RAZORPAY-" + Math.floor(Math.random() * 100000000),
