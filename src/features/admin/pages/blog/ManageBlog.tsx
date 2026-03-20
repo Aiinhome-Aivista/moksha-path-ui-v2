@@ -160,7 +160,7 @@ export const ManageBlog: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full px-4">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -182,7 +182,7 @@ export const ManageBlog: React.FC = () => {
       </div>
 
       {/* Table Card Container */}
-      <div className="bg-white dark:bg-secondary-800 rounded-xl shadow-sm border border-secondary-200 dark:border-secondary-700 overflow-hidden">
+      <div className="w-full bg-white dark:bg-secondary-800">
         {/* Search & Refresh Bar */}
         <div className="p-4 border-b border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800/50 flex items-center justify-between gap-4">
           <div className="relative max-w-md flex items-center w-full">
@@ -211,8 +211,8 @@ export const ManageBlog: React.FC = () => {
         </div>
 
         {/* Table Layout */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left whitespace-nowrap">
+        <div className="w-full">
+          <table className="w-full text-sm text-left table-fixed">
             {/* GREEN Table Header */}
             <thead className="bg-[#b0cb1f] text-gray-900 font-semibold border-b border-gray-200 dark:border-secondary-700">
               <tr className="divide-x divide-gray-900/20">
