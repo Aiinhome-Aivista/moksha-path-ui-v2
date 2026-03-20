@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import ApiServices from "../../../services/ApiServices";
 import {
   Users,
   BookOpen,
@@ -197,9 +198,31 @@ const statusConfig: Record<
 const TutorDashboard: React.FC = () => {
   const [scheduleItems, setScheduleItems] = useState(SCHEDULE);
 
+  const [profileImage, setProfileImage] = useState<string>("");
+  const [isImageLoading, setIsImageLoading] = useState(false);
+
   const tutorName =
     JSON.parse(localStorage.getItem("active_profile") || "{}")?.full_name ||
     "Tutor";
+
+  const fetchProfileImage = async () => {
+    try {
+      setIsImageLoading(true);
+      const response = await ApiServices.getUserProfileImage();
+
+      if (response.data?.status === "success" && response.data?.data?.image) {
+        setProfileImage(response.data.data.image); // base64 image
+      }
+    } catch (error) {
+      // console.error("Failed to fetch profile image", error);
+    } finally {
+      setIsImageLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfileImage();
+  }, []);
 
   const today = new Date().toLocaleDateString("en-IN", {
     weekday: "long",
@@ -219,16 +242,35 @@ const TutorDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 space-y-6">
       {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div>
-          <p className="text-xs text-gray-400 font-medium">{today}</p>
-          <h1 className="text-2xl font-extrabold text-gray-800 leading-tight mt-0.5">
-            Welcome back,{" "}
-            <span className="text-[#7a9900]">{tutorName} 👋</span>
-          </h1>
-          <p className="text-sm text-gray-400 mt-0.5">
-            Here's your teaching overview for today.
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-4">
+          {/* Profile Image Section */}
+          <div className="relative shrink-0">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden ring-4 ring-white shadow-md bg-gradient-to-br from-[#BADA55] to-lime-400 flex items-center justify-center text-white text-2xl font-black">
+              {isImageLoading ? (
+                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : profileImage ? (
+                <img
+                  src={profileImage}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                tutorName.charAt(0).toUpperCase()
+              )}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-400 font-medium">{today}</p>
+            <h1 className="text-2xl font-extrabold text-gray-800 leading-tight mt-0.5">
+              Welcome back,{" "}
+              <span className="text-[#7a9900]">{tutorName} 👋</span>
+            </h1>
+            <p className="text-sm text-gray-400 mt-0.5">
+              Here's your teaching overview for today.
+            </p>
+          </div>
         </div>
 
         {/* Quick actions */}

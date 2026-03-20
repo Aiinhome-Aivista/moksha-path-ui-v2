@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ApiServices from '../../../../services/ApiServices';
 import OverviewTab from './overviewTab';
 import SyllabusTab from './syllabusTab';
 import MockExamsTab from './mockExamsTab';
@@ -22,6 +23,37 @@ const tabComponents: Record<TabName, React.ReactElement> = {
 
 const TeacherDashboard = () => {
   const [activeTab, setActiveTab] = useState<TabName>('Overview');
+  const [profileData, setProfileData] = useState<any>(null);
+  const [profileImage, setProfileImage] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setIsLoading(true);
+        const [profileRes, imageRes] = await Promise.all([
+          ApiServices.getTeacherProfile(),
+          ApiServices.getUserProfileImage()
+        ]);
+
+        if (profileRes.data?.status === 'success') {
+          setProfileData(profileRes.data.data);
+        }
+        if (imageRes.data?.status === 'success' && imageRes.data?.data?.image) {
+          setProfileImage(imageRes.data.data.image);
+        }
+      } catch (error) {
+        console.error('Failed to fetch teacher profile', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  const teacherName = profileData?.name || 'Teacher';
+  const schoolName = profileData?.institute_name || 'Moksha Path';
 
   return (
     // Single wrapper for the entire dashboard
@@ -31,21 +63,33 @@ const TeacherDashboard = () => {
 <div className="flex items-center w-full relative pt-2 -ml-6">
         
         {/* Left: Dark Profile Pill */}
-<div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-4 pl-6 pr-16 rounded-r-[10rem] shadow-md z-10 relative flex-shrink-0">
-          <img
-            src="https://www.picsman.ai/blog/wp-content/uploads/2025/01/free-passport-photo-maker-1.webp"
-            className="w-14 h-14 rounded-full border-2 border-white object-cover shadow-sm flex-shrink-0"
-            alt="profile"
-          />
+        <div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-4 pl-6 pr-16 rounded-r-[10rem] shadow-md z-10 relative flex-shrink-0 min-w-[320px]">
+          <div className="relative flex-shrink-0">
+            {profileImage ? (
+              <img
+                src={profileImage}
+                className="w-14 h-14 rounded-full border-2 border-white object-cover shadow-sm"
+                alt="profile"
+              />
+            ) : (
+              <div className="w-14 h-14 rounded-full border-2 border-white bg-gradient-to-br from-[#BADA55] to-lime-400 flex items-center justify-center text-white text-xl font-black shadow-sm">
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  teacherName.charAt(0).toUpperCase()
+                )}
+              </div>
+            )}
+          </div>
           <div className="flex flex-col justify-center">
             <span className="text-[11px] font-bold text-gray-200 leading-none mb-0.5">
               Greetings
             </span>
             <h2 className="text-xl font-black leading-none tracking-tight">
-              Ms. Priya Sharma
+              {teacherName}
             </h2>
             <p className="text-[10px] text-gray-300 font-medium mt-1 tracking-wide">
-              St. Thomas School for Boys (CICSE)
+              {schoolName}
             </p>
           </div>
         </div>
