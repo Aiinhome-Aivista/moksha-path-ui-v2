@@ -1063,7 +1063,7 @@ const Subscription: React.FC = () => {
       />
 
       {isPageLoading && !showSetupModal && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl">
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl">
           <div className="flex flex-col items-center gap-3">
             <div className="w-10 h-10 border-4 border-gray-200 border-t-[#BADA55] rounded-full animate-spin"></div>
             <span className="text-sm text-gray-500 font-medium">
@@ -1076,31 +1076,47 @@ const Subscription: React.FC = () => {
       {/* ─── TOP HEADER ─────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-col sm:items-start sm:justify-between gap-5 mb-6">
         {/* User Info */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-gray-200 flex items-center justify-center bg-gray-100 shrink-0">
-            {profileImage ? (
-              <img
-                src={profileImage}
-                alt="User"
-                className="w-full h-full object-cover"
-                onError={() => setProfileImage("")}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#BADA55] to-lime-500 text-white">
-                <span className="text-xl sm:text-2xl font-bold">
-                  {getInitial()}
-                </span>
-              </div>
-            )}
+        <div className="flex items-center justify-between w-full">
+
+          {/* LEFT: Profile */}
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-gray-200 flex items-center justify-center bg-gray-100">
+              {profileImage ? (
+                <img
+                  src={profileImage}
+                  alt="User"
+                  className="w-full h-full object-cover"
+                  onError={() => setProfileImage("")}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#BADA55] to-lime-500 text-white">
+                  <span className="text-xl sm:text-2xl font-bold">
+                    {getInitial()}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <p className="text-teal-600 text-xs sm:text-sm font-medium">
+                Subscription
+              </p>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+                Hi {localUser.name} !
+              </h1>
+            </div>
           </div>
-          <div>
-            <p className="text-teal-600 text-xs sm:text-sm font-medium">
-              Subscription
-            </p>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
-              Hi {localUser.name} !
-            </h1>
-          </div>
+
+          {/* RIGHT: Button */}
+          {localUser.role !== "student" && (
+            <button
+              onClick={addProfile}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#BADA55] text-white rounded-xl text-sm font-bold shadow-sm shadow-[#BADA55]/40 hover:bg-lime-500 transition-all active:scale-95"
+            >
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              Add More Plans
+            </button>
+          )}
         </div>
 
         <div className="flex flex-col gap-4 w-full flex-1 relative z-[40]">
@@ -1268,7 +1284,7 @@ const Subscription: React.FC = () => {
                                 board_id: val ? Number(val) : "",
                                 school_id: "",
                                 class_id: "",
-                                section_id: "", 
+                                section_id: "",
                                 academic_year: "",
                                 selectedSubjects: [],
                                 availableSubjects: [],
@@ -1415,6 +1431,55 @@ const Subscription: React.FC = () => {
                         </div>
                       </div>
 
+                      {/* Seats per profile */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[9px] tracking-widest text-gray-400 font-bold px-1 uppercase">
+                          Seats
+                        </label>
+
+                        <div className="flex items-center justify-between w-[110px] h-[32px] bg-gray-800 rounded-lg px-2">
+
+                          <button
+                            onClick={() => {
+                              if (localUser.role !== "student") {
+                                updateProfile(profileIndex, {
+                                  seats: Math.max(1, p.seats - 1),
+                                });
+                              }
+                            }}
+                            disabled={localUser.role === "student"}
+                            className={`text-sm px-2 ${localUser.role === "student"
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "text-white"
+                              }`}
+                          >
+                            −
+                          </button>
+
+                          <span className="text-white font-bold text-xs">
+                            {p.seats}
+                          </span>
+
+                          <button
+                            onClick={() => {
+                              if (localUser.role !== "student") {
+                                updateProfile(profileIndex, {
+                                  seats: p.seats + 1,
+                                });
+                              }
+                            }}
+                            disabled={localUser.role === "student"}
+                            className={`text-sm px-2 ${localUser.role === "student"
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "text-white"
+                              }`}
+                          >
+                            +
+                          </button>
+
+                        </div>
+                      </div>
+
                       {/* Clear for this profile */}
                       {useFilter && (
                         <button
@@ -1423,7 +1488,7 @@ const Subscription: React.FC = () => {
                               board_id: "",
                               school_id: "",
                               class_id: "",
-                              section_id: "", 
+                              section_id: "",
                               academic_year: "",
                               selectedSubjects: [],
                               availableSubjects: [],
@@ -1482,81 +1547,11 @@ const Subscription: React.FC = () => {
                           )}
                         </div>
                       )}
-
-                    {/* Seats per profile */}
-                    <div className="flex items-center gap-3 mt-3">
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                        Seats
-                      </span>
-
-                      <div className="flex items-center gap-2 bg-gray-800 rounded-xl px-3 py-1.5">
-                        {/* <button
-                          onClick={() =>
-                            updateProfile(profileIndex, {
-                              seats: Math.max(1, p.seats - 1),
-                            })
-                          }
-                          className="text-white px-2"
-                        >
-                          −
-                        </button>
-
-                        <span className="text-white font-bold text-sm">
-                          {p.seats}
-                        </span>
-
-                        <button
-                          onClick={() =>
-                            updateProfile(profileIndex, {
-                              seats: p.seats + 1,
-                            })
-                          }
-                          className="text-white px-2"
-                        >
-                          +
-                        </button> */}
-                        <button
-                          onClick={() => {
-                            if (localUser.role !== "student") {
-                              updateProfile(profileIndex, {
-                                seats: Math.max(1, p.seats - 1),
-                              });
-                            }
-                          }}
-                          disabled={localUser.role === "student"}
-                          className={`px-2 ${localUser.role === "student"
-                            ? "text-gray-100 cursor-not-allowed"
-                            : "text-white"
-                            }`}
-                        >
-                          −
-                        </button>
-                        <span className="text-white font-bold text-sm">
-                          {p.seats}
-                        </span>
-                        <button
-                          onClick={() => {
-                            if (localUser.role !== "student") {
-                              updateProfile(profileIndex, {
-                                seats: p.seats + 1,
-                              });
-                            }
-                          }}
-                          disabled={localUser.role === "student"}
-                          className={`px-2 ${localUser.role === "student"
-                            ? "text-gray-100 cursor-not-allowed"
-                            : "text-white"
-                            }`}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
                     {/* ─── PRICING GRID ───────────────────────────────────────── */}
                     <div className="relative mt-6 sm:mt-10 min-h-[300px] w-full">
                       {" "}
                       {isPlansLoading && (
-                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl">
+                        <div className="absolute inset-0 z-0 flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl">
                           <div className="flex flex-col items-center gap-3">
                             <div className="w-8 h-8 border-4 border-gray-200 border-t-[#BADA55] rounded-full animate-spin"></div>
                             <span className="text-sm text-gray-500 font-medium">
@@ -1963,17 +1958,7 @@ const Subscription: React.FC = () => {
               </div>
             );
           })}
-          {localUser.role !== "student" && (
-            <div className="flex items-center gap-4 relative z-[50] mt-4">
-              <button
-                onClick={addProfile}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#BADA55] text-white rounded-xl text-sm font-bold shadow-sm shadow-[#BADA55]/40 hover:bg-lime-500 transition-all active:scale-95"
-              >
-                <span className="material-symbols-outlined text-[18px]">add</span>
-                Add More Planes
-              </button>
-            </div>
-          )}
+
         </div>
       </div>
 
