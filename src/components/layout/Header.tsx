@@ -197,7 +197,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
             {/* <button onClick={handleLogoClick} className="flex items-center animate-fade-in cursor-pointer">
               <img src="/Logo.svg" alt="App Logo" className="h-[90%] w-[80%]" />
             </button> */}
-            <div className="flex items-center gap-2 font-bold text-lg" onClick={handleLogoClick}>
+            <div className="flex items-center gap-2 font-bold text-lg cursor-pointer" onClick={handleLogoClick}>
               <img src="/logogod.svg" alt="logo" className="w-10 h-10" />
               <div>
                 <h3>
