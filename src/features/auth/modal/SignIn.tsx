@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useModal } from "../context/AuthContext";
 import { useToast } from "../../../app/providers/ToastProvider";
 import ApiServices from "../../../services/ApiServices";
-import { useAuth } from "../../../app/providers/AuthProvider";
+// import { useAuth } from "../../../app/providers/AuthProvider";
 export const SignInModal: React.FC = () => {
   const [formData, setFormData] = useState({
     username: "",
@@ -17,7 +17,7 @@ export const SignInModal: React.FC = () => {
 
   // Loading States
   const [isSendingOtp, setIsSendingOtp] = useState(false);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  // const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Resend OTP State
   const [resendTimer, setResendTimer] = useState(60);
@@ -67,15 +67,15 @@ export const SignInModal: React.FC = () => {
     isSignInOpen,
     closeSignIn,
     openLogin,
-    openSelectRole,
+    // openSelectRole,
     setInitialAuthIdentifier,
     setIsNewUser,
     // decodeUserToken,
-    fetchMenu,
-    openProfileSelection,
-    setProfilesList,
+    // fetchMenu,
+    // openProfileSelection,
+    // setProfilesList,
   } = useModal();
-  const { login } = useAuth();
+  // const { login } = useAuth();
   // Prevent background scroll when modal is open
   useEffect(() => {
     if (isSignInOpen) {
@@ -109,7 +109,7 @@ export const SignInModal: React.FC = () => {
       setIsVerified(false);
       setIsSendingOtp(false);
 
-      setIsLoggingIn(false);
+      // setIsLoggingIn(false);
       setResendTimer(60);
       setCanResend(false);
 
@@ -288,148 +288,148 @@ export const SignInModal: React.FC = () => {
   };
 
   // Static Login
-  const handleSignIn = async () => {
-    if (!showOtp) {
-      setOtpError("Please verify OTP first");
-      showToast("Please verify OTP first", "error");
-      return;
-    }
+  // const handleSignIn = async () => {
+  //   if (!showOtp) {
+  //     setOtpError("Please verify OTP first");
+  //     showToast("Please verify OTP first", "error");
+  //     return;
+  //   }
 
-    const otpValue = otp.join("");
-    if (otpValue.length !== 6) {
-      setOtpError("Please enter complete 6-digit OTP");
-      showToast("Please enter complete 6-digit OTP", "error");
-      return;
-    }
+  //   const otpValue = otp.join("");
+  //   if (otpValue.length !== 6) {
+  //     setOtpError("Please enter complete 6-digit OTP");
+  //     showToast("Please enter complete 6-digit OTP", "error");
+  //     return;
+  //   }
 
-    try {
-      setIsLoggingIn(true);
-      const res = await ApiServices.verifyAccountV4({
-        auth_identifier: formData.emailOrMobile,
-        otp: otpValue,
-      });
+  //   try {
+  //     // setIsLoggingIn(true);
+  //     const res = await ApiServices.verifyAccountV4({
+  //       auth_identifier: formData.emailOrMobile,
+  //       otp: otpValue,
+  //     });
 
-      if (res.data?.status === "success") {
-        const { auth_token, refresh_token,subscription_token } = res.data.data;
+  //     if (res.data?.status === "success") {
+  //       const { auth_token, refresh_token, subscription_token } = res.data.data;
 
-        if (auth_token) localStorage.setItem("auth_token", auth_token);
-        if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
-        if (subscription_token)
-          localStorage.setItem("subscription_token", subscription_token);
-        setOtpError("");
-        // closeSignIn();
-        showToast("Signed in successfully", "success");
+  //       if (auth_token) localStorage.setItem("auth_token", auth_token);
+  //       if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
+  //       if (subscription_token)
+  //         localStorage.setItem("subscription_token", subscription_token);
+  //       setOtpError("");
+  //       // closeSignIn();
+  //       showToast("Signed in successfully", "success");
 
-        // // Refresh context data
-        // await decodeUserToken();
-        // // Always fetch menu - will handle gracefully if empty
-        // await fetchMenu();
-        // const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
-        // const activeRole = userData?.roles?.[0]?.role_name;
-        // login({
-        //   id: userData.user_id || "1",
-        //   name: userData.name || "User",
-        //   email: formData.emailOrMobile,
-        //   role: activeRole
-        // });
+  //       // // Refresh context data
+  //       // await decodeUserToken();
+  //       // // Always fetch menu - will handle gracefully if empty
+  //       // await fetchMenu();
+  //       // const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
+  //       // const activeRole = userData?.roles?.[0]?.role_name;
+  //       // login({
+  //       //   id: userData.user_id || "1",
+  //       //   name: userData.name || "User",
+  //       //   email: formData.emailOrMobile,
+  //       //   role: activeRole
+  //       // });
 
-        // closeSignIn();
+  //       // closeSignIn();
 
-        // const subscriptionId = res.data?.data?.subscription_id;
+  //       // const subscriptionId = res.data?.data?.subscription_id;
 
-        // if (!subscriptionId) {
-        //   navigate("/subscription", { replace: true });
-        // } else {
-        //   const role = activeRole?.toLowerCase();
-        //   if (role === "teacher") {
-        //     navigate("/teacher/dashboard", { replace: true });
-        //   } else if (role === "parent") {
-        //     navigate("/parent/dashboard", { replace: true });
-        //   } else {
-        //     navigate("/dashboard", { replace: true });
-        //   }
-        // }
-        // await decodeUserToken();
-        await fetchMenu();
+  //       // if (!subscriptionId) {
+  //       //   navigate("/subscription", { replace: true });
+  //       // } else {
+  //       //   const role = activeRole?.toLowerCase();
+  //       //   if (role === "teacher") {
+  //       //     navigate("/teacher/dashboard", { replace: true });
+  //       //   } else if (role === "parent") {
+  //       //     navigate("/parent/dashboard", { replace: true });
+  //       //   } else {
+  //       //     navigate("/dashboard", { replace: true });
+  //       //   }
+  //       // }
+  //       // await decodeUserToken();
+  //       await fetchMenu();
 
-        const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
-        const activeRole = userData?.roles?.[0]?.role_name;
+  //       const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
+  //       const activeRole = userData?.roles?.[0]?.role_name;
 
-        login({
-          id: userData.user_id || "1",
-          name: userData.name || "User",
-          email: formData.emailOrMobile,
-          role: activeRole,
-        });
+  //       login({
+  //         id: userData.user_id || "1",
+  //         name: userData.name || "User",
+  //         email: formData.emailOrMobile,
+  //         role: activeRole,
+  //       });
 
-        // 🔹 CHECK PROFILES FIRST
-        const profileRes = await ApiServices.getUsersByTokenContact();
+  //       // 🔹 CHECK PROFILES FIRST
+  //       const profileRes = await ApiServices.getUsersByTokenContact();
 
-        // if (
-        //   profileRes.data?.status === "success" &&
-        //   profileRes.data?.data?.length > 0
-        // ) {
-        //   // Profiles exist
-        //   openProfileSelection();
-        // } else {
-        //   // No profiles
-        //   openSelectRole();
-        // }
-        const profiles = profileRes?.data?.data ?? [];
+  //       // if (
+  //       //   profileRes.data?.status === "success" &&
+  //       //   profileRes.data?.data?.length > 0
+  //       // ) {
+  //       //   // Profiles exist
+  //       //   openProfileSelection();
+  //       // } else {
+  //       //   // No profiles
+  //       //   openSelectRole();
+  //       // }
+  //       const profiles = profileRes?.data?.data ?? [];
 
-        // valid profiles only (profile created)
-        const validProfiles = profiles.filter(
-          (p: any) => p.username !== null && p.role_id !== null,
-        );
+  //       // valid profiles only (profile created)
+  //       const validProfiles = profiles.filter(
+  //         (p: any) => p.username !== null && p.role_id !== null,
+  //       );
 
-        if (validProfiles.length > 0) {
-          // Profiles exist → show selection
-          setProfilesList(validProfiles);
-          closeSignIn();
-          openProfileSelection();
-        } else {
-          // No profile created → complete profile
-          closeSignIn();
-          openSelectRole();
-        }
-        // closeSignIn();
-        // // Check if profile setup is incomplete (no user data AND no subscription)
-        // if (res.data?.data?.subscription_id === null && !res.data?.data?.user) {
-        //   openSelectRole();
-        // } else if (res.data?.data?.subscription_id === null) {
-        //   // User has profile but no subscription
-        //   navigate("/subscription", { replace: true });
-        // } else {
-        //   // User has complete profile with active subscription
-        //   navigate("/dashboard", { replace: true });
-        // }
-      } else {
-        setOtpError(res.data?.message || "Invalid OTP");
-      }
-    } catch (error: any) {
-      setOtpError(error.response?.data?.message || "OTP verification failed.");
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
+  //       if (validProfiles.length > 0) {
+  //         // Profiles exist → show selection
+  //         setProfilesList(validProfiles);
+  //         closeSignIn();
+  //         openProfileSelection();
+  //       } else {
+  //         // No profile created → complete profile
+  //         closeSignIn();
+  //         openSelectRole();
+  //       }
+  //       // closeSignIn();
+  //       // // Check if profile setup is incomplete (no user data AND no subscription)
+  //       // if (res.data?.data?.subscription_id === null && !res.data?.data?.user) {
+  //       //   openSelectRole();
+  //       // } else if (res.data?.data?.subscription_id === null) {
+  //       //   // User has profile but no subscription
+  //       //   navigate("/subscription", { replace: true });
+  //       // } else {
+  //       //   // User has complete profile with active subscription
+  //       //   navigate("/dashboard", { replace: true });
+  //       // }
+  //     } else {
+  //       setOtpError(res.data?.message || "Invalid OTP");
+  //     }
+  //   } catch (error: any) {
+  //     setOtpError(error.response?.data?.message || "OTP verification failed.");
+  //   } finally {
+  //     // setIsLoggingIn(false);
+  //   }
+  // };
 
-  const handleCancel = () => {
-    setFormData({ username: "", emailOrMobile: "" });
-    setShowOtp(false);
-    setOtp(["", "", "", "", "", ""]);
-    setOtpError("");
-    setIsVerified(false);
-    setShowRecovery(false);
-    setRecoveryStep("username");
-    setRecoveryIdentifier("");
-    setRecoveryMethod(null);
-    // setRecoveryDetails(null);
-    setRecoveryOtp(["", "", "", "", "", ""]);
-    setRecoveryError("");
-    setRecoverySuccess(false);
-    setRecoveredUsernames([]);
-    closeSignIn();
-  };
+  // const handleCancel = () => {
+  //   setFormData({ username: "", emailOrMobile: "" });
+  //   setShowOtp(false);
+  //   setOtp(["", "", "", "", "", ""]);
+  //   setOtpError("");
+  //   setIsVerified(false);
+  //   setShowRecovery(false);
+  //   setRecoveryStep("username");
+  //   setRecoveryIdentifier("");
+  //   setRecoveryMethod(null);
+  //   // setRecoveryDetails(null);
+  //   setRecoveryOtp(["", "", "", "", "", ""]);
+  //   setRecoveryError("");
+  //   setRecoverySuccess(false);
+  //   setRecoveredUsernames([]);
+  //   closeSignIn();
+  // };
 
   // const handleCreateAccount = () => {
   //   closeSignIn();
@@ -627,8 +627,9 @@ export const SignInModal: React.FC = () => {
                     value={formData.emailOrMobile}
                     onChange={handleChange}
                     placeholder="Enter your email or mobile"
-                    disabled={showOtp}
-                    className="flex-1 pb-2 border-b border-gray-300 text-primary placeholder-gray-400 focus:outline-none focus:border-gray-500 bg-transparent disabled:opacity-60"
+                    disabled
+                    // ={showOtp}
+                    className="flex-1 pb-2 border-b border-gray-300 text-primary placeholder-gray-400 focus:outline-none focus:border-gray-500 bg-transparent disabled:opacity-60 disabled:cursor-not-allowed"
                   />
                   {!showOtp && !isVerified && (
                     <button
@@ -709,7 +710,11 @@ export const SignInModal: React.FC = () => {
                   <p className="text-xs text-red-500 mt-2">{otpError}</p>
                 )}
               </div>
-              <div className="flex gap-3 pt-4">
+              <div className="flex justify-center align-items-center text-primary font-bold text-xl pt-12">
+                <p>Coming soon...</p>
+              </div>
+
+              {/* <div className="flex gap-3 pt-4">
                 <button
                   onClick={handleCancel}
                   className="px-7 py-2.5 rounded-full bg-primary text-white text-sm font-medium hover:bg-gray-700 transition-colors"
@@ -730,7 +735,7 @@ export const SignInModal: React.FC = () => {
                 >
                   {isLoggingIn ? "Signing in..." : "Sign in"}
                 </button>
-              </div>
+              </div> */}
 
               {/* Create Account Link */}
               {/* <div className="pt-3">

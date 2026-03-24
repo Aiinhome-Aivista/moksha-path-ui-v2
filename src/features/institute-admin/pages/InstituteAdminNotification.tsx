@@ -149,8 +149,8 @@ const InstituteAdminNotification: React.FC = () => {
   const [profileFilter, setProfileFilter] = useState<ProfileStatus | "All">(
     "All",
   );
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [profileError, setProfileError] = useState("");
+  // const [profileLoading, setProfileLoading] = useState(false);
+  // const [profileError, setProfileError] = useState("");
   const [profileExpandedId, setProfileExpandedId] = useState<number | null>(
     null,
   );
@@ -401,8 +401,8 @@ const InstituteAdminNotification: React.FC = () => {
   };
 
   const fetchProfileRequests = async () => {
-    setProfileLoading(true);
-    setProfileError("");
+    // setProfileLoading(true);
+    // setProfileError("");
 
     try {
       const res = await ApiServices.getPendingMappingRequests();
@@ -413,14 +413,14 @@ const InstituteAdminNotification: React.FC = () => {
           setProfileSummary(res.data.data.summary);
         }
       } else {
-        setProfileError(res.data?.message || "Failed to load requests");
+        // setProfileError(res.data?.message || "Failed to load requests");
       }
     } catch (err: any) {
-      setProfileError(
-        err?.response?.data?.message || "Unable to fetch requests"
-      );
+      // setProfileError(
+      //   err?.response?.data?.message || "Unable to fetch requests"
+      // );
     } finally {
-      setProfileLoading(false);
+      // setProfileLoading(false);
     }
   };
 

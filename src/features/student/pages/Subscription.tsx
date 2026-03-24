@@ -121,10 +121,10 @@ const Subscription: React.FC = () => {
 
   const [isValidating, setIsValidating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [sheetCount, setSheetCount] = useState<number>(1);
+  // const [sheetCount, setSheetCount] = useState<number>(1);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
-  const [currentTotalAmount, setCurrentTotalAmount] = useState(0);
+  // const [currentTotalAmount, setCurrentTotalAmount] = useState(0);
   const [discountedAmount, setDiscountedAmount] = useState(0);
   const [showSetupModal, setShowSetupModal] = useState(false);
   const [profileImage, setProfileImage] = useState<string>("");
@@ -151,10 +151,10 @@ const Subscription: React.FC = () => {
     const user = JSON.parse(localStorage.getItem("active_profile") || "{}");
     setLocalUser(user);
   }, [location.pathname]); // triggers on navigation
-  const [plansExpanded, setPlansExpanded] = useState(true);
-  const togglePlansAccordion = () => {
-    setPlansExpanded((prev) => !prev);
-  };
+  // const [plansExpanded, setPlansExpanded] = useState(true);
+  // const togglePlansAccordion = () => {
+  //   setPlansExpanded((prev) => !prev);
+  // };
   // useEffect(() => {
   //   const preselected = location.state?.preselectedAcademicDetails;
   //   if (preselected) {
@@ -634,8 +634,8 @@ const Subscription: React.FC = () => {
     }
     setIsValidating(true);
     try {
-      const firstValidProfile =
-        profiles.find((p) => p.board_id && p.class_id) || profiles[0];
+      // const firstValidProfile =
+      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
       // const validatePayload = {
       //   plan_id: selectedPlan.plan_id,
       //   board_id: firstValidProfile.board_id,
@@ -654,7 +654,7 @@ const Subscription: React.FC = () => {
       };
       const response = await ApiServices.validatePlanAmount(validatePayload);
       if (response.data?.status === "success") {
-        setCurrentTotalAmount(uiTotalAmount);
+        // setCurrentTotalAmount(uiTotalAmount);
         setShowPaymentModal(true);
       } else {
         showToast(response.data?.message || "Plan validation failed", "error");
@@ -669,8 +669,8 @@ const Subscription: React.FC = () => {
   const handlePayNow = async (subscriptionName: string, couponCode: string) => {
     if (!selectedPlan) return;
     try {
-      const firstValidProfile =
-        profiles.find((p) => p.board_id && p.class_id) || profiles[0];
+      // const firstValidProfile =
+      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
       // const paymentData = {
       //   plan_id: selectedPlan.plan_id,
       //   board_id: firstValidProfile.board_id,
@@ -719,8 +719,8 @@ const Subscription: React.FC = () => {
       return { success: false, message: "" };
     }
     try {
-      const firstValidProfile =
-        profiles.find((p) => p.board_id && p.class_id) || profiles[0];
+      // const firstValidProfile =
+      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
       // const payload = {
       //   plan_id: selectedPlan?.plan_id,
       //   board_id: firstValidProfile.board_id,
@@ -758,7 +758,7 @@ const Subscription: React.FC = () => {
         const data = response.data?.data;
 
         setDiscountedAmount(Number((data?.db_discount || 0).toFixed(2)));
-        setCurrentTotalAmount(Number((data?.db_final || 0).toFixed(2)));
+        // setCurrentTotalAmount(Number((data?.db_final || 0).toFixed(2)));
 
         showToast("Coupon applied successfully!", "success");
 
@@ -884,8 +884,8 @@ const Subscription: React.FC = () => {
     if (!selectedPlan) return;
     setIsSaving(true);
     try {
-      const firstValidProfile =
-        profiles.find((p) => p.board_id && p.class_id) || profiles[0];
+      // const firstValidProfile =
+      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
 
       // Optional: Add validation before saving if needed, but let's stick to user request
       // const payload = {
@@ -1043,7 +1043,7 @@ const Subscription: React.FC = () => {
       availableSubjects: data.availableSubjects,
       selectedSubjects: data.selectedSubjects,
     });
-    setSheetCount(data.sheetCount);
+    // setSheetCount(data.sheetCount);
     setShowSetupModal(false);
   };
 
