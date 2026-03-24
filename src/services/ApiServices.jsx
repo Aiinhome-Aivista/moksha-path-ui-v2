@@ -29,9 +29,20 @@ axiosInstance.interceptors.request.use(
       config.headers["Authorization"] = `Bearer ${authToken}`;
     }
 
-    // SUBSCRIPTION TOKEN
-    if (subscriptionToken) {
+    // SUBSCRIPTION TOKEN (Must be valid JWT with 3 segments)
+    if (subscriptionToken && subscriptionToken.split(".").length === 3) {
       config.headers["subscription-token"] = subscriptionToken;
+    }
+
+    // SUBSCRIPTION ID
+    const activeProfile = JSON.parse(
+      localStorage.getItem("active_profile") || "{}",
+    );
+    const subscriptionId =
+      localStorage.getItem("subscription_id") || activeProfile?.subscription_id;
+
+    if (subscriptionId) {
+      config.headers["Subscription-Id"] = String(subscriptionId);
     }
     return config;
   },
@@ -276,6 +287,20 @@ class ApiServices {
   // Case 1: Self Assessment (Student)
   assignSelfAssessment(payload) {
     return axiosInstance.post(POST_APIS.assign_self_assessment, payload);
+  }
+
+  // Case 1.1: Adaptive Assessment (Student)
+  createAdaptiveSet(payload) {
+    const activeProfile = JSON.parse(
+      localStorage.getItem("active_profile") || "{}",
+    );
+    const subscriptionId = activeProfile?.subscription_id;
+
+    return axiosInstance.post(POST_APIS.create_adaptive_set, payload, {
+      headers: {
+        "Subscription-Id": subscriptionId,
+      },
+    });
   }
 
   // Case 2: Teacher assigns to selected students

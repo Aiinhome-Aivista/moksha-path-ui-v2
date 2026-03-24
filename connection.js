@@ -142,6 +142,7 @@ export const POST_APIS = {
   assign_self_assessment: `${BASE_URL}learning/assign_assessment`,
   // assign_assessment_to_students: `${BASE_URL}learning/teacher/assign_assessment`,
   assign_assessment_to_class: `${BASE_URL}learning/teacher/assign_class_assessment`,
+  create_adaptive_set: `${BASE_URL}learning/assessment/create_adaptive_set`,
 
   // Resources API
   get_chapter_topic_resources: `${BASE_URL}learning/get_or_generate_chapter_topic_resources`,
