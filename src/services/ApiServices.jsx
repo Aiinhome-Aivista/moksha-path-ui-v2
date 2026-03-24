@@ -692,6 +692,11 @@ class ApiServices {
     // payload: { teacher_user_id: number }
     return axiosInstance.post(POST_APIS.remove_teacher, payload);
   }
+
+  //adaptive test
+  createAdaptiveTest(payload) {
+    return axiosInstance.post(POST_APIS.adaptive_test, payload);
+  }
 }
 
 export default new ApiServices();

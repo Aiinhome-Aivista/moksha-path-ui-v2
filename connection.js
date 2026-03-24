@@ -100,6 +100,9 @@ export const GET_APIS = {
   // Institute Admin - Faculty Management
   get_assigned_teacher_list: `${BASE_URL}institute_admin/assigned_teacher_list`,
   get_available_teachers: `${BASE_URL}institute_admin/available_teachers`,
+
+  //adaptive test
+  adaptive_test: `${BASE_URL}learning/assessment/create_adaptive_set`,
 };
 
 export const POST_APIS = {
