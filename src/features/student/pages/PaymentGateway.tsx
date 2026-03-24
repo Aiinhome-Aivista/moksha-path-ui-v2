@@ -18,7 +18,7 @@ const PaymentGateway: React.FC = () => {
   }, []);
 
   React.useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const user = JSON.parse(localStorage.getItem("active_profile") || "{}");
     setLocalUser(user);
   }, []);
 
@@ -123,7 +123,7 @@ const PaymentGateway: React.FC = () => {
           //     navigate("/dashboard", { replace: true });
           //   }
           // }
-          const role = localUser?.role?.toLowerCase();
+          const role = localUser?.role_name?.toLowerCase();
 
           if (role === "teacher") {
             navigate("/teacher/dashboard", { replace: true });

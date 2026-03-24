@@ -14,7 +14,7 @@ export const dashboardMeta: DashboardMeta = {
 
 export const principalProfile: PrincipalProfile = {
   greeting: "Greetings,",
-  name: "Dr. A. Krishnamurthy !",
+  name: "Pabitra Sarkar !",
   school: "St. Thomas School for Boys (CICSE)",
   avatarUrl:
     "https://www.picsman.ai/blog/wp-content/uploads/2025/01/free-passport-photo-maker-1.webp",

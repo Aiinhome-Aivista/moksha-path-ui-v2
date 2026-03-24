@@ -200,8 +200,8 @@ export const SelectRoleModal: React.FC = () => {
     selectedRoleId !== null &&
     (selectedRoleId === 1
       ? selectedBoardId !== "" &&
-      selectedClassId !== "" &&
-      selectedInstituteId !== ""
+        selectedClassId !== "" &&
+        selectedInstituteId !== ""
       : true);
 
   const handleNext = async () => {
@@ -291,9 +291,39 @@ export const SelectRoleModal: React.FC = () => {
           closeSelectRole();
 
           // Navigate based on subscription status of the new profile
-          const subId = user.sub_id ?? user.roles?.[0]?.subscription_id;
+          // const subId = user.sub_id ?? user.roles?.[0]?.subscription_id;
 
-          if (subId === null || subId === undefined) {
+          // if (subId === null || subId === undefined) {
+          //   navigate("/subscription", {
+          //     replace: true,
+          //     state: {
+          //       preselectedAcademicDetails: {
+          //         board_id: selectedBoardId,
+          //         class_id: selectedClassId,
+          //         institute_id: selectedInstituteId,
+          //       },
+          //     },
+          //   });
+          // } else {
+          //   const role = activeRole.toLowerCase();
+          //   if (role === "teacher") {
+          //     navigate("/teacher/dashboard", { replace: true });
+          //   } else if (role === "parent") {
+          //     navigate("/parent/dashboard", { replace: true });
+          //   } else {
+          //     navigate("/dashboard", { replace: true });
+          //   }
+          // }
+          const subId = user.sub_id ?? user.roles?.[0]?.subscription_id;
+          const role = activeRole.toLowerCase();
+
+          //  Case 1: Teacher → always dashboard
+          if (role === "teacher") {
+            navigate("/teacher/dashboard", { replace: true });
+          }
+
+          //  Case 2: No subscription (only for non-teacher)
+          else if (subId === null || subId === undefined) {
             navigate("/subscription", {
               replace: true,
               state: {
@@ -304,11 +334,11 @@ export const SelectRoleModal: React.FC = () => {
                 },
               },
             });
-          } else {
-            const role = activeRole.toLowerCase();
-            if (role === "teacher") {
-              navigate("/teacher/dashboard", { replace: true });
-            } else if (role === "parent") {
+          }
+
+          //  Case 3: Subscription exists → role-based dashboard
+          else {
+            if (role === "parent") {
               navigate("/parent/dashboard", { replace: true });
             } else {
               navigate("/dashboard", { replace: true });
@@ -462,7 +492,7 @@ export const SelectRoleModal: React.FC = () => {
                   >
                     {selectedRoleId
                       ? roles.find((r) => r.role_id === selectedRoleId)
-                        ?.role_name
+                          ?.role_name
                       : "Choose your role"}
                   </span>
                   {/* <svg
@@ -491,10 +521,11 @@ export const SelectRoleModal: React.FC = () => {
                           setSelectedRoleId(role.role_id);
                           setIsDropdownOpen(false);
                         }}
-                        className={`w-full px-4 py-3 text-left text-sm transition-colors flex items-center gap-3 ${selectedRoleId === role.role_id
-                          ? "bg-blue-50 text-blue-600 font-medium"
-                          : "text-gray-700 hover:bg-gray-50"
-                          }`}
+                        className={`w-full px-4 py-3 text-left text-sm transition-colors flex items-center gap-3 ${
+                          selectedRoleId === role.role_id
+                            ? "bg-blue-50 text-blue-600 font-medium"
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
                       >
                         {role_name_map[role.role_name] || role.role_name}
                       </button>
@@ -504,108 +535,160 @@ export const SelectRoleModal: React.FC = () => {
               </div>
 
               {/* Student Academic Details */}
-              {selectedRoleId === 1 && (() => {
-                const validDependencies = dependencyMap.filter((dep) => {
-                  if (selectedBoardId && dep.board_id !== Number(selectedBoardId)) return false;
-                  if (selectedInstituteId && dep.school_id !== Number(selectedInstituteId)) return false;
-                  if (selectedClassId && dep.class_id !== Number(selectedClassId)) return false;
-                  return true;
-                });
+              {selectedRoleId === 1 &&
+                (() => {
+                  const validDependencies = dependencyMap.filter((dep) => {
+                    if (
+                      selectedBoardId &&
+                      dep.board_id !== Number(selectedBoardId)
+                    )
+                      return false;
+                    if (
+                      selectedInstituteId &&
+                      dep.school_id !== Number(selectedInstituteId)
+                    )
+                      return false;
+                    if (
+                      selectedClassId &&
+                      dep.class_id !== Number(selectedClassId)
+                    )
+                      return false;
+                    return true;
+                  });
 
-                const useFilter = selectedBoardId !== "" || selectedInstituteId !== "" || selectedClassId !== "";
+                  const useFilter =
+                    selectedBoardId !== "" ||
+                    selectedInstituteId !== "" ||
+                    selectedClassId !== "";
 
-                const validBoards = useFilter ? Array.from(new Set(validDependencies.map((d) => d.board_id))) : boards.map((b) => b.id);
-                const validSchools = useFilter ? Array.from(new Set(validDependencies.map((d) => d.school_id))) : institutes.map((s) => s.id);
-                const validClasses = useFilter ? Array.from(new Set(validDependencies.map((d) => d.class_id))) : classes.map((c) => c.id);
+                  const validBoards = useFilter
+                    ? Array.from(
+                        new Set(validDependencies.map((d) => d.board_id)),
+                      )
+                    : boards.map((b) => b.id);
+                  const validSchools = useFilter
+                    ? Array.from(
+                        new Set(validDependencies.map((d) => d.school_id)),
+                      )
+                    : institutes.map((s) => s.id);
+                  const validClasses = useFilter
+                    ? Array.from(
+                        new Set(validDependencies.map((d) => d.class_id)),
+                      )
+                    : classes.map((c) => c.id);
 
-                const filteredBoards = useFilter ? boards.filter((b) => validBoards.includes(b.id)) : boards;
-                const filteredSchools = useFilter ? institutes.filter((s) => validSchools.includes(s.id)) : institutes;
-                const filteredClasses = useFilter ? classes.filter((c) => validClasses.includes(c.id)) : classes;
+                  const filteredBoards = useFilter
+                    ? boards.filter((b) => validBoards.includes(b.id))
+                    : boards;
+                  const filteredSchools = useFilter
+                    ? institutes.filter((s) => validSchools.includes(s.id))
+                    : institutes;
+                  const filteredClasses = useFilter
+                    ? classes.filter((c) => validClasses.includes(c.id))
+                    : classes;
 
-                // Automatically clear selections if they are no longer in the valid options
-                if (selectedBoardId !== "" && !filteredBoards.some(b => b.id === selectedBoardId)) {
-                  setSelectedBoardId("");
-                }
-                if (selectedInstituteId !== "" && !filteredSchools.some(s => s.id === selectedInstituteId)) {
-                  setSelectedInstituteId("");
-                }
-                if (selectedClassId !== "" && !filteredClasses.some(c => c.id === selectedClassId)) {
-                  setSelectedClassId("");
-                }
+                  // Automatically clear selections if they are no longer in the valid options
+                  if (
+                    selectedBoardId !== "" &&
+                    !filteredBoards.some((b) => b.id === selectedBoardId)
+                  ) {
+                    setSelectedBoardId("");
+                  }
+                  if (
+                    selectedInstituteId !== "" &&
+                    !filteredSchools.some((s) => s.id === selectedInstituteId)
+                  ) {
+                    setSelectedInstituteId("");
+                  }
+                  if (
+                    selectedClassId !== "" &&
+                    !filteredClasses.some((c) => c.id === selectedClassId)
+                  ) {
+                    setSelectedClassId("");
+                  }
 
-                return (
-                  <div className="space-y-4 pt-2 animate-in fade-in zoom-in-95 duration-300">
-                    {/* Select Board */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                        Board
-                      </label>
-                      <SearchableSelect
-                        value={selectedBoardId}
-                        onChange={(val) => {
-                          if (val === "") {
-                            setSelectedBoardId("");
-                            setSelectedInstituteId("");
-                            setSelectedClassId("");
-                          } else {
-                            setSelectedBoardId(Number(val));
-                          }
-                        }}
-                        options={filteredBoards.map((b) => ({ value: b.id, label: b.name }))}
-                        placeholder="Select Board"
-                        className="w-full py-2.5 rounded-xl border border-gray-200 bg-blue-50/30 text-gray-900 outline-none focus:border-blue-400 transition-all text-sm appearance-none cursor-pointer px-4"
-                        dropdownClassName="w-full"
-                      />
+                  return (
+                    <div className="space-y-4 pt-2 animate-in fade-in zoom-in-95 duration-300">
+                      {/* Select Board */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                          Board
+                        </label>
+                        <SearchableSelect
+                          value={selectedBoardId}
+                          onChange={(val) => {
+                            if (val === "") {
+                              setSelectedBoardId("");
+                              setSelectedInstituteId("");
+                              setSelectedClassId("");
+                            } else {
+                              setSelectedBoardId(Number(val));
+                            }
+                          }}
+                          options={filteredBoards.map((b) => ({
+                            value: b.id,
+                            label: b.name,
+                          }))}
+                          placeholder="Select Board"
+                          className="w-full py-2.5 rounded-xl border border-gray-200 bg-blue-50/30 text-gray-900 outline-none focus:border-blue-400 transition-all text-sm appearance-none cursor-pointer px-4"
+                          dropdownClassName="w-full"
+                        />
+                      </div>
+
+                      {/* School/College */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                          School/Institute
+                        </label>
+                        <SearchableSelect
+                          value={selectedInstituteId}
+                          onChange={(val) => {
+                            if (val === "") {
+                              setSelectedBoardId("");
+                              setSelectedInstituteId("");
+                              setSelectedClassId("");
+                            } else {
+                              setSelectedInstituteId(Number(val));
+                            }
+                          }}
+                          options={filteredSchools.map((i) => ({
+                            value: i.id,
+                            label: i.name,
+                          }))}
+                          placeholder="Select Institute"
+                          className="w-full py-2.5 rounded-xl border border-gray-200 bg-blue-50/30 text-gray-900 outline-none focus:border-blue-400 transition-all text-sm appearance-none cursor-pointer px-4"
+                          dropdownClassName="w-full"
+                        />
+                      </div>
+
+                      {/* Class/Standard */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                          Class/Standard
+                        </label>
+                        <SearchableSelect
+                          value={selectedClassId}
+                          onChange={(val) => {
+                            if (val === "") {
+                              setSelectedBoardId("");
+                              setSelectedInstituteId("");
+                              setSelectedClassId("");
+                            } else {
+                              setSelectedClassId(Number(val));
+                            }
+                          }}
+                          options={filteredClasses.map((c) => ({
+                            value: c.id,
+                            label: c.name,
+                          }))}
+                          placeholder="Select Class"
+                          className="w-full py-2.5 rounded-xl border border-gray-200 bg-blue-50/30 text-gray-900 outline-none focus:border-blue-400 transition-all text-sm appearance-none cursor-pointer px-4"
+                          dropdownClassName="w-full"
+                        />
+                      </div>
                     </div>
-
-                    {/* School/College */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                        School/Institute
-                      </label>
-                      <SearchableSelect
-                        value={selectedInstituteId}
-                        onChange={(val) => {
-                          if (val === "") {
-                            setSelectedBoardId("");
-                            setSelectedInstituteId("");
-                            setSelectedClassId("");
-                          } else {
-                            setSelectedInstituteId(Number(val));
-                          }
-                        }}
-                        options={filteredSchools.map((i) => ({ value: i.id, label: i.name }))}
-                        placeholder="Select Institute"
-                        className="w-full py-2.5 rounded-xl border border-gray-200 bg-blue-50/30 text-gray-900 outline-none focus:border-blue-400 transition-all text-sm appearance-none cursor-pointer px-4"
-                        dropdownClassName="w-full"
-                      />
-                    </div>
-
-                    {/* Class/Standard */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                        Class/Standard
-                      </label>
-                      <SearchableSelect
-                        value={selectedClassId}
-                        onChange={(val) => {
-                          if (val === "") {
-                            setSelectedBoardId("");
-                            setSelectedInstituteId("");
-                            setSelectedClassId("");
-                          } else {
-                            setSelectedClassId(Number(val));
-                          }
-                        }}
-                        options={filteredClasses.map((c) => ({ value: c.id, label: c.name }))}
-                        placeholder="Select Class"
-                        className="w-full py-2.5 rounded-xl border border-gray-200 bg-blue-50/30 text-gray-900 outline-none focus:border-blue-400 transition-all text-sm appearance-none cursor-pointer px-4"
-                        dropdownClassName="w-full"
-                      />
-                    </div>
-                  </div>
-                );
-              })()}
+                  );
+                })()}
             </div>
           </div>
 
@@ -614,10 +697,11 @@ export const SelectRoleModal: React.FC = () => {
             <button
               onClick={handleNext}
               disabled={!isFormValid || isLoading}
-              className={`w-full py-4 rounded-2xl font-bold transition-all transform active:scale-[0.98] ${isFormValid && !isLoading
-                ? "bg-[#aad02b] text-gray-800 hover:bg-[#c2e84a] shadow-md hover:shadow-lg"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
+              className={`w-full py-4 rounded-2xl font-bold transition-all transform active:scale-[0.98] ${
+                isFormValid && !isLoading
+                  ? "bg-[#aad02b] text-gray-800 hover:bg-[#c2e84a] shadow-md hover:shadow-lg"
+                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
             >
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2">

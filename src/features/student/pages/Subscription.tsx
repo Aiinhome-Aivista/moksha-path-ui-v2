@@ -205,7 +205,7 @@ const Subscription: React.FC = () => {
     }
 
     // ✅ Priority 2: student from localStorage
-    if (localUser.role === "student" && activeProfile) {
+    if (localUser.role_name === "student" && activeProfile) {
       setProfiles([
         {
           id: "primary",
@@ -223,7 +223,7 @@ const Subscription: React.FC = () => {
         },
       ]);
     }
-  }, [location.state, localUser.role]); // ✅ FIXED
+  }, [location.state, localUser.role_name]); // ✅ FIXED
   // useEffect(() => {
   //   setProfiles((prev) =>
   //     prev.map((profile) => ({
@@ -334,7 +334,7 @@ const Subscription: React.FC = () => {
       selectedPlan: null,
 
       // ✅ seats rule
-      seats: localUser.role === "student" ? 1 : 1,
+      seats: localUser.role_name === "student" ? 1 : 1,
     };
 
     setProfiles((prev) => [
@@ -385,7 +385,7 @@ const Subscription: React.FC = () => {
         const updatedProfile = { ...p, ...updates };
 
         // ✅ FORCE seat = 1 for student
-        if (localUser.role === "student") {
+        if (localUser.role_name === "student") {
           updatedProfile.seats = 1;
         }
 
@@ -679,7 +679,7 @@ const Subscription: React.FC = () => {
       //   subject_ids: allSelectedSubjects.map((s) => s.subject_id),
       //   institute_id: firstValidProfile.school_id || null,
       //   subscription_id: "",
-      //   licenses_used: localUser.role === "student" ? 1 : 0,
+      //   licenses_used: localUser.role_name === "student" ? 1 : 0,
       //   subscription_name: subscriptionName,
       //   total_licenses: totalSeats,
       //   ui_total_amount: currentTotalAmount,
@@ -832,7 +832,7 @@ const Subscription: React.FC = () => {
 
   //     total_licenses: p.seats,
 
-  //     licenses_used: localUser.role === "student" ? 1 : 0,
+  //     licenses_used: localUser.role_name === "student" ? 1 : 0,
   //   }));
   // };
 
@@ -873,7 +873,7 @@ const Subscription: React.FC = () => {
 
         total_licenses: p.seats,
 
-        licenses_used: localUser.role === "student" ? 1 : 0,
+        licenses_used: localUser.role_name === "student" ? 1 : 0,
 
         profile_amount: Number(profileAmount.toFixed(2)), // ✅ NEW
       };
@@ -897,7 +897,7 @@ const Subscription: React.FC = () => {
       //   institute_id: firstValidProfile.school_id || null,
       //   ui_total_amount: uiTotalAmount,
       //   total_licenses: totalSeats,
-      //   licenses_used: localUser.role === "student" ? 1 : 0,
+      //   licenses_used: localUser.role_name === "student" ? 1 : 0,
       //   subscription_name: "",
       // };
       const payload = {
@@ -1048,7 +1048,7 @@ const Subscription: React.FC = () => {
   };
 
   // useEffect(() => {
-  //   if (localUser.role === "teacher") {
+  //   if (localUser.role_name === "teacher") {
   //     navigate("/dashboard");
   //   }
   // }, []);
@@ -1108,7 +1108,7 @@ const Subscription: React.FC = () => {
           </div>
 
           {/* RIGHT: Button */}
-          {localUser.role !== "student" && (
+          {localUser.role_name !== "student" && (
             <button
               onClick={addProfile}
               className="inline-flex items-center gap-2 px-4 py-2 bg-[#BADA55] text-white rounded-xl text-sm font-bold shadow-sm shadow-[#BADA55]/40 hover:bg-lime-500 transition-all active:scale-95"
@@ -1441,14 +1441,14 @@ const Subscription: React.FC = () => {
 
                           <button
                             onClick={() => {
-                              if (localUser.role !== "student") {
+                              if (localUser.role_name !== "student") {
                                 updateProfile(profileIndex, {
                                   seats: Math.max(1, p.seats - 1),
                                 });
                               }
                             }}
-                            disabled={localUser.role === "student"}
-                            className={`text-sm px-2 ${localUser.role === "student"
+                            disabled={localUser.role_name === "student"}
+                            className={`text-sm px-2 ${localUser.role_name === "student"
                               ? "text-gray-400 cursor-not-allowed"
                               : "text-white"
                               }`}
@@ -1462,14 +1462,14 @@ const Subscription: React.FC = () => {
 
                           <button
                             onClick={() => {
-                              if (localUser.role !== "student") {
+                              if (localUser.role_name !== "student") {
                                 updateProfile(profileIndex, {
                                   seats: p.seats + 1,
                                 });
                               }
                             }}
-                            disabled={localUser.role === "student"}
-                            className={`text-sm px-2 ${localUser.role === "student"
+                            disabled={localUser.role_name === "student"}
+                            className={`text-sm px-2 ${localUser.role_name === "student"
                               ? "text-gray-400 cursor-not-allowed"
                               : "text-white"
                               }`}
@@ -1997,14 +1997,15 @@ const Subscription: React.FC = () => {
         <PaymentSummaryModal
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
-          selectedPlan={selectedPlan}
-          selectedSubjects={activeProfile?.selectedSubjects || []}
-          sheetCount={totalSeats}
+          // selectedPlan={selectedPlan}
+          // selectedSubjects={activeProfile?.selectedSubjects || []}
+          // sheetCount={totalSeats}
           uiTotalAmount={uiTotalAmount}
-          academicDetails={null}
+          // academicDetails={null}
           onProceedToPay={handlePayNow}
           onApplyCoupon={handleApplyCoupon}
           isProcessing={isValidating}
+          profiles={profiles} 
         />
       )}
 

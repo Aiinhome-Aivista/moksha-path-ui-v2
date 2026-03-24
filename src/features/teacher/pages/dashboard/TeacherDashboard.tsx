@@ -29,21 +29,33 @@ const TeacherDashboard = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
+      setIsLoading(true);
+      
+      // Fetch profile details
       try {
-        setIsLoading(true);
-        const [profileRes, imageRes] = await Promise.all([
-          ApiServices.getTeacherProfile(),
-          ApiServices.getUserProfileImage()
-        ]);
-
+        const profileRes = await ApiServices.getTeacherProfile();
+        console.log("Teacher Profile Response:", profileRes.data);
         if (profileRes.data?.status === 'success') {
           setProfileData(profileRes.data.data);
         }
-        if (imageRes.data?.status === 'success' && imageRes.data?.data?.image) {
-          setProfileImage(imageRes.data.data.image);
+      } catch (error) {
+        console.error('Failed to fetch teacher profile details', error);
+      }
+
+      // Fetch profile image
+      try {
+        const imageRes = await ApiServices.getUserProfileImage();
+        console.log("Teacher Profile Image Response:", imageRes.data);
+        const imgData = imageRes.data?.data?.image || imageRes.data?.data?.profile_image;
+        if (imageRes.data?.status === 'success' && imgData) {
+          // Add data URI prefix if missing
+          const profileImg = imgData.startsWith('data:') 
+            ? imgData 
+            : `data:image/jpeg;base64,${imgData}`;
+          setProfileImage(profileImg);
         }
       } catch (error) {
-        console.error('Failed to fetch teacher profile', error);
+        console.error('Failed to fetch teacher profile image', error);
       } finally {
         setIsLoading(false);
       }

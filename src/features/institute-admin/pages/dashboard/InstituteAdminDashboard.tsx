@@ -36,9 +36,9 @@ const InstituteAdminDashboard: React.FC = () => {
         meta={dashboardMeta}
         profileAltText="Principal Profile"
       />
-      <div className="flex flex-col gap-5 px-12 py-6">
+      <div className="flex flex-col gap-5 px-12 py-3">
   {/* Stat row */}
-  <div className="flex w-full justify-end gap-16">
+  <div className="flex w-full justify-end gap-44">
     {statCards.map((stat, i) => (
       <div key={i} className=" text-start">
         <p

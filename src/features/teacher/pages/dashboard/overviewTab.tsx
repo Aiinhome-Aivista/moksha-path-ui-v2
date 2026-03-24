@@ -11,17 +11,17 @@ const OverviewTab = () => {
   };
 
   const renderTable = (title: string, data: any[], syllabus: string, mock: string) => (
-    <div className="bg-color-secondary dark:bg-secondary-800 pt-6 pb-6 rounded-3xl  border border-gray-100 dark:border-secondary-700 flex-1">
+    <div className="bg-color-secondary pt-6 pb-6 rounded-3xl  border border-gray-100 flex-1">
       <div className="flex justify-between items-end mb-4">
-        <h3 className="text-xl font-black text-gray-800 dark:text-gray-200 tracking-tight">{title}</h3>
-        <p className="text-[12px] text-gray-700 dark:text-gray-500 font-bold ">
-          Syllabus: <span className="text-[10px] text-gray-400 dark:text-gray-300">{syllabus} complete</span> | Mock: <span className="text-[10px] text-gray-400 dark:text-gray-300">{mock}</span>
+        <h3 className="text-xl font-black text-gray-800 tracking-tight">{title}</h3>
+        <p className="text-[12px] text-gray-700 font-bold ">
+          Syllabus: <span className="text-[10px] text-gray-400">{syllabus} complete</span> | Mock: <span className="text-[10px] text-gray-400">{mock}</span>
         </p>
       </div>
       
       <table className="w-full text-left">
-        <thead className="border-y-4 border-gray-300 dark:border-secondary-700">
-          <tr className="text-gray-700 dark:text-gray-700 text-[14px] font-black tracking-widest">
+        <thead className="border-y-4 border-gray-300">
+          <tr className="text-gray-700 text-[14px] font-black tracking-widest">
             <th className="p-2 text-center">Section</th>
             <th className="p-2 text-center">Students</th>
             <th className="p-2 text-center">Class Avg</th>
@@ -29,13 +29,13 @@ const OverviewTab = () => {
             <th className="p-2 text-center">Status</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-300 dark:divide-secondary-700">
+        <tbody className="divide-y divide-gray-300">
           {(data || []).map((item, i) => (
             <tr key={i} className=" transition-all duration-200">
-              <td className="py-3.5 text-sm font-bold text-gray-700 dark:text-gray-300 text-center">{item.section}</td>
-              <td className="text-sm font-bold text-gray-700 dark:text-gray-400  text-center">{item.students}</td>
-              <td className="text-sm font-bold text-gray-700 dark:text-gray-300 text-center">{item.avg}%</td>
-              <td className="text-sm font-bold text-gray-700 dark:text-gray-500 text-center">{item.benchmark}%</td>
+              <td className="py-3.5 text-sm font-bold text-gray-700 text-center">{item.section}</td>
+              <td className="text-sm font-bold text-gray-700 text-center">{item.students}</td>
+              <td className="text-sm font-bold text-gray-700 text-center">{item.avg}%</td>
+              <td className="text-sm font-bold text-gray-700 text-center">{item.benchmark}%</td>
               <td className="text-center">
                 <span className={`inline-block w-24 text-center py-1.5 rounded-full text-[9px] font-black text-white  transform group-hover:scale-105 transition-transform ${getStatusStyle(item.status)}`}>
                   {item.status?.toUpperCase()}
@@ -52,10 +52,10 @@ const OverviewTab = () => {
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       {/* 1. Page Sub-Header and Top Stats in one responsive row */}
-      <div className="bg-color-secondary dark:bg-secondary-800 rounded-3xl border border-gray-100 dark:border-secondary-700 flex flex-col xl:flex-row justify-between items-center gap-8">
+      <div className="bg-color-secondary rounded-3xl border border-gray-100 flex flex-col xl:flex-row justify-between items-center gap-8">
         <div className="flex-shrink-0 pt-2 px-6 ">
-          <h2 className="text-1xl font-black text-cyan-600 dark:text-cyan-400 tracking-tight leading-none">Student & Subject Overview</h2>
-          <div className="text-[10px] text-gray-400 dark:text-gray-500 font-bold tracking-tight mt-1">
+          <h2 className="text-1xl font-black text-cyan-600 tracking-tight leading-none">Student & Subject Overview</h2>
+          <div className="text-[10px] text-gray-400 font-bold tracking-tight mt-1">
             <p>Performance summary across all classes</p>
             <p>March 2026</p>
           </div>
@@ -65,18 +65,18 @@ const OverviewTab = () => {
   {(dashboardData?.topStats || []).map((stat, i) => (
     <div key={i} className="flex flex-col justify-center">
       {/* 1. Large Number (Value) */}
-      <p className={`text-4xl lg:text-5xl font-black leading-none tracking-tight ${stat.color || 'text-gray-800 dark:text-gray-200'}`}>
+      <p className={`text-4xl lg:text-5xl font-black leading-none tracking-tight ${stat.color || 'text-gray-800'}`}>
         {stat.value}
       </p>
       
       <div className="mt-1">
         {/* 2. Label - NOW USES THE SAME COLOR AS THE VALUE */}
-        <p className={`text-[12px] font-bold leading-tight ${stat.color || 'text-gray-800 dark:text-gray-200'}`}>
+        <p className={`text-[12px] font-bold leading-tight ${stat.color || 'text-gray-800'}`}>
           {stat.label}
         </p>
         
         {/* 3. Sub-label - Remains gray */}
-        <p className="text-[10px] text-gray-600 dark:text-gray-500 mt-0.5 font-medium leading-tight">
+        <p className="text-[10px] text-gray-600 mt-0.5 font-medium leading-tight">
           {stat.sub}
         </p>
       </div>

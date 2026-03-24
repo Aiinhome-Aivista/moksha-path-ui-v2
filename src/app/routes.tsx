@@ -42,6 +42,8 @@ import TutorDashboard from "../features/private-tutor/pages/TutorDashboard";
 import TutorLearningPlanner from "../features/private-tutor/pages/TutorLearningPlanner";
 import TutorNotifications from "../features/private-tutor/pages/TutorNotification";
 import TutorMaterials from "../features/private-tutor/pages/TutorMaterials";
+import DashboardDyn from "../features/student/pages/DashboardDyn";
+import { TeacherDashboardDyn } from "../features/teacher/pages/TeacherDashboardDyn";
 
 const routes: RouteObject[] = [
   // Standalone Routes
@@ -59,6 +61,7 @@ const routes: RouteObject[] = [
 
       // Student Routes
       { path: "dashboard", element: <Dashboard /> },
+      { path: "dashboard-dyn", element: <DashboardDyn /> },
       { path: "profile", element: <StudentProfile /> },
 
       // Student Features
@@ -79,6 +82,7 @@ const routes: RouteObject[] = [
       { path: "invitation", element: <Invitations /> },
       { path: "teacher-material", element: <TeacherMaterials /> },
       { path: "teacher/dashboard", element: <TeacherDashboard /> },
+      { path: "teacher/dashboard-dyn", element: <TeacherDashboardDyn /> },
       { path: "teacher/teacherlearning-planner", element: <TeacherLearningPlanner /> },
       { path: "teacher-tests", element: <TeacherMaterials /> },
       { path: "teacher-videos", element: <TeacherMaterials /> },
