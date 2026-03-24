@@ -3,13 +3,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices"; // Assuming ApiServices path
 import { useToast } from "../../../app/providers/ToastProvider";
-// import { useModal } from "../../auth/context/AuthContext";
+import { useModal } from "../../auth/context/AuthContext";
 
 const PaymentGateway: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
-  // const { decodeUserToken } = useModal();
+  const { fetchMenu } = useModal();
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [localUser, setLocalUser] = React.useState<any>({});
 
@@ -112,29 +112,31 @@ const PaymentGateway: React.FC = () => {
             "success",
           );
           // console.log("idd",subscriptionId)
-          // if (subscriptionId) {
-          //   const role = localUser?.role?.toLowerCase();
+          // Always fetch menu after subscription update
+          const menuItems = await fetchMenu();
 
-          //   if (role === "teacher") {
-          //     navigate("/teacher/dashboard", { replace: true });
-          //   } else if (role === "parent") {
-          //     navigate("/parent/dashboard", { replace: true });
-          //   } else {
-          //     navigate("/dashboard", { replace: true });
-          //   }
-          // }
           const role = localUser?.role?.toLowerCase();
 
-          if (role === "teacher") {
-            navigate("/teacher/dashboard", { replace: true });
-          } else if (role === "parent") {
-            navigate("/parent/dashboard", { replace: true });
-          } else if (role === "institute_admin" || role === "institute admin") {
-            navigate("/institute-admin/dashboard", { replace: true });
-          } else if (role === "private_tutor" || role === "private tutor") {
-            navigate("/private-tutor/dashboard", { replace: true });
+          // Find dynamic dashboard route from menu
+          const dynamicDashboard = menuItems?.find(
+            (item) => item.page_name.toLowerCase() === "dashboard"
+          );
+
+          if (dynamicDashboard) {
+            navigate(dynamicDashboard.route, { replace: true });
           } else {
-            navigate("/dashboard", { replace: true });
+            // Fallback to hardcoded logic
+            if (role === "teacher") {
+              navigate("/teacher/dashboard1", { replace: true });
+            } else if (role === "parent") {
+              navigate("/parent/dashboard", { replace: true });
+            } else if (role === "institute_admin" || role === "institute admin") {
+              navigate("/institute-admin/dashboard", { replace: true });
+            } else if (role === "private_tutor" || role === "private tutor") {
+              navigate("/private-tutor/dashboard", { replace: true });
+            } else {
+              navigate("/dashboard", { replace: true });
+            }
           }
         }
       } else {

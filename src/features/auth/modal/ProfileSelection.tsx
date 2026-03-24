@@ -140,20 +140,12 @@ export const ProfileSelectionModal: React.FC = () => {
         localStorage.setItem("active_profile", JSON.stringify(profile));
 
         // Always fetch menu - it will handle no menu gracefully
-        await fetchMenu();
+        const menuItems = await fetchMenu();
 
         showToast(`Welcome back, ${profile.name}!`, "success");
         closeProfileSelection();
         setForceLoginModal({ isOpen: false, profile: null, message: "" });
 
-        // if (
-        //   profile.subscription_id === null ||
-        //   profile.subscription_id === undefined
-        // ) {
-        //   navigate("/subscription", { replace: true });
-        // } else {
-        //   navigate("/dashboard", { replace: true });
-        // }
         const subscriptionId =
           res.data.data?.subscription_id ?? profile.subscription_id ?? null;
 
@@ -169,17 +161,27 @@ export const ProfileSelectionModal: React.FC = () => {
             },
           });
         } else {
-          const role = activeRole?.toLowerCase();
-          if (role === "teacher") {
-            navigate("/teacher/dashboard", { replace: true });
-          } else if (role === "parent") {
-            navigate("/parent/dashboard", { replace: true });
-          } else if (role === "institute_admin" || role === "institute admin") {
-             navigate("/institute-admin/dashboard", { replace: true });
-             }else if (role === "private_tutor" || role === "private tutor") {
-             navigate("/private-tutor/dashboard", { replace: true });
-          }else {
-            navigate("/dashboard", { replace: true });
+          // Find dynamic dashboard route from menu
+          const dynamicDashboard = menuItems?.find(
+            (item) => item.page_name.toLowerCase() === "dashboard"
+          );
+
+          if (dynamicDashboard) {
+            navigate(dynamicDashboard.route, { replace: true });
+          } else {
+            // Fallback to hardcoded logic if no dashboard entry in menu
+            const role = activeRole?.toLowerCase();
+            if (role === "teacher") {
+              navigate("/teacher/dashboard", { replace: true });
+            } else if (role === "parent") {
+              navigate("/parent/dashboard", { replace: true });
+            } else if (role === "institute_admin" || role === "institute admin") {
+              navigate("/institute-admin/dashboard11", { replace: true });
+            } else if (role === "private_tutor" || role === "private tutor") {
+              navigate("/private-tutor/dashboard", { replace: true });
+            } else {
+              navigate("/dashboard", { replace: true });
+            }
           }
         }
       } else {
