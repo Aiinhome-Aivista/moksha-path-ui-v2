@@ -45,6 +45,8 @@ const TestDetailsFormModal: React.FC<TestDetailsFormModalProps> = ({
     difficultyLevel: "Mixed",
     dueDate: "",
   });
+  const [testType, setTestType] = useState<"normal" | "adaptive">("normal");
+  const [maxAttemptCount, setMaxAttemptCount] = useState(5);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestions = useMemo(() => {
@@ -101,6 +103,8 @@ const TestDetailsFormModal: React.FC<TestDetailsFormModalProps> = ({
         difficultyLevel: "Mixed",
         dueDate: "",
       });
+      setTestType("normal");
+      setMaxAttemptCount(5);
       setShowSuggestions(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -184,41 +188,94 @@ const TestDetailsFormModal: React.FC<TestDetailsFormModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      // Format the due_date to match API format: "YYYY-MM-DD HH:mm:ss"
-      let formattedDueDate = "";
-      if (form.dueDate) {
-        const date = new Date(form.dueDate);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        const hours = String(date.getHours()).padStart(2, "0");
-        const minutes = String(date.getMinutes()).padStart(2, "0");
-        const seconds = "00";
-        formattedDueDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-      }
+      if (testType === "normal") {
+        // Normal Test Creation (Existing Logic)
+        // Format the due_date to match API format: "YYYY-MM-DD HH:mm:ss"
+        let formattedDueDate = "";
+        if (form.dueDate) {
+          const date = new Date(form.dueDate);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          const hours = String(date.getHours()).padStart(2, "0");
+          const minutes = String(date.getMinutes()).padStart(2, "0");
+          const seconds = "00";
+          formattedDueDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
 
-      const payload = {
-        subject_id: finalSubjectId,
-        chapter_ids: chapterIds,
-        test_name: form.testName,
-        total_questions: form.totalQuestions,
-        duration_minutes: form.durationMinutes,
-        difficulty_level: form.difficultyLevel,
-        due_date: formattedDueDate || undefined,
-        topic_ids: topicIds,
-      };
+        const payload = {
+          subject_id: finalSubjectId,
+          chapter_ids: chapterIds,
+          test_name: form.testName,
+          total_questions: form.totalQuestions,
+          duration_minutes: form.durationMinutes,
+          difficulty_level: form.difficultyLevel,
+          due_date: formattedDueDate || undefined,
+          topic_ids: topicIds,
+        };
 
-      const response = await ApiServices.assignSelfAssessment(payload);
+        const response = await ApiServices.assignSelfAssessment(payload);
 
-      if (response.data?.status === "success") {
-        showToast(
-          response.data.message || "Test created successfully!",
-          "success",
-        );
-        onSubmit(form);
-        onClose();
+        if (response.data?.status === "success") {
+          showToast(
+            response.data.message || "Test created successfully!",
+            "success",
+          );
+          onSubmit(form);
+          onClose();
+        } else {
+          showToast(response.data?.message || "Failed to create test", "error");
+        }
       } else {
-        showToast(response.data?.message || "Failed to create test", "error");
+        // Adaptive Test Creation (New Logic)
+        const userStored = localStorage.getItem("user");
+        const user = userStored ? JSON.parse(userStored) : null;
+        const student_ids = user?.id ? [parseInt(user.id)] : [];
+
+        const academicPayloadStored = localStorage.getItem("academic_payload");
+        const academicPayload = academicPayloadStored ? JSON.parse(academicPayloadStored) : {};
+
+        // Format the due_date
+        let formattedDueDate = "";
+        if (form.dueDate) {
+          const date = new Date(form.dueDate);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          const hours = String(date.getHours()).padStart(2, "0");
+          const minutes = String(date.getMinutes()).padStart(2, "0");
+          const seconds = "00";
+          formattedDueDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+
+        const payload = {
+          set_name: form.testName,
+          institute_id: academicPayload.institute_id || 1,
+          board_id: academicPayload.board_id || 1,
+          class_id: academicPayload.class_id || 1,
+          subject_id: finalSubjectId,
+          total_marks: form.maximumMarks,
+          duration_minutes: form.durationMinutes,
+          number_of_questions: form.totalQuestions,
+          max_attempt_count: maxAttemptCount,
+          chapters_array: chapterIds || [],
+          topics_array: topicIds || [],
+          student_ids: student_ids,
+          due_date: formattedDueDate || undefined,
+        };
+
+        const response = await ApiServices.createAdaptiveSet(payload);
+
+        if (response.data?.status === "success") {
+          showToast(
+            response.data.message || "Adaptive test created successfully!",
+            "success",
+          );
+          onSubmit(form);
+          onClose();
+        } else {
+          showToast(response.data?.message || "Failed to create adaptive test", "error");
+        }
       }
     } catch (error: any) {
       // console.error("Test creation error:", error);
@@ -309,6 +366,27 @@ const TestDetailsFormModal: React.FC<TestDetailsFormModalProps> = ({
               </div>
             </div>
           )}
+          {/* Test Type Selection */}
+          <div className="flex p-1 bg-gray-100 rounded-xl w-full sm:w-fit">
+            <button
+              onClick={() => setTestType("normal")}
+              className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-semibold transition-all ${testType === "normal"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+                }`}
+            >
+              Normal Test
+            </button>
+            <button
+              onClick={() => setTestType("adaptive")}
+              className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-semibold transition-all ${testType === "adaptive"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+                }`}
+            >
+              Adaptive Test
+            </button>
+          </div>
 
           {/* Row 1: Test Name and Total Marks */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-4">
@@ -432,6 +510,30 @@ const TestDetailsFormModal: React.FC<TestDetailsFormModalProps> = ({
               min={new Date().toISOString().slice(0, 16)}
             />
           </div>
+
+          {/* Adaptive specific field */}
+          {testType === "adaptive" && (
+            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+              <label className={labelClass}>Max Attempt Count</label>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                value={maxAttemptCount}
+                onChange={(e) => setMaxAttemptCount(Number(e.target.value))}
+                placeholder="5"
+                className={inputClass}
+                onKeyDown={(e) => {
+                  if (["-", "+", "e", "E", "."].includes(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
+              />
+              <p className="text-[10px] text-gray-400 mt-1 italic">
+                * Specify how many times a student can attempt this adaptive test.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
