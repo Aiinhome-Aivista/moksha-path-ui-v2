@@ -130,7 +130,6 @@
 // };
 
 // export default Header;
-
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useModal } from "../../features/auth/context/AuthContext";
@@ -153,10 +152,6 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const { showToast } = useToast();
-
-  // const handleLogout = () => {
-  //   setIsLogoutModalOpen(true);
-  // };
 
   const confirmLogout = async () => {
     try {
@@ -191,86 +186,93 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 h-14 bg-gray-100 dark:bg-secondary-900 border-secondary-200 dark:border-secondary-700 shadow-sm">
-        <div className="h-full px-4 lg:px-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {/* <button onClick={handleLogoClick} className="flex items-center animate-fade-in cursor-pointer">
-              <img src="/Logo.svg" alt="App Logo" className="h-[90%] w-[80%]" />
-            </button> */}
-            <div className="flex items-center gap-2 font-bold text-lg" onClick={handleLogoClick}>
-              <img src="/logogod.svg" alt="logo" className="w-10 h-10" />
-              <div>
+      {/* Changed lg: to xl: for structural height so iPad uses the flexible auto-height */}
+      <header className="sticky top-0 z-40 bg-gray-100 dark:bg-secondary-900 border-b border-secondary-200 dark:border-secondary-700 shadow-sm h-auto min-h-[3.5rem] xl:h-14 py-2 xl:py-0 overflow-hidden xl:overflow-visible">
+        {/* Changed lg:flex-nowrap to xl:flex-nowrap so iPad wraps properly */}
+        <div className="w-full px-2 lg:px-6 flex flex-wrap xl:flex-nowrap items-center justify-between relative h-full">
+          
+          {/* LOGO - Order 1 */}
+          <div className="flex items-center gap-4 flex-shrink-0 z-20 bg-gray-100 dark:bg-secondary-900 pr-2 order-1 xl:h-full">
+            <div className="flex items-center gap-2 font-bold text-lg cursor-pointer" onClick={handleLogoClick}>
+              <img src="/logogod.svg" alt="logo" className="w-8 h-8 lg:w-10 lg:h-10" />
+              <div className="block">
                 <h3>
                   Moksh<span className="text-xl text-[#E7842E]">Path</span>
                 </h3>
-                <p className="text-xs leading-none font-normal">
+                <p className="text-[10px] lg:text-xs leading-none font-normal">
                   Guided Path to True Learning
                 </p>
               </div>
             </div>
           </div>
-          <div className="flex-1 flex justify-center">
-            <div className="flex items-center absolute left-1/2 -translate-x-full z-10 bg-yellow-500 rounded-b-full pl-10 pr-12 gap-3">
-              <button className="text-sm font-semibold text-black">
-                Request a Demo
-              </button>
-              <button className="text-sm font-semibold text-black">FAQs</button>
-              <button className="text-sm font-semibold text-black">
-                Help Center
-              </button>
-            </div>
-            <div className="flex items-center relative top-0 bg-[#E9E9E9] rounded-b-full pt-5 pb-4 pl-72 pr-6 gap-6">
-              <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                About us
-              </button>
-              <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                Vidya Kosh
-              </button>
-              <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                Success Stories
-              </button>
-              <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                Institutional Access
-              </button>
-              <button
-                onClick={() => navigate("/blogs")}
-                className="text-sm font-semibold text-gray-700 hover:text-gray-900"
-              >
-                Blogs
-              </button>
-              {!isAuthenticated && !location.pathname.startsWith('/admin') && (
+
+          {/* PROFILE - Order 2 on Mobile/iPad, Order 3 on Desktop */}
+          <div className="flex items-center justify-end flex-shrink-0 z-20 bg-gray-100 dark:bg-secondary-900 pl-2 order-2 xl:order-3 ml-auto xl:ml-0 xl:h-full">
+            {isAuthenticated && user?.role !== 'admin' && (
+              <div className="relative flex items-center justify-center">
                 <button
-                  onClick={openSignIn}
-                  className="text-sm font-semibold text-gray-700 hover:text-gray-900"
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  className="p-1 lg:p-2 rounded-full hover:bg-gray-100 transition"
+                  title="Profile Menu"
                 >
-                  Sign In
+                  <UserCircle size={28} className="text-gray-700 w-6 h-6 lg:w-7 lg:h-7" />
                 </button>
-              )}
-            </div>
 
-            {/* THIS IS THE ONLY CHANGE: Wrapper made relative, Dropdown moved inside */}
-            {/* Outer container can keep gap if you have other items, but remove relative from here */}
-            <div className="flex items-center justify-end ml-4">
-              {isAuthenticated && user?.role !== 'admin' && (
-                <div className="relative flex items-center justify-center">
+                <ProfileDropdown
+                  isOpen={isProfileDropdownOpen}
+                  onClose={() => setIsProfileDropdownOpen(false)}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* MIDDLE NAV - Order 3 on Mobile/iPad (Drops to next line), Order 2 on Desktop */}
+          <div className="w-full xl:w-auto xl:flex-1 flex justify-center items-center mt-3 xl:mt-0 order-3 xl:order-2 xl:h-full">
+            <div className="flex flex-wrap xl:flex-nowrap items-center justify-center w-full xl:w-auto xl:h-auto gap-2 xl:gap-0">
+              
+              {/* YELLOW PILL - Uses xl: for absolute positioning so iPad stays safe */}
+              <div className="flex flex-wrap xl:flex-nowrap items-center justify-center relative xl:absolute xl:left-1/2 xl:-translate-x-full z-20 xl:z-10 bg-yellow-500 rounded-b-[1.5rem] xl:rounded-b-full px-2 xl:px-0 xl:pl-10 xl:pr-12 py-2 xl:py-0 gap-2 xl:gap-3 xl:top-0 w-full md:w-auto xl:w-auto">
+                <button className="text-[11px] lg:text-sm font-semibold text-black whitespace-nowrap">
+                  Request a Demo
+                </button>
+                <button className="text-[11px] lg:text-sm font-semibold text-black whitespace-nowrap">FAQs</button>
+                <button className="text-[11px] lg:text-sm font-semibold text-black whitespace-nowrap">
+                  Help Center
+                </button>
+              </div>
+
+              {/* GRAY PILL - Uses xl: for massive padding so iPad stays safe */}
+              <div className="flex flex-wrap xl:flex-nowrap items-center justify-center relative bg-[#E9E9E9] rounded-b-[1.5rem] xl:rounded-b-full px-2 xl:px-0 xl:pl-72 xl:pr-6 py-2 xl:pt-5 xl:pb-4 gap-2 xl:gap-6 xl:ml-0 xl:top-0 z-10 xl:z-auto w-full md:w-auto xl:w-auto mt-2 md:mt-0 xl:mt-0">
+                <button disabled className="text-[11px] lg:text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
+                  About us
+                </button>
+                <button disabled className="text-[11px] lg:text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
+                  Vidya Kosh
+                </button>
+                <button disabled className="text-[11px] lg:text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
+                  Success Stories
+                </button>
+                <button disabled className="text-[11px] lg:text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
+                  Institutional Access
+                </button>
+                <button
+                  onClick={() => navigate("/blogs")}
+                  className="text-[11px] lg:text-sm font-semibold text-gray-700 hover:text-gray-900 whitespace-nowrap"
+                >
+                  Blogs
+                </button>
+                {!isAuthenticated && !location.pathname.startsWith('/admin') && (
                   <button
-                    onClick={() =>
-                      setIsProfileDropdownOpen(!isProfileDropdownOpen)
-                    }
-                    className="p-2 rounded-full hover:bg-gray-100 transition"
-                    title="Profile Menu"
+                    onClick={openSignIn}
+                    className="text-[11px] lg:text-sm font-semibold text-gray-700 hover:text-gray-900 whitespace-nowrap"
                   >
-                    <UserCircle size={28} className="text-gray-700" />
+                    Sign In
                   </button>
-
-                  <ProfileDropdown
-                    isOpen={isProfileDropdownOpen}
-                    onClose={() => setIsProfileDropdownOpen(false)}
-                  />
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
+
         </div>
       </header>
 
