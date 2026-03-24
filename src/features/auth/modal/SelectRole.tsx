@@ -332,15 +332,7 @@ export const SelectRoleModal: React.FC = () => {
             (item: any) => item.page_name?.toLowerCase() === "dashboard"
           )?.route || "/dashboard";
 
-          const userRoleName =
-            roles.find((r) => r.role_id === selectedRoleId)?.role_name ||
-            "student";
-          const userRole = resolveRoleFromBackend(userRoleName);
-          const role = userRole.toLowerCase();
-
-          if (role === "teacher") {
-            navigate(dashboardRoute, { replace: true });
-          } else if (!subscriptionId) {
+          if (!subscriptionId) {
             navigate("/subscription", {
               replace: true,
               state: {

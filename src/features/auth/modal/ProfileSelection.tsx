@@ -153,9 +153,7 @@ export const ProfileSelectionModal: React.FC = () => {
           (item: any) => item.page_name?.toLowerCase() === "dashboard"
         )?.route || "/dashboard";
 
-        if (activeRole?.toLowerCase() === "teacher") {
-          navigate(dashboardRoute, { replace: true });
-        } else if (!subscriptionId) {
+        if (!subscriptionId) {
           navigate("/subscription", {
             replace: true,
             state: {
