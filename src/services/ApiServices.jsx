@@ -667,6 +667,12 @@ class ApiServices {
     // payload: { teacher_user_id: number }
     return axiosInstance.post(POST_APIS.remove_teacher, payload);
   }
+
+  // Log user events
+  logUserEvent(payload) {
+    // payload: { event_name: string, event_data: object }
+    return axiosInstance.post(POST_APIS.log_user_events, payload);
+  }
 }
 
 export default new ApiServices();

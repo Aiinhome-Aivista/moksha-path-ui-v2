@@ -316,6 +316,17 @@ export const SignInModal: React.FC = () => {
         if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
         if (subscription_token)
           localStorage.setItem("subscription_token", subscription_token);
+
+        // Log the signin event
+        ApiServices.logUserEvent({
+          event_name: "user_login",
+          event_data: {
+            method: "OTP_Login",
+            identifier: formData.emailOrMobile,
+            timestamp: new Date().toISOString(),
+          },
+        }).catch((err) => console.error("Fail to log user event", err));
+        
         setOtpError("");
         // closeSignIn();
         showToast("Signed in successfully", "success");

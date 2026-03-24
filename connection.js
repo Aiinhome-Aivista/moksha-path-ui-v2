@@ -186,4 +186,7 @@ export const POST_APIS = {
   // Institute Admin - Faculty Management
   assign_teacher: `${BASE_URL}institute_admin/assign_teacher`,
   remove_teacher: `${BASE_URL}institute_admin/remove_teacher`,
+
+  // User event logging
+  log_user_events: `${BASE_URL}log/user-events`,
 };
