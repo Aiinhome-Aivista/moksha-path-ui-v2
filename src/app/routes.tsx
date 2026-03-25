@@ -44,6 +44,7 @@ import TutorNotifications from "../features/private-tutor/pages/TutorNotificatio
 import TutorMaterials from "../features/private-tutor/pages/TutorMaterials";
 import DashboardDyn from "../features/student/pages/DashboardDyn";
 import { TeacherDashboardDyn } from "../features/teacher/pages/TeacherDashboardDyn";
+import DiscussionBoard from "../features/student/pages/DiscussionBoard";
 
 const routes: RouteObject[] = [
   // Standalone Routes
@@ -63,6 +64,7 @@ const routes: RouteObject[] = [
       { path: "dashboard", element: <Dashboard /> },
       { path: "dashboard-dyn", element: <DashboardDyn /> },
       { path: "profile", element: <StudentProfile /> },
+      { path: "discussion-board", element: <DiscussionBoard /> },
 
       // Student Features
       // { path: 'subscription', element: <Subscription /> },

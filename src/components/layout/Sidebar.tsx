@@ -24,6 +24,7 @@ import {
   Mail,
   ChevronRight,
   Menu,
+  Group,
   type LucideIcon,
 } from "lucide-react";
 import ApiServices from "../../services/ApiServices";
@@ -37,6 +38,7 @@ interface SidebarProps {
 // Map API icon strings (lowercase) to Lucide components
 const IconMap: Record<string, LucideIcon> = {
   home: Home,
+  discussion: Group,
   user: User,
   "credit-card": CreditCard,
   wallet: Wallet,

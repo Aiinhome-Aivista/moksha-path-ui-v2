@@ -590,7 +590,7 @@ const LearningPlanner: React.FC = () => {
         </div>
 
         {/* Stats */}
-        <div className="flex flex-wrap items-center gap-10">
+        <div className="flex flex-wrap items-start gap-10">
           {stats && (
             <div className="flex items-center gap-4">
               <div className="w-[6rem] h-[6rem] rounded-full bg-yellow flex items-center justify-center shadow-inner">
@@ -609,13 +609,21 @@ const LearningPlanner: React.FC = () => {
                 { value: stats.completed_count, label: "Completed" },
                 { value: stats.pending_count, label: "Pending" },
               ].map(({ value, label }) => (
-                <div key={label} className="text-center">
-                  <div className="w-[4.688rem] h-[4.688rem] rounded-full bg-yellow flex items-center justify-center mx-auto mb-1 shadow-inner">
+                <div key={label} className="text-center flex flex-col items-center">
+                  <div className="w-[4.688rem] h-[4.688rem] rounded-full bg-yellow flex items-center justify-center mb-1 shadow-inner">
                     <span className="text-lg font-bold text-red">{value}</span>
                   </div>
-                  <p className="text-xs font-medium text-primary">{label}</p>
+                  <p className="text-xs font-medium text-primary w-[4.688rem] leading-tight">{label}</p>
                 </div>
               ))}
+
+              {/* ── Leaderboard Position (hardcoded) ── */}
+              <div className="text-center flex flex-col items-center">
+                <div className="w-[4.688rem] h-[4.688rem] rounded-full bg-yellow flex items-center justify-center mb-1 shadow-inner">
+                  <span className="text-lg font-bold text-red">#12</span>
+                </div>
+                <p className="text-xs font-medium text-primary w-[4.688rem] leading-tight">Leadership board position</p>
+              </div>
             </>
           )}
         </div>
