@@ -41,21 +41,9 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClos
     };
   }, [isOpen, onClose]);
 
-  const handleManageAccount = async () => {
-    setIsManageLoading(true);
-    try {
-      const response = await ApiServices.getUsersByTokenContact();
-      if (response.data?.status === 'success') {
-        localStorage.setItem("profile_modal_mode", "manage");
-        setProfilesList(response.data.data);
-        openProfileSelection();
-        onClose();
-      }
-    } catch (error) {
-      // console.error("Failed to fetch profiles", error);
-    } finally {
-      setIsManageLoading(false);
-    }
+  const handleManageAccount = () => {
+    navigate("/profile");
+    onClose();
   };
 
   const handleSwitchRole = async () => {
