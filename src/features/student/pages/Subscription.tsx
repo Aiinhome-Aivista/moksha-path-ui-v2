@@ -1449,7 +1449,7 @@ const Subscription: React.FC = () => {
                       </div>
 
                       {/* Seats per profile */}
-                      <div className="flex flex-col gap-1">
+                      {/* <div className="flex flex-col gap-1">
                         <label className="text-sm tracking-widest text-primary font-bold px-1 uppercase">
                           Seats
                         </label>
@@ -1495,7 +1495,7 @@ const Subscription: React.FC = () => {
                           </button>
 
                         </div>
-                      </div>
+                      </div> */}
 
                       {/* Clear for this profile */}
                       <div className="flex items-end">
