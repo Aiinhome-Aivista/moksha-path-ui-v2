@@ -150,13 +150,13 @@ export const ProfileSelectionModal: React.FC = () => {
           res.data.data?.subscription_id ?? profile.subscription_id ?? null;
 
         const dashboardRoute = menuItems?.find(
-          (item: any) => item.page_name?.toLowerCase().includes("dashboard")
-        )?.route || "/dashboard";
+          (item: any) => item.page_name?.toLowerCase().includes("profile")
+        )?.route || "/profile";
 
         if (activeRole.toLowerCase() === "teacher") {
           navigate(dashboardRoute, { replace: true });
         } else if (!subscriptionId) {
-          navigate("/subscription", {
+          navigate("/profile", {
             replace: true,
             state: {
               preselectedAcademicDetails: {

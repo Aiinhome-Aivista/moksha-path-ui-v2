@@ -926,7 +926,7 @@ const StudentProfile: React.FC = () => {
             className="relative group shrink-0 cursor-pointer"
             onClick={() => fileInputRef.current?.click()}
           >
-            <div className="w-16 h-16 rounded-full overflow-hidden ring-4 ring-white shadow-xl select-none">
+            <div className="w-16 h-16 rounded-full overflow-hidden shadow-xl select-none">
               {profileImage ? (
                 <img
                   src={profileImage}
