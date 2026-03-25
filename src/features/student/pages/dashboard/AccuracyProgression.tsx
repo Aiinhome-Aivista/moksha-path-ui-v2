@@ -2,18 +2,18 @@ import { subjectAccuracies } from "./NewStudent";
 
 export const AccuracyProgression = () => {
   return (
-    <div className="p-4">
-      <h2 className="font-semibold text-lg">
+    <div className="px-4">
+     <h2 className="font-semibold text-3xl text-primary">
         Accuracy by Difficulty Mock Progression
       </h2>
-      <p className="font-normal text-xs mb-5 text-gray-700">
+      <p className="font-medium text-base mb-5 text-primary">
         Highest level you answer correctly: 50% of the time
       </p>
       {subjectAccuracies.map((subAcc, i) => (
-        <div key={i} className="mb-4">
+        <div key={i} className="mb-6">
           {/* Title */}
           <div className="flex justify-between text-sm mb-1">
-            <span className="text-sm font-semibold">{subAcc.name}</span>
+            <span className="text-xl font-semibold">{subAcc.name}</span>
             <span
               className={`text-xs text-end font-semibold ${subAcc.level === 2
                   ? "text-gray-500"

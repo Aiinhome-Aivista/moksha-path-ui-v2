@@ -10,6 +10,8 @@ interface HeaderProfileProps {
   onTabChange: (tab: string) => void;
   selectedSubject: string;
   onSubjectSelect: (subject: string) => void;
+  selectedExam: string;
+  onExamSelect: (exam: string) => void;
 }
 
 export const HeaderProfile: React.FC<HeaderProfileProps> = ({
@@ -17,10 +19,11 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
   onTabChange,
   selectedSubject,
   onSubjectSelect,
+  selectedExam,
+  onExamSelect,
 }) => {
   const [showDropdown, setShowDropdown] = React.useState(false);
   const [showExamDropdown, setShowExamDropdown] = useState(false);
-  const [selectedExam, setSelectedExam] = useState("");
 
   const tabs: Tab[] = [
     { name: "Performance Overview", key: "performance" },
@@ -40,7 +43,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
   return (
     <>
       <div className="grid grid-cols-1 mb-1 lg:grid-cols-3 xl:grid-cols-4 items-center relative -ml-6">
-        <div className="flex items-center gap-4 bg-gray-800 text-white p-4 h-28 z-10 min-w-96 rounded-tr-full rounded-br-full">
+        <div className="flex items-center gap-4 bg-gray-800 text-white p-4 h-28 z-10 min-w96 rounded-tr-full rounded-br-full">
           <img
             src="https://www.picsman.ai/blog/wp-content/uploads/2025/01/free-passport-photo-maker-1.webp"
             className="w-24 h-24 rounded-full"
@@ -56,8 +59,8 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
           </div>
         </div>
 
-        <div className="flex gap-3 justify-around py-1 bg-[#ECECED] h-12 rounded-tr-full rounded-br-full shadow lg:col-span-2 xl:col-span-3">
-          <h1 className="pt-2 px-6 text-[#00bcd4] font-black text-lg tracking-tight whitespace-nowrap">
+        <div className="flex gap-1 justify-between py-1 bg-[#ECECED] h-12 rounded-tr-full rounded-br-full shadow lg:col-span-2 xl:col-span-3">
+          <h1 className="pt-2 pl-6 text-[#00bcd4] font-black text-lg tracking-tight whitespace-nowrap lg:hidden xl:block">
             My Dashboard
           </h1>
           {tabs.map((tab) => {
@@ -70,7 +73,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                       onTabChange(tab.key);
                       setShowDropdown(!showDropdown);
                     }}
-                    className={`px-6 py-1 flex items-center rounded-full text-lg font-bold ${
+                    className={`px-1 py-1 flex items-center rounded-full text-lg font-bold ${
                       activeTab === tab.key
                         ? "bg-[#E59003] text-white"
                         : "text-gray-600 hover:bg-gray-100"
@@ -116,7 +119,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                       setShowExamDropdown(!showExamDropdown);
                       setShowDropdown(false); // close subject dropdown
                     }}
-                    className={`px-6 py-1 flex items-center rounded-full text-lg font-bold ${
+                    className={`px-1 py-1 flex items-center rounded-full text-lg font-bold whitespace-nowrap ${
                       activeTab === tab.key
                         ? "bg-[#E59003] text-white"
                         : "text-gray-600 hover:bg-gray-100"
@@ -138,7 +141,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                         <div
                           key={i}
                           onClick={() => {
-                            setSelectedExam(exam);
+                            onExamSelect(exam);
                             setShowExamDropdown(false);
                           }}
                           className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
@@ -156,7 +159,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
               <button
                 key={tab.key}
                 onClick={() => onTabChange(tab.key)}
-                className={`px-6 py-1 rounded-full text-lg font-bold ${
+                className={`px-1 py-1 rounded-full text-lg font-bold whitespace-nowrap ${
                   activeTab === tab.key
                     ? "bg-[#E59003] text-white"
                     : "text-gray-600 hover:bg-gray-100"

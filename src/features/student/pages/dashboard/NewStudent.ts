@@ -97,8 +97,35 @@ export const mathSubjects = [
     },
 ];
 
+export const mockExamStats = {
+  title: "Mock:M02",
+  date: "22 Jan’26",
+  stats: [
+    {
+      label: "Overall Score",
+      value: 84.2,
+      suffix: "%",
+      change: "+ 6.1 vs Mock III",
+      changeColor: "text-[#558C13]",
+    },
+    {
+      label: "Accuracy Rate",
+      value: 76,
+      suffix: "%",
+      change: "+ 3.4 vs Mock III",
+      changeColor: "text-[#558C13]",
+    },
+    {
+      label: "Average/Question",
+      value: 1.8,
+      suffix: " min",
+      change: "+ 0.2 min over target",
+      changeColor: "text-[#558C13]",
+    },
+  ],
+};
 
-export const levels = [
+export const DifficultyLevels = [
     {
         label: "L1 - Easy",
         percent: 91,
@@ -106,9 +133,9 @@ export const levels = [
         correct: 44,
         wrong: 2,
         skipped: 2,
-        correctColor: "bg-green-500",
-        wrongColor: "bg-red-500",
-        skippedColor: "bg-gray-200",
+        correctColor: "#558C13",
+        wrongColor: "#FC7465",
+        skippedColor: "#A0A0A0",
     },
     {
         label: "L2 - Medium",
@@ -117,9 +144,9 @@ export const levels = [
         correct: 24,
         wrong: 4,
         skipped: 4,
-        correctColor: "bg-green-500",
-        wrongColor: "bg-red-500",
-        skippedColor: "bg-gray-200",
+        correctColor: "#558C13",
+        wrongColor: "#FC7465",
+        skippedColor: "#A0A0A0",
     },
     {
         label: "L3 - Hard",
@@ -128,9 +155,9 @@ export const levels = [
         correct: 9,
         wrong: 8,
         skipped: 3,
-        correctColor: "bg-green-500",
-        wrongColor: "bg-red-500",
-        skippedColor: "bg-gray-200",
+        correctColor: "#558C13",
+        wrongColor: "#FC7465",
+        skippedColor: "#A0A0A0",
 
     },
     {
@@ -140,9 +167,9 @@ export const levels = [
         correct: 3,
         wrong: 7,
         skipped: 2,
-        correctColor: "bg-green-500",
-        wrongColor: "bg-red-500",
-        skippedColor: "bg-gray-500",
+        correctColor: "#558C13",
+        wrongColor: "#FC7465",
+        skippedColor: "#A0A0A0",
     },
 ];
 

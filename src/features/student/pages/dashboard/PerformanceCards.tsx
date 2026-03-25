@@ -94,13 +94,13 @@ export const PerformanceCards = () => {
                 >
                   {/* Icon */}
                   {item.icon === "up" && (
-                    <span className="material-symbols-outlined text-5xl">
+                    <span className="material-symbols-outlined text-5xl leading-3">
                       keyboard_arrow_up
                     </span>
                   )}
 
                   {item.icon === "down" && (
-                    <span className="material-symbols-outlined  text-5xl">
+                    <span className="material-symbols-outlined  text-5xl leading-3">
                       keyboard_arrow_down
                     </span>
                   )}

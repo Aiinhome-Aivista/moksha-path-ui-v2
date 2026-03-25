@@ -792,11 +792,12 @@ import Remediation from "./remediation/Remediation";
 export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("performance");
   const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedExam, setSelectedExam] = useState("");
 
   const tabComponents: Record<string, React.ReactElement> = {
     performance: <PerformanceCards />,
     subject: <SubjectGrid selectedSubject={selectedSubject} />,
-    exam: <MockExamDashboard />,
+    exam: <MockExamDashboard selectedExam={selectedExam} />,
     remediation: <Remediation />,
   };
 
@@ -807,6 +808,8 @@ export const Dashboard = () => {
         onTabChange={setActiveTab}
         selectedSubject={selectedSubject}
         onSubjectSelect={setSelectedSubject}
+        selectedExam={selectedExam}
+        onExamSelect={setSelectedExam}
       />
       {tabComponents[activeTab]}
     </div>
