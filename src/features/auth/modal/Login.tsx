@@ -315,6 +315,7 @@ export const LoginModal: React.FC = () => {
 
         if (validProfiles.length > 0) {
           // profile exists
+          localStorage.setItem("profile_modal_mode", "manage");
           setProfilesList(validProfiles);
           closeLogin();
           openProfileSelection();

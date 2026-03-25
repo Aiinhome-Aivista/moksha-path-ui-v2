@@ -366,9 +366,24 @@ const Subscription: React.FC = () => {
     );
   };
 
+  // const removeProfile = (profileId: string) => {
+  //   if (profiles.length <= 1) return;
+  //   setProfiles((prev) => prev.filter((p) => p.id !== profileId));
+  // };
+
   const removeProfile = (profileId: string) => {
     if (profiles.length <= 1) return;
-    setProfiles((prev) => prev.filter((p) => p.id !== profileId));
+
+    setProfiles((prev) => {
+      const updated = prev.filter((p) => p.id !== profileId);
+
+      // ✅ FIX: reset active index safely
+      if (activeProfileIndex >= updated.length) {
+        setActiveProfileIndex(updated.length - 1);
+      }
+
+      return updated;
+    });
   };
 
   // const updateProfile = (index: number, updates: Partial<AcademicProfile>) => {
@@ -440,7 +455,9 @@ const Subscription: React.FC = () => {
   const totalSeats = React.useMemo(() => {
     return profiles.reduce((sum, p) => sum + (p.seats || 0), 0);
   }, [profiles]);
-  const activeProfile = profiles[activeProfileIndex] || null;
+  // const activeProfile = profiles[activeProfileIndex] || null;
+  const activeProfile =
+  profiles[activeProfileIndex] || profiles[0] || null;
   const subjectIds = activeProfile
     ? activeProfile.selectedSubjects.map((s) => s.subject_id).join(",")
     : "";
@@ -2005,7 +2022,7 @@ const Subscription: React.FC = () => {
           onProceedToPay={handlePayNow}
           onApplyCoupon={handleApplyCoupon}
           isProcessing={isValidating}
-          profiles={profiles} 
+          profiles={profiles}
         />
       )}
 

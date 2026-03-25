@@ -131,7 +131,7 @@ export const RoleSwitchModal: React.FC<Props> = ({ isOpen, onClose }) => {
         {/* Header */}
         <div className="px-5 sm:px-6 py-4 border-b flex justify-between items-center shrink-0">
           <h2 className="text-lg sm:text-base font-semibold text-gray-800">
-            Switch Role
+            Switch Profile
           </h2>
           <button
             onClick={onClose}
