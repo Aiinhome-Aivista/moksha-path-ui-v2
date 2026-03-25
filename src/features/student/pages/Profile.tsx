@@ -3,6 +3,7 @@ import { useFormik } from "formik";
 import { useAuth } from "../../../app/providers/AuthProvider";
 import { useModal } from "../../../features/auth/context/AuthContext";
 import ApiServices from "../../../services/ApiServices";
+import Subscription from "./Subscription";
 import {
   Mail,
   Phone,
@@ -1119,6 +1120,12 @@ const StudentProfile: React.FC = () => {
           targetRole={profileBtn.targetRole as "parent" | "student"}
         />
       )}
+
+      {/* ── Subscription Purchase Flow (Bottom) ── */}
+      <div className="mt-8 pt-8 border-t border-gray-100 shadow-sm bg-white rounded-2xl">
+        <h2 className="text-xl font-black text-primary mb-6 px-4">Buy New Subscription</h2>
+        <Subscription />
+      </div>
     </form>
   );
 };

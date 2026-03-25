@@ -1096,7 +1096,7 @@ const Subscription: React.FC = () => {
         <div className="flex items-center justify-between w-full">
 
           {/* LEFT: Profile */}
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-gray-200 flex items-center justify-center bg-gray-100">
               {profileImage ? (
                 <img
@@ -1122,7 +1122,7 @@ const Subscription: React.FC = () => {
                 Hi {localUser.name} !
               </h1>
             </div>
-          </div>
+          </div> */}
 
           {/* RIGHT: Button */}
           {localUser.role_name !== "student" && (
