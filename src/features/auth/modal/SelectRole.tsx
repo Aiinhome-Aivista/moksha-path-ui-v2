@@ -337,7 +337,7 @@ export const SelectRoleModal: React.FC = () => {
           if (isTeacherRole) {
             navigate(dashboardRoute, { replace: true });
           } else if (!subscriptionId) {
-            navigate("/subscription", {
+            navigate("/profile", {
               replace: true,
               state: {
                 preselectedAcademicDetails: {
