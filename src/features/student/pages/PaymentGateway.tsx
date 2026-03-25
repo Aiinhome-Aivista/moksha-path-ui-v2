@@ -125,7 +125,7 @@ const PaymentGateway: React.FC = () => {
           // }
           const menuItems = await fetchMenu();
           const dashboardRoute = menuItems?.find(
-            (item: any) => item.page_name?.toLowerCase() === "dashboard"
+            (item: any) => item.page_name?.toLowerCase().includes("dashboard")
           )?.route || "/dashboard";
 
           navigate(dashboardRoute, { replace: true });

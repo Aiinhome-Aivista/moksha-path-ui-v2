@@ -294,7 +294,7 @@ export const SelectRoleModal: React.FC = () => {
           const role = activeRole.toLowerCase();
           
           const dashboardRoute = menuItems?.find(
-            (item: any) => item.page_name?.toLowerCase() === "dashboard"
+            (item: any) => item.page_name?.toLowerCase().includes("dashboard")
           )?.route || "/dashboard";
 
           //  Case 1: Teacher → always dashboard
@@ -329,10 +329,14 @@ export const SelectRoleModal: React.FC = () => {
           const subscriptionId = data?.subscription_id || data?.user?.sub_id;
           
           const dashboardRoute = menuItems?.find(
-            (item: any) => item.page_name?.toLowerCase() === "dashboard"
+            (item: any) => item.page_name?.toLowerCase().includes("dashboard")
           )?.route || "/dashboard";
 
-          if (!subscriptionId) {
+          const isTeacherRole = roles.find((r) => r.role_id === selectedRoleId)?.role_name?.toLowerCase() === "teacher";
+
+          if (isTeacherRole) {
+            navigate(dashboardRoute, { replace: true });
+          } else if (!subscriptionId) {
             navigate("/subscription", {
               replace: true,
               state: {
