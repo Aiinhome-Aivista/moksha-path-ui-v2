@@ -4,6 +4,10 @@ import { useToast } from "../../../app/providers/ToastProvider";
 // import { useNavigate } from "react-router-dom";
 import ApiServices from "../../../services/ApiServices";
 
+const isValidIndianMobile = (mobile: string) => {
+  return /^[6-9]\d{9}$/.test(mobile);
+};
+
 export const LoginModal: React.FC = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -20,6 +24,7 @@ export const LoginModal: React.FC = () => {
   );
   const [registerError, setRegisterError] = useState("");
   const [isSigningUp, setIsSigningUp] = useState(false);
+  const [mobileError, setMobileError] = useState("");
 
   // OTP Timer Logic
   const [resendTimer, setResendTimer] = useState(60);
@@ -81,6 +86,11 @@ export const LoginModal: React.FC = () => {
         ...formData,
         mobile: numericValue.slice(0, 10), // limit to 10 digits
       });
+      if (numericValue.length > 0 && !/^[6-9]/.test(numericValue)) {
+        setMobileError("Mobile number must start with 6, 7, 8, or 9.");
+      } else {
+        setMobileError("");
+      }
     } else {
       setFormData({
         ...formData,
@@ -178,8 +188,11 @@ export const LoginModal: React.FC = () => {
   };
 
   const handleVerifyMobile = async () => {
-    if (!formData.mobile || formData.mobile.length !== 10) {
-      showToast("Please enter valid 10-digit mobile first", "error");
+    if (!isValidIndianMobile(formData.mobile)) {
+      showToast(
+        "Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.",
+        "error",
+      );
       return;
     }
 
@@ -213,6 +226,12 @@ export const LoginModal: React.FC = () => {
   const handleSendRegistrationOtp = async () => {
     if (!formData.email && !formData.mobile) {
       showToast("Please enter email or mobile number", "error");
+      setIsSigningUp(false);
+      return;
+    }
+
+    if (formData.mobile && !isValidIndianMobile(formData.mobile)) {
+      showToast("Please enter a valid 10-digit mobile number.", "error");
       setIsSigningUp(false);
       return;
     }
@@ -483,11 +502,9 @@ export const LoginModal: React.FC = () => {
                   {!mobileVerified && !showOtp && !isNewUser && (
                     <button
                       onClick={handleVerifyMobile}
-                      disabled={
-                        !formData.mobile || formData.mobile.length !== 10
-                      }
+                      disabled={!isValidIndianMobile(formData.mobile)}
                       className={`px-4 py-1.5 rounded-full text-xs font-medium border transition-colors disabled:cursor-not-allowed ${
-                        formData.mobile && formData.mobile.length === 10
+                        isValidIndianMobile(formData.mobile)
                           ? "bg-button-primary text-primary border-button-primary hover:opacity-90"
                           : "bg-primary text-white"
                       }`}
@@ -501,6 +518,9 @@ export const LoginModal: React.FC = () => {
                     </span>
                   )}
                 </div>
+                {mobileError && (
+                  <p className="text-xs text-red-500 mt-1">{mobileError}</p>
+                )}
               </div>
             </div>
 
