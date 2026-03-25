@@ -13,11 +13,17 @@ import { ProfileSelectionModal } from "../../features/auth/modal/ProfileSelectio
 import Footer from "./Footer";
 import { useLocation } from "react-router-dom";
 import GlobalSeo from "../common/GlobalSeo";
-
+import { useEffect } from "react";
+import { track } from "../../services/tracker";
 export const AppLayout: React.FC = () => {
   const { isLoading, isAuthenticated } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
+  useEffect(() => {
+  track("page_view", {
+    path: location.pathname,
+  });
+}, [location.pathname]);
   // Any path starting with /blogs is considered public, as is the root path.
   const isPublicPage = location.pathname === "/" || location.pathname.startsWith("/blogs");
 

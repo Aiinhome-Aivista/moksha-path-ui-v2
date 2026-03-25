@@ -1,6 +1,6 @@
 import axios from "axios";
 import { GET_APIS, POST_APIS } from "../../connection";
-
+import { track } from "../services/tracker";
 // Create axios instance with default config
 const axiosInstance = axios.create();
 
@@ -38,39 +38,87 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 // Add response interceptor for error handling
+// axiosInstance.interceptors.response.use(
+//   (response) => response,
+//   (error) => {
+//     // if (error.response?.status === 401) {
+//     //   // Handle unauthorized - clear token and redirect to login
+//     //   localStorage.removeItem("auth_token");
+//     //   // window.location.href = "/login";
+//     // }
+//     // Allow 400 responses to be resolved instead of rejected (for coupon validation)
+//     if (
+//       error.response?.status === 400 ||
+//       (error.response?.status === 400 && error.response?.data)
+//     ) {
+//       return Promise.resolve(error.response);
+//     }
+//     return Promise.reject(error);
+//   },
+// );
+// Add response interceptor for tracking + error handling
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // ✅ TRACK SUCCESS API
+    track("api_success", {
+      url: response.config.url,
+      method: response.config.method,
+      status: response.status,
+    });
+
+    return response;
+  },
   (error) => {
-    // if (error.response?.status === 401) {
-    //   // Handle unauthorized - clear token and redirect to login
-    //   localStorage.removeItem("auth_token");
-    //   // window.location.href = "/login";
-    // }
-    // Allow 400 responses to be resolved instead of rejected (for coupon validation)
+    // ✅ TRACK ERROR API
+    track("api_error", {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+    });
+
+    // Keep your existing logic
     if (
       error.response?.status === 400 ||
       (error.response?.status === 400 && error.response?.data)
     ) {
       return Promise.resolve(error.response);
     }
+
     return Promise.reject(error);
-  },
+  }
 );
 
 // Create another axios instance without request interceptors (no tokens)
 const publicAxiosInstance = axios.create();
 
 // Add response interceptor for error handling
+// publicAxiosInstance.interceptors.response.use(
+//   (response) => response,
+//   (error) => {
+//     if (error.response?.status === 400 && error.response?.data) {
+//       return Promise.resolve(error.response);
+//     }
+//     return Promise.reject(error);
+//   },
+// );
 publicAxiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 400 && error.response?.data) {
-      return Promise.resolve(error.response);
-    }
-    return Promise.reject(error);
+  (response) => {
+    track("api_success", {
+      url: response.config.url,
+      method: response.config.method,
+      status: response.status,
+    });
+    return response;
   },
+  (error) => {
+    track("api_error", {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+    });
+    return Promise.reject(error);
+  }
 );
-
 class ApiServices {
   // Auth APIs
 
