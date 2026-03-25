@@ -1152,7 +1152,7 @@ const StudentProfile: React.FC = () => {
 
       {/* ── Subscription Purchase Flow (Bottom) ── */}
       <div className="mt-8 pt-8 border-t border-gray-100 shadow-sm bg-white rounded-2xl">
-        <h2 className="text-xl font-black text-primary mb-6 px-4">Buy New Subscription</h2>
+        <h2 className="text-xl font-black text-primary mb-6 px-4">Add new plan</h2>
         <Subscription />
       </div>
     </form>
