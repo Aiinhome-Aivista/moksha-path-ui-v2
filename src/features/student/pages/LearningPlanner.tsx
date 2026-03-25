@@ -616,6 +616,14 @@ const LearningPlanner: React.FC = () => {
                   <p className="text-xs font-medium text-primary">{label}</p>
                 </div>
               ))}
+
+              {/* ── Leaderboard Position (hardcoded) ── */}
+              <div className="text-center">
+                <div className="w-[4.688rem] h-[4.688rem] rounded-full bg-yellow flex items-center justify-center mx-auto mb-1 shadow-inner">
+                  <span className="text-lg font-bold text-red">#12</span>
+                </div>
+                <p className="text-xs font-medium text-primary">Leaderboard</p>
+              </div>
             </>
           )}
         </div>
