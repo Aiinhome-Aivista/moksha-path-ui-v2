@@ -47,10 +47,25 @@ interface ProfileFormValues {
   courses: Course[];
 }
 
+const resolveRole = (roleName?: string) => {
+  if (!roleName) return "student" as any;
+  const normalized = roleName.toLowerCase();
+  switch (normalized) {
+    case "student":
+    case "teacher":
+    case "institute_admin":
+    case "institute admin":
+    case "admin":
+    case "parent":
+    case "private_tutor":
+    case "private tutor":
+      return normalized as any;
+    default:
+      return "student" as any;
+  }
+};
 
-// ─────────────────────────────────────────────
-// Helper Components
-// ─────────────────────────────────────────────
+
 
 const LoadingState: React.FC<{ text: string }> = ({ text }) => (
   <div className="py-12 flex flex-col items-center justify-center bg-white rounded-2xl border border-gray-100">
@@ -561,7 +576,7 @@ const AddProfileModal: React.FC<{
 // Component
 // ─────────────────────────────────────────────
 const StudentProfile: React.FC = () => {
-  const { user, roleConfig } = useAuth();
+  const { user, roleConfig, login } = useAuth();
   const { openSelectRole } = useModal();
   const [isEditingBasic, setIsEditingBasic] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -695,6 +710,8 @@ const StudentProfile: React.FC = () => {
       const res = await ApiServices.selectProfileV4(payload);
       if (res.data?.status === "success") {
         const data = res.data.data;
+
+        // The backend might return new tokens on switch
         if (data?.auth_token) {
           localStorage.setItem("auth_token", data.auth_token);
         }
@@ -705,9 +722,21 @@ const StudentProfile: React.FC = () => {
           localStorage.setItem("subscription_token", data.subscription_token);
         }
 
+        const activeRole = resolveRole(
+          profile.role_name || profile.roles?.[0]?.role_name || "student"
+        );
+
+        // Update User Object in Auth State & LocalStorage
+        login({
+          id: profileIdStr,
+          name: profile.name || profile.username,
+          email: profile.email || "",
+          role: activeRole,
+        });
+
         localStorage.setItem("active_profile", JSON.stringify(profile));
         
-        // Reload to refresh all contexts and data
+        // Reload to refresh all contexts and data fully
         window.location.reload();
       }
     } catch (error) {
@@ -841,7 +870,7 @@ const StudentProfile: React.FC = () => {
   };
 
   return (
-    <form onSubmit={formik.handleSubmit} className="p-4 sm:p-5 space-y-4">
+    <form onSubmit={formik.handleSubmit} className=" space-y-4">
       {/* ── Profile Switcher (Manage Profile) ── */}
       {(profiles.length > 0 || isFetchingProfiles) && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 overflow-hidden">
@@ -926,7 +955,7 @@ const StudentProfile: React.FC = () => {
             className="relative group shrink-0 cursor-pointer"
             onClick={() => fileInputRef.current?.click()}
           >
-            <div className="w-16 h-16 rounded-full overflow-hidden ring-4 ring-white shadow-xl select-none">
+            <div className="w-16 h-16 rounded-full overflow-hidden shadow-xl select-none">
               {profileImage ? (
                 <img
                   src={profileImage}
@@ -1016,7 +1045,7 @@ const StudentProfile: React.FC = () => {
           {[
             { id: "basic", label: "Basic Info", icon: <Edit3 size={14} />, show: true },
             { id: "connections", label: isParent ? "Child Info" : "Guardian Info", icon: <Users size={14} />, show: !isTeacher },
-            { id: "subscriptions", label: "My Plan Details", icon: <CreditCard size={14} />, show: true },
+            { id: "subscriptions", label: "My Plan", icon: <CreditCard size={14} />, show: true },
             { id: "transactions", label: "Transaction History", icon: <Receipt size={14} />, show: true },
           ].filter(tab => tab.show).map((tab) => (
             <button
