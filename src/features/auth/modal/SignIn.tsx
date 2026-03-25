@@ -384,6 +384,7 @@ export const SignInModal: React.FC = () => {
 
         if (validProfiles.length > 0) {
           // Profiles exist → show selection
+          localStorage.setItem("profile_modal_mode", "manage");
           setProfilesList(validProfiles);
           closeSignIn();
           openProfileSelection();

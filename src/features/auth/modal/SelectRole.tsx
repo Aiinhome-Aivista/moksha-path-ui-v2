@@ -369,6 +369,7 @@ export const SelectRoleModal: React.FC = () => {
     closeSelectRole();
 
     if (profilesList && profilesList.length > 0) {
+      localStorage.setItem("profile_modal_mode", "manage");
       openProfileSelection();
     } else {
       openLogin();

@@ -340,6 +340,7 @@ export const ProfileSelectionModal: React.FC = () => {
               })}
 
               {/* Add Profile Button */}
+              {localStorage.getItem("profile_modal_mode") !== "switch" && (
               <div
                 className="flex flex-col items-center group cursor-pointer w-[80px] sm:w-[90px]"
                 onClick={handleAddProfile}
@@ -355,6 +356,7 @@ export const ProfileSelectionModal: React.FC = () => {
                   </p>
                 </div>
               </div>
+              )}
             </div>
           </div>
         </div>

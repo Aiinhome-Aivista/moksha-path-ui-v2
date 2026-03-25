@@ -41,9 +41,21 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClos
     };
   }, [isOpen, onClose]);
 
-  const handleManageAccount = () => {
-    setIsRoleSwitchOpen(true);
-    onClose();
+  const handleManageAccount = async () => {
+    setIsManageLoading(true);
+    try {
+      const response = await ApiServices.getUsersByTokenContact();
+      if (response.data?.status === 'success') {
+        localStorage.setItem("profile_modal_mode", "manage");
+        setProfilesList(response.data.data);
+        openProfileSelection();
+        onClose();
+      }
+    } catch (error) {
+      // console.error("Failed to fetch profiles", error);
+    } finally {
+      setIsManageLoading(false);
+    }
   };
 
   const handleSwitchRole = async () => {
@@ -51,6 +63,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClos
     try {
       const response = await ApiServices.getUsersByTokenContact();
       if (response.data?.status === 'success') {
+        localStorage.setItem("profile_modal_mode", "switch");
         setProfilesList(response.data.data);
         openProfileSelection();
         onClose();
@@ -120,7 +133,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClos
           {/* Menu Items List - 28px exactly from the left */}
           <div className="flex flex-col pl-[28px] py-4">
             <button
-              onClick={handleSwitchRole}
+              onClick={handleManageAccount}
               disabled={isManageLoading}
               // EXACT Dimensions: width 205px, height 35px (~34.8px)
               className="w-full h-[35px] flex items-center text-left text-[15px] font-semibold text-gray-700 border-b-[1.5px] border-[#F2C94C] hover:text-black transition-colors disabled:opacity-50"
@@ -128,13 +141,13 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClos
               Manage Account
             </button>
             <button
-              onClick={handleManageAccount}
+            onClick={handleSwitchRole}
               // EXACT Dimensions: width 205px, height 35px (~34.8px)
               className="w-full h-[35px] flex items-center text-left text-[15px] font-semibold text-gray-700 border-b-[1.5px] border-[#F2C94C] hover:text-black transition-colors"
             >
-              Switch Role
+              Switch Profile
             </button>
-            <button
+            {/* <button
               onClick={() => { navigate("/subscription-details"); onClose(); }}
               className="w-full h-[35px] flex items-center text-left text-[15px] font-semibold text-gray-700 border-b-[1.5px] border-[#F2C94C] hover:text-black transition-colors"
             >
@@ -145,7 +158,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClos
               className="w-full h-[35px] flex items-center text-left text-[15px] font-semibold text-gray-700 border-b-[1.5px] border-[#F2C94C] hover:text-black transition-colors"
             >
               Transaction History
-            </button>
+            </button> */}
             <button
               onClick={handleLogout}
               className="w-full h-[35px] flex items-center text-left text-[15px] font-semibold text-gray-700 hover:text-black transition-colors mt-0.5"
