@@ -989,7 +989,7 @@ const StudentProfile: React.FC = () => {
             )}
           </div>
         </div>
-      </div>
+     
 
       {/* ── Academic Information (Always Visible) ── */}
       <SectionCard
@@ -1007,7 +1007,7 @@ const StudentProfile: React.FC = () => {
           </div>
         </div>
       </SectionCard>
-
+ </div>
       {/* ── Tabs & Content Combined Section ── */}
       <div className="-space-y-[1px]">
         {/* ── Tabs Navigation ── */}
