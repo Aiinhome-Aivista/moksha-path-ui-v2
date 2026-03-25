@@ -841,7 +841,7 @@ const StudentProfile: React.FC = () => {
   };
 
   return (
-    <form onSubmit={formik.handleSubmit} className="p-4 sm:p-5 space-y-4">
+    <form onSubmit={formik.handleSubmit} className=" space-y-4">
       {/* ── Profile Switcher (Manage Profile) ── */}
       {(profiles.length > 0 || isFetchingProfiles) && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 overflow-hidden">
@@ -1016,7 +1016,7 @@ const StudentProfile: React.FC = () => {
           {[
             { id: "basic", label: "Basic Info", icon: <Edit3 size={14} />, show: true },
             { id: "connections", label: isParent ? "Child Info" : "Guardian Info", icon: <Users size={14} />, show: !isTeacher },
-            { id: "subscriptions", label: "My Plan Details", icon: <CreditCard size={14} />, show: true },
+            { id: "subscriptions", label: "My Plan", icon: <CreditCard size={14} />, show: true },
             { id: "transactions", label: "Transaction History", icon: <Receipt size={14} />, show: true },
           ].filter(tab => tab.show).map((tab) => (
             <button

@@ -651,8 +651,8 @@ const Subscription: React.FC = () => {
     }
     setIsValidating(true);
     try {
-      const firstValidProfile =
-        profiles.find((p) => p.board_id && p.class_id) || profiles[0];
+      // const firstValidProfile =
+      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
       // const validatePayload = {
       //   plan_id: selectedPlan.plan_id,
       //   board_id: firstValidProfile.board_id,
@@ -686,8 +686,8 @@ const Subscription: React.FC = () => {
   const handlePayNow = async (subscriptionName: string, couponCode: string) => {
     if (!selectedPlan) return;
     try {
-      const firstValidProfile =
-        profiles.find((p) => p.board_id && p.class_id) || profiles[0];
+      // const firstValidProfile =
+      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
       // const paymentData = {
       //   plan_id: selectedPlan.plan_id,
       //   board_id: firstValidProfile.board_id,
@@ -736,8 +736,8 @@ const Subscription: React.FC = () => {
       return { success: false, message: "" };
     }
     try {
-      const firstValidProfile =
-        profiles.find((p) => p.board_id && p.class_id) || profiles[0];
+      // const firstValidProfile =
+      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
       // const payload = {
       //   plan_id: selectedPlan?.plan_id,
       //   board_id: firstValidProfile.board_id,
@@ -901,8 +901,8 @@ const Subscription: React.FC = () => {
     if (!selectedPlan) return;
     setIsSaving(true);
     try {
-      const firstValidProfile =
-        profiles.find((p) => p.board_id && p.class_id) || profiles[0];
+      // const firstValidProfile =
+      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
 
       // Optional: Add validation before saving if needed, but let's stick to user request
       // const payload = {
@@ -1046,9 +1046,9 @@ const Subscription: React.FC = () => {
     return afterDiscount * licenses;
   };
 
-  const getInitial = () => {
-    return localUser?.name?.charAt(0).toUpperCase();
-  };
+  // const getInitial = () => {
+  //   return localUser?.name?.charAt(0).toUpperCase();
+  // };
 
   const handleSetupConfirm = (data: any) => {
     // Map existing setup confirm to first profile
