@@ -480,7 +480,7 @@ const TeacherLearningPlanner: React.FC = () => {
         </div>
 
         {/* Stats Badges */}
-        <div className="flex flex-wrap items-center gap-10">
+        <div className="flex flex-wrap items-center gap-20">
           {stats && (
             <div className="flex items-center gap-4">
               <div className="w-[6rem] h-[6rem] rounded-full bg-yellow flex items-center justify-center">
@@ -569,10 +569,10 @@ const TeacherLearningPlanner: React.FC = () => {
               <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
                 Chapter Name
               </th>
-              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
+              <th className="text-right py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
                 Start Date
               </th>
-              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
+              <th className="text-right py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
                 End Date
               </th>
               <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
@@ -582,11 +582,9 @@ const TeacherLearningPlanner: React.FC = () => {
                 Practice Material
               </th>
               <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Completion Status 
+                Completion Status
               </th>
-              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                
-              </th>
+              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap"></th>
             </tr>
           </thead>
           <tbody>
@@ -599,7 +597,7 @@ const TeacherLearningPlanner: React.FC = () => {
                 </td>
 
                 <td className="py-3 px-2 text-center">
-                  <div className="flex justify-center items-center gap-2">
+                  <div className="flex justify-end items-center gap-2">
                     {row.startDate || "—"}
                     <label className="relative cursor-pointer">
                       <input
@@ -616,7 +614,7 @@ const TeacherLearningPlanner: React.FC = () => {
                 </td>
 
                 <td className="py-3 px-2 text-center">
-                  <div className="flex justify-center items-center gap-2">
+                  <div className="flex justify-end items-center gap-2">
                     {row.endDate || "—"}
                     <label className="relative cursor-pointer">
                       <input
@@ -704,8 +702,8 @@ const TeacherLearningPlanner: React.FC = () => {
                 </td>
 
                 <td className="py-3 px-2 text-center">
-                  <button className="p-2 inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium bg-white/80 text-primary border border-white/30">
-                    save
+                  <button className="p-2 inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium text-primary">
+                    <span className="material-symbols-outlined ">save</span>
                   </button>
                 </td>
               </tr>
