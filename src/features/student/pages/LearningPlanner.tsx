@@ -75,9 +75,9 @@ const progressBarColor = (p: number) =>
 
 const statusPill = (status?: string) => {
   switch (status?.toLowerCase()) {
-    case "completed":   return "bg-green-100 text-green-700 border-green-200";
+    case "completed": return "bg-green-100 text-green-700 border-green-200";
     case "in_progress": return "bg-amber-100 text-amber-700 border-amber-200";
-    default:            return "bg-red-100 text-red-500 border-red-200";
+    default: return "bg-red-100 text-red-500 border-red-200";
   }
 };
 
@@ -86,8 +86,8 @@ const statusPill = (status?: string) => {
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
-  const today  = new Date();
-  const dow    = today.getDay();
+  const today = new Date();
+  const dow = today.getDay();
   const monday = new Date(today);
   monday.setDate(today.getDate() - ((dow === 0 ? 7 : dow) - 1));
 
@@ -101,11 +101,11 @@ const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
   const chapters = subject.chapters ?? [];
 
   return weekDates.map((dateStr, idx) => {
-    const dayName    = DAY_NAMES[new Date(dateStr).getDay()];
+    const dayName = DAY_NAMES[new Date(dateStr).getDay()];
     const dayChapters = chapters
       .filter((_, ci) => ci % 7 === idx)
       .map((ch) => ({
-        chapter_id:   ch.chapter_id,
+        chapter_id: ch.chapter_id,
         chapter_name: ch.chapter_name,
         topics: ch.topics.map((t) => ({ topic_id: t.topic_id, topic_name: t.topic_name })),
         tasks: [
@@ -114,14 +114,14 @@ const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
             progress: ch.progress_percentage,
             status:
               ch.status?.toLowerCase() === "completed" ? "completed"
-              : ch.progress_percentage > 0 ? "in_progress"
-              : "pending",
+                : ch.progress_percentage > 0 ? "in_progress"
+                  : "pending",
           },
           {
             type: "mock_test" as const,
             progress:
               ch.status?.toLowerCase() === "completed" ? 100
-              : Math.max(0, ch.progress_percentage - 20),
+                : Math.max(0, ch.progress_percentage - 20),
             status: ch.status?.toLowerCase() === "completed" ? "completed" : "pending",
           },
         ],
@@ -130,11 +130,11 @@ const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
     const avgProgress =
       dayChapters.length > 0
         ? Math.round(
-            dayChapters.reduce(
-              (sum, ch) => sum + ch.tasks.reduce((s, t) => s + t.progress, 0) / ch.tasks.length,
-              0,
-            ) / dayChapters.length,
-          )
+          dayChapters.reduce(
+            (sum, ch) => sum + ch.tasks.reduce((s, t) => s + t.progress, 0) / ch.tasks.length,
+            0,
+          ) / dayChapters.length,
+        )
         : 0;
 
     return {
@@ -169,7 +169,7 @@ const DayCard: React.FC<{
   isPast: boolean;
   onClick: () => void;
 }> = ({ day, isSelected, isToday, isPast, onClick }) => {
-  const allDone    = isPast && day.progress >= 100;
+  const allDone = isPast && day.progress >= 100;
   const hasPending = isPast && day.progress < 100;
 
   return (
@@ -304,14 +304,14 @@ const ChapterAccordion: React.FC<{ chapter: ChapterDay; index: number }> = ({ ch
 const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }> = ({
   subject, accentColor,
 }) => {
-  const today          = getTodayDate();
-  const weeklyPlan     = subject.weekly_plan ?? [];
+  const today = getTodayDate();
+  const weeklyPlan = subject.weekly_plan ?? [];
   const prevWeekStatus = getPrevWeekStatus(weeklyPlan, today);
 
-  const todayEntry   = weeklyPlan.find((d) => d.date === today);
-  const defaultDay   = todayEntry ?? weeklyPlan[0] ?? null;
+  const todayEntry = weeklyPlan.find((d) => d.date === today);
+  const defaultDay = todayEntry ?? weeklyPlan[0] ?? null;
 
-  const [selectedDate,    setSelectedDate]    = useState<string>(defaultDay?.date ?? "");
+  const [selectedDate, setSelectedDate] = useState<string>(defaultDay?.date ?? "");
   const [selectedDayData, setSelectedDayData] = useState<WeeklyPlanDay | null>(defaultDay);
 
   const handleDayClick = (day: WeeklyPlanDay) => {
@@ -320,10 +320,10 @@ const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }>
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-      {/* ── Subject Header ─────────────────────────────────────────── */}
+    <div className="flex flex-col gap-3">
+      {/* ── Subject Header Card ─────────────────────────────────────── */}
       <div
-        className="flex items-center justify-between px-6 py-4"
+        className="bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between px-5 py-3"
         style={{ borderLeft: `5px solid ${accentColor}` }}
       >
         <div className="flex items-center gap-3">
@@ -341,7 +341,6 @@ const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }>
           </div>
         </div>
 
-        {/* Prev-week badge */}
         {prevWeekStatus !== "none" && (
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border
             ${prevWeekStatus === "green"
@@ -356,11 +355,11 @@ const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }>
         )}
       </div>
 
-      {/* ── Body: Calendar + Details ────────────────────────────────── */}
-      <div className="flex flex-col lg:flex-row border-t border-gray-100">
+      {/* ── Two-column row ──────────────────────────────────────────── */}
+      <div className="flex flex-col lg:flex-row gap-4">
 
-        {/* LEFT — Weekly Calendar */}
-        <div className="w-full lg:w-[58%] px-5 py-5 border-b lg:border-b-0 lg:border-r border-gray-100">
+        {/* LEFT — Weekly Calendar (independent card) */}
+        <div className="w-full lg:w-[58%] bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-5">
           <div className="flex items-center justify-between mb-4">
             <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Weekly Plan</p>
             {weeklyPlan.length > 0 && (
@@ -371,8 +370,8 @@ const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }>
           </div>
 
           {weeklyPlan.length > 0 ? (
-            <div className="flex gap-2.5 overflow-x-auto pb-1 pt-3">
-              {/* Prev-week summary card */}
+            <div className="flex  justify-between overflow-x-auto pb-1 pt-3">
+              {/* Prev-week card */}
               <div
                 className={`min-w-[80px] flex-shrink-0 rounded-2xl p-3 border-2 flex flex-col items-center justify-center gap-1.5
                   ${prevWeekStatus === "green"
@@ -389,7 +388,7 @@ const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }>
                   </span>
                 </div>
                 <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 text-center leading-tight">
-                  Prev<br/>Week
+                  Prev<br />Week
                 </p>
                 <p className={`text-[10px] font-extrabold text-center leading-tight
                   ${prevWeekStatus === "green" ? "text-green-600" : prevWeekStatus === "red" ? "text-red-500" : "text-gray-400"}`}>
@@ -398,10 +397,8 @@ const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }>
                 <div className={`w-full h-1 rounded-full ${prevWeekStatus === "green" ? "bg-green-400" : prevWeekStatus === "red" ? "bg-red-400" : "bg-gray-200"}`} />
               </div>
 
-              {/* Thin separator */}
               <div className="w-px bg-gray-200 self-stretch my-1 flex-shrink-0 rounded-full" />
 
-              {/* Day cards */}
               {weeklyPlan.map((day) => (
                 <DayCard
                   key={day.date}
@@ -426,7 +423,7 @@ const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }>
               { color: "bg-green-500", label: "Completed" },
               { color: "bg-[#BADA55]", label: "In Progress" },
               { color: "bg-amber-400", label: "Partial" },
-              { color: "bg-red-400",   label: "Pending" },
+              { color: "bg-red-400", label: "Pending" },
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-1">
                 <span className={`w-2 h-2 rounded-full ${color}`} />
@@ -436,8 +433,8 @@ const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }>
           </div>
         </div>
 
-        {/* RIGHT — Chapter Details */}
-        <div className="w-full lg:w-[42%] px-5 py-5">
+        {/* RIGHT — Chapter Details (independent card) */}
+        <div className="w-full lg:w-[42%] bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-5 flex flex-col">
           {/* Day header */}
           <div className="mb-4">
             {selectedDayData ? (
@@ -465,7 +462,7 @@ const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }>
           </div>
 
           {/* Chapters */}
-          <div className="space-y-2.5 max-h-[320px] overflow-y-auto pr-1">
+          <div className="space-y-2.5 flex-1 overflow-y-auto min-h-0 pr-1">
             {selectedDayData ? (
               selectedDayData.chapters.length > 0 ? (
                 selectedDayData.chapters.map((ch, idx) => (
@@ -486,6 +483,7 @@ const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }>
             )}
           </div>
         </div>
+
       </div>
     </div>
   );
@@ -500,16 +498,16 @@ const SUBJECT_COLORS = [
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const LearningPlanner: React.FC = () => {
-  const [subjects,      setSubjects]      = useState<ApiSubjectPlan[]>([]);
-  const [profileImage,  setProfileImage]  = useState<string>(" ");
-  const [stats,         setStats]         = useState<any>(null);
-  const [isLoading,     setIsLoading]     = useState(true);
-  const [isChatOpen,    setIsChatOpen]    = useState(false);
+  const [subjects, setSubjects] = useState<ApiSubjectPlan[]>([]);
+  const [profileImage, setProfileImage] = useState<string>(" ");
+  const [stats, setStats] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const fetchLearningPlan = async () => {
     try {
       const getResponse = await ApiServices.getStudentLearningPlanner();
-      const getResult   = getResponse.data;
+      const getResult = getResponse.data;
 
       if (getResult.status === "success" && getResult.data.subject_wise_plan?.length > 0) {
         setSubjects(getResult.data.subject_wise_plan.map(patchSubjectPlan));
@@ -520,7 +518,7 @@ const LearningPlanner: React.FC = () => {
       await ApiServices.generateLearningPlan({ topic_ids: null });
 
       const newGetResponse = await ApiServices.getStudentLearningPlanner();
-      const newGetResult   = newGetResponse.data;
+      const newGetResult = newGetResponse.data;
 
       if (newGetResult.status === "success" && newGetResult.data.subject_wise_plan?.length > 0) {
         setSubjects(newGetResult.data.subject_wise_plan.map(patchSubjectPlan));
@@ -608,8 +606,8 @@ const LearningPlanner: React.FC = () => {
             <>
               {[
                 { value: stats.chapters_assigned, label: "Chapters Assigned" },
-                { value: stats.completed_count,   label: "Completed" },
-                { value: stats.pending_count,      label: "Pending" },
+                { value: stats.completed_count, label: "Completed" },
+                { value: stats.pending_count, label: "Pending" },
               ].map(({ value, label }) => (
                 <div key={label} className="text-center">
                   <div className="w-[4.688rem] h-[4.688rem] rounded-full bg-yellow flex items-center justify-center mx-auto mb-1 shadow-inner">

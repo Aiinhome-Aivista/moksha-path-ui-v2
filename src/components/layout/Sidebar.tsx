@@ -212,7 +212,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         {isOpen && (
           <div className="flex flex-col min-w-0 transition-opacity duration-500">
             <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Welcome</span>
-            <h4 className="text-lg font-bold text-gray-800 dark:text-gray-50 leading-tight truncate w-full">
+            <h4 className="text-lg font-bold text-gray-800 dark:text-gray-800 leading-tight truncate w-full">
               {displayUserName}
             </h4>
           </div>
