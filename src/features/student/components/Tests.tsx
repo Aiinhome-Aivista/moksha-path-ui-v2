@@ -90,6 +90,9 @@ const Tests: React.FC<TestsProps> = ({
   const [statusFilter, setStatusFilter] = useState<
     "All" | "Pending" | "Completed" | "Expired"
   >("All");
+  const [dashboardType, setDashboardType] = useState<"normal" | "adaptive">(
+    "normal",
+  );
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 2;
@@ -99,12 +102,16 @@ const Tests: React.FC<TestsProps> = ({
     setCurrentPage(1);
   }, [assessments.length, subjectName, chapterIds]);
 
-  // Fetch assessments on component mount
+  // Fetch assessments on component mount and when dashboardType changes
   useEffect(() => {
     const fetchAssessments = async () => {
       try {
         setIsLoading(true);
-        const response = await ApiServices.getStudentAssessments();
+        const response =
+          dashboardType === "normal"
+            ? await ApiServices.getStudentAssessments()
+            : await ApiServices.getAdaptiveAssessments();
+
         if (response.data?.status === "success") {
           setAssessments(response.data.data || []);
         }
@@ -120,13 +127,16 @@ const Tests: React.FC<TestsProps> = ({
     };
 
     fetchAssessments();
-  }, []);
+  }, [dashboardType]);
 
   const handleFormSubmit = async (_details: TestDetails) => {
     setShowFormModal(false);
     // Refresh assessments list after creating new test
     try {
-      const response = await ApiServices.getStudentAssessments();
+      const response =
+        dashboardType === "normal"
+          ? await ApiServices.getStudentAssessments()
+          : await ApiServices.getAdaptiveAssessments();
       if (response.data?.status === "success") {
         setAssessments(response.data.data || []);
       }
@@ -157,9 +167,23 @@ const Tests: React.FC<TestsProps> = ({
   };
 
   const isExpired = (assessment: Assessment) => {
-    const due = new Date(assessment.due_date + " " + new Date().getFullYear());
-
+    if (!assessment.due_date) return false;
+    let dateStr = assessment.due_date;
+    // If it doesn't look like it has a year (e.g. "30 Mar"), append current year
+    if (!/\d{4}/.test(dateStr)) {
+      dateStr = dateStr + " " + new Date().getFullYear();
+    }
+    const due = new Date(dateStr);
     return due < new Date();
+  };
+
+  const parseDate = (dateStr: string) => {
+    if (!dateStr) return new Date();
+    let finalStr = dateStr;
+    if (!/\d{4}/.test(finalStr)) {
+      finalStr = finalStr + " " + new Date().getFullYear();
+    }
+    return new Date(finalStr);
   };
 
   const hasAutoStarted = React.useRef(false);
@@ -282,7 +306,10 @@ const Tests: React.FC<TestsProps> = ({
 
     // Refresh assessments list after completing test
     try {
-      const response = await ApiServices.getStudentAssessments();
+      const response =
+        dashboardType === "normal"
+          ? await ApiServices.getStudentAssessments()
+          : await ApiServices.getAdaptiveAssessments();
       if (response.data?.status === "success") {
         setAssessments(response.data.data || []);
       }
@@ -303,9 +330,15 @@ const Tests: React.FC<TestsProps> = ({
 
     try {
       // Step 1: Start the assessment
-      const startResponse = await ApiServices.startAssessment({
-        assignment_id: assessment.assignment_id,
-      });
+      const startResponse =
+        dashboardType === "normal"
+          ? await ApiServices.startAssessment({
+              assignment_id: assessment.assignment_id,
+            })
+          : await ApiServices.startAdaptiveAssessment({
+              assignment_id: assessment.assignment_id,
+              // Any other adaptive-specific payload if needed
+            });
 
       if (startResponse.data?.status === "success") {
         const { attempt_id } = startResponse.data.data;
@@ -460,6 +493,28 @@ const Tests: React.FC<TestsProps> = ({
             </div>
           ) : (
             <div className="space-y-4">
+              {/* Dashboard Type Toggle */}
+              <div className="flex p-1 bg-gray-100 rounded-xl w-fit mb-4">
+                <button
+                  onClick={() => setDashboardType("normal")}
+                  className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${dashboardType === "normal"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                    }`}
+                >
+                  Normal Tests
+                </button>
+                <button
+                  onClick={() => setDashboardType("adaptive")}
+                  className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${dashboardType === "adaptive"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                    }`}
+                >
+                  Adaptive Tests
+                </button>
+              </div>
+
               {/* Search and Create Test Section */}
               <div className="flex justify-between items-center gap-4 mb-4">
                 {/* Search Input */}
@@ -681,23 +736,18 @@ const Tests: React.FC<TestsProps> = ({
                               Due Date
                             </p>
                             <p className="text-sm font-bold text-gray-700">
-                              {new Date(
-                                assessment.due_date +
-                                " " +
-                                new Date().getFullYear(),
-                              ).toLocaleDateString("en-IN", {
+                              {parseDate(assessment.due_date).toLocaleDateString("en-IN", {
                                 month: "short",
                                 day: "numeric",
                               })}
                               <span className="text-gray-400 font-normal ml-1 text-[9px]">
-                                {new Date(
-                                  assessment.due_date +
-                                  " " +
-                                  new Date().getFullYear(),
-                                ).toLocaleTimeString("en-IN", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
+                                {parseDate(assessment.due_date).toLocaleTimeString(
+                                  "en-IN",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  },
+                                )}
                                 {" (IST)"}
                               </span>
                             </p>

@@ -19,19 +19,31 @@ const axiosInstance = axios.create();
 // );
 axiosInstance.interceptors.request.use(
   (config) => {
-    const authToken = localStorage.getItem("auth_token");
-    const subscriptionToken = localStorage.getItem("subscription_token");
+    let authToken = localStorage.getItem("auth_token");
+    let subscriptionToken = localStorage.getItem("subscription_token");
 
     if (!config.headers) config.headers = {};
 
+    // Clean up tokens if they were accidentally stored with quotes via JSON.stringify
+    if (authToken && authToken.startsWith('"') && authToken.endsWith('"')) {
+      authToken = authToken.slice(1, -1);
+    }
+    if (subscriptionToken && subscriptionToken.startsWith('"') && subscriptionToken.endsWith('"')) {
+      subscriptionToken = subscriptionToken.slice(1, -1);
+    }
+
     // AUTH TOKEN
-    if (authToken) {
+    if (authToken && authToken !== "null" && authToken !== "undefined") {
       config.headers["Authorization"] = `Bearer ${authToken}`;
     }
 
     // SUBSCRIPTION TOKEN (Must be valid JWT with 3 segments)
-    if (subscriptionToken && subscriptionToken.split(".").length === 3) {
-      config.headers["subscription-token"] = subscriptionToken;
+    if (subscriptionToken && subscriptionToken !== "null" && subscriptionToken !== "undefined") {
+      if (subscriptionToken.split(".").length === 3) {
+        config.headers["subscription-token"] = subscriptionToken;
+      } else {
+        localStorage.removeItem("subscription_token"); // Clear fundamentally malformed token
+      }
     }
 
     // SUBSCRIPTION ID
@@ -41,7 +53,7 @@ axiosInstance.interceptors.request.use(
     const subscriptionId =
       localStorage.getItem("subscription_id") || activeProfile?.subscription_id;
 
-    if (subscriptionId) {
+    if (subscriptionId && subscriptionId !== "null" && subscriptionId !== "undefined") {
       config.headers["Subscription-Id"] = String(subscriptionId);
     }
     return config;
@@ -52,11 +64,11 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    // if (error.response?.status === 401) {
-    //   // Handle unauthorized - clear token and redirect to login
-    //   localStorage.removeItem("auth_token");
-    //   // window.location.href = "/login";
-    // }
+    // Clear corrupted tokens but DO NOT force a redirect to /login
+    if (error.response?.status === 400 && error.response?.data?.message?.includes("Not enough segments")) {
+      localStorage.removeItem("subscription_token");
+    }
+
     // Allow 400 responses to be resolved instead of rejected (for coupon validation)
     if (
       error.response?.status === 400 ||
@@ -212,6 +224,11 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.user_subscriptions);
   }
 
+  // Get adaptive assessments for student
+  getAdaptiveAssessments() {
+    return axiosInstance.get(GET_APIS.get_adaptive_assessments);
+  }
+
   // Get all usernames (for invite modal search)
   getUsernameList() {
     return axiosInstance.get(GET_APIS.username_list);
@@ -291,16 +308,7 @@ class ApiServices {
 
   // Case 1.1: Adaptive Assessment (Student)
   createAdaptiveSet(payload) {
-    const activeProfile = JSON.parse(
-      localStorage.getItem("active_profile") || "{}",
-    );
-    const subscriptionId = activeProfile?.subscription_id;
-
-    return axiosInstance.post(POST_APIS.create_adaptive_set, payload, {
-      headers: {
-        "Subscription-Id": subscriptionId,
-      },
-    });
+    return axiosInstance.post(POST_APIS.create_adaptive_set, payload);
   }
 
   // Case 2: Teacher assigns to selected students
@@ -334,6 +342,11 @@ class ApiServices {
   // Start assessment attempt
   startAssessment(payload) {
     return axiosInstance.post(POST_APIS.start_assessment, payload);
+  }
+
+  // Start adaptive assessment attempt
+  startAdaptiveAssessment(payload) {
+    return axiosInstance.post(POST_APIS.adaptive_start, payload);
   }
 
   // Save single answer

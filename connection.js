@@ -103,6 +103,7 @@ export const GET_APIS = {
 
   //adaptive test
   adaptive_test: `${BASE_URL}learning/assessment/create_adaptive_set`,
+  get_adaptive_assessments: `${BASE_URL}learning/assessment/student_assessments`,
 };
 
 export const POST_APIS = {
@@ -152,6 +153,7 @@ export const POST_APIS = {
 
   // Assessment Flow
   start_assessment: `${BASE_URL}learning/assessment/start`,
+  adaptive_start: `${BASE_URL}learning/assessment/addaptive_start`,
   save_assessment_answer: `${BASE_URL}learning/assessment/save_answer`,
   finish_assessment: `${BASE_URL}learning/assessment/finish`,
   // Rwtake Assessment
