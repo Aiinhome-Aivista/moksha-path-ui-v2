@@ -283,43 +283,23 @@ export const SelectRoleModal: React.FC = () => {
           });
 
           // 2. Refresh context data
-          await fetchMenu(); // Always fetch menu
+          const menuItems = await fetchMenu(); // Always fetch menu
 
           handleSignInSuccess();
           showToast("Profile created and logged in successfully", "success");
 
           closeSelectRole();
 
-          // Navigate based on subscription status of the new profile
-          // const subId = user.sub_id ?? user.roles?.[0]?.subscription_id;
-
-          // if (subId === null || subId === undefined) {
-          //   navigate("/subscription", {
-          //     replace: true,
-          //     state: {
-          //       preselectedAcademicDetails: {
-          //         board_id: selectedBoardId,
-          //         class_id: selectedClassId,
-          //         institute_id: selectedInstituteId,
-          //       },
-          //     },
-          //   });
-          // } else {
-          //   const role = activeRole.toLowerCase();
-          //   if (role === "teacher") {
-          //     navigate("/teacher/dashboard", { replace: true });
-          //   } else if (role === "parent") {
-          //     navigate("/parent/dashboard", { replace: true });
-          //   } else {
-          //     navigate("/dashboard", { replace: true });
-          //   }
-          // }
           const subId = user.sub_id ?? user.roles?.[0]?.subscription_id;
           const role = activeRole.toLowerCase();
+          
+          const dashboardRoute = menuItems?.find(
+            (item: any) => item.page_name?.toLowerCase().includes("dashboard")
+          )?.route || "/dashboard";
 
           //  Case 1: Teacher → always dashboard
           if (role === "teacher") {
-            navigate("/teacher/dashboard", { replace: true });
+            navigate(dashboardRoute, { replace: true });
           }
 
           //  Case 2: No subscription (only for non-teacher)
@@ -338,20 +318,25 @@ export const SelectRoleModal: React.FC = () => {
 
           //  Case 3: Subscription exists → role-based dashboard
           else {
-            if (role === "parent") {
-              navigate("/parent/dashboard", { replace: true });
-            } else {
-              navigate("/dashboard", { replace: true });
-            }
+            navigate(dashboardRoute, { replace: true });
           }
         } else {
           // Fallback if user object is not in response
           // await decodeUserToken();
-          await fetchMenu(); // Always fetch menu
+          const menuItems = await fetchMenu(); // Always fetch menu
           closeSelectRole();
 
           const subscriptionId = data?.subscription_id || data?.user?.sub_id;
-          if (!subscriptionId) {
+          
+          const dashboardRoute = menuItems?.find(
+            (item: any) => item.page_name?.toLowerCase().includes("dashboard")
+          )?.route || "/dashboard";
+
+          const isTeacherRole = roles.find((r) => r.role_id === selectedRoleId)?.role_name?.toLowerCase() === "teacher";
+
+          if (isTeacherRole) {
+            navigate(dashboardRoute, { replace: true });
+          } else if (!subscriptionId) {
             navigate("/subscription", {
               replace: true,
               state: {
@@ -363,18 +348,7 @@ export const SelectRoleModal: React.FC = () => {
               },
             });
           } else {
-            const userRoleName =
-              roles.find((r) => r.role_id === selectedRoleId)?.role_name ||
-              "student";
-            const userRole = resolveRoleFromBackend(userRoleName);
-            const role = userRole.toLowerCase();
-            if (role === "teacher") {
-              navigate("/teacher/dashboard", { replace: true });
-            } else if (role === "parent") {
-              navigate("/parent/dashboard", { replace: true });
-            } else {
-              navigate("/dashboard", { replace: true });
-            }
+            navigate(dashboardRoute, { replace: true });
           }
         }
       } else {

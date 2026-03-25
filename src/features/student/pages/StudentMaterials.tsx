@@ -115,8 +115,8 @@ const StudentMaterials = () => {
 
         setActiveSubject(
           locationState.selectedSubjectName ||
-          locationState.subjectWisePlan[0]?.subject_name ||
-          "",
+            locationState.subjectWisePlan[0]?.subject_name ||
+            "",
         );
 
         // setIsInitLoading(false);
@@ -133,8 +133,8 @@ const StudentMaterials = () => {
 
           setActiveSubject(
             locationState?.selectedSubjectName ||
-            res.data.data.subject_wise_plan[0]?.subject_name ||
-            "",
+              res.data.data.subject_wise_plan[0]?.subject_name ||
+              "",
           );
         }
 
@@ -369,7 +369,7 @@ const StudentMaterials = () => {
       const topicIndexes = extractedTopics
         .map((topic, index) =>
           topic.topic_id !== undefined &&
-            targetTopicIds.includes(topic.topic_id)
+          targetTopicIds.includes(topic.topic_id)
             ? index
             : -1,
         )
@@ -500,8 +500,8 @@ const StudentMaterials = () => {
                 topic_title:
                   item.topic_title ||
                   (parsedContent &&
-                    typeof parsedContent === "object" &&
-                    !Array.isArray(parsedContent)
+                  typeof parsedContent === "object" &&
+                  !Array.isArray(parsedContent)
                     ? parsedContent.title || parsedContent.topic
                     : `Topic ${item.topic_id}`),
                 content: parsedContent,
@@ -650,7 +650,6 @@ const StudentMaterials = () => {
     );
   };
 
-
   // if (isInitLoading) {
   //   return (
   //     <div className="p-6 text-center text-lg font-medium">
@@ -687,6 +686,7 @@ const StudentMaterials = () => {
           }}
           selectedTopics={selectedTopics}
           setSelectedTopics={setSelectedTopics}
+          sectionName={statsSource?.sections_name || []}
         />
 
         <div className="flex-1">
@@ -703,7 +703,7 @@ const StudentMaterials = () => {
             <ResourceMaterials
               youtubeLinks={youtubeLinks}
               isLoading={isResourcesLoading}
-            // isLoading={false}
+              // isLoading={false}
             />
           )}
           {activeResourceType === "Practice" && <Practice />}

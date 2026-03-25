@@ -3,13 +3,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices"; // Assuming ApiServices path
 import { useToast } from "../../../app/providers/ToastProvider";
-// import { useModal } from "../../auth/context/AuthContext";
+import { useModal } from "../../auth/context/AuthContext";
 
 const PaymentGateway: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
-  // const { decodeUserToken } = useModal();
+  const { fetchMenu } = useModal();
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [localUser, setLocalUser] = React.useState<any>({});
 
@@ -123,19 +123,12 @@ const PaymentGateway: React.FC = () => {
           //     navigate("/dashboard", { replace: true });
           //   }
           // }
-          const role = localUser?.role_name?.toLowerCase();
+          const menuItems = await fetchMenu();
+          const dashboardRoute = menuItems?.find(
+            (item: any) => item.page_name?.toLowerCase().includes("dashboard")
+          )?.route || "/dashboard";
 
-          if (role === "teacher") {
-            navigate("/teacher/dashboard", { replace: true });
-          } else if (role === "parent") {
-            navigate("/parent/dashboard", { replace: true });
-          } else if (role === "institute_admin" || role === "institute admin") {
-            navigate("/institute-admin/dashboard", { replace: true });
-          } else if (role === "private_tutor" || role === "private tutor") {
-            navigate("/private-tutor/dashboard", { replace: true });
-          } else {
-            navigate("/dashboard", { replace: true });
-          }
+          navigate(dashboardRoute, { replace: true });
         }
       } else {
         showToast(

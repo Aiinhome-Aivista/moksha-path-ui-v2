@@ -140,24 +140,22 @@ export const ProfileSelectionModal: React.FC = () => {
         localStorage.setItem("active_profile", JSON.stringify(profile));
 
         // Always fetch menu - it will handle no menu gracefully
-        await fetchMenu();
+        const menuItems = await fetchMenu();
 
         showToast(`Welcome back, ${profile.name}!`, "success");
         closeProfileSelection();
         setForceLoginModal({ isOpen: false, profile: null, message: "" });
 
-        // if (
-        //   profile.subscription_id === null ||
-        //   profile.subscription_id === undefined
-        // ) {
-        //   navigate("/subscription", { replace: true });
-        // } else {
-        //   navigate("/dashboard", { replace: true });
-        // }
         const subscriptionId =
           res.data.data?.subscription_id ?? profile.subscription_id ?? null;
 
-        if (!subscriptionId) {
+        const dashboardRoute = menuItems?.find(
+          (item: any) => item.page_name?.toLowerCase().includes("dashboard")
+        )?.route || "/dashboard";
+
+        if (activeRole.toLowerCase() === "teacher") {
+          navigate(dashboardRoute, { replace: true });
+        } else if (!subscriptionId) {
           navigate("/subscription", {
             replace: true,
             state: {
@@ -169,18 +167,7 @@ export const ProfileSelectionModal: React.FC = () => {
             },
           });
         } else {
-          const role = activeRole?.toLowerCase();
-          if (role === "teacher") {
-            navigate("/teacher/dashboard", { replace: true });
-          } else if (role === "parent") {
-            navigate("/parent/dashboard", { replace: true });
-          } else if (role === "institute_admin" || role === "institute admin") {
-             navigate("/institute-admin/dashboard", { replace: true });
-             }else if (role === "private_tutor" || role === "private tutor") {
-             navigate("/private-tutor/dashboard", { replace: true });
-          }else {
-            navigate("/dashboard", { replace: true });
-          }
+          navigate(dashboardRoute, { replace: true });
         }
       } else {
         showToast(res.data?.message || "Failed to switch profile", "error");
