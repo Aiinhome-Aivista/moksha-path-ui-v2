@@ -52,97 +52,63 @@ const IconMap: Record<string, LucideIcon> = {
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
-  const { logout, isAuthenticated } = useAuth();
+  const { logout, isAuthenticated, user } = useAuth();
   const { menuItems, isMenuLoaded, fetchMenu, clearMenu } = useModal();
   const navigate = useNavigate();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const { showToast } = useToast();
 
-  const staticMenuItems: PageAccessItem[] = [
-    // {
-    //   page_id: 1,
-    //   page_name: "Dashboard",
-    //   icon: "home",
-    //   route: "/dashboard",
-    // },
-    // {
-    //   page_id: 2,
-    //   page_name: "My Profile",
-    //   icon: "user",
-    //   route: "/profile",
-    // },
-    // {
-    //   page_id: 6,
-    //   page_name: "Subscription",
-    //   icon: "credit-card",
-    //   route: "/subscription",
-    // },
-    // {
-    //   page_id: 7,
-    //   page_name: "Payment",
-    //   icon: "wallet",
-    //   route: "/payment",
-    // },
-    // {
-    //   page_id: 8,
-    //   page_name: "Learning Planner",
-    //   icon: "calendar",
-    //   route: "/learning-planner",
-    // },
-    // {
-    //   page_id: 9,
-    //   page_name: "Study Materials",
-    //   icon: "book",
-    //   route: "/student-materials",
-    // },
-    // {
-    //   page_id: 10,
-    //   page_name: "Test Papers",
-    //   icon: "file-text",
-    //   route: "/test-papers",
-    // },
-    // {
-    //   page_id: 11,
-    //   page_name: "Courses",
-    //   icon: "video",
-    //   route: "/courses",
-    // },
-    // {
-    //   page_id: 12,
-    //   page_name: "Assignments",
-    //   icon: "edit",
-    //   route: "/assignments",
-    // },
-    // {
-    //   page_id: 13,
-    //   page_name: "Grades",
-    //   icon: "award",
-    //   route: "/grades",
-    // },
-    // {
-    //   page_id: 14,
-    //   page_name: "Notification",
-    //   icon: "notification",
-    //   route: "/notification",
-    // },
-    // {
-    //   page_id: 15,
-    //   page_name: "Invitation",
-    //   icon: "invitation",
-    //   route: "/invitation",
-    // },
-  ];
+  // --- API Profile State ---
+  const [dynProfile, setDynProfile] = useState<any>(null);
+  const [profileImage, setProfileImage] = useState<string>("");
+
+  const staticMenuItems: PageAccessItem[] = [];
 
   const effectiveMenu =
     isAuthenticated && menuItems && menuItems.length > 0
       ? menuItems
       : staticMenuItems;
-  // Fetch menu when user is authenticated and menu is not yet loaded
+
+  // Fetch menu when user is authenticated
   useEffect(() => {
     if (isAuthenticated && !isMenuLoaded) {
       fetchMenu();
     }
-  }, [isAuthenticated, isMenuLoaded]);
+  }, [isAuthenticated, isMenuLoaded, fetchMenu]);
+
+  // Fetch profile data securely via API instead of localStorage
+  useEffect(() => {
+    if (isAuthenticated) {
+      const fetchSidebarProfile = async () => {
+        try {
+          const [profileRes, imageRes] = await Promise.all([
+            ApiServices.getProfileInfo(),
+            ApiServices.getUserProfileImage(),
+          ]);
+
+          if (profileRes.data?.status === "success") {
+            setDynProfile(profileRes.data.data);
+          }
+          if (imageRes.data?.status === "success") {
+            const imgData = imageRes.data.data?.image || imageRes.data.data?.profile_image;
+            if (imgData) {
+              const profileImg = imgData.startsWith("data:")
+                ? imgData
+                : `data:image/jpeg;base64,${imgData}`;
+              setProfileImage(profileImg);
+            }
+          }
+        } catch (error) {
+          // Fail silently and rely on useAuth user object if API fails
+        }
+      };
+
+      fetchSidebarProfile();
+    }
+  }, [isAuthenticated]);
+
+  // Safely determine the display name
+  const displayUserName = user?.name || dynProfile?.full_name || dynProfile?.teacher_name || "User";
 
   // Helper to render icon
   const renderIcon = (iconName: string) => {
@@ -158,7 +124,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     try {
       await ApiServices.signOut();
     } catch (error) {
-      // console.error("Signout API failed", error);
+      // Ignore API signout error and continue local cleanup
     } finally {
       clearMenu();
       localStorage.removeItem("auth_token");
@@ -180,7 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 fixed top-0 left-0 h-full z-[100]
                 bg-white dark:bg-secondary-900
                 shadow-xl transition-all duration-500 ease-in-out
-                flex flex-col rounded-r-[30px]
+                flex flex-col rounded-r-[30px] overflow-hidden
                 ${isOpen ? "w-[360px]" : "w-0 md:w-[88px]"}
             `}
       style={{
@@ -190,7 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       {/* Header Section */}
       <div
         className={`
-                h-14 flex items-center transition-all duration-500
+                h-14 flex items-center transition-all duration-500 shrink-0
                 ${isOpen ? "justify-start px-6 gap-4" : "justify-center"}
             `}
         style={{
@@ -201,20 +167,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           <>
             <button
               onClick={toggleSidebar}
-              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 transition-colors"
+              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 transition-colors shrink-0"
             >
               <X size={24} strokeWidth={2.5} />
             </button>
-            {/* <div className="flex items-center gap-3">
-              <img src="/Logo.svg" alt="App Logo" className="h-25 w-[80%]" />
-            </div> */}
-            <div className="flex items-center gap-2 font-bold text-lg">
-              <img src="/logogod.svg" alt="logo" className="w-10 h-10" />
-              <div>
-                <h3>
+            <div className="flex items-center gap-2 font-bold text-lg min-w-0">
+              <img src="/logogod.svg" alt="logo" className="w-10 h-10 shrink-0" />
+              <div className="min-w-0">
+                <h3 className="truncate">
                   Moksh<span className="text-xl text-[#E7842E]">Path</span>
                 </h3>
-                <p className="text-xs leading-none font-normal text-nowrap">
+                <p className="text-[10px] leading-none font-normal truncate">
                   Guided Path to True Learning
                 </p>
               </div>
@@ -230,9 +193,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         )}
       </div>
 
+      {/* ── PROFILE PICTURE & WELCOME SECTION ── */}
+      <div className={`flex items-center transition-all duration-500 shrink-0 min-w-0 ${!isOpen ? "flex-col hidden md:flex py-2" : "flex-row gap-4 pt-4 pb-2 border-b border-gray-100 dark:border-gray-800 mx-3 px-3"}`}>
+        <div className="relative shrink-0">
+          {profileImage ? (
+            <img 
+              src={profileImage} 
+              alt="Profile" 
+              className={`rounded-full object-cover border-2 border-white shadow-md transition-all duration-500 ${isOpen ? "w-14 h-14" : "w-10 h-10"}`} 
+            />
+          ) : (
+            <div className={`rounded-full border-2 border-white shadow-md bg-gradient-to-br from-[#E7842E] to-yellow-500 flex items-center justify-center text-white font-black transition-all duration-500 ${isOpen ? "w-14 h-14 text-2xl" : "w-10 h-10 text-lg"}`}>
+              {displayUserName.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
+        
+        {isOpen && (
+          <div className="flex flex-col min-w-0 transition-opacity duration-500">
+            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Welcome</span>
+            <h4 className="text-lg font-bold text-gray-800 dark:text-gray-800 leading-tight truncate w-full">
+              {displayUserName}
+            </h4>
+          </div>
+        )}
+      </div>
+
       {/* Navigation Menu */}
       <nav
-        className={`flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 custom-scrollbar ${!isOpen ? "hidden md:block" : ""}`}
+        className={`flex-1 overflow-y-auto overflow-x-hidden px-3 pt-2 pb-4 custom-scrollbar ${!isOpen ? "hidden md:block" : ""}`}
       >
         <ul className="space-y-1">
           {effectiveMenu.map((item) => (
@@ -260,11 +249,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 }}
                 title={!isOpen ? item.page_name : undefined}
               >
-                <div className={`flex items-center ${isOpen ? "gap-3" : ""}`}>
-                  <span>{renderIcon(item.icon)}</span>
+                <div className={`flex items-center min-w-0 ${isOpen ? "gap-3" : ""}`}>
+                  <span className="shrink-0">{renderIcon(item.icon)}</span>
                   {isOpen && (
                     <span
-                      className="text-[15px] font-medium whitespace-nowrap transition-opacity duration-300"
+                      className="text-[15px] font-medium truncate transition-opacity duration-300"
                       style={{
                         transitionTimingFunction:
                           "cubic-bezier(0.4, 0, 0.2, 1)",
@@ -277,7 +266,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 {isOpen && (
                   <ChevronRight
                     size={16}
-                    className={`text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+                    className={`text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shrink-0`}
                     style={{
                       transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
                     }}
@@ -292,7 +281,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       {/* Footer / Logout */}
       {isAuthenticated && (
         <div
-          className={`p-4 dark:border-gray-800 transition-all duration-500 ${!isOpen ? "hidden md:block" : ""}`}
+          className={`p-4 dark:border-gray-800 transition-all duration-500 shrink-0 ${!isOpen ? "hidden md:block" : ""}`}
           style={{
             transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
           }}
@@ -308,16 +297,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             }}
             title={!isOpen ? "Sign Out" : undefined}
           >
-            <LogOut size={20} strokeWidth={1.5} />
+            <LogOut size={20} strokeWidth={1.5} className="shrink-0" />
             {isOpen && (
               <div
-                className="flex items-center gap-3 transition-opacity duration-300"
+                className="flex items-center gap-3 transition-opacity duration-300 w-full min-w-0"
                 style={{
                   transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
                 }}
               >
-                <span className="text-[15px] font-medium">Sign-out</span>
-                <ChevronRight size={16} className="ml-auto text-gray-300" />
+                <span className="text-[15px] font-medium truncate">Sign Out</span>
+                <ChevronRight size={16} className="ml-auto text-gray-300 shrink-0" />
               </div>
             )}
           </button>

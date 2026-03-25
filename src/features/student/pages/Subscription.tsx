@@ -651,8 +651,8 @@ const Subscription: React.FC = () => {
     }
     setIsValidating(true);
     try {
-      const firstValidProfile =
-        profiles.find((p) => p.board_id && p.class_id) || profiles[0];
+      // const firstValidProfile =
+      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
       // const validatePayload = {
       //   plan_id: selectedPlan.plan_id,
       //   board_id: firstValidProfile.board_id,
@@ -686,8 +686,8 @@ const Subscription: React.FC = () => {
   const handlePayNow = async (subscriptionName: string, couponCode: string) => {
     if (!selectedPlan) return;
     try {
-      const firstValidProfile =
-        profiles.find((p) => p.board_id && p.class_id) || profiles[0];
+      // const firstValidProfile =
+      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
       // const paymentData = {
       //   plan_id: selectedPlan.plan_id,
       //   board_id: firstValidProfile.board_id,
@@ -736,8 +736,8 @@ const Subscription: React.FC = () => {
       return { success: false, message: "" };
     }
     try {
-      const firstValidProfile =
-        profiles.find((p) => p.board_id && p.class_id) || profiles[0];
+      // const firstValidProfile =
+      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
       // const payload = {
       //   plan_id: selectedPlan?.plan_id,
       //   board_id: firstValidProfile.board_id,
@@ -901,8 +901,8 @@ const Subscription: React.FC = () => {
     if (!selectedPlan) return;
     setIsSaving(true);
     try {
-      const firstValidProfile =
-        profiles.find((p) => p.board_id && p.class_id) || profiles[0];
+      // const firstValidProfile =
+      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
 
       // Optional: Add validation before saving if needed, but let's stick to user request
       // const payload = {
@@ -1046,9 +1046,9 @@ const Subscription: React.FC = () => {
     return afterDiscount * licenses;
   };
 
-  const getInitial = () => {
-    return localUser?.name?.charAt(0).toUpperCase();
-  };
+  // const getInitial = () => {
+  //   return localUser?.name?.charAt(0).toUpperCase();
+  // };
 
   const handleSetupConfirm = (data: any) => {
     // Map existing setup confirm to first profile
@@ -1096,7 +1096,7 @@ const Subscription: React.FC = () => {
         <div className="flex items-center justify-between w-full">
 
           {/* LEFT: Profile */}
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-gray-200 flex items-center justify-center bg-gray-100">
               {profileImage ? (
                 <img
@@ -1122,7 +1122,7 @@ const Subscription: React.FC = () => {
                 Hi {localUser.name} !
               </h1>
             </div>
-          </div>
+          </div> */}
 
           {/* RIGHT: Button */}
           {localUser.role_name !== "student" && (
@@ -1449,7 +1449,7 @@ const Subscription: React.FC = () => {
                       </div>
 
                       {/* Seats per profile */}
-                      <div className="flex flex-col gap-1">
+                      {/* <div className="flex flex-col gap-1">
                         <label className="text-sm tracking-widest text-primary font-bold px-1 uppercase">
                           Seats
                         </label>
@@ -1495,7 +1495,7 @@ const Subscription: React.FC = () => {
                           </button>
 
                         </div>
-                      </div>
+                      </div> */}
 
                       {/* Clear for this profile */}
                       <div className="flex items-end">

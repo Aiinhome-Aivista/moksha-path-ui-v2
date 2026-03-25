@@ -1,104 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
 
-// Function to navigate to student materials with stats and selected chapter
-const navigateToStudentMaterials = (
-  navigate: ReturnType<typeof useNavigate>,
-  stats: any,
-  subjects: any[],
-  selectedChapterId?: number,
-) => {
-  navigate("/student-materials", {
-    state: {
-      boardName: stats.board_name,
-      className: stats.class_name,
-      subjects: subjects.map((s) => s.subject_name),
-      subjectWisePlan: subjects,
-      stats: stats,
-      selectedChapterId: selectedChapterId,
-    },
-  });
-};
+// ─── Interfaces ─────────────────────────────────────────────────────────────
 
-// Function to navigate to practice/test section with selected chapter
-// const navigateToTests = (
-//   navigate: ReturnType<typeof useNavigate>,
-//   stats: any,
-//   subjects: any[],
-//   selectedChapterId: number,
-// ) => {
-//   navigate("/student-materials", {
-//     state: {
-//       boardName: stats.board_name,
-//       className: stats.class_name,
-//       subjects: subjects.map((s) => s.subject_name),
-//       subjectWisePlan: subjects,
-//       stats: stats,
-//       selectedChapterId: selectedChapterId,
-//       activeResourceType: "Tests",
-//     },
-//   });
-// };
-
-// const navigateToTests = (
-//   navigate: ReturnType<typeof useNavigate>,
-//   stats: any,
-//   subjects: any[],
-//   selectedChapterId: number,
-//   selectedSubjectName: string,
-// ) => {
-//   navigate("/student-materials", {
-//     state: {
-//       boardName: stats.board_name,
-//       className: stats.class_name,
-//       subjects: subjects.map((s) => s.subject_name),
-//       subjectWisePlan: subjects,
-//       stats: stats,
-//       selectedChapterId: selectedChapterId,
-//       activeResourceType: "Tests",
-//       selectedSubjectName: selectedSubjectName, // ✅ ADD THIS
-//     },
-//   });
-// };
-const navigateToTests = (
-  navigate: ReturnType<typeof useNavigate>,
-  stats: any,
-  subjects: any[],
-  selectedChapterId: number,
-  selectedSubjectName: string,
-) => {
-  const selectedSubject = subjects.find(
-    (s) => s.subject_name === selectedSubjectName,
-  );
-
-  const selectedChapter = selectedSubject?.chapters.find(
-    (ch: any) => ch.chapter_id === selectedChapterId,
-  );
-
-  const selectedTopicIds =
-    selectedChapter?.topics
-      ?.filter((t: any) => t.is_completed) // or your logic
-      .map((t: any) => t.topic_id) || [];
-
-  navigate("/student-materials", {
-    state: {
-      boardName: stats.board_name,
-      className: stats.class_name,
-      subjects: subjects.map((s) => s.subject_name),
-      subjectWisePlan: subjects,
-      stats: stats,
-      selectedChapterId: selectedChapterId,
-      activeResourceType: "Tests",
-      selectedSubjectName: selectedSubjectName,
-
-      // ✅ ADD THIS
-      selectedTopicIds: selectedTopicIds,
-    },
-  });
-};
 type Priority = "High" | "Medium" | "Low";
 
 interface ApiTopic {
@@ -124,134 +30,513 @@ interface ApiChapter {
   topics: ApiTopic[];
 }
 
+interface Task {
+  type: "tutorial" | "mock_test";
+  progress: number;
+  status?: string;
+}
+
+interface ChapterDay {
+  chapter_id: number;
+  chapter_name: string;
+  topics?: { topic_id: number; topic_name: string }[];
+  tasks: Task[];
+}
+
+interface WeeklyPlanDay {
+  date: string;
+  day: string;
+  progress: number;
+  status?: string;
+  chapters: ChapterDay[];
+}
+
 interface ApiSubjectPlan {
   subject_id: number;
   subject_name: string;
   chapters: ApiChapter[];
+  weekly_plan?: WeeklyPlanDay[];
 }
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const getTodayDate = () => new Date().toISOString().split("T")[0];
+
+const formatDate = (dateStr: string) =>
+  new Date(dateStr).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+
+const formatFullDate = (dateStr: string) =>
+  new Date(dateStr).toLocaleDateString("en-IN", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+  });
+
+const progressBarColor = (p: number) =>
+  p >= 100 ? "bg-green-500" : p > 50 ? "bg-[#BADA55]" : p > 20 ? "bg-amber-400" : "bg-red-400";
+
+const statusPill = (status?: string) => {
+  switch (status?.toLowerCase()) {
+    case "completed": return "bg-green-100 text-green-700 border-green-200";
+    case "in_progress": return "bg-amber-100 text-amber-700 border-amber-200";
+    default: return "bg-red-100 text-red-500 border-red-200";
+  }
+};
+
+// ─── Generate weekly plan from chapters ──────────────────────────────────────
+
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
+  const today = new Date();
+  const dow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((dow === 0 ? 7 : dow) - 1));
+
+  const weekDates: string[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    weekDates.push(d.toISOString().split("T")[0]);
+  }
+
+  const chapters = subject.chapters ?? [];
+
+  return weekDates.map((dateStr, idx) => {
+    const dayName = DAY_NAMES[new Date(dateStr).getDay()];
+    const dayChapters = chapters
+      .filter((_, ci) => ci % 7 === idx)
+      .map((ch) => ({
+        chapter_id: ch.chapter_id,
+        chapter_name: ch.chapter_name,
+        topics: ch.topics.map((t) => ({ topic_id: t.topic_id, topic_name: t.topic_name })),
+        tasks: [
+          {
+            type: "tutorial" as const,
+            progress: ch.progress_percentage,
+            status:
+              ch.status?.toLowerCase() === "completed" ? "completed"
+                : ch.progress_percentage > 0 ? "in_progress"
+                  : "pending",
+          },
+          {
+            type: "mock_test" as const,
+            progress:
+              ch.status?.toLowerCase() === "completed" ? 100
+                : Math.max(0, ch.progress_percentage - 20),
+            status: ch.status?.toLowerCase() === "completed" ? "completed" : "pending",
+          },
+        ],
+      }));
+
+    const avgProgress =
+      dayChapters.length > 0
+        ? Math.round(
+          dayChapters.reduce(
+            (sum, ch) => sum + ch.tasks.reduce((s, t) => s + t.progress, 0) / ch.tasks.length,
+            0,
+          ) / dayChapters.length,
+        )
+        : 0;
+
+    return {
+      date: dateStr, day: dayName, progress: avgProgress,
+      status: avgProgress >= 100 ? "completed" : avgProgress > 0 ? "in_progress" : "pending",
+      chapters: dayChapters,
+    };
+  });
+};
+
+const getPrevWeekStatus = (
+  weeklyPlan: WeeklyPlanDay[],
+  today: string,
+): "green" | "red" | "none" => {
+  const past = weeklyPlan.filter((d) => d.date < today && d.chapters.length > 0);
+  if (past.length === 0) return "none";
+  return past.every((d) => d.progress >= 100) ? "green" : "red";
+};
+
+const patchSubjectPlan = (sub: ApiSubjectPlan): ApiSubjectPlan => ({
+  ...sub,
+  weekly_plan:
+    sub.weekly_plan && sub.weekly_plan.length > 0 ? sub.weekly_plan : generateWeeklyPlan(sub),
+});
+
+// ─── DayCard ─────────────────────────────────────────────────────────────────
+
+const DayCard: React.FC<{
+  day: WeeklyPlanDay;
+  isSelected: boolean;
+  isToday: boolean;
+  isPast: boolean;
+  onClick: () => void;
+}> = ({ day, isSelected, isToday, isPast, onClick }) => {
+  const allDone = isPast && day.progress >= 100;
+  const hasPending = isPast && day.progress < 100;
+
+  return (
+    <div
+      onClick={onClick}
+      className={`
+        relative min-w-[88px] flex-shrink-0 cursor-pointer rounded-2xl p-3 border-2
+        transition-all duration-200 select-none
+        ${isSelected
+          ? "bg-gradient-to-b from-[#BADA55]/30 to-[#BADA55]/10 border-[#BADA55] shadow-lg shadow-[#BADA55]/20 scale-[1.06]"
+          : isToday
+            ? "bg-gradient-to-b from-white to-gray-50 border-primary shadow-md"
+            : allDone
+              ? "bg-gradient-to-b from-green-50 to-white border-green-300"
+              : hasPending
+                ? "bg-gradient-to-b from-red-50 to-white border-red-300"
+                : "bg-white border-gray-100 hover:border-[#BADA55]/50 hover:shadow-sm"
+        }
+      `}
+    >
+      {isPast && (
+        <span className={`absolute top-2 right-2 w-2 h-2 rounded-full ${allDone ? "bg-green-500" : "bg-red-400"}`} />
+      )}
+      {isToday && (
+        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-wider bg-primary text-white px-2 py-0.5 rounded-full whitespace-nowrap shadow">
+          Today
+        </span>
+      )}
+      <p className={`text-[10px] font-bold uppercase tracking-widest mb-0.5 mt-1 ${isSelected ? "text-[#6a9000]" : isToday ? "text-primary" : "text-gray-400"}`}>
+        {day.day}
+      </p>
+      <p className={`text-sm font-extrabold leading-tight ${isSelected ? "text-primary" : isToday ? "text-primary" : "text-gray-700"}`}>
+        {formatDate(day.date)}
+      </p>
+      <div className="mt-3 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-700 ease-out ${progressBarColor(day.progress)}`}
+          style={{ width: `${day.progress}%` }}
+        />
+      </div>
+      <p className={`text-[10px] font-semibold mt-1 text-right ${allDone ? "text-green-600" : hasPending ? "text-red-500" : "text-gray-400"}`}>
+        {day.progress}%
+      </p>
+    </div>
+  );
+};
+
+// ─── Task Row ─────────────────────────────────────────────────────────────────
+
+const TaskRow: React.FC<{ task: Task }> = ({ task }) => (
+  <div className="space-y-1">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-white ${task.type === "mock_test" ? "bg-primary" : "bg-[#BADA55]"}`}>
+          <span className="material-symbols-outlined" style={{ fontSize: 13 }}>
+            {task.type === "mock_test" ? "quiz" : "play_circle"}
+          </span>
+        </span>
+        <span className="text-xs font-semibold text-gray-700">
+          {task.type === "mock_test" ? "Mock Test" : "Tutorial"}
+        </span>
+        {task.status && (
+          <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full border ${statusPill(task.status)}`}>
+            {task.status.replace("_", " ")}
+          </span>
+        )}
+      </div>
+      <span className="text-xs font-bold text-gray-500">{task.progress}%</span>
+    </div>
+    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div
+        className={`h-full rounded-full transition-all duration-700 ${progressBarColor(task.progress)}`}
+        style={{ width: `${task.progress}%` }}
+      />
+    </div>
+  </div>
+);
+
+// ─── Chapter Accordion ────────────────────────────────────────────────────────
+
+const ChapterAccordion: React.FC<{ chapter: ChapterDay; index: number }> = ({ chapter, index }) => {
+  const [open, setOpen] = useState(false);
+  const allDone = chapter.tasks.every((t) => t.progress >= 100);
+
+  return (
+    <div className={`rounded-2xl overflow-hidden border transition-all duration-200 shadow-sm hover:shadow-md ${allDone ? "border-green-200 bg-green-50/40" : "border-gray-100 bg-white"}`}>
+      <button
+        onClick={() => setOpen((p) => !p)}
+        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50/80 transition-colors"
+      >
+        <span className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold ${allDone ? "bg-green-500 text-white" : "bg-[#BADA55]/20 text-[#6a9000]"}`}>
+          {allDone
+            ? <span className="material-symbols-outlined" style={{ fontSize: 14 }}>check</span>
+            : index + 1}
+        </span>
+        <span className="flex-1 font-semibold text-sm text-primary">{chapter.chapter_name}</span>
+        <span className={`material-symbols-outlined text-lg text-gray-400 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`}>
+          expand_more
+        </span>
+      </button>
+
+      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${open ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"}`}>
+        <div className="px-4 pb-4 pt-2 space-y-4 border-t border-gray-100">
+          {chapter.topics && chapter.topics.length > 0 && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Topics</p>
+              <div className="flex flex-wrap gap-1.5">
+                {chapter.topics.map((t) => (
+                  <span key={t.topic_id} className="text-[11px] bg-gradient-to-r from-[#BADA55]/20 to-[#BADA55]/10 text-[#5a7800] border border-[#BADA55]/30 px-2.5 py-1 rounded-full font-semibold">
+                    {t.topic_name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {chapter.tasks && chapter.tasks.length > 0 && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Tasks</p>
+              <div className="space-y-3">
+                {chapter.tasks.map((task, idx) => <TaskRow key={idx} task={task} />)}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Subject Section (self-contained: calendar + details) ─────────────────────
+
+const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }> = ({
+  subject, accentColor,
+}) => {
+  const today = getTodayDate();
+  const weeklyPlan = subject.weekly_plan ?? [];
+  const prevWeekStatus = getPrevWeekStatus(weeklyPlan, today);
+
+  const todayEntry = weeklyPlan.find((d) => d.date === today);
+  const defaultDay = todayEntry ?? weeklyPlan[0] ?? null;
+
+  const [selectedDate, setSelectedDate] = useState<string>(defaultDay?.date ?? "");
+  const [selectedDayData, setSelectedDayData] = useState<WeeklyPlanDay | null>(defaultDay);
+
+  const handleDayClick = (day: WeeklyPlanDay) => {
+    setSelectedDate(day.date);
+    setSelectedDayData(day);
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      {/* ── Subject Header Card ─────────────────────────────────────── */}
+      <div
+        className="bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between px-5 py-3"
+        style={{ borderLeft: `5px solid ${accentColor}` }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-base shadow-sm"
+            style={{ background: accentColor }}
+          >
+            {subject.subject_name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h3 className="text-base font-extrabold text-primary leading-tight">{subject.subject_name}</h3>
+            <p className="text-[11px] text-gray-400 font-medium">
+              {subject.chapters?.length ?? 0} chapters &middot; {weeklyPlan.length} days planned
+            </p>
+          </div>
+        </div>
+
+        {prevWeekStatus !== "none" && (
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border
+            ${prevWeekStatus === "green"
+              ? "bg-green-50 border-green-200 text-green-700"
+              : "bg-red-50 border-red-200 text-red-600"}`}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 15 }}>
+              {prevWeekStatus === "green" ? "verified" : "warning"}
+            </span>
+            {prevWeekStatus === "green" ? "Prev week: All done ✓" : "Prev week: Pending ⚠️"}
+          </div>
+        )}
+      </div>
+
+      {/* ── Two-column row ──────────────────────────────────────────── */}
+      <div className="flex flex-col lg:flex-row gap-4">
+
+        {/* LEFT — Weekly Calendar (independent card) */}
+        <div className="w-full lg:w-[58%] bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-5">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Weekly Plan</p>
+            {weeklyPlan.length > 0 && (
+              <span className="text-[10px] text-gray-400 bg-gray-50 border border-gray-100 px-2.5 py-0.5 rounded-full font-semibold">
+                {formatDate(weeklyPlan[0].date)} – {formatDate(weeklyPlan[weeklyPlan.length - 1].date)}
+              </span>
+            )}
+          </div>
+
+          {weeklyPlan.length > 0 ? (
+            <div className="flex  justify-between overflow-x-auto pb-1 pt-3">
+              {/* Prev-week card */}
+              <div
+                className={`min-w-[80px] flex-shrink-0 rounded-2xl p-3 border-2 flex flex-col items-center justify-center gap-1.5
+                  ${prevWeekStatus === "green"
+                    ? "bg-green-50 border-green-300 shadow-sm shadow-green-100"
+                    : prevWeekStatus === "red"
+                      ? "bg-red-50 border-red-300 shadow-sm shadow-red-100"
+                      : "bg-gray-50 border-gray-200"
+                  }`}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white shadow-sm
+                  ${prevWeekStatus === "green" ? "bg-green-500" : prevWeekStatus === "red" ? "bg-red-400" : "bg-gray-300"}`}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 17 }}>
+                    {prevWeekStatus === "green" ? "verified" : prevWeekStatus === "red" ? "warning" : "history"}
+                  </span>
+                </div>
+                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 text-center leading-tight">
+                  Prev<br />Week
+                </p>
+                <p className={`text-[10px] font-extrabold text-center leading-tight
+                  ${prevWeekStatus === "green" ? "text-green-600" : prevWeekStatus === "red" ? "text-red-500" : "text-gray-400"}`}>
+                  {prevWeekStatus === "green" ? "All Done" : prevWeekStatus === "red" ? "Pending" : "No Data"}
+                </p>
+                <div className={`w-full h-1 rounded-full ${prevWeekStatus === "green" ? "bg-green-400" : prevWeekStatus === "red" ? "bg-red-400" : "bg-gray-200"}`} />
+              </div>
+
+              <div className="w-px bg-gray-200 self-stretch my-1 flex-shrink-0 rounded-full" />
+
+              {weeklyPlan.map((day) => (
+                <DayCard
+                  key={day.date}
+                  day={day}
+                  isSelected={selectedDate === day.date}
+                  isToday={day.date === today}
+                  isPast={day.date < today}
+                  onClick={() => handleDayClick(day)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-gray-300 text-center">
+              <span className="material-symbols-outlined text-4xl mb-2">calendar_month</span>
+              <p className="text-xs font-medium text-gray-400">No plan available</p>
+            </div>
+          )}
+
+          {/* Legend */}
+          <div className="flex flex-wrap items-center gap-3 mt-4 pt-3 border-t border-gray-50">
+            {[
+              { color: "bg-green-500", label: "Completed" },
+              { color: "bg-[#BADA55]", label: "In Progress" },
+              { color: "bg-amber-400", label: "Partial" },
+              { color: "bg-red-400", label: "Pending" },
+            ].map(({ color, label }) => (
+              <div key={label} className="flex items-center gap-1">
+                <span className={`w-2 h-2 rounded-full ${color}`} />
+                <span className="text-[10px] text-gray-400 font-medium">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT — Chapter Details (independent card) */}
+        <div className="w-full lg:w-[42%] bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-5 flex flex-col">
+          {/* Day header */}
+          <div className="mb-4">
+            {selectedDayData ? (
+              <>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                    {formatFullDate(selectedDayData.date)}
+                  </p>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusPill(selectedDayData.status)}`}>
+                    {selectedDayData.progress}% done
+                  </span>
+                </div>
+                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ${progressBarColor(selectedDayData.progress)}`}
+                    style={{ width: `${selectedDayData.progress}%` }}
+                  />
+                </div>
+              </>
+            ) : (
+              <p className="text-xs font-bold text-gray-300 uppercase tracking-widest">
+                Select a day
+              </p>
+            )}
+          </div>
+
+          {/* Chapters */}
+          <div className="space-y-2.5 flex-1 overflow-y-auto min-h-0 pr-1">
+            {selectedDayData ? (
+              selectedDayData.chapters.length > 0 ? (
+                selectedDayData.chapters.map((ch, idx) => (
+                  <ChapterAccordion key={ch.chapter_id} chapter={ch} index={idx} />
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-10 text-center">
+                  <span className="material-symbols-outlined text-4xl text-gray-200 mb-2">menu_book</span>
+                  <p className="text-sm font-medium text-gray-400">No chapters today</p>
+                  <p className="text-xs text-gray-300">Enjoy your free day! 🌟</p>
+                </div>
+              )
+            ) : (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <span className="material-symbols-outlined text-4xl text-gray-100 mb-2">touch_app</span>
+                <p className="text-sm font-medium text-gray-400">Click a day to view chapters</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+// ─── Accent colors for subjects ───────────────────────────────────────────────
+
+const SUBJECT_COLORS = [
+  "#BADA55", "#4F8EF7", "#F97316", "#A855F7", "#14B8A6", "#EF4444", "#F59E0B",
+];
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 const LearningPlanner: React.FC = () => {
   const [subjects, setSubjects] = useState<ApiSubjectPlan[]>([]);
-  const [activeSubject, setActiveSubject] = useState("");
-  const [expandedChapters, setExpandedChapters] = useState<Set<number>>(
-    new Set(),
-  );
-
   const [profileImage, setProfileImage] = useState<string>(" ");
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const navigate = useNavigate();
-
-  const toggleChapterAccordion = (chapterId: number) => {
-    setExpandedChapters((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(chapterId)) {
-        newSet.delete(chapterId);
-      } else {
-        newSet.add(chapterId);
-      }
-      return newSet;
-    });
-  };
-
-  // const fetchLearningPlan = async () => {
-  //   try {
-  //     const getResponse = await ApiServices.getStudentLearningPlanner();
-  //     const getResult = getResponse.data;
-  //     if (
-  //       getResult.status === "success" &&
-  //       getResult.data.subject_wise_plan?.length > 0
-  //     ) {
-  //       // console.log("Using existing learning plan");
-
-  //       setSubjects(getResult.data.subject_wise_plan);
-  //       setStats(getResult.data.stats);
-  //       setActiveSubject(
-  //         (prev) => prev || getResult.data.subject_wise_plan[0].subject_name,
-  //       );
-  //       return;
-  //     }
-
-  //     // const generateResponse = await ApiServices.generateLearningPlan({
-  //     //   topic_ids: null,
-  //     // });
-  //     // console.log("Generate Plan Response:", generateResponse);
-  //     const newGetResponse = await ApiServices.getStudentLearningPlanner();
-
-  //     // console.log("New GET Response:", newGetResponse);
-
-  //     const newGetResult = newGetResponse.data;
-  //     // console.log("New GET Result Data:", newGetResult);
-
-  //     if (newGetResult.status === "success") {
-  //       setSubjects(newGetResult.data.subject_wise_plan);
-  //       setStats(newGetResult.data.stats);
-  //       setActiveSubject(
-  //         (prev) => prev || newGetResult.data.subject_wise_plan[0].subject_name,
-  //       );
-  //     }
-  //   } catch (error) {
-  //     // console.error("Learning Planner Error:", error);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   const fetchLearningPlan = async () => {
     try {
       const getResponse = await ApiServices.getStudentLearningPlanner();
       const getResult = getResponse.data;
 
-      if (
-        getResult.status === "success" &&
-        getResult.data.subject_wise_plan?.length > 0
-      ) {
-        setSubjects(getResult.data.subject_wise_plan);
+      if (getResult.status === "success" && getResult.data.subject_wise_plan?.length > 0) {
+        setSubjects(getResult.data.subject_wise_plan.map(patchSubjectPlan));
         setStats(getResult.data.stats);
-        setActiveSubject(
-          (prev) =>
-            prev || getResult.data.subject_wise_plan[0]?.subject_name || "",
-        );
         return;
       }
 
-      // learning plan generate
-      await ApiServices.generateLearningPlan({
-        topic_ids: null,
-      });
+      await ApiServices.generateLearningPlan({ topic_ids: null });
 
-      // generate success fetch again
       const newGetResponse = await ApiServices.getStudentLearningPlanner();
       const newGetResult = newGetResponse.data;
 
-      if (
-        newGetResult.status === "success" &&
-        newGetResult.data.subject_wise_plan?.length > 0
-      ) {
-        setSubjects(newGetResult.data.subject_wise_plan);
+      if (newGetResult.status === "success" && newGetResult.data.subject_wise_plan?.length > 0) {
+        setSubjects(newGetResult.data.subject_wise_plan.map(patchSubjectPlan));
         setStats(newGetResult.data.stats);
-        setActiveSubject(
-          (prev) =>
-            prev || newGetResult.data.subject_wise_plan[0]?.subject_name || "",
-        );
       }
-    } catch (error) {
-      // console.error("Learning Planner Error:", error);
+    } catch {
+      // silent
     } finally {
       setIsLoading(false);
     }
   };
+
   const fetchProfileImage = async () => {
     try {
       const response = await ApiServices.getUserProfileImage();
-
-      if (response.data?.status === "success" && response.data?.data?.image) {
-        setProfileImage(response.data.data.image); // base64 image
-      }
-    } catch (error) {
-      // console.error("Failed to fetch profile image", error);
-    }
+      if (response.data?.status === "success" && response.data?.data?.image)
+        setProfileImage(response.data.data.image);
+    } catch { /* silent */ }
   };
 
   useEffect(() => {
@@ -259,169 +544,44 @@ const LearningPlanner: React.FC = () => {
     fetchProfileImage();
   }, []);
 
-  const updateTopic = async (
-    chapterId: number,
-    topicId: number,
-    isCompleted: boolean,
-  ) => {
-    const payload = [
-      {
-        chapter_id: chapterId,
-        topic_id: topicId,
-        status: isCompleted ? "Pending" : "Completed",
-      },
-    ];
-
-    try {
-      await ApiServices.updateTopicStatus(payload);
-
-      //  Fetch updated data from backend
-      await fetchLearningPlan();
-
-      // Update UI locally after success
-      setSubjects((prev) =>
-        prev.map((sub) => ({
-          ...sub,
-          chapters: sub.chapters.map((ch) =>
-            ch.chapter_id === chapterId
-              ? {
-                  ...ch,
-                  topics: ch.topics.map((t) =>
-                    t.topic_id === topicId
-                      ? { ...t, is_completed: !isCompleted }
-                      : t,
-                  ),
-                }
-              : ch,
-          ),
-        })),
-      );
-    } catch (err) {
-      // console.error("Update topic failed", err);
-    }
-  };
-
-  // const updatePriority = async (
-  //   chapterId: number,
-  //   currentPriority: "High" | "Medium" | "Low",
-  // ) => {
-  //   const nextPriority = getNextPriority(currentPriority);
-
-  //   const payload = {
-  //     chapter_id: chapterId,
-  //     priority: nextPriority,
-  //   };
-
-  //   try {
-  //     //  API call
-  //     await ApiServices.updateChapterPriority(payload);
-
-  //     //  Update UI after success
-  //     setSubjects((prev) =>
-  //       prev.map((sub) => ({
-  //         ...sub,
-  //         chapters: sub.chapters.map((ch) =>
-  //           ch.chapter_id === chapterId
-  //             ? { ...ch, priority: nextPriority }
-  //             : ch,
-  //         ),
-  //       })),
-  //     );
-  //   } catch (error) {
-  //     console.error("Priority update failed", error);
-  //   }
-  // };
-
-  // const getPriorityClasses = (priority: string) => {
-  //   switch (priority.toLowerCase()) {
-  //     case "high":
-  //       return "bg-red-500 text-white";
-  //     case "medium":
-  //       return "bg-[#EF7F1A] text-white";
-  //     case "low":
-  //       return "bg-[#FFED00] text-primary";
-  //     default:
-  //       return "bg-gray-200 text-gray-700";
-  //   }
-  // };
-
-  const getProgressColor = (progress: number) => {
-    if (progress >= 80) return "bg-green-500";
-    if (progress >= 50) return "bg-yellow-400";
-    if (progress >= 30) return "bg-orange-500";
-    return "bg-red-500";
-  };
-
-  // const getNextPriority = (
-  //   current: "High" | "Medium" | "Low",
-  // ): "High" | "Medium" | "Low" => {
-  //   if (current === "High") return "Medium";
-  //   if (current === "Medium") return "Low";
-  //   return "High";
-  // };
-
-  // Get first letter of name for avatar fallback
-  const getInitial = () => {
-    return stats?.student_name?.charAt(0).toUpperCase();
-  };
+  const getInitial = () => stats?.student_name?.charAt(0).toUpperCase();
 
   return (
     <div className="min-h-screen p-6 relative">
+      {/* ── Loading overlay ─────────────────────────────────────────── */}
       {isLoading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-10 h-10 border-4 border-gray-200 border-t-[#BADA55] rounded-full animate-spin"></div>
-            <span className="text-sm text-gray-500 font-medium">
-              Loading learning planner...
+            <div className="w-12 h-12 border-4 border-gray-100 border-t-[#BADA55] rounded-full animate-spin" />
+            <span className="text-sm text-gray-400 font-medium tracking-wide">
+              Loading your planner…
             </span>
           </div>
         </div>
       )}
-      {/* Header Section */}
+
+      {/* ── Header ──────────────────────────────────────────────────── */}
       <header className="flex flex-wrap justify-between items-start gap-6 pb-6">
         <div className="flex gap-4 items-start">
-          {/* Avatar */}
-          <div className="w-[90px] h-[90px] rounded-full overflow-hidden flex-shrink-0 border-3 border-gray-200 flex items-center justify-center bg-gray-100">
+          <div className="w-[90px] h-[90px] rounded-full overflow-hidden flex-shrink-0 border-4 border-[#BADA55]/40 shadow-lg flex items-center justify-center bg-gray-100">
             {profileImage ? (
-              <img
-                src={profileImage}
-                alt="Profile"
-                className="w-full h-full object-cover"
-                onError={() => setProfileImage("")}
-              />
+              <img src={profileImage} alt="Profile" className="w-full h-full object-cover" onError={() => setProfileImage("")} />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#BADA55] to-lime-500 text-white">
                 <span className="text-4xl font-bold">{getInitial()}</span>
               </div>
             )}
           </div>
-
-          {/* Profile Info */}
-
           {stats && (
-            <div className="flex flex-col gap-0.5 ">
-              <span className="text-2xl text-[#ABB3BC] font-bold tracking-wide">
-                Learning Planner
-              </span>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-2xl text-[#ABB3BC] font-bold tracking-wide">Learning Planner</span>
               <h1 className="text-3xl font-bold text-primary m-0">
-                Hi{" "}
-                {stats.student_name
-                  ? stats.student_name
-                      .split(" ")
-                      .map(
-                        (word: string) =>
-                          word.charAt(0).toUpperCase() + word.slice(1),
-                      )
-                      .join(" ")
-                  : ""}{" "}
-                !
+                Hi {stats.student_name
+                  ? stats.student_name.split(" ").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+                  : ""}!
               </h1>
-              <p className="text-sm text-primary font-medium m-0">
-                {stats.institute_name}
-              </p>
-              <p className="text-sm text-primary m-0">
-                {stats.board_name} | {stats.class_name}
-              </p>
+              <p className="text-sm text-primary font-medium m-0">{stats.institute_name}</p>
+              <p className="text-sm text-primary m-0">{stats.board_name} | {stats.class_name}</p>
               <p className="text-sm text-primary m-0 break-words max-w-xl">
                 Subject: {stats.subject_names?.join(", ")}
               </p>
@@ -429,396 +589,65 @@ const LearningPlanner: React.FC = () => {
           )}
         </div>
 
-        {/* Stats Badges */}
+        {/* Stats */}
         <div className="flex flex-wrap items-center gap-10">
           {stats && (
             <div className="flex items-center gap-4">
-              <div className="w-[6rem] h-[6rem] rounded-full bg-yellow flex items-center justify-center">
-                <span className="text-4xl font-bold text-red">
-                  {stats.days_left}
-                </span>
+              <div className="w-[6rem] h-[6rem] rounded-full bg-yellow flex items-center justify-center shadow-inner">
+                <span className="text-4xl font-bold text-red">{stats.days_left}</span>
               </div>
-
               <div className="leading-snug">
-                <p className="text-xs font-bold mt-7 text-primary">
-                  Days Left for
-                  <br />
-                  Annual
-                  <br />
-                  Exam
-                </p>
-                <br />
-                <strong>{stats.examName}</strong>
+                <p className="text-xs font-bold mt-7 text-primary">Days Left for<br />Annual<br />Exam</p>
+                <br /><strong>{stats.examName}</strong>
               </div>
             </div>
           )}
           {stats && (
             <>
-              {/* Chapters Assigned */}
-              <div className="text-center">
-                <div className="w-[4.688rem] h-[4.688rem] rounded-full bg-yellow flex items-center justify-center mx-auto mb-1">
-                  <span className="text-lg font-bold text-red">
-                    {stats.chapters_assigned}
-                  </span>
+              {[
+                { value: stats.chapters_assigned, label: "Chapters Assigned" },
+                { value: stats.completed_count, label: "Completed" },
+                { value: stats.pending_count, label: "Pending" },
+              ].map(({ value, label }) => (
+                <div key={label} className="text-center">
+                  <div className="w-[4.688rem] h-[4.688rem] rounded-full bg-yellow flex items-center justify-center mx-auto mb-1 shadow-inner">
+                    <span className="text-lg font-bold text-red">{value}</span>
+                  </div>
+                  <p className="text-xs font-medium text-primary">{label}</p>
                 </div>
-                <p className="text-xs font-medium text-primary">
-                  Chapters Assigned
-                </p>
-              </div>
-
-              {/* Completed */}
-              <div className="text-center">
-                <div className="w-[4.688rem] h-[4.688rem] rounded-full bg-yellow flex items-center justify-center mx-auto mb-1">
-                  <span className="text-lg font-bold text-red">
-                    {stats.completed_count}
-                  </span>
-                </div>
-                <p className="text-xs font-medium text-primary">Completed</p>
-              </div>
-
-              {/* Pending */}
-              <div className="text-center">
-                <div className="w-[4.688rem] h-[4.688rem] rounded-full bg-yellow flex items-center justify-center mx-auto mb-1">
-                  <span className="text-lg font-bold text-red">
-                    {stats.pending_count}
-                  </span>
-                </div>
-                <p className="text-xs font-medium text-primary">Pending</p>
-              </div>
+              ))}
             </>
           )}
         </div>
       </header>
-      <div className="flex flex-wrap gap-3 items-center justify-center mb-6">
-        {subjects.map((subject) => (
-          <button
-            key={subject.subject_name}
-            onClick={() => setActiveSubject(subject.subject_name)}
-            className={`px-6 py-2.5 rounded-full text-sm font-medium cursor-pointer transition-all duration-300 border-none
-      ${
-        activeSubject === subject.subject_name
-          ? "bg-button-primary text-primary font-semibold"
-          : "bg-primary text-white font-semibold"
-      }`}
-          >
-            {subject.subject_name}
-          </button>
-        ))}
 
-        {/* <div className="ml-auto cursor-pointer p-2">
-          <img src="/vec.svg" alt="Filter" />
-        </div> */}
-      </div>
-      <div className="overflow-x-auto mb-6 border-t-4 border-gray-300 ">
-        <table className="w-full border-collapse text-sm">
-          <thead className="border-b-2 border-gray-300">
-            <tr>
-              <th className="text-left py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Sl No.
-              </th>
-              <th className="text-left py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Chapter Name
-              </th>
-              <th className="text-left py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Core Topics
-              </th>
-              {/* <th className="text-left py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Priority
-              </th> */}
-              <th className="text-left py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Start-End Date
-              </th>
-              <th className="text-left py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Progress %
-              </th>
-              <th className="text-left py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Materials
-              </th>
-              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Practice
-              </th>
-              <th className="text-left py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Ask AI
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {subjects
-              .filter((sub) => sub.subject_name === activeSubject)
-              .flatMap((sub) => sub.chapters)
-              .map((chapter, index) => (
-                <React.Fragment key={chapter.chapter_id}>
-                  <tr className="border-b border-gray-200 hover:bg-gray-50">
-                    <td className="py-3 px-2 text-primary font-medium">
-                      <button
-                        onClick={() =>
-                          toggleChapterAccordion(chapter.chapter_id)
-                        }
-                        className="flex items-center gap-1 cursor-pointer hover:bg-gray-100 p-1 rounded transition-colors"
-                        title="Expand/Collapse"
-                      >
-                        <span
-                          className="material-symbols-outlined text-base"
-                          style={{
-                            transform: expandedChapters.has(chapter.chapter_id)
-                              ? "rotate(90deg)"
-                              : "rotate(0deg)",
-                            transition: "transform 0.2s",
-                          }}
-                        >
-                          arrow_forward_ios
-                        </span>
-                        <span>{index + 1}</span>
-                      </button>
-                    </td>
+      {/* ── Divider ─────────────────────────────────────────────────── */}
+      <div className="border-t-4 border-gray-300 mb-6" />
 
-                    <td className="py-3 px-2 font-bold text-primary">
-                      {chapter.chapter_name}
-                    </td>
-                    <td className="py-3 px-2 text-xs">
-                      {expandedChapters.has(chapter.chapter_id)
-                        ? `${chapter.topics.length} topics`
-                        : chapter.topics
-                            .slice(0, 2)
-                            .map((t) => t.topic_name)
-                            .join(", ")}
-                      {!expandedChapters.has(chapter.chapter_id) &&
-                        chapter.topics.length > 2 &&
-                        "..."}
-                    </td>
-                    {/* <td className="py-3 px-2">
-                      <span
-                        onClick={() =>
-                          updatePriority(chapter.chapter_id, chapter.priority)
-                        }
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold cursor-pointer select-none transition-opacity hover:opacity-80 ${getPriorityClasses(
-                          chapter.priority,
-                        )}`}
-                        title="Click to change priority"
-                      >
-                        {chapter.priority}
-                      </span>
-                    </td> */}
-                    <td className="py-3 px-2 text-xs">
-                      <div className="flex justify-center items-center gap-2 w-full">
-                        {chapter.start_end_date}
-                      </div>
-                    </td>
-                    <td className="py-3 px-2">
-                      <div className="flex items-center gap-2 relative group/progress">
-                        <div className="w-20 h-2 bg-gray-200 rounded overflow-hidden cursor-pointer">
-                          <div
-                            className={`h-full ${getProgressColor(
-                              chapter.progress_percentage,
-                            )}`}
-                            style={{
-                              width: `${chapter.progress_percentage}%`,
-                            }}
-                          />
-                        </div>
-                        <span className="text-xs text-gray-500">
-                          {chapter.progress_percentage}%
-                        </span>
-                        {/* Tooltip on hover */}
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-[#1B3156] text-white text-xs rounded-lg shadow-lg whitespace-nowrap opacity-0 invisible group-hover/progress:opacity-100 group-hover/progress:visible transition-all duration-200 pointer-events-none z-10">
-                          {chapter.remaining_hours} hrs left
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#1B3156]"></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-2">
-                      <div className="flex justify-center items-center gap-2 w-full">
-                        <img
-                          src="/viewmat2.svg"
-                          alt="View Materials"
-                          className="w-5 h-5 cursor-pointer hover:opacity-80 transition-opacity"
-                          title="View Materials"
-                          onClick={() =>
-                            navigateToStudentMaterials(
-                              navigate,
-                              stats,
-                              subjects,
-                              chapter.chapter_id,
-                            )
-                          }
-                        />
-                      </div>
-                    </td>
-                    <td className="py-3 px-2">
-                      <div className="flex justify-center items-center gap-2 w-full">
-                        <span
-                          onClick={() =>
-                            navigateToTests(
-                              navigate,
-                              stats,
-                              subjects,
-                              chapter.chapter_id,
-                              activeSubject,
-                            )
-                          }
-                          className={`inline-block px-3 py-1 rounded-full text-xs font-semibold cursor-pointer select-none transition-opacity hover:opacity-80 ${
-                            chapter.status === "Completed"
-                              ? "bg-green-500 text-white"
-                              : "bg-green-500 text-white"
-                          }`}
-                          title="Click to take tests"
-                        >
-                          {chapter.status === "Completed"
-                            ? "Completed"
-                            : "Tests"}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-2 text-center">
-                      <div className="flex justify-center items-center gap-2 w-full">
-                        <img src="/emoji.svg" alt="Ask AI" />
-                      </div>
-                    </td>
-                  </tr>
-
-                  {/* Expandable Row */}
-                  {expandedChapters.has(chapter.chapter_id) && (
-                    <tr className="border-b-2 border-gray-300">
-                      <td colSpan={9} className="py-4 px-6">
-                        <div className="space-y-3">
-                          <h4 className="font-semibold text-primary mb-3">
-                            Topics in {chapter.chapter_name}
-                          </h4>
-                          <div className="flex flex-wrap gap-2">
-                            {chapter.topics.map((topic) => (
-                              <div
-                                key={topic.topic_id}
-                                onClick={() =>
-                                  updateTopic(
-                                    chapter.chapter_id,
-                                    topic.topic_id,
-                                    topic.is_completed,
-                                  )
-                                }
-                                className="flex items-center gap-2 cursor-pointer"
-                              >
-                                {topic.is_completed ? (
-                                  <span className="w-5 h-5 rounded-full border-2 border-green-500 bg-green-500 flex items-center justify-center text-white text-xs flex-shrink-0">
-                                    ✓
-                                  </span>
-                                ) : (
-                                  <span className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
-                                )}
-                                <div className="flex-1">
-                                  <p
-                                    className={`text-sm font-medium ${
-                                      topic.is_completed
-                                        ? "line-through text-gray-400"
-                                        : "text-primary"
-                                    }`}
-                                  >
-                                    {topic.topic_name}
-                                  </p>
-                                  {/* <p className="text-xs text-gray-500">
-                                    Status: {topic.status}
-                                  </p> */}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Chapter Summary */}
-                          {/* <div className="mt-4 p-3 bg-white rounded-lg border border-gray-200">
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                              <div>
-                                <p className="text-xs text-gray-600 font-medium">
-                                  Total Topics
-                                </p>
-                                <p className="text-lg font-bold text-primary">
-                                  {chapter.topics.length}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-xs text-gray-600 font-medium">
-                                  Completed
-                                </p>
-                                <p className="text-lg font-bold text-green-600">
-                                  {
-                                    chapter.topics.filter(
-                                      (t) => t.is_completed,
-                                    ).length
-                                  }
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-xs text-gray-600 font-medium">
-                                  Estimated Hours
-                                </p>
-                                <p className="text-lg font-bold text-blue-600">
-                                  {chapter.estimated_hours}h
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-xs text-gray-600 font-medium">
-                                  Remaining Hours
-                                </p>
-                                <p className="text-lg font-bold text-red-600">
-                                  {chapter.remaining_hours}h
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-xs text-gray-600 font-medium">
-                                  Days to Complete
-                                </p>
-                                <p className="text-lg font-bold text-orange-600">
-                                  {chapter.target_completion_days}
-                                </p>
-                              </div>
-                            </div>
-                          </div> */}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="grid grid-cols-1 text-[#AFAFAF] md:grid-cols-2 gap-20 p-6 bg-white rounded-lg mb-6 ml-auto w-fit">
-        <div>
-          <h4 className="text-sm font-bold mb-3">Primary Actions</h4>
-          <p className="text-xs my-1 leading-relaxed">
-            <strong className="">Study →</strong> Opens Vidya Kosh (videos +
-            notes)
-          </p>
-          <p className="text-xs my-1 leading-relaxed">
-            <strong className="">Practice →</strong> Chapter-wise tests &
-            numericals
-          </p>
-          <p className="text-xs  my-1 leading-relaxed">
-            <strong className="">Test →</strong> Timed ICSE-style assessment
-          </p>
+      {/* ── Subject Sections (stacked) ───────────────────────────────── */}
+      {subjects.length > 0 ? (
+        <div className="flex flex-col gap-6">
+          {subjects.map((subject, idx) => (
+            <SubjectSection
+              key={subject.subject_id}
+              subject={subject}
+              accentColor={SUBJECT_COLORS[idx % SUBJECT_COLORS.length]}
+            />
+          ))}
         </div>
-        <div>
-          <h4 className="text-sm font-bold text-[#AFAFAF] mb-3">
-            Secondary Actions
-          </h4>
-          <p className="text-xs my-1 leading-relaxed">
-            <strong className="">Revise →</strong> Opens Vidya Kosh (videos +
-            notes)
-          </p>
-          <p className="text-xs my-1 leading-relaxed">
-            <strong className="">Ask AI →</strong> Chapter-wise tests &
-            numericals
-          </p>
-          <p className="text-xs my-1 leading-relaxed">
-            <strong className="">Plan →</strong> Timed ICSE-style assessment
-          </p>
-        </div>
-      </div>
+      ) : (
+        !isLoading && (
+          <div className="flex flex-col items-center justify-center py-24 text-center text-gray-300">
+            <span className="material-symbols-outlined text-7xl mb-4">school</span>
+            <p className="text-base font-semibold text-gray-400">No learning plan found</p>
+            <p className="text-sm text-gray-300 mt-1">Your plan will appear here once generated</p>
+          </div>
+        )
+      )}
 
+      {/* ── Chat ────────────────────────────────────────────────────── */}
       <div className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100]">
-        <button
-          onClick={() => setIsChatOpen(true)}
-          aria-label="Open chat"
-          className="p-0 bg-transparent border-0 cursor-pointer"
-        >
+        <button onClick={() => setIsChatOpen(true)} aria-label="Open chat" className="p-0 bg-transparent border-0 cursor-pointer">
           <img src={IconChat} alt="Chat" className="w-[95px]" />
         </button>
       </div>
