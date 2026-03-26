@@ -54,13 +54,16 @@ const resolveRole = (roleName?: string) => {
   switch (normalized) {
     case "student":
     case "teacher":
-    case "institute_admin":
-    case "institute admin":
+    case "principal":
     case "admin":
     case "parent":
+      return normalized as any;
+    case "institute_admin":
+    case "institute admin":
+      return "institute-admin" as any;
     case "private_tutor":
     case "private tutor":
-      return normalized as any;
+      return "private-tutor" as any;
     default:
       return "student" as any;
   }
@@ -668,7 +671,14 @@ const StudentProfile: React.FC = () => {
 
         localStorage.setItem("active_profile", JSON.stringify(profile));
         
-        // Reload to refresh all contexts and data fully
+        let profileRoute = "/profile";
+        if (activeRole.toLowerCase().includes("institute")) {
+          profileRoute = "/institute-admin/profile";
+        } else if (activeRole.toLowerCase().includes("tutor")) {
+          profileRoute = "/private-tutor/profile";
+        }
+
+        navigate(profileRoute);
         window.location.reload();
       }
     } catch (error) {
@@ -894,7 +904,7 @@ const StudentProfile: React.FC = () => {
   }
 
   return (
-    <form onSubmit={formik.handleSubmit} className=" space-y-4">
+    <form onSubmit={formik.handleSubmit} className="space-y-4">
       {/* ── Profile Switcher (Manage Profile) ── */}
       {/* This section should always be present, showing loading, content, or empty state */}
       {/* Removed the conditional rendering of the outer div to ensure it's always there */}
@@ -1096,7 +1106,7 @@ const StudentProfile: React.FC = () => {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
                 activeTabState === tab.id
-                  ? "bg-[#b0cb1f] text-white shadow-md shadow-[#b0cb1f]/20"
+                  ? "bg-button-primary text-white shadow-sm border border-gray-100"
                   : "text-gray-500 hover:bg-gray-50"
               }`}
             >

@@ -1,5 +1,5 @@
 // Role Types
-export type Role = 'student' | 'teacher' | 'principal' | 'admin' | 'parent';
+export type Role = 'student' | 'teacher' | 'principal' | 'admin' | 'parent' | 'institute-admin' | 'private-tutor';
 
 export interface RoleConfig {
     id: Role;
@@ -45,6 +45,20 @@ export const ROLES: Record<Role, RoleConfig> = {
         color: 'bg-yellow-500',
         icon: '👨‍👩‍👧',
         basePath: '/parent',
+    },
+    'institute-admin': {
+        id: 'institute-admin',
+        label: 'Institute Admin',
+        color: 'bg-indigo-500',
+        icon: '🏢',
+        basePath: '/institute-admin',
+    },
+    'private-tutor': {
+        id: 'private-tutor',
+        label: 'Private Tutor',
+        color: 'bg-orange-500',
+        icon: '🏼‍🏫',
+        basePath: '/private-tutor',
     },
 };
 

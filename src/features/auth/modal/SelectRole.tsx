@@ -20,6 +20,12 @@ const resolveRoleFromBackend = (roleName?: string): GlobalRole => {
     case "admin":
     case "parent":
       return normalized as GlobalRole;
+    case "institute_admin":
+    case "institute admin":
+      return "institute-admin";
+    case "private_tutor":
+    case "private tutor":
+      return "private-tutor";
     default:
       return DEFAULT_ROLE;
   }
@@ -760,6 +766,8 @@ const role_name_map: Record<string, string> = {
   Student: "Student",
   Teacher: "Teacher",
   Parent: "Parent",
+  "Institute Admin": "Institute Admin",
+  "Private Tutor": "Private Tutor",
   "Super Admin": "Super Admin",
 };
 

@@ -19,13 +19,16 @@ const resolveRole = (roleName?: string) => {
   switch (normalized) {
     case "student":
     case "teacher":
-    case "institute_admin":
-    case "institute admin":
+    case "principal":
     case "admin":
     case "parent":
+      return normalized as any;
+    case "institute_admin":
+    case "institute admin":
+      return "institute-admin" as any;
     case "private_tutor":
     case "private tutor":
-      return normalized as any;
+      return "private-tutor" as any;
     default:
       return "student" as any;
   }
