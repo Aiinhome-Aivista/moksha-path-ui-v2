@@ -15,6 +15,7 @@ interface UserProfile {
   plan_name: string | null;
   subscription_status: string | null;
   subscription_name: string | null;
+  subscription_id: number | null;
   is_default: number;
 }
 
@@ -86,11 +87,28 @@ export const RoleSwitchModal: React.FC<Props> = ({ isOpen, onClose }) => {
         // optional: store selected profile locally
         localStorage.setItem("active_profile", JSON.stringify(profile));
 
-        // Navigate based on role
         const role = res.data.data?.active_profile?.role?.toLowerCase();
-        // console.log("Role after switch:", role);
+        const subId = res.data.data?.subscription_id || res.data.data?.active_profile?.subscription_id || profile.subscription_id;
 
-        if (role === "student") {
+        if (!subId) {
+          let profileRoute = "/profile";
+          if (role.includes("institute")) {
+            profileRoute = "/institute-admin/profile";
+          } else if (role.includes("tutor")) {
+            profileRoute = "/private-tutor/profile";
+          }
+
+          navigate(profileRoute, {
+            replace: true,
+            state: {
+              preselectedAcademicDetails: {
+                board_id: (profile as any).board_id || "",
+                class_id: (profile as any).class_id || "",
+                institute_id: (profile as any).institute_id || "",
+              },
+            },
+          });
+        } else if (role === "student") {
           navigate("/learning-planner");
         } else if (role === "teacher") {
           navigate("/teacher/teacherlearning-planner");

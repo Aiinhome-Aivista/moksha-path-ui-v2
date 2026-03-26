@@ -86,7 +86,7 @@ const StudentMaterials = () => {
   //   "Hindi Sahitya",
   // ];
 
-  const resourceTypes = ["Videos", "Practice", "Tests", "Notes"];
+  const resourceTypes = ["Videos", "Notes"];
   const [subjectWisePlan, setSubjectWisePlan] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
   // const [isPageLoading, setIsPageLoading] = useState(true);
