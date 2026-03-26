@@ -101,7 +101,7 @@ const demoChaptersData = [
     progress: 90,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
   },
   {
     id: 2,
@@ -111,7 +111,7 @@ const demoChaptersData = [
     progress: 85,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
   },
   {
     id: 3,
@@ -121,7 +121,7 @@ const demoChaptersData = [
     progress: 58,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
   },
   {
     id: 4,
@@ -131,7 +131,7 @@ const demoChaptersData = [
     progress: 74,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
   },
   {
     id: 5,
@@ -141,7 +141,7 @@ const demoChaptersData = [
     progress: 45,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
   },
 ];
 
@@ -159,6 +159,14 @@ const TeacherLearningPlanner: React.FC = () => {
     id: number;
     field: "testMaterial" | "practiceMaterial";
   } | null>(null);
+
+  const [namingModal, setNamingModal] = useState<{
+    id: number;
+    field: "testMaterial" | "practiceMaterial";
+    file?: File;
+    isLink?: boolean;
+  } | null>(null);
+  const [namingValue, setNamingValue] = useState("");
 
   const [expandedChapters, setExpandedChapters] = useState<Set<number>>(
     new Set(),
@@ -178,50 +186,49 @@ const TeacherLearningPlanner: React.FC = () => {
     field: "testMaterial" | "practiceMaterial",
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      const newMaterials = Array.from(files).map((f) => {
-        const customName = window.prompt(`Enter a name for the file: ${f.name}`, f.name);
-        return {
-          name: customName?.trim() || f.name,
-          type: (f.name.endsWith(".xls") ||
-          f.name.endsWith(".xlsx") ||
-          f.type === "application/vnd.ms-excel" ||
-          f.type ===
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            ? "excel"
-            : "pdf") as "pdf" | "excel",
-        };
-      });
-
-      e.target.value = ""; // Clear input to allow re-uploading the same file if needed
-      setDemoChapters((prev) =>
-        prev.map((row) =>
-          row.id === id
-            ? {
-                ...row,
-                [field]: [...(row[field] as any[]), ...newMaterials],
-              }
-            : row,
-        ),
-      );
+    const file = e.target.files?.[0];
+    if (file) {
+      setNamingModal({ id, field, file });
+      setNamingValue(file.name);
     }
+    e.target.value = "";
   };
 
-  const handleLinkUpload = (id: number, field: "testMaterial" | "practiceMaterial") => {
-    const url = window.prompt("Enter link URL (e.g. YouTube or Article):");
-    if (url && url.trim()) {
-      setDemoChapters((prev) =>
-        prev.map((row) =>
-          row.id === id
-            ? {
-                ...row,
-                [field]: [...(row[field] as any[]), { name: url, type: "link" }],
-              }
-            : row,
-        ),
-      );
-    }
+  const handleLinkUpload = (
+    id: number,
+    field: "testMaterial" | "practiceMaterial",
+  ) => {
+    setNamingModal({ id, field, isLink: true });
+    setNamingValue("");
+  };
+
+  const confirmNaming = () => {
+    if (!namingModal) return;
+    const { id, field, file } = namingModal;
+    const finalName = namingValue.trim() || (file ? file.name : "Link");
+
+    const type = file
+      ? file.name.endsWith(".xls") ||
+        file.name.endsWith(".xlsx") ||
+        file.type === "application/vnd.ms-excel" ||
+        file.type ===
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ? "excel"
+        : "pdf"
+      : "link";
+
+    setDemoChapters((prev) =>
+      prev.map((row) =>
+        row.id === id
+          ? {
+              ...row,
+              [field]: [...(row[field] as any[]), { name: finalName, type }],
+            }
+          : row,
+      ),
+    );
+    setNamingModal(null);
+    setNamingValue("");
   };
 
   const today = new Date().toISOString().split("T")[0];
@@ -706,7 +713,7 @@ const TeacherLearningPlanner: React.FC = () => {
                 <td className="py-3 px-2 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <button
-                      onClick={() => setUploadModal({ id: row.id, field: "practiceMaterial" })}
+                      onClick={() => document.getElementById(`file-prac-${row.id}`)?.click()}
                       className="cursor-pointer flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-md transition-colors border-none"
                     >
                       <Upload size={12} />
@@ -807,6 +814,47 @@ const TeacherLearningPlanner: React.FC = () => {
               >
                 <Link size={20} />
                 <span>Add External Link</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Naming / Link Modal */}
+      {namingModal && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in duration-200">
+            <button
+              onClick={() => setNamingModal(null)}
+              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 bg-transparent hover:bg-gray-100 rounded-full transition-all z-10  border-none cursor-pointer"
+            >
+              <X size={20} />
+            </button>
+
+            <h3 className="text-xl font-bold text-primary mb-6 text-center">
+              {namingModal.isLink ? "Add Link" : "Rename File"}
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                  {namingModal.isLink ? "URL / Link" : "Display Name"}
+                </label>
+                <input
+                  type="text"
+                  value={namingValue}
+                  onChange={(e) => setNamingValue(e.target.value)}
+                  placeholder={namingModal.isLink ? "Enter link..." : "Enter name..."}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#BADA55] transition-all"
+                  autoFocus
+                />
+              </div>
+
+              <button
+                onClick={confirmNaming}
+                className="w-full py-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors border-none cursor-pointer"
+              >
+                {namingModal.isLink ? "Add Link" : "Confirm Upload"}
               </button>
             </div>
           </div>
