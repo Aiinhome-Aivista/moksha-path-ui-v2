@@ -101,7 +101,7 @@ const demoChaptersData = [
     progress: 90,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
   },
   {
     id: 2,
@@ -111,7 +111,7 @@ const demoChaptersData = [
     progress: 85,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
   },
   {
     id: 3,
@@ -121,7 +121,7 @@ const demoChaptersData = [
     progress: 58,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
   },
   {
     id: 4,
@@ -131,7 +131,7 @@ const demoChaptersData = [
     progress: 74,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
   },
   {
     id: 5,
@@ -141,7 +141,7 @@ const demoChaptersData = [
     progress: 45,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
   },
 ];
 
@@ -713,7 +713,7 @@ const TeacherLearningPlanner: React.FC = () => {
                 <td className="py-3 px-2 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <button
-                      onClick={() => setUploadModal({ id: row.id, field: "practiceMaterial" })}
+                      onClick={() => document.getElementById(`file-prac-${row.id}`)?.click()}
                       className="cursor-pointer flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-md transition-colors border-none"
                     >
                       <Upload size={12} />
@@ -823,10 +823,10 @@ const TeacherLearningPlanner: React.FC = () => {
       {/* Naming / Link Modal */}
       {namingModal && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in duration-200">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in duration-200">
             <button
               onClick={() => setNamingModal(null)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 border-none bg-transparent cursor-pointer transition-colors"
+              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 bg-transparent hover:bg-gray-100 rounded-full transition-all z-10  border-none cursor-pointer"
             >
               <X size={20} />
             </button>
@@ -852,7 +852,7 @@ const TeacherLearningPlanner: React.FC = () => {
 
               <button
                 onClick={confirmNaming}
-                className="w-full py-3 bg-primary text-white rounded-lg font-bold hover:bg-opacity-90 transition-colors border-none cursor-pointer"
+                className="w-full py-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors border-none cursor-pointer"
               >
                 {namingModal.isLink ? "Add Link" : "Confirm Upload"}
               </button>
