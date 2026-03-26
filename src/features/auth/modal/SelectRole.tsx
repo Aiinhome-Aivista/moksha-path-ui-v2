@@ -303,14 +303,16 @@ export const SelectRoleModal: React.FC = () => {
 
           const dashboardRoute = role === "teacher" ? teacherDashboard : studentDashboard;
 
-          //  Case 1: Teacher → always dashboard
-          if (role === "teacher") {
-            navigate(dashboardRoute, { replace: true });
-          }
+          //  Condition: No subscription → Profile
+          if (subId === null || subId === undefined) {
+            let profileRoute = "/profile";
+            if (role.includes("institute")) {
+              profileRoute = "/institute-admin/profile";
+            } else if (role.includes("tutor")) {
+              profileRoute = "/private-tutor/profile";
+            }
 
-          //  Case 2: No subscription (only for non-teacher)
-          else if (subId === null || subId === undefined) {
-            navigate("/profile", {
+            navigate(profileRoute, {
               replace: true,
               state: {
                 preselectedAcademicDetails: {
@@ -321,8 +323,7 @@ export const SelectRoleModal: React.FC = () => {
               },
             });
           }
-
-          //  Case 3: Subscription exists → role-based dashboard
+          //  Condition: Subscription exists → role-based dashboard
           else {
             navigate(dashboardRoute, { replace: true });
           }
@@ -345,10 +346,16 @@ export const SelectRoleModal: React.FC = () => {
           const isTeacherRole = roles.find((r) => r.role_id === selectedRoleId)?.role_name?.toLowerCase() === "teacher";
           const dashboardRoute = isTeacherRole ? teacherDashboard : studentDashboard;
 
-          if (isTeacherRole) {
-            navigate(dashboardRoute, { replace: true });
-          } else if (!subscriptionId) {
-            navigate("/profile", {
+          if (!subscriptionId) {
+            const roleName = roles.find((r) => r.role_id === selectedRoleId)?.role_name?.toLowerCase() || "";
+            let profileRoute = "/profile";
+            if (roleName.includes("institute")) {
+              profileRoute = "/institute-admin/profile";
+            } else if (roleName.includes("tutor")) {
+              profileRoute = "/private-tutor/profile";
+            }
+
+            navigate(profileRoute, {
               replace: true,
               state: {
                 preselectedAcademicDetails: {
