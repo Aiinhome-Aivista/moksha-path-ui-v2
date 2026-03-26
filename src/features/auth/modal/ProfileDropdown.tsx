@@ -42,7 +42,14 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClos
   }, [isOpen, onClose]);
 
   const handleManageAccount = () => {
-    navigate("/profile");
+    const role = user?.role?.toLowerCase();
+    let profileRoute = "/profile";
+    if (role?.includes("institute")) {
+      profileRoute = "/institute-admin/profile";
+    } else if (role?.includes("tutor")) {
+      profileRoute = "/private-tutor/profile";
+    }
+    navigate(profileRoute);
     onClose();
   };
 
