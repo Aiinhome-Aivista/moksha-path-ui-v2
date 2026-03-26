@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useFormik } from "formik";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../app/providers/AuthProvider";
 import { useModal } from "../../../features/auth/context/AuthContext";
 import ApiServices from "../../../services/ApiServices";
@@ -224,6 +225,15 @@ const EditButtons = ({
   </div>
 );
 
+const formatDateForTable = (dateString: string | null | undefined) => {
+  if (!dateString) return 'N/A';
+  try {
+    return new Date(dateString).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch (e) {
+    return 'Invalid Date';
+  }
+};
+
 
 const SubscriptionTab: React.FC<{ className?: string }> = ({ className }) => {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
@@ -264,17 +274,20 @@ const SubscriptionTab: React.FC<{ className?: string }> = ({ className }) => {
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
               <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Sl. No</th>
+              <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Subscription Name</th>
               <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Plan</th>
               <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Board</th>
               <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Class</th>
               <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Subjects</th>
               <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Year</th>
+              <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Validity</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {paginatedData.map((sub, index) => (
               <tr key={sub.subscription_id} className="hover:bg-lime-50/20 transition-colors">
                 <td className="px-6 py-4 text-xs font-medium text-gray-500">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</td>
+                <td className="px-6 py-4 text-xs font-bold text-gray-800">{sub.subscription_name || 'N/A'}</td>
                 <td className="px-6 py-4">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#b0cb1f]/10 text-[#6b7a0e] text-[11px] font-bold">
                     <CreditCard size={10} />
@@ -293,6 +306,9 @@ const SubscriptionTab: React.FC<{ className?: string }> = ({ className }) => {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-xs text-gray-600">{sub.year}</td>
+                <td className="px-6 py-4 text-xs text-gray-600 font-medium">
+                  {formatDateForTable(sub.plan_valid_from)} - {formatDateForTable(sub.plan_valid_to)}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -582,12 +598,24 @@ const StudentProfile: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [profileImage, setProfileImage] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<"basic" | "connections" | "subscriptions" | "transactions">("basic");
+  const [isPageLoading, setIsPageLoading] = useState(true);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [activeTabState, setActiveTabState] = useState<"basic" | "subscriptions" | "transactions">(() => {
+    const hash = location.hash.replace("#", "");
+    if (["basic", "subscriptions", "transactions"].includes(hash)) {
+      return hash as "basic" | "subscriptions" | "transactions";
+    }
+    return "basic";
+  });
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Profile Switcher State
-  const [profiles, setProfiles] = useState<any[]>([]);
-  const [isFetchingProfiles, setIsFetchingProfiles] = useState(false);
+  const [profiles, setProfiles] = useState<any[]>([]); // This will be populated
+  const [isFetchingProfiles, setIsFetchingProfiles] = useState(true); // Start as true to show loading
   const [switchingProfileId, setSwitchingProfileId] = useState<string | null>(null);
 
   //for academic info
@@ -598,101 +626,7 @@ const StudentProfile: React.FC = () => {
 
   // for active connections (Guardian/Student)
   const [activeConnections, setActiveConnections] = useState<any[]>([]);
-  const [loadingConnections, setLoadingConnections] = useState(false);
-  useEffect(() => {
-    const fetchProfileImage = async () => {
-      try {
-        const response = await ApiServices.getUserProfileImage();
-        if (response.data?.status === "success" && response.data?.data?.image) {
-          setProfileImage(response.data.data.image);
-        }
-      } catch {
-        // silently fail
-      }
-    };
-    fetchProfileImage();
-  }, []);
-
-
-  useEffect(() => {
-    const fetchAcademicInfo = async () => {
-      try {
-        const res = await ApiServices.getUserAcademicInfo();
-
-        if (res.data?.status === "success") {
-          setAcademicInfo(res.data.data);
-        }
-      } catch (error) {
-        console.error("Academic info fetch failed");
-      }
-    };
-
-    fetchAcademicInfo();
-  }, []);
-
-  useEffect(() => {
-    const fetchProfileInfo = async () => {
-      try {
-        const res = await ApiServices.getProfileInfo();
-
-        if (res.data?.status === "success") {
-          const data = res.data.data;
-
-          setProfileInfo(data);
-
-          // Fill form values
-          formik.setValues({
-            ...formik.values,
-            address: data.address || "",
-            dateOfBirth: data.dob || "",
-          });
-        }
-      } catch (error) {
-        console.error("Profile fetch failed");
-      }
-    };
-
-    fetchProfileInfo();
-  }, []);
-
-  useEffect(() => {
-    const fetchConnections = async () => {
-      try {
-        setLoadingConnections(true);
-        const res = await ApiServices.getActiveUserConnections();
-        if (res.data?.status === "success") {
-          const connections = res.data.data || [];
-          setActiveConnections(connections);
-
-          // removed formik prefilling since we're using ReadOnlyField mapping directly
-        }
-      } catch (error) {
-        console.error("Connections fetch failed", error);
-      } finally {
-        setLoadingConnections(false);
-      }
-    };
-
-    fetchConnections();
-  }, []);
-
-  // Fetch all linked profiles for switcher
-  useEffect(() => {
-    const fetchProfiles = async () => {
-      try {
-        setIsFetchingProfiles(true);
-        const res = await ApiServices.getUsersByTokenContact();
-        if (res.data?.status === "success") {
-          setProfiles(res.data.data || []);
-        }
-      } catch (error) {
-        console.error("Failed to fetch profiles", error);
-      } finally {
-        setIsFetchingProfiles(false);
-      }
-    };
-    fetchProfiles();
-  }, []);
+  const [, setLoadingConnections] = useState(true);
 
   const handleProfileSwitch = async (profile: any) => {
     const profileIdStr = profile.sub || String(profile.user_id) || profile.profile_id;
@@ -847,6 +781,19 @@ const StudentProfile: React.FC = () => {
     },
   });
 
+  // Separate effect to update formik once profileInfo is loaded
+  useEffect(() => {
+    if (profileInfo) {
+      formik.setValues(prev => ({
+        ...prev,
+        address: profileInfo.address || "",
+        dateOfBirth: profileInfo.dob || "",
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profileInfo]);
+
+
   const handleSave = () => formik.submitForm();
 
   const isTeacher = user?.role === "teacher";
@@ -866,18 +813,110 @@ const StudentProfile: React.FC = () => {
     if (section === 'basic') setIsEditingBasic(false);
     // if (section === 'guardian') setIsEditingGuardian(false);
   };
+  
+  const setActiveTab = (tabId: "basic" | "subscriptions" | "transactions") => {
+    setActiveTabState(tabId);
+    navigate(`#${tabId}`, { replace: true }); // Use replace to avoid cluttering history
+  };
+
+  useEffect(() => {
+    const fetchAllData = async () => {
+      try {
+        await Promise.all([
+          // Fetch Profile Image
+          (async () => {
+            try {
+              const response = await ApiServices.getUserProfileImage();
+              if (response.data?.status === "success" && response.data?.data?.image) {
+                setProfileImage(response.data.data.image);
+              }
+            } catch { /* silent */ }
+          })(),
+          // Fetch Academic Info
+          (async () => {
+            try {
+              const res = await ApiServices.getUserAcademicInfo();
+              if (res.data?.status === "success") {
+                setAcademicInfo(res.data.data);
+              }
+            } catch { /* silent */ }
+          })(),
+          // Fetch Profile Info
+          (async () => {
+            try {
+              const res = await ApiServices.getProfileInfo();
+              if (res.data?.status === "success") {
+                setProfileInfo(res.data.data);
+              }
+            } catch { /* silent */ }
+          })(),
+          // Fetch Connections
+          (async () => {
+            try {
+              const res = await ApiServices.getActiveUserConnections();
+              if (res.data?.status === "success") {
+                setActiveConnections(res.data.data || []);
+              }
+            } catch { /* silent */ }
+          })(),
+          // Fetch Linked Profiles
+          (async () => {
+            try {
+              const res = await ApiServices.getUsersByTokenContact();
+              if (res.data?.status === "success") {
+                setProfiles(res.data.data || []);
+              }
+            } catch { /* silent */ }
+          })(),
+        ]);
+      } catch (error) {
+        console.error("An error occurred while fetching profile data.", error);
+      } finally {
+        setIsPageLoading(false);
+        setIsFetchingProfiles(false);
+        setLoadingConnections(false);
+      }
+    };
+
+    fetchAllData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (isPageLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 border-4 border-gray-200 border-t-[#b0cb1f] rounded-full animate-spin" />
+          <p className="text-sm font-medium text-gray-500">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={formik.handleSubmit} className=" space-y-4">
       {/* ── Profile Switcher (Manage Profile) ── */}
-      {(profiles.length > 0 || isFetchingProfiles) && (
+      {/* This section should always be present, showing loading, content, or empty state */}
+      {/* Removed the conditional rendering of the outer div to ensure it's always there */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-bold text-primary">Manage Profiles</h3>
-            <div className="px-2 py-0.5 rounded-full bg-lime-50 text-[#6b7a0e] text-[9px] font-bold border border-lime-100 uppercase">
-              {profiles.length} Accounts Found
-            </div>
+            {isFetchingProfiles ? (
+              <div className="w-20 h-4 bg-gray-100 rounded-full animate-pulse" /> // Placeholder for count
+            ) : (
+              <div className="px-2 py-0.5 rounded-full bg-lime-50 text-[#6b7a0e] text-[9px] font-bold border border-lime-100 uppercase">
+                {profiles.length} Accounts Found
+              </div>
+            )}
           </div>
+
+          {isFetchingProfiles ? (
+            <div className="flex flex-col items-center justify-center py-6">
+              <div className="w-8 h-8 border-2 border-gray-200 border-t-[#b0cb1f] rounded-full animate-spin" />
+              <p className="text-xs text-gray-500 font-medium mt-3">Loading profiles...</p>
+            </div>
+          ) : profiles.length > 0 ? (
+            // Render profiles if not fetching and profiles exist
           <div className="flex flex-wrap items-start gap-x-8 gap-y-6 overflow-y-auto max-h-[130px] custom-scrollbar p-2">
             {profiles.map((p) => {
               const profileId = p.sub || String(p.user_id) || p.profile_id;
@@ -938,9 +977,15 @@ const StudentProfile: React.FC = () => {
               </div>
             </div>
           </div>
+          ) : (
+            // Empty state if no profiles after loading
+            <div className="flex flex-col items-center justify-center py-6 text-center text-gray-400">
+              <Users size={36} className="mb-2" />
+              <p className="text-sm font-medium">No linked profiles found.</p>
+              <p className="text-xs">Click "Add New" to link a profile.</p>
+            </div>
+          )}
         </div>
-      )}
-
       {/* ── Profile Hero Card (Banner only) ── */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="h-24 bg-gradient-to-r from-[#b0cb1f] to-lime-400 relative flex items-center px-6 gap-6">
@@ -1042,8 +1087,7 @@ const StudentProfile: React.FC = () => {
         <div className="flex items-center p-1.5 bg-white rounded-t-2xl border border-gray-100 shadow-sm overflow-x-auto no-scrollbar gap-1 relative z-10">
           {[
             { id: "basic", label: "Basic Info", icon: <Edit3 size={14} />, show: true },
-            { id: "connections", label: isParent ? "Child Info" : "Guardian Info", icon: <Users size={14} />, show: !isTeacher },
-            { id: "subscriptions", label: "My Plan", icon: <CreditCard size={14} />, show: true },
+            { id: "subscriptions", label: "My Subscriptions", icon: <CreditCard size={14} />, show: true },
             { id: "transactions", label: "Transaction History", icon: <Receipt size={14} />, show: true },
           ].filter(tab => tab.show).map((tab) => (
             <button
@@ -1051,7 +1095,7 @@ const StudentProfile: React.FC = () => {
               type="button"
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
-                activeTab === tab.id
+                activeTabState === tab.id
                   ? "bg-[#b0cb1f] text-white shadow-md shadow-[#b0cb1f]/20"
                   : "text-gray-500 hover:bg-gray-50"
               }`}
@@ -1064,7 +1108,7 @@ const StudentProfile: React.FC = () => {
 
         {/* ── Tab Content Container ── */}
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          {activeTab === "basic" && (
+          {activeTabState === "basic" && (
             <SectionCard
               className="rounded-t-none border-t-0"
               icon={<Mail size={16} className="text-primary" />}
@@ -1080,7 +1124,7 @@ const StudentProfile: React.FC = () => {
             }
           >
             <div className="p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5 ">
                 {user?.role === "student" && (
                   <FormField label="Date of Birth" name="dateOfBirth" value={formik.values.dateOfBirth} onChange={formik.handleChange} isEditing={isEditingBasic} />
                 )}
@@ -1088,55 +1132,35 @@ const StudentProfile: React.FC = () => {
                 <ReadOnlyField label="Mobile Number" value={profileInfo?.mobile || ""} icon={<Phone size={12} className="text-primary" />} />
                 <FormField label="Address" name="address" value={formik.values.address} onChange={formik.handleChange} isEditing={isEditingBasic} icon={<MapPin size={12} className="text-primary" />} />
               </div>
-            </div>
-          </SectionCard>
-        )}
 
-        {activeTab === "connections" && !isTeacher && (
-          <SectionCard className="rounded-t-none border-t-0" icon={<Users size={16} className="text-primary" />} title={secondSectionConfig.title}>
-            <div className="p-6 space-y-4">
-              {loadingConnections ? (
-                <LoadingState text="Loading connections..." />
-              ) : activeConnections.length === 0 ? (
-                <EmptyState icon={<Users size={48} className="opacity-10" />} title={`No Linked ${isParent ? "Student" : "Guardian"}`} description="No connection found for this profile." />
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {activeConnections.map((connection, index) => (
-                    <div key={connection.link_id || index} className="p-5 rounded-2xl bg-gray-50/50 border border-gray-100 relative group overflow-hidden">
-                      <div className="absolute top-0 right-0 w-24 h-24 -mt-8 -mr-8 rounded-full bg-[#b0cb1f]/5 group-hover:bg-[#b0cb1f]/10 transition-colors" />
-                      <div className="relative">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm border border-gray-100 text-[#b0cb1f] font-black">
-                            {index + 1}
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-black text-[#b0cb1f] uppercase tracking-widest">{isParent ? "CHILD" : "GUARDIAN"}</p>
-                            <h4 className="text-sm font-black text-primary">{connection.name}</h4>
-                          </div>
-                        </div>
-                        <div className="space-y-3">
-                          <ReadOnlyField label="Email" value={connection.email || "N/A"} icon={<Mail size={10} />} />
-                          <div className="grid grid-cols-2 gap-4">
-                            <ReadOnlyField label="Phone" value={connection.phone || "N/A"} icon={<Phone size={10} />} />
-                            {isParent ? (
-                              <ReadOnlyField label="Date of Birth" value={connection.dob || "N/A"} icon={<Lock size={10} />} />
-                            ) : (
-                              <ReadOnlyField label="Relation" value={connection.role || "N/A"} icon={<Lock size={10} />} />
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                  ))}
+              {!isTeacher && activeConnections.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-gray-100">
+                  <h4 className="text-xs font-bold text-primary uppercase tracking-wider mb-4">{secondSectionConfig.title}</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+                    <ReadOnlyField label={secondSectionConfig.labels.name} value={activeConnections[0].name || "N/A"} icon={<Users size={12} className="text-primary" />} />
+                    <ReadOnlyField label={secondSectionConfig.labels.email} value={activeConnections[0].email || "N/A"} icon={<Mail size={12} className="text-primary" />} />
+                    <ReadOnlyField label={secondSectionConfig.labels.phone} value={activeConnections[0].phone || "N/A"} icon={<Phone size={12} className="text-primary" />} />
+                    {!isParent && (
+                      <ReadOnlyField label="Relation" value={activeConnections[0].role || "N/A"} icon={<Users size={12} className="text-primary" />} />
+                    )}
+                  </div>
                 </div>
               )}
             </div>
           </SectionCard>
         )}
 
-          {activeTab === "subscriptions" && <SubscriptionTab className="rounded-t-none border-t-0" />}
-          {activeTab === "transactions" && <TransactionTab className="rounded-t-none border-t-0" />}
+        {activeTabState === "subscriptions" && (
+          <>
+            <SubscriptionTab className="rounded-t-none border-t-0" />
+            {/* ── Subscription Purchase Flow (Bottom) ── */}
+            <div className="mt-8 pt-8 border-t border-gray-100 shadow-sm bg-white rounded-2xl">
+              <h2 className="text-xl font-black text-primary mb-6 px-4">Add New Plan</h2>
+              <Subscription />
+            </div>
+          </>
+        )}
+        {activeTabState === "transactions" && <TransactionTab className="rounded-t-none border-t-0" />}
         </div>
       </div>
 
@@ -1148,11 +1172,6 @@ const StudentProfile: React.FC = () => {
         />
       )}
 
-      {/* ── Subscription Purchase Flow (Bottom) ── */}
-      <div className="mt-8 pt-8 border-t border-gray-100 shadow-sm bg-white rounded-2xl">
-        <h2 className="text-xl font-black text-primary mb-6 px-4">Add New Plan</h2>
-        <Subscription />
-      </div>
     </form>
   );
 };
