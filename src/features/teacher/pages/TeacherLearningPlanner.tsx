@@ -101,7 +101,7 @@ const demoChaptersData = [
     progress: 90,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[] ,
   },
   {
     id: 2,
@@ -111,7 +111,7 @@ const demoChaptersData = [
     progress: 85,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[] ,
   },
   {
     id: 3,
@@ -121,7 +121,7 @@ const demoChaptersData = [
     progress: 58,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[] ,
   },
   {
     id: 4,
@@ -131,7 +131,7 @@ const demoChaptersData = [
     progress: 74,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[] ,
   },
   {
     id: 5,
@@ -141,7 +141,7 @@ const demoChaptersData = [
     progress: 45,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[] ,
   },
 ];
 
@@ -782,7 +782,7 @@ const TeacherLearningPlanner: React.FC = () => {
       {/* Upload Selection Modal */}
       {uploadModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in duration-200">
             <button 
               onClick={() => setUploadModal(null)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 border-none bg-transparent cursor-pointer transition-colors"
