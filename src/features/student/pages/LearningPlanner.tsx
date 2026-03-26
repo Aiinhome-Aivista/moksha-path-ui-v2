@@ -160,8 +160,6 @@ const patchSubjectPlan = (sub: ApiSubjectPlan): ApiSubjectPlan => ({
     sub.weekly_plan && sub.weekly_plan.length > 0 ? sub.weekly_plan : generateWeeklyPlan(sub),
 });
 
-// ─── DayCard ─────────────────────────────────────────────────────────────────
-
 const DayCard: React.FC<{
   day: WeeklyPlanDay;
   isSelected: boolean;
@@ -176,43 +174,48 @@ const DayCard: React.FC<{
     <div
       onClick={onClick}
       className={`
-        relative min-w-[88px] flex-shrink-0 cursor-pointer rounded-2xl p-3 border-2
+        relative flex-1 min-w-[60px] cursor-pointer rounded-2xl py-3 px-2 border-2
+        flex flex-col items-center gap-1.5
         transition-all duration-200 select-none
         ${isSelected
-          ? "bg-gradient-to-b from-[#BADA55]/30 to-[#BADA55]/10 border-[#BADA55] shadow-lg shadow-[#BADA55]/20 scale-[1.06]"
+          ? "bg-gradient-to-b from-[#BADA55]/30 to-[#BADA55]/10 border-[#BADA55] shadow-lg shadow-[#BADA55]/20 scale-[1.04]"
           : isToday
             ? "bg-gradient-to-b from-white to-gray-50 border-primary shadow-md"
             : allDone
-              ? "bg-gradient-to-b from-green-50 to-white border-green-300"
+              ? "bg-green-50 border-green-200"
               : hasPending
-                ? "bg-gradient-to-b from-red-50 to-white border-red-300"
+                ? "bg-red-50 border-red-200"
                 : "bg-white border-gray-100 hover:border-[#BADA55]/50 hover:shadow-sm"
         }
       `}
     >
-      {isPast && (
-        <span className={`absolute top-2 right-2 w-2 h-2 rounded-full ${allDone ? "bg-green-500" : "bg-red-400"}`} />
-      )}
       {isToday && (
-        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-wider bg-primary text-white px-2 py-0.5 rounded-full whitespace-nowrap shadow">
+        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[8px] font-black uppercase tracking-wider bg-primary text-white px-2 py-0.5 rounded-full whitespace-nowrap shadow">
           Today
         </span>
       )}
-      <p className={`text-[10px] font-bold uppercase tracking-widest mb-0.5 mt-1 ${isSelected ? "text-[#6a9000]" : isToday ? "text-primary" : "text-gray-400"}`}>
+      <p className={`text-[9px] font-black uppercase tracking-widest mt-1 ${
+        isSelected ? "text-[#6a9000]" : isToday ? "text-primary" : "text-gray-400"
+      }`}>
         {day.day}
       </p>
-      <p className={`text-sm font-extrabold leading-tight ${isSelected ? "text-primary" : isToday ? "text-primary" : "text-gray-700"}`}>
+      <p className={`text-sm font-extrabold leading-none ${
+        isSelected || isToday ? "text-primary" : "text-gray-700"
+      }`}>
         {formatDate(day.date)}
       </p>
-      <div className="mt-3 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-700 ease-out ${progressBarColor(day.progress)}`}
-          style={{ width: `${day.progress}%` }}
-        />
-      </div>
-      <p className={`text-[10px] font-semibold mt-1 text-right ${allDone ? "text-green-600" : hasPending ? "text-red-500" : "text-gray-400"}`}>
-        {day.progress}%
-      </p>
+      {/* Status dot */}
+      <span className={`w-2 h-2 rounded-full mt-1 ${
+        isSelected
+          ? "bg-[#BADA55]"
+          : allDone
+            ? "bg-green-500"
+            : hasPending
+              ? "bg-red-400"
+              : isToday
+                ? "bg-primary"
+                : "bg-gray-200"
+      }`} />
     </div>
   );
 };
@@ -220,31 +223,20 @@ const DayCard: React.FC<{
 // ─── Task Row ─────────────────────────────────────────────────────────────────
 
 const TaskRow: React.FC<{ task: Task }> = ({ task }) => (
-  <div className="space-y-1">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-white ${task.type === "mock_test" ? "bg-primary" : "bg-[#BADA55]"}`}>
-          <span className="material-symbols-outlined" style={{ fontSize: 13 }}>
-            {task.type === "mock_test" ? "quiz" : "play_circle"}
-          </span>
-        </span>
-        <span className="text-xs font-semibold text-gray-700">
-          {task.type === "mock_test" ? "Mock Test" : "Tutorial"}
-        </span>
-        {task.status && (
-          <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full border ${statusPill(task.status)}`}>
-            {task.status.replace("_", " ")}
-          </span>
-        )}
-      </div>
-      <span className="text-xs font-bold text-gray-500">{task.progress}%</span>
-    </div>
-    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-      <div
-        className={`h-full rounded-full transition-all duration-700 ${progressBarColor(task.progress)}`}
-        style={{ width: `${task.progress}%` }}
-      />
-    </div>
+  <div className="flex items-center gap-2">
+    <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-white ${task.type === "mock_test" ? "bg-primary" : "bg-[#BADA55]"}`}>
+      <span className="material-symbols-outlined" style={{ fontSize: 13 }}>
+        {task.type === "mock_test" ? "quiz" : "play_circle"}
+      </span>
+    </span>
+    <span className="text-xs font-semibold text-gray-700">
+      {task.type === "mock_test" ? "Mock Test" : "Tutorial"}
+    </span>
+    {task.status && (
+      <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full border ${statusPill(task.status)}`}>
+        {task.status.replace("_", " ")}
+      </span>
+    )}
   </div>
 );
 
@@ -273,18 +265,6 @@ const ChapterAccordion: React.FC<{ chapter: ChapterDay; index: number }> = ({ ch
 
       <div className={`transition-all duration-300 ease-in-out overflow-hidden ${open ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"}`}>
         <div className="px-4 pb-4 pt-2 space-y-4 border-t border-gray-100">
-          {chapter.topics && chapter.topics.length > 0 && (
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Topics</p>
-              <div className="flex flex-wrap gap-1.5">
-                {chapter.topics.map((t) => (
-                  <span key={t.topic_id} className="text-[11px] bg-gradient-to-r from-[#BADA55]/20 to-[#BADA55]/10 text-[#5a7800] border border-[#BADA55]/30 px-2.5 py-1 rounded-full font-semibold">
-                    {t.topic_name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
           {chapter.tasks && chapter.tasks.length > 0 && (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Tasks</p>
@@ -313,49 +293,92 @@ const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }>
 
   const [selectedDate, setSelectedDate] = useState<string>(defaultDay?.date ?? "");
   const [selectedDayData, setSelectedDayData] = useState<WeeklyPlanDay | null>(defaultDay);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   const handleDayClick = (day: WeeklyPlanDay) => {
     setSelectedDate(day.date);
     setSelectedDayData(day);
   };
 
+  // ── Derived: Overall Mock Test progress
+  const overallMockTestProgress =
+    subject.chapters.length > 0
+      ? Math.round(
+          subject.chapters.reduce((sum, ch) => {
+            const mockProgress =
+              ch.status?.toLowerCase() === "completed"
+                ? 100
+                : Math.max(0, ch.progress_percentage - 20);
+            return sum + mockProgress;
+          }, 0) / subject.chapters.length
+        )
+      : 0;
+  const mockTestStatus = overallMockTestProgress >= 100 ? "Completed" : "Pending";
+
   return (
     <div className="flex flex-col gap-3">
       {/* ── Subject Header Card ─────────────────────────────────────── */}
       <div
-        className="bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between px-5 py-3"
+        className="bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between px-5 py-3 cursor-pointer select-none"
         style={{ borderLeft: `5px solid ${accentColor}` }}
+        onClick={() => setIsExpanded((prev) => !prev)}
       >
+        {/* LEFT: icon + name + subtitle */}
         <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-base shadow-sm"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-base shadow-sm flex-shrink-0"
             style={{ background: accentColor }}
           >
             {subject.subject_name.charAt(0).toUpperCase()}
           </div>
           <div>
             <h3 className="text-base font-extrabold text-primary leading-tight">{subject.subject_name}</h3>
-            <p className="text-[11px] text-gray-400 font-medium">
+            <p className="text-[11px] text-gray-400 font-medium mt-0.5">
               {subject.chapters?.length ?? 0} chapters &middot; {weeklyPlan.length} days planned
             </p>
           </div>
         </div>
 
+        {/* MIDDLE: Prev Week badge (with left margin gap) */}
         {prevWeekStatus !== "none" && (
-          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border
+          <span className={`inline-flex items-center gap-1 ml-6 px-3 py-1.5 rounded-full text-[11px] font-bold border flex-shrink-0
             ${prevWeekStatus === "green"
               ? "bg-green-50 border-green-200 text-green-700"
               : "bg-red-50 border-red-200 text-red-600"}`}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 15 }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 13 }}>
               {prevWeekStatus === "green" ? "verified" : "warning"}
             </span>
-            {prevWeekStatus === "green" ? "Prev week: All done ✓" : "Prev week: Pending ⚠️"}
-          </div>
+            {prevWeekStatus === "green" ? "Prev Week: All done ✓" : "Prev Week: Pending ⚠️"}
+          </span>
         )}
+
+        {/* RIGHT: Overall Mock Test + chevron */}
+        <div className="flex items-center gap-3 flex-shrink-0 ml-auto">
+          <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-xl px-3 py-1.5">
+            <span className="material-symbols-outlined text-primary" style={{ fontSize: 16 }}>quiz</span>
+            <div className="leading-tight">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Overall Mock Test</p>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-extrabold text-primary">{overallMockTestProgress}%</span>
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border
+                  ${overallMockTestProgress >= 100
+                    ? "bg-green-50 border-green-200 text-green-700"
+                    : "bg-amber-50 border-amber-200 text-amber-700"}`}
+                >
+                  {mockTestStatus}
+                </span>
+              </div>
+            </div>
+          </div>
+          <span className={`material-symbols-outlined text-gray-400 transition-transform duration-300 ${isExpanded ? "rotate-180" : "rotate-0"}`}>
+            expand_more
+          </span>
+        </div>
       </div>
 
-      {/* ── Two-column row ──────────────────────────────────────────── */}
+      {/* ── Collapsible body ─────────────────────────────────────────── */}
+      <div className={`transition-all duration-300 overflow-hidden ${isExpanded ? "max-h-[2000px]" : "max-h-0"}`}>
       <div className="flex flex-col lg:flex-row gap-4">
 
         {/* LEFT — Weekly Calendar (independent card) */}
@@ -370,34 +393,31 @@ const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }>
           </div>
 
           {weeklyPlan.length > 0 ? (
-            <div className="flex  justify-between overflow-x-auto pb-1 pt-3">
+            <div className="flex items-stretch gap-2 overflow-x-auto pb-1 pt-4">
               {/* Prev-week card */}
               <div
-                className={`min-w-[80px] flex-shrink-0 rounded-2xl p-3 border-2 flex flex-col items-center justify-center gap-1.5
+                className={`flex-shrink-0 rounded-2xl px-3 py-2 border-2 flex flex-col items-center justify-center gap-1
                   ${prevWeekStatus === "green"
-                    ? "bg-green-50 border-green-300 shadow-sm shadow-green-100"
+                    ? "bg-green-50 border-green-200"
                     : prevWeekStatus === "red"
-                      ? "bg-red-50 border-red-300 shadow-sm shadow-red-100"
+                      ? "bg-red-50 border-red-200"
                       : "bg-gray-50 border-gray-200"
                   }`}
               >
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white shadow-sm
-                  ${prevWeekStatus === "green" ? "bg-green-500" : prevWeekStatus === "red" ? "bg-red-400" : "bg-gray-300"}`}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 17 }}>
-                    {prevWeekStatus === "green" ? "verified" : prevWeekStatus === "red" ? "warning" : "history"}
-                  </span>
-                </div>
-                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 text-center leading-tight">
-                  Prev<br />Week
+                <span className={`material-symbols-outlined ${
+                  prevWeekStatus === "green" ? "text-green-500" : prevWeekStatus === "red" ? "text-red-400" : "text-gray-300"
+                }`} style={{ fontSize: 20 }}>
+                  {prevWeekStatus === "green" ? "verified" : prevWeekStatus === "red" ? "warning" : "history"}
+                </span>
+                <p className="text-[8px] font-black uppercase tracking-widest text-gray-400 text-center leading-tight">Prev<br/>Week</p>
+                <p className={`text-[9px] font-extrabold text-center ${
+                  prevWeekStatus === "green" ? "text-green-600" : prevWeekStatus === "red" ? "text-red-500" : "text-gray-400"
+                }`}>
+                  {prevWeekStatus === "green" ? "Done" : prevWeekStatus === "red" ? "Pending" : "—"}
                 </p>
-                <p className={`text-[10px] font-extrabold text-center leading-tight
-                  ${prevWeekStatus === "green" ? "text-green-600" : prevWeekStatus === "red" ? "text-red-500" : "text-gray-400"}`}>
-                  {prevWeekStatus === "green" ? "All Done" : prevWeekStatus === "red" ? "Pending" : "No Data"}
-                </p>
-                <div className={`w-full h-1 rounded-full ${prevWeekStatus === "green" ? "bg-green-400" : prevWeekStatus === "red" ? "bg-red-400" : "bg-gray-200"}`} />
               </div>
 
-              <div className="w-px bg-gray-200 self-stretch my-1 flex-shrink-0 rounded-full" />
+              <div className="w-px bg-gray-100 self-stretch flex-shrink-0 rounded-full" />
 
               {weeklyPlan.map((day) => (
                 <DayCard
@@ -484,6 +504,7 @@ const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }>
           </div>
         </div>
 
+      </div>
       </div>
     </div>
   );
