@@ -117,7 +117,6 @@ const Subscription: React.FC = () => {
     TransformedFeature[]
   >([]);
   const [hoveredPlanId, setHoveredPlanId] = useState<number | null>(null);
-  // const [selectedPlan, setSelectedPlan] = useState<ApiPlan | null>(null);
 
   const [isValidating, setIsValidating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -150,31 +149,11 @@ const Subscription: React.FC = () => {
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("active_profile") || "{}");
     setLocalUser(user);
-  }, [location.pathname]); // triggers on navigation
+  }, [location.pathname]);
   const [plansExpanded, setPlansExpanded] = useState(true);
   const togglePlansAccordion = () => {
     setPlansExpanded((prev) => !prev);
   };
-  // useEffect(() => {
-  //   const preselected = location.state?.preselectedAcademicDetails;
-  //   if (preselected) {
-  //     setProfiles([
-  //       {
-  //         id: "primary",
-  //         board_id: preselected.board_id || "",
-  //         class_id: preselected.class_id || "",
-  //         school_id: preselected.institute_id || "",
-  //         academic_year: preselected.academic_year || "",
-  //         selectedSubjects: [],
-  //         availableSubjects: [],
-  //         isSubjectsLoading: false,
-  //         isExpanded: true,
-  //         seats: 1,
-  //         selectedPlan: null,
-  //       },
-  //     ]);
-  //   }
-  // }, [location.state]);
 
   useEffect(() => {
     const preselected = location.state?.preselectedAcademicDetails;
@@ -183,7 +162,6 @@ const Subscription: React.FC = () => {
       localStorage.getItem("active_profile") || "null"
     );
 
-    // ✅ Priority 1: navigation state
     if (preselected) {
       setProfiles([
         {
@@ -204,7 +182,6 @@ const Subscription: React.FC = () => {
       return;
     }
 
-    // ✅ Priority 2: student from localStorage
     if (localUser.role_name === "student" && activeProfile) {
       setProfiles([
         {
@@ -223,28 +200,7 @@ const Subscription: React.FC = () => {
         },
       ]);
     }
-  }, [location.state, localUser.role_name]); // ✅ FIXED
-  // useEffect(() => {
-  //   setProfiles((prev) =>
-  //     prev.map((profile) => ({
-  //       ...profile,
-  //       board_id: boards.some((b) => b.id === profile.board_id)
-  //         ? profile.board_id
-  //         : "",
-  //       school_id: schools.some((s) => s.id === profile.school_id)
-  //         ? profile.school_id
-  //         : "",
-  //       class_id: classes.some((c) => c.id === profile.class_id)
-  //         ? profile.class_id
-  //         : "",
-  //       academic_year: academicYears.some(
-  //         (y) => y.year === profile.academic_year,
-  //       )
-  //         ? profile.academic_year
-  //         : "",
-  //     })),
-  //   );
-  // }, [boards, schools, classes, academicYears]);
+  }, [location.state, localUser.role_name]);
 
   useEffect(() => {
     if (!boards.length || !schools.length || !classes.length) return;
@@ -252,19 +208,15 @@ const Subscription: React.FC = () => {
     setProfiles((prev) =>
       prev.map((profile) => ({
         ...profile,
-
         board_id: boards.some((b) => String(b.id) === String(profile.board_id))
           ? profile.board_id
           : profile.board_id,
-
         school_id: schools.some((s) => String(s.id) === String(profile.school_id))
           ? profile.school_id
           : profile.school_id,
-
         class_id: classes.some((c) => String(c.id) === String(profile.class_id))
           ? profile.class_id
           : profile.class_id,
-
         academic_year: academicYears.some(
           (y) => String(y.year) === String(profile.academic_year)
         )
@@ -302,38 +254,18 @@ const Subscription: React.FC = () => {
     }
   };
 
-  // const addProfile = () => {
-  //   const newProfile = createEmptyProfile();
-
-  //   setProfiles((prev) => [
-  //     ...prev.map((p) => ({ ...p, isExpanded: false })),
-  //     newProfile,
-  //   ]);
-
-  //   setActiveProfileIndex(profiles.length);
-
-  //   setPlans(defaultPlans);
-
-  //   transformData(defaultPlans);
-  // };
   const addProfile = () => {
     const baseProfile = profiles[activeProfileIndex] || createEmptyProfile();
 
     const newProfile: AcademicProfile = {
       ...createEmptyProfile(),
-
-      // ✅ ONLY copy these two
       board_id: baseProfile.board_id,
       school_id: baseProfile.school_id,
-
-      // ❌ reset everything else
       class_id: "",
       academic_year: "",
       selectedSubjects: [],
       availableSubjects: [],
       selectedPlan: null,
-
-      // ✅ seats rule
       seats: localUser.role_name === "student" ? 1 : 1,
     };
 
@@ -343,7 +275,6 @@ const Subscription: React.FC = () => {
     ]);
 
     setActiveProfileIndex(profiles.length);
-
     setPlans(defaultPlans);
     transformData(defaultPlans);
   };
@@ -353,57 +284,36 @@ const Subscription: React.FC = () => {
       prev.map((p, i) => {
         if (p.id === profileId) {
           const newExpanded = !p.isExpanded;
-
           if (newExpanded) {
             setActiveProfileIndex(i);
           }
-
           return { ...p, isExpanded: newExpanded };
         }
-
         return p;
       }),
     );
   };
-
-  // const removeProfile = (profileId: string) => {
-  //   if (profiles.length <= 1) return;
-  //   setProfiles((prev) => prev.filter((p) => p.id !== profileId));
-  // };
 
   const removeProfile = (profileId: string) => {
     if (profiles.length <= 1) return;
 
     setProfiles((prev) => {
       const updated = prev.filter((p) => p.id !== profileId);
-
-      // ✅ FIX: reset active index safely
       if (activeProfileIndex >= updated.length) {
         setActiveProfileIndex(updated.length - 1);
       }
-
       return updated;
     });
   };
-
-  // const updateProfile = (index: number, updates: Partial<AcademicProfile>) => {
-  //   setProfiles((prev) =>
-  //     prev.map((p, i) => (i === index ? { ...p, ...updates } : p)),
-  //   );
-  // };
 
   const updateProfile = (index: number, updates: Partial<AcademicProfile>) => {
     setProfiles((prev) =>
       prev.map((p, i) => {
         if (i !== index) return p;
-
         const updatedProfile = { ...p, ...updates };
-
-        // ✅ FORCE seat = 1 for student
         if (localUser.role_name === "student") {
           updatedProfile.seats = 1;
         }
-
         return updatedProfile;
       }),
     );
@@ -455,9 +365,8 @@ const Subscription: React.FC = () => {
   const totalSeats = React.useMemo(() => {
     return profiles.reduce((sum, p) => sum + (p.seats || 0), 0);
   }, [profiles]);
-  // const activeProfile = profiles[activeProfileIndex] || null;
-  const activeProfile =
-  profiles[activeProfileIndex] || profiles[0] || null;
+  
+  const activeProfile = profiles[activeProfileIndex] || profiles[0] || null;
   const subjectIds = activeProfile
     ? activeProfile.selectedSubjects.map((s) => s.subject_id).join(",")
     : "";
@@ -467,6 +376,7 @@ const Subscription: React.FC = () => {
     () => activeProfile?.selectedPlan || null,
     [activeProfile],
   );
+
   useEffect(() => {
     if (!activeProfile) return;
 
@@ -478,7 +388,6 @@ const Subscription: React.FC = () => {
       });
       return;
     }
-
     fetchSubscriptionPlans();
   }, [
     activeProfile?.board_id,
@@ -486,6 +395,7 @@ const Subscription: React.FC = () => {
     activeProfile?.academic_year,
     activeProfile?.selectedSubjects.length,
   ]);
+
   useEffect(() => {
     if (subjectIds.length === 0) {
       updateProfile(activeProfileIndex, {
@@ -496,7 +406,6 @@ const Subscription: React.FC = () => {
 
   const fetchSubscriptionPlans = async () => {
     if (!activeProfile) return;
-
     setIsPlansLoading(true);
 
     try {
@@ -651,22 +560,9 @@ const Subscription: React.FC = () => {
     }
     setIsValidating(true);
     try {
-      // const firstValidProfile =
-      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
-      // const validatePayload = {
-      //   plan_id: selectedPlan.plan_id,
-      //   board_id: firstValidProfile.board_id,
-      //   class_id: firstValidProfile.class_id,
-      //   academic_year: firstValidProfile.academic_year,
-      //   subject_ids: allSelectedSubjects.map((s) => s.subject_id),
-      //   ui_total_amount: uiTotalAmount,
-      //   total_licences: totalSeats,
-      // };
       const validatePayload = {
         profiles: buildProfilesPayload(),
-
         ui_total_amount: Number(uiTotalAmount.toFixed(2)),
-
         total_licences: totalSeats,
       };
       const response = await ApiServices.validatePlanAmount(validatePayload);
@@ -686,39 +582,14 @@ const Subscription: React.FC = () => {
   const handlePayNow = async (subscriptionName: string, couponCode: string) => {
     if (!selectedPlan) return;
     try {
-      // const firstValidProfile =
-      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
-      // const paymentData = {
-      //   plan_id: selectedPlan.plan_id,
-      //   board_id: firstValidProfile.board_id,
-      //   class_id: firstValidProfile.class_id,
-      //   academic_year: firstValidProfile.academic_year,
-      //   subject_ids: allSelectedSubjects.map((s) => s.subject_id),
-      //   institute_id: firstValidProfile.school_id || null,
-      //   subscription_id: "",
-      //   licenses_used: localUser.role_name === "student" ? 1 : 0,
-      //   subscription_name: subscriptionName,
-      //   total_licenses: totalSeats,
-      //   ui_total_amount: currentTotalAmount,
-      //   coupon_code: couponCode || undefined,
-      // };
       const paymentData = {
         profiles: buildProfilesPayload(),
-
         ui_total_amount: Number(uiTotalAmount.toFixed(2)),
-
         discounted_amount: Number(discountedAmount.toFixed(2)),
-
-        final_amount: Number(
-          (uiTotalAmount - discountedAmount).toFixed(2)
-        ),
-
+        final_amount: Number((uiTotalAmount - discountedAmount).toFixed(2)),
         total_licenses: totalSeats,
-
         subscription_name: subscriptionName,
-
         coupon_code: couponCode || undefined,
-
         currency: "INR",
       };
       setShowPaymentModal(false);
@@ -736,47 +607,17 @@ const Subscription: React.FC = () => {
       return { success: false, message: "" };
     }
     try {
-      // const firstValidProfile =
-      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
-      // const payload = {
-      //   plan_id: selectedPlan?.plan_id,
-      //   board_id: firstValidProfile.board_id,
-      //   class_id: firstValidProfile.class_id,
-      //   academic_year: firstValidProfile.academic_year,
-      //   subject_ids: allSelectedSubjects.map((s) => s.subject_id),
-      //   ui_total_amount: uiTotalAmount,
-      //   total_licences: totalSeats,
-      //   coupon_code: couponCode,
-      // };
       const payload = {
         profiles: buildProfilesPayload(),
-
         ui_total_amount: Number(uiTotalAmount.toFixed(2)),
-
         total_licences: totalSeats,
-
-        coupon_code: couponCode, // ✅ only here
+        coupon_code: couponCode,
       };
       const response = await ApiServices.validatePlanAmount(payload);
       if (response.data?.status === "success") {
-        // const newAmount =
-        //   response.data?.data?.verified_amount ||
-        //   response.data?.data?.db_amount ||
-        //   currentTotalAmount;
-        // // ✅ ADD THIS LINE
-        // const discountAmount = uiTotalAmount - newAmount;
-
-        // // ✅ ADD THIS LINE
-        // setDiscountedAmount(Number(discountAmount.toFixed(2)));
-
-        // setCurrentTotalAmount(newAmount);
-        // showToast("Coupon applied successfully!", "success");
-        // return { success: true, newAmount };
         const data = response.data?.data;
-
         setDiscountedAmount(Number((data?.db_discount || 0).toFixed(2)));
         setCurrentTotalAmount(Number((data?.db_final || 0).toFixed(2)));
-
         showToast("Coupon applied successfully!", "success");
 
         return {
@@ -798,101 +639,47 @@ const Subscription: React.FC = () => {
     }
   };
 
-  // const uiTotalAmount = React.useMemo(() => {
-  //   if (!selectedPlan || allSelectedSubjects.length === 0) return 0;
-  //   const subjectTotal =
-  //     selectedPlan.subject_prices?.reduce(
-  //       (sum, sp) => sum + (sp.price || 0),
-  //       0,
-  //     ) || 0;
-  //   const discountPercent = selectedPlan.plan_discount_percent || 0;
-  //   const afterDiscount = subjectTotal - (subjectTotal * discountPercent) / 100;
-  //   return afterDiscount * sheetCount;
-  // }, [selectedPlan, sheetCount, allSelectedSubjects]);
   const uiTotalAmount = React.useMemo(() => {
     return profiles.reduce((total, profile) => {
       if (profile.selectedSubjects.length === 0) return total;
-
       const plan = profile.selectedPlan || selectedPlan;
       if (!plan) return total;
 
-      // const subjectTotal =
-      //   plan.subject_prices?.reduce(
-      //     (sum, sp) => sum + (sp.price || 0),
-      //     0,
-      //   ) || 0;
-
       const selectedSubjectIds = profile.selectedSubjects.map(s => s.subject_id);
-
       const subjectTotal =
         plan.subject_prices
           ?.filter(sp => selectedSubjectIds.includes(sp.subject_id))
           .reduce((sum, sp) => sum + (sp.price || 0), 0) || 0;
-
       const discountPercent = plan.plan_discount_percent || 0;
-
-      const afterDiscount =
-        subjectTotal - (subjectTotal * discountPercent) / 100;
+      const afterDiscount = subjectTotal - (subjectTotal * discountPercent) / 100;
 
       return total + afterDiscount * profile.seats;
     }, 0);
   }, [profiles, selectedPlan]);
 
-  // const buildProfilesPayload = () => {
-  //   return profiles.map((p) => ({
-  //     board_id: p.board_id,
-  //     class_id: p.class_id,
-  //     academic_year: p.academic_year,
-  //     institute_id: p.school_id || null,
-
-  //     subject_ids: p.selectedSubjects.map((s) => s.subject_id),
-
-  //     total_licenses: p.seats,
-
-  //     licenses_used: localUser.role_name === "student" ? 1 : 0,
-  //   }));
-  // };
-
   const buildProfilesPayload = () => {
     return profiles.map((p) => {
       const plan = p.selectedPlan || selectedPlan;
-
-      // const subjectTotal =
-      //   plan?.subject_prices?.reduce(
-      //     (sum, sp) => sum + (sp.price || 0),
-      //     0,
-      //   ) || 0;
-
       const selectedSubjectIds = p.selectedSubjects.map(s => s.subject_id);
-
       const subjectTotal =
         plan?.subject_prices
           ?.filter(sp => selectedSubjectIds.includes(sp.subject_id))
           .reduce((sum, sp) => sum + (sp.price || 0), 0) || 0;
-
       const discountPercent = plan?.plan_discount_percent || 0;
-
-      const afterDiscount =
-        subjectTotal - (subjectTotal * discountPercent) / 100;
-
+      const afterDiscount = subjectTotal - (subjectTotal * discountPercent) / 100;
       const profileAmount = afterDiscount * (p.seats || 1);
 
       return {
-        plan_id: plan?.plan_id, // ✅ NEW (per profile)
-
+        plan_id: plan?.plan_id,
         board_id: p.board_id,
         class_id: p.class_id,
         academic_year: p.academic_year,
         institute_id: p.school_id || null,
         section_id: p.section_id || null,
-
         subject_ids: p.selectedSubjects.map((s) => s.subject_id),
-
         total_licenses: p.seats,
-
         licenses_used: localUser.role_name === "student" ? 1 : 0,
-
-        profile_amount: Number(profileAmount.toFixed(2)), // ✅ NEW
+        profile_amount: Number(profileAmount.toFixed(2)),
       };
     });
   };
@@ -901,22 +688,6 @@ const Subscription: React.FC = () => {
     if (!selectedPlan) return;
     setIsSaving(true);
     try {
-      // const firstValidProfile =
-      //   profiles.find((p) => p.board_id && p.class_id) || profiles[0];
-
-      // Optional: Add validation before saving if needed, but let's stick to user request
-      // const payload = {
-      //   plan_id: selectedPlan.plan_id,
-      //   board_id: firstValidProfile.board_id,
-      //   class_id: firstValidProfile.class_id,
-      //   academic_year: firstValidProfile.academic_year,
-      //   subject_ids: allSelectedSubjects.map((s) => s.subject_id),
-      //   institute_id: firstValidProfile.school_id || null,
-      //   ui_total_amount: uiTotalAmount,
-      //   total_licenses: totalSeats,
-      //   licenses_used: localUser.role_name === "student" ? 1 : 0,
-      //   subscription_name: "",
-      // };
       const payload = {
         profiles: buildProfilesPayload().map((p) => ({
           plan_id: p.plan_id,
@@ -928,15 +699,10 @@ const Subscription: React.FC = () => {
           total_licenses: p.total_licenses,
           licenses_used: p.licenses_used,
         })),
-
         subscription_name: `Plan_${selectedPlan?.plan_id}_${new Date()
           .toLocaleString("en-IN", { month: "long", year: "numeric" })
           .replace(" ", "")}`,
-
-        // ✅ ADD THIS (VERY IMPORTANT)
         total_amount: Number(uiTotalAmount.toFixed(2)),
-
-        // ✅ ADD THESE (backend still expects)
         ui_total_amount: Number(uiTotalAmount.toFixed(2)),
         total_licenses: totalSeats,
       };
@@ -993,7 +759,6 @@ const Subscription: React.FC = () => {
         </div>
       );
     }
-
     if (value === "true") {
       return (
         <div className="w-5 h-5 rounded-full bg-[#333C5B] flex items-center justify-center mx-auto">
@@ -1003,7 +768,6 @@ const Subscription: React.FC = () => {
         </div>
       );
     }
-
     if (value === "false") {
       return (
         <div className="w-5 h-5 rounded-full bg-[#C3CFD1] flex items-center justify-center mx-auto">
@@ -1038,20 +802,12 @@ const Subscription: React.FC = () => {
   const calculatePlanDisplayPrice = (plan: ApiPlan, licenses: number) => {
     const subjectTotal =
       plan.subject_prices?.reduce((sum, sp) => sum + (sp.price || 0), 0) || 0;
-
     const discountPercent = plan.plan_discount_percent || 0;
-
     const afterDiscount = subjectTotal - (subjectTotal * discountPercent) / 100;
-
     return afterDiscount * licenses;
   };
 
-  // const getInitial = () => {
-  //   return localUser?.name?.charAt(0).toUpperCase();
-  // };
-
   const handleSetupConfirm = (data: any) => {
-    // Map existing setup confirm to first profile
     updateProfile(0, {
       board_id: data.selectedBoard,
       school_id: data.selectedSchool,
@@ -1063,12 +819,6 @@ const Subscription: React.FC = () => {
     setSheetCount(data.sheetCount);
     setShowSetupModal(false);
   };
-
-  // useEffect(() => {
-  //   if (localUser.role_name === "teacher") {
-  //     navigate("/dashboard");
-  //   }
-  // }, []);
 
   return (
     <div className="min-h-screen relative px-2 sm:px-4">
@@ -1092,39 +842,7 @@ const Subscription: React.FC = () => {
 
       {/* ─── TOP HEADER ─────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-col sm:items-start sm:justify-between gap-5 mb-6">
-        {/* User Info */}
         <div className="flex items-center justify-between w-full">
-
-          {/* LEFT: Profile */}
-          {/* <div className="flex items-center gap-3">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-gray-200 flex items-center justify-center bg-gray-100">
-              {profileImage ? (
-                <img
-                  src={profileImage}
-                  alt="User"
-                  className="w-full h-full object-cover"
-                  onError={() => setProfileImage("")}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#BADA55] to-lime-500 text-white">
-                  <span className="text-xl sm:text-2xl font-bold">
-                    {getInitial()}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div>
-              <p className="text-teal-600 text-xs sm:text-sm font-medium">
-                Subscription
-              </p>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
-                Hi {localUser.name} !
-              </h1>
-            </div>
-          </div> */}
-
-          {/* RIGHT: Button */}
           {localUser.role_name !== "student" && (
             <button
               onClick={addProfile}
@@ -1174,7 +892,6 @@ const Subscription: React.FC = () => {
                 new Set(validDependencies.map((d) => d.academic_year)),
               )
               : academicYears.map((y) => y.year);
-
 
             const filteredBoards = useFilter
               ? boards.filter((b) => validBoards.includes(b.id))
@@ -1448,55 +1165,6 @@ const Subscription: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Seats per profile */}
-                      {/* <div className="flex flex-col gap-1">
-                        <label className="text-sm tracking-widest text-primary font-bold px-1 uppercase">
-                          Seats
-                        </label>
-
-                        <div className="flex items-center justify-between w-full h-[32px] bg-gray-800 rounded-lg px-2">
-
-                          <button
-                            onClick={() => {
-                              if (localUser.role_name !== "student") {
-                                updateProfile(profileIndex, {
-                                  seats: Math.max(1, p.seats - 1),
-                                });
-                              }
-                            }}
-                            disabled={localUser.role_name === "student"}
-                            className={`text-sm px-2 ${localUser.role_name === "student"
-                              ? "text-gray-400 cursor-not-allowed"
-                              : "text-white"
-                              }`}
-                          >
-                            −
-                          </button>
-
-                          <span className="text-white font-bold text-xs">
-                            {p.seats}
-                          </span>
-
-                          <button
-                            onClick={() => {
-                              if (localUser.role_name !== "student") {
-                                updateProfile(profileIndex, {
-                                  seats: p.seats + 1,
-                                });
-                              }
-                            }}
-                            disabled={localUser.role_name === "student"}
-                            className={`text-sm px-2 ${localUser.role_name === "student"
-                              ? "text-gray-400 cursor-not-allowed"
-                              : "text-white"
-                              }`}
-                          >
-                            +
-                          </button>
-
-                        </div>
-                      </div> */}
-
                       {/* Clear for this profile */}
                       <div className="flex items-end">
                         {useFilter && (
@@ -1621,7 +1289,9 @@ const Subscription: React.FC = () => {
                                     setHoveredPlanId(plan.plan_id)
                                   }
                                   onMouseLeave={() => setHoveredPlanId(null)}
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                     if (isPlanSelectable) {
                                       updateProfile(activeProfileIndex, {
                                         selectedPlan:
@@ -1638,15 +1308,15 @@ const Subscription: React.FC = () => {
                                   }}
                                   className={
                                     isPlanSelectable
-                                      ? "cursor-pointer"
-                                      : "cursor-not-allowed opacity-50"
+                                      ? "cursor-pointer outline-none"
+                                      : "cursor-not-allowed opacity-50 outline-none"
                                   }
                                   style={{
                                     gridColumn: index + 2,
                                     gridRow: "1 / -1",
                                     zIndex: 20,
                                   }}
-                                />
+                                ></div>
                               ))}
 
                               {/* Header label */}
@@ -1678,7 +1348,9 @@ const Subscription: React.FC = () => {
                                     setHoveredPlanId(plan.plan_id)
                                   }
                                   onMouseLeave={() => setHoveredPlanId(null)}
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                     if (isPlanSelectable) {
                                       updateProfile(activeProfileIndex, {
                                         selectedPlan:
@@ -1693,7 +1365,7 @@ const Subscription: React.FC = () => {
                                       );
                                     }
                                   }}
-                                  className={`mx-1.5 lg:mx-3 text-center z-10 pb-4 pt-8 lg:pt-10 px-2 transition-all rounded-t-[24px] duration-200 ${activeProfile?.selectedSubjects?.length
+                                  className={`mx-1.5 lg:mx-3 text-center z-10 pb-4 pt-8 lg:pt-10 px-2 transition-all rounded-t-[24px] duration-200 outline-none ${activeProfile?.selectedSubjects?.length
                                     ? "cursor-pointer"
                                     : "cursor-not-allowed"
                                     } ${selectedPlan?.plan_id === plan.plan_id
@@ -1837,7 +1509,9 @@ const Subscription: React.FC = () => {
                               {plans.map((plan) => (
                                 <div
                                   key={plan.plan_id}
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                     if (isPlanSelectable) {
                                       updateProfile(activeProfileIndex, {
                                         selectedPlan:
@@ -1852,7 +1526,7 @@ const Subscription: React.FC = () => {
                                       );
                                     }
                                   }}
-                                  className={`w-full rounded-3xl border-2 transition-all duration-200 overflow-hidden ${activeProfile?.selectedSubjects?.length
+                                  className={`w-full text-left rounded-3xl border-2 transition-all duration-200 overflow-hidden outline-none ${activeProfile?.selectedSubjects?.length
                                     ? "cursor-pointer"
                                     : "cursor-not-allowed opacity-90"
                                     } ${selectedPlan?.plan_id === plan.plan_id
@@ -2010,15 +1684,11 @@ const Subscription: React.FC = () => {
       </div>
 
       {/* Payment Summary Modal */}
-      {selectedPlan && (
+      {showPaymentModal && selectedPlan && (
         <PaymentSummaryModal
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
-          // selectedPlan={selectedPlan}
-          // selectedSubjects={activeProfile?.selectedSubjects || []}
-          // sheetCount={totalSeats}
           uiTotalAmount={uiTotalAmount}
-          // academicDetails={null}
           onProceedToPay={handlePayNow}
           onApplyCoupon={handleApplyCoupon}
           isProcessing={isValidating}
