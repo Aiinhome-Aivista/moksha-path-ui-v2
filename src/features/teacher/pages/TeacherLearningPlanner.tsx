@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
-import { Calendar, Upload, Save, FileText, Video, Link, X } from "lucide-react";
+import { Calendar, Upload, Save, FileText, FileSpreadsheet, Link, X } from "lucide-react";
 import SearchableSelect from "../../../components/common/SearchableSelect";
 
 // Function to navigate to student materials with stats and selected chapter
@@ -100,8 +100,8 @@ const demoChaptersData = [
     endDate: "--",
     progress: 90,
     completed: false,
-    testMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
+    testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
   },
   {
     id: 2,
@@ -110,8 +110,8 @@ const demoChaptersData = [
     endDate: "--",
     progress: 85,
     completed: false,
-    testMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
+    testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
   },
   {
     id: 3,
@@ -120,8 +120,8 @@ const demoChaptersData = [
     endDate: "--",
     progress: 58,
     completed: false,
-    testMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
+    testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
   },
   {
     id: 4,
@@ -130,8 +130,8 @@ const demoChaptersData = [
     endDate: "--",
     progress: 74,
     completed: false,
-    testMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
+    testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
   },
   {
     id: 5,
@@ -140,8 +140,8 @@ const demoChaptersData = [
     endDate: "--",
     progress: 45,
     completed: false,
-    testMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
+    testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
   },
 ];
 
@@ -180,10 +180,21 @@ const TeacherLearningPlanner: React.FC = () => {
   ) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      const newMaterials = Array.from(files).map((f) => ({
-        name: f.name,
-        type: (f.type.includes("video") ? "video" : "pdf") as "pdf" | "video",
-      }));
+      const newMaterials = Array.from(files).map((f) => {
+        const customName = window.prompt(`Enter a name for the file: ${f.name}`, f.name);
+        return {
+          name: customName?.trim() || f.name,
+          type: (f.name.endsWith(".xls") ||
+          f.name.endsWith(".xlsx") ||
+          f.type === "application/vnd.ms-excel" ||
+          f.type ===
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            ? "excel"
+            : "pdf") as "pdf" | "excel",
+        };
+      });
+
+      e.target.value = ""; // Clear input to allow re-uploading the same file if needed
       setDemoChapters((prev) =>
         prev.map((row) =>
           row.id === id
@@ -667,7 +678,7 @@ const TeacherLearningPlanner: React.FC = () => {
                       id={`file-test-${row.id}`}
                       type="file"
                       multiple
-                      accept=".pdf,video/*"
+                      accept=".pdf,.xls,.xlsx"
                       className="hidden"
                       onChange={(e) =>
                         handleFileUpload(row.id, "testMaterial", e)
@@ -682,7 +693,7 @@ const TeacherLearningPlanner: React.FC = () => {
                             title={mat.name}
                           >
                             {mat.type === "pdf" && <FileText size={10} />}
-                            {mat.type === "video" && <Video size={10} />}
+                            {mat.type === "excel" && <FileSpreadsheet size={10} className="text-green-600" />}
                             {mat.type === "link" && <Link size={10} />}
                             <span className="truncate">{mat.name}</span>
                           </div>
@@ -705,7 +716,7 @@ const TeacherLearningPlanner: React.FC = () => {
                       id={`file-prac-${row.id}`}
                       type="file"
                       multiple
-                      accept=".pdf,video/*"
+                      accept=".pdf,.xls,.xlsx"
                       className="hidden"
                       onChange={(e) =>
                         handleFileUpload(row.id, "practiceMaterial", e)
@@ -720,7 +731,7 @@ const TeacherLearningPlanner: React.FC = () => {
                             title={mat.name}
                           >
                             {mat.type === "pdf" && <FileText size={10} />}
-                            {mat.type === "video" && <Video size={10} />}
+                            {mat.type === "excel" && <FileSpreadsheet size={10} className="text-green-600" />}
                             {mat.type === "link" && <Link size={10} />}
                             <span className="truncate">{mat.name}</span>
                           </div>
