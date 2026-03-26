@@ -281,8 +281,8 @@ const ChapterAccordion: React.FC<{ chapter: ChapterDay; index: number }> = ({ ch
 
 // ─── Subject Section (self-contained: calendar + details) ─────────────────────
 
-const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }> = ({
-  subject, accentColor,
+const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string; defaultExpanded: boolean }> = ({
+  subject, accentColor, defaultExpanded,
 }) => {
   const today = getTodayDate();
   const weeklyPlan = subject.weekly_plan ?? [];
@@ -293,7 +293,7 @@ const SubjectSection: React.FC<{ subject: ApiSubjectPlan; accentColor: string }>
 
   const [selectedDate, setSelectedDate] = useState<string>(defaultDay?.date ?? "");
   const [selectedDayData, setSelectedDayData] = useState<WeeklyPlanDay | null>(defaultDay);
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   const handleDayClick = (day: WeeklyPlanDay) => {
     setSelectedDate(day.date);
@@ -661,6 +661,7 @@ const LearningPlanner: React.FC = () => {
               key={subject.subject_id}
               subject={subject}
               accentColor={SUBJECT_COLORS[idx % SUBJECT_COLORS.length]}
+              defaultExpanded={subjects.length <= 2}
             />
           ))}
         </div>
