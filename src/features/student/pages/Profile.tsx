@@ -599,8 +599,6 @@ const StudentProfile: React.FC = () => {
   // for active connections (Guardian/Student)
   const [activeConnections, setActiveConnections] = useState<any[]>([]);
   const [loadingConnections, setLoadingConnections] = useState(false);
-
-  // ── Profile image ──────────────────────────
   useEffect(() => {
     const fetchProfileImage = async () => {
       try {
@@ -880,7 +878,7 @@ const StudentProfile: React.FC = () => {
               {profiles.length} Accounts Found
             </div>
           </div>
-          <div className="flex items-center gap-6 overflow-x-auto no-scrollbar pb-2">
+          <div className="flex flex-wrap items-start gap-x-8 gap-y-6 overflow-y-auto max-h-[130px] custom-scrollbar p-2">
             {profiles.map((p) => {
               const profileId = p.sub || String(p.user_id) || p.profile_id;
               const isActive = String(user?.id) === String(profileId);

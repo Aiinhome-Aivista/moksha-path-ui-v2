@@ -293,9 +293,15 @@ export const SelectRoleModal: React.FC = () => {
           const subId = user.sub_id ?? user.roles?.[0]?.subscription_id;
           const role = activeRole.toLowerCase();
           
-          const dashboardRoute = menuItems?.find(
-            (item: any) => item.page_name?.toLowerCase().includes("dashboard")
-          )?.route || "/dashboard";
+          const studentDashboard = menuItems?.find(
+            (item: any) => item.page_name?.toLowerCase().includes("learning planner")
+          )?.route || "/learning-planner";
+
+          const teacherDashboard = menuItems?.find(
+            (item: any) => item.page_name?.toLowerCase().includes("syllabus planner")
+          )?.route || "/teacher/teacherlearning-planner";
+
+          const dashboardRoute = role === "teacher" ? teacherDashboard : studentDashboard;
 
           //  Case 1: Teacher → always dashboard
           if (role === "teacher") {
@@ -304,7 +310,7 @@ export const SelectRoleModal: React.FC = () => {
 
           //  Case 2: No subscription (only for non-teacher)
           else if (subId === null || subId === undefined) {
-            navigate("/subscription", {
+            navigate("/profile", {
               replace: true,
               state: {
                 preselectedAcademicDetails: {
@@ -328,11 +334,16 @@ export const SelectRoleModal: React.FC = () => {
 
           const subscriptionId = data?.subscription_id || data?.user?.sub_id;
           
-          const dashboardRoute = menuItems?.find(
-            (item: any) => item.page_name?.toLowerCase().includes("dashboard")
-          )?.route || "/dashboard";
+          const studentDashboard = menuItems?.find(
+            (item: any) => item.page_name?.toLowerCase().includes("learning planner")
+          )?.route || "/learning-planner";
+
+          const teacherDashboard = menuItems?.find(
+            (item: any) => item.page_name?.toLowerCase().includes("syllabus planner")
+          )?.route || "/teacher/teacherlearning-planner";
 
           const isTeacherRole = roles.find((r) => r.role_id === selectedRoleId)?.role_name?.toLowerCase() === "teacher";
+          const dashboardRoute = isTeacherRole ? teacherDashboard : studentDashboard;
 
           if (isTeacherRole) {
             navigate(dashboardRoute, { replace: true });

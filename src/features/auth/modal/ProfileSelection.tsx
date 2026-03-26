@@ -149,9 +149,15 @@ export const ProfileSelectionModal: React.FC = () => {
         const subscriptionId =
           res.data.data?.subscription_id ?? profile.subscription_id ?? null;
 
-        const dashboardRoute = menuItems?.find(
-          (item: any) => item.page_name?.toLowerCase().includes("profile")
-        )?.route || "/profile";
+        const studentDashboard = menuItems?.find(
+          (item: any) => item.page_name?.toLowerCase().includes("learning planner")
+        )?.route || "/learning-planner";
+
+        const teacherDashboard = menuItems?.find(
+          (item: any) => item.page_name?.toLowerCase().includes("syllabus planner")
+        )?.route || "/teacher/teacherlearning-planner";
+
+        const dashboardRoute = activeRole.toLowerCase() === "teacher" ? teacherDashboard : studentDashboard;
 
         if (activeRole.toLowerCase() === "teacher") {
           navigate(dashboardRoute, { replace: true });

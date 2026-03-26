@@ -91,11 +91,11 @@ export const RoleSwitchModal: React.FC<Props> = ({ isOpen, onClose }) => {
         // console.log("Role after switch:", role);
 
         if (role === "student") {
-          navigate("/dashboard");
+          navigate("/learning-planner");
+        } else if (role === "teacher") {
+          navigate("/teacher/teacherlearning-planner");
         } else if (role === "parent") {
           navigate("/parent/dashboard");
-        } else if (role === "teacher") {
-          navigate("/teacher/dashboard");
         } else {
           // Default navigation for other roles
           navigate("/dashboard");
