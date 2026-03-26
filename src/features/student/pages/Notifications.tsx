@@ -561,7 +561,7 @@ const Notifications: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+            <>
               {filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 gap-2 text-gray-400">
                   <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2">
@@ -841,7 +841,7 @@ const Notifications: React.FC = () => {
                   );
                 })
               )}
-            </div>
+            </>
           )}
 
           {/* ── Pagination ── */}
