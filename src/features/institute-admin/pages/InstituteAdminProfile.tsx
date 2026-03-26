@@ -819,7 +819,7 @@ const InstituteAdminProfile: React.FC = () => {
         <div className="flex items-center p-1.5 bg-white rounded-t-2xl border border-gray-100 shadow-sm overflow-x-auto no-scrollbar gap-1 relative z-10">
           {[
             { id: "faculty", label: "Faculty Information", icon: <Users size={14} /> },
-            { id: "subscriptions", label: "My Subscription", icon: <CreditCard size={14} /> },
+            { id: "subscriptions", label: "My Subscriptions", icon: <CreditCard size={14} /> },
             { id: "transactions", label: "Transaction History", icon: <Receipt size={14} /> },
           ].map((tab) => (
             <button
@@ -926,7 +926,7 @@ const InstituteAdminProfile: React.FC = () => {
                       <SubscriptionTab className="rounded-t-none border-t-0" />
                       {/* ── Subscription Purchase Flow (Bottom) ── */}
                       <div className="mt-8 pt-8 border-t border-gray-100 shadow-sm bg-white rounded-2xl">
-                        <h2 className="text-xl font-black text-primary mb-6 px-4">Add New Plan</h2>
+                        <h2 className="text-xl font-black text-primary mb-6 px-4">Add New Subscription</h2>
                         <Subscription />
                       </div>
                     </>
