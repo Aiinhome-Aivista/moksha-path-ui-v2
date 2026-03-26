@@ -1165,7 +1165,7 @@ const StudentProfile: React.FC = () => {
             <SubscriptionTab className="rounded-t-none border-t-0" />
             {/* ── Subscription Purchase Flow (Bottom) ── */}
             <div className="mt-8 pt-8 border-t border-gray-100 shadow-sm bg-white rounded-2xl">
-              <h2 className="text-xl font-black text-primary mb-6 px-4">Add New Plan</h2>
+              <h2 className="text-xl font-black text-primary mb-6 px-4">Add New Subscription</h2>
               <Subscription />
             </div>
           </>
