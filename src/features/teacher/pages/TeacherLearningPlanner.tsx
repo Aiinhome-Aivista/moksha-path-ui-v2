@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
-import { Calendar, Upload } from "lucide-react";
+import { Calendar, Upload, Save, FileText, Video, Link, X } from "lucide-react";
 import SearchableSelect from "../../../components/common/SearchableSelect";
 
 // Function to navigate to student materials with stats and selected chapter
@@ -100,8 +100,8 @@ const demoChaptersData = [
     endDate: "--",
     progress: 90,
     completed: false,
-    testMaterial: [] as string[],
-    practiceMaterial: [] as string[],
+    testMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
   },
   {
     id: 2,
@@ -110,8 +110,8 @@ const demoChaptersData = [
     endDate: "--",
     progress: 85,
     completed: false,
-    testMaterial: [] as string[],
-    practiceMaterial: [] as string[],
+    testMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
   },
   {
     id: 3,
@@ -120,8 +120,8 @@ const demoChaptersData = [
     endDate: "--",
     progress: 58,
     completed: false,
-    testMaterial: [] as string[],
-    practiceMaterial: [] as string[],
+    testMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
   },
   {
     id: 4,
@@ -130,8 +130,8 @@ const demoChaptersData = [
     endDate: "--",
     progress: 74,
     completed: false,
-    testMaterial: [] as string[],
-    practiceMaterial: [] as string[],
+    testMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
   },
   {
     id: 5,
@@ -140,8 +140,8 @@ const demoChaptersData = [
     endDate: "--",
     progress: 45,
     completed: false,
-    testMaterial: [] as string[],
-    practiceMaterial: [] as string[],
+    testMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "video" | "link" }[],
   },
 ];
 
@@ -154,6 +154,11 @@ const TeacherLearningPlanner: React.FC = () => {
   const [sectionOptions, setSectionOptions] = useState<string[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("");
   const [selectedSection, setSelectedSection] = useState<string>("");
+
+  const [uploadModal, setUploadModal] = useState<{
+    id: number;
+    field: "testMaterial" | "practiceMaterial";
+  } | null>(null);
 
   const [expandedChapters, setExpandedChapters] = useState<Set<number>>(
     new Set(),
@@ -175,13 +180,32 @@ const TeacherLearningPlanner: React.FC = () => {
   ) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      const newFileNames = Array.from(files).map((f) => f.name);
+      const newMaterials = Array.from(files).map((f) => ({
+        name: f.name,
+        type: (f.type.includes("video") ? "video" : "pdf") as "pdf" | "video",
+      }));
       setDemoChapters((prev) =>
         prev.map((row) =>
           row.id === id
             ? {
                 ...row,
-                [field]: [...(row[field] as string[]), ...newFileNames],
+                [field]: [...(row[field] as any[]), ...newMaterials],
+              }
+            : row,
+        ),
+      );
+    }
+  };
+
+  const handleLinkUpload = (id: number, field: "testMaterial" | "practiceMaterial") => {
+    const url = window.prompt("Enter link URL (e.g. YouTube or Article):");
+    if (url && url.trim()) {
+      setDemoChapters((prev) =>
+        prev.map((row) =>
+          row.id === id
+            ? {
+                ...row,
+                [field]: [...(row[field] as any[]), { name: url, type: "link" }],
               }
             : row,
         ),
@@ -584,7 +608,7 @@ const TeacherLearningPlanner: React.FC = () => {
               <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
                 Completion Status
               </th>
-              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap"></th>
+              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -632,29 +656,36 @@ const TeacherLearningPlanner: React.FC = () => {
 
                 <td className="py-3 px-2 text-center">
                   <div className="flex flex-col items-center justify-center">
-                    <label className="cursor-pointer flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-md transition-colors">
+                    <button
+                      onClick={() => setUploadModal({ id: row.id, field: "testMaterial" })}
+                      className="cursor-pointer flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-md transition-colors border-none"
+                    >
                       <Upload size={12} />
                       <span>Upload</span>
-                      <input
-                        type="file"
-                        multiple
-                        accept=".pdf"
-                        className="hidden"
-                        onChange={(e) =>
-                          handleFileUpload(row.id, "testMaterial", e)
-                        }
-                      />
-                    </label>
+                    </button>
+                    <input
+                      id={`file-test-${row.id}`}
+                      type="file"
+                      multiple
+                      accept=".pdf,video/*"
+                      className="hidden"
+                      onChange={(e) =>
+                        handleFileUpload(row.id, "testMaterial", e)
+                      }
+                    />
                     {row.testMaterial.length > 0 && (
                       <div className="flex flex-col mt-1 gap-1">
-                        {row.testMaterial.map((file, idx) => (
-                          <span
+                        {row.testMaterial.map((mat, idx) => (
+                          <div
                             key={idx}
-                            className="text-[10px] text-gray-500 truncate max-w-[80px]"
-                            title={file}
+                            className="flex items-center gap-1 text-[10px] text-gray-500 max-w-[120px]"
+                            title={mat.name}
                           >
-                            {file}
-                          </span>
+                            {mat.type === "pdf" && <FileText size={10} />}
+                            {mat.type === "video" && <Video size={10} />}
+                            {mat.type === "link" && <Link size={10} />}
+                            <span className="truncate">{mat.name}</span>
+                          </div>
                         ))}
                       </div>
                     )}
@@ -663,29 +694,36 @@ const TeacherLearningPlanner: React.FC = () => {
 
                 <td className="py-3 px-2 text-center">
                   <div className="flex flex-col items-center justify-center">
-                    <label className="cursor-pointer flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-md transition-colors">
+                    <button
+                      onClick={() => setUploadModal({ id: row.id, field: "practiceMaterial" })}
+                      className="cursor-pointer flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-md transition-colors border-none"
+                    >
                       <Upload size={12} />
                       <span>Upload</span>
-                      <input
-                        type="file"
-                        multiple
-                        accept=".pdf"
-                        className="hidden"
-                        onChange={(e) =>
-                          handleFileUpload(row.id, "practiceMaterial", e)
-                        }
-                      />
-                    </label>
+                    </button>
+                    <input
+                      id={`file-prac-${row.id}`}
+                      type="file"
+                      multiple
+                      accept=".pdf,video/*"
+                      className="hidden"
+                      onChange={(e) =>
+                        handleFileUpload(row.id, "practiceMaterial", e)
+                      }
+                    />
                     {row.practiceMaterial.length > 0 && (
                       <div className="flex flex-col mt-1 gap-1">
-                        {row.practiceMaterial.map((file, idx) => (
-                          <span
+                        {row.practiceMaterial.map((mat, idx) => (
+                          <div
                             key={idx}
-                            className="text-[10px] text-gray-500 truncate max-w-[80px]"
-                            title={file}
+                            className="flex items-center gap-1 text-[10px] text-gray-500 max-w-[120px]"
+                            title={mat.name}
                           >
-                            {file}
-                          </span>
+                            {mat.type === "pdf" && <FileText size={10} />}
+                            {mat.type === "video" && <Video size={10} />}
+                            {mat.type === "link" && <Link size={10} />}
+                            <span className="truncate">{mat.name}</span>
+                          </div>
                         ))}
                       </div>
                     )}
@@ -702,8 +740,8 @@ const TeacherLearningPlanner: React.FC = () => {
                 </td>
 
                 <td className="py-3 px-2 text-center">
-                  <button className="p-2 inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium text-primary">
-                    <span className="material-symbols-outlined ">save</span>
+                  <button className="p-2 inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium text-[#b9b7b7]">
+                    <Save size={20} strokeWidth={2} />
                   </button>
                 </td>
               </tr>
@@ -722,6 +760,47 @@ const TeacherLearningPlanner: React.FC = () => {
         </button>
       </div>
       {isChatOpen && <Chat onClose={() => setIsChatOpen(false)} />}
+
+      {/* Upload Selection Modal */}
+      {uploadModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in duration-200">
+            <button 
+              onClick={() => setUploadModal(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 border-none bg-transparent cursor-pointer transition-colors"
+            >
+              <X size={20} />
+            </button>
+            
+            <h3 className="text-xl font-bold text-primary mb-6 text-center">Choose Content Type</h3>
+            
+            <div className="grid grid-cols-1 gap-4">
+              <button
+                onClick={() => {
+                  const inputId = uploadModal.field === "testMaterial" ? `file-test-${uploadModal.id}` : `file-prac-${uploadModal.id}`;
+                  document.getElementById(inputId)?.click();
+                  setUploadModal(null);
+                }}
+                className="flex items-center justify-center gap-3 p-4 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-all border border-blue-200 font-bold cursor-pointer"
+              >
+                <FileText size={20} />
+                <span>Upload Local File</span>
+              </button>
+              
+              <button
+                onClick={() => {
+                  handleLinkUpload(uploadModal.id, uploadModal.field);
+                  setUploadModal(null);
+                }}
+                className="flex items-center justify-center gap-3 p-4 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-all border border-green-200 font-bold cursor-pointer"
+              >
+                <Link size={20} />
+                <span>Add External Link</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
