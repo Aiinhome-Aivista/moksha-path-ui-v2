@@ -1,3 +1,4 @@
+import { Upload } from "lucide-react";
 import { decode } from "punycode";
 
 export const BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -58,6 +59,7 @@ export const GET_APIS = {
   get_users_by_token_contact: `${BASE_URL}auth/get_users_by_token_contact`,
   student_notification_assessment: `${BASE_URL}auth/student/notification_assessments`,
   parent_confidence: `${BASE_URL}parent_teacher/dashboard/parent/confidence`,
+
 
   // parent dashboard APIs
   parent_progressing_ability: `${BASE_URL}parent_teacher/dashboard/parent/progressing-ability`,
@@ -190,4 +192,5 @@ export const POST_APIS = {
   remove_teacher: `${BASE_URL}institute_admin/remove_teacher`,
 
   upsert_teacher_planner: `${BASE_URL}parent_teacher/teacher_chapter_planner_upsert`,
+  upload_study_material: `${BASE_URL}parent_teacher/upload_study_material`,
 };

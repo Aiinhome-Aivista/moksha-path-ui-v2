@@ -678,6 +678,12 @@ class ApiServices {
   upsertTeacherPlanner(payload) {
     return axiosInstance.post(POST_APIS.upsert_teacher_planner, payload);
   }
+  getTeacherPlanner() {
+    return axiosInstance.get(GET_APIS.get_teacher_planner);
+  }
+  uploadStudyMaterial(payload) {
+    return axiosInstance.post(POST_APIS.upload_study_material, payload);
+  }
 }
 
 export default new ApiServices();

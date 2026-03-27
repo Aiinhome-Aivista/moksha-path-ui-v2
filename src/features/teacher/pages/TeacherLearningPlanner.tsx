@@ -96,8 +96,9 @@ const TeacherLearningPlanner: React.FC = () => {
   const [activeSubject, setActiveSubject] = useState("");
   const { showToast } = useToast();
 
-  const [classOptions, setClassOptions] = useState<string[]>([]);
-  const [sectionOptions, setSectionOptions] = useState<string[]>([]);
+  // Changed to store objects so we can access IDs for the API payload
+  const [classOptions, setClassOptions] = useState<{ id: number; name: string }[]>([]);
+  const [sectionOptions, setSectionOptions] = useState<{ id: number; name: string }[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("");
   const [selectedSection, setSelectedSection] = useState<string>("");
 
@@ -160,9 +161,9 @@ const TeacherLearningPlanner: React.FC = () => {
     setNamingValue("");
   };
 
-  const confirmNaming = () => {
+  const confirmNaming = async () => {
     if (!namingModal) return;
-    const { id, field, file } = namingModal;
+    const { id, field, file, isLink } = namingModal;
     const finalName = namingValue.trim() || (file ? file.name : "Link");
 
     const type = file
@@ -175,21 +176,69 @@ const TeacherLearningPlanner: React.FC = () => {
         : "pdf"
       : "link";
 
-    setSubjects((prev) =>
-      prev.map((sub) => ({
-        ...sub,
-        chapters: sub.chapters.map((ch: any) =>
-          ch.id === id || ch.chapter_id === id
-            ? {
-                ...ch,
-                [field]: [...(ch[field] || []), { name: finalName, type }],
-              }
-            : ch,
-        ),
-      })),
-    );
-    setNamingModal(null);
-    setNamingValue("");
+    setIsLoading(true);
+
+    try {
+      const formData = new FormData();
+      
+      // 1. Append Required IDs
+      formData.append("chapter_id", id.toString());
+      formData.append("board_id", stats?.board_id?.toString() || "");
+      formData.append("institute_id", stats?.institute_id?.toString() || "");
+      
+      const currentClassObj = classOptions.find(c => c.name === selectedClass);
+      formData.append("class_id", currentClassObj?.id?.toString() || stats?.class_id?.toString() || ""); 
+      
+      const currentSectionObj = sectionOptions.find(s => s.name === selectedSection);
+      formData.append("section_id", currentSectionObj?.id?.toString() || stats?.section_id?.toString() || "");
+      
+      const currentSubject = subjects.find(s => s.subject_name === activeSubject);
+      formData.append("subject_id", currentSubject?.subject_id?.toString() || "");
+
+      // 2. Append Title
+      formData.append("title", finalName);
+
+      // 3. Handle File vs Link correctly
+      if (isLink) {
+        formData.append("file_type", "link");
+        formData.append("link_url", namingValue.trim());
+      } else if (file) {
+        // Map UI field names to exact backend requirements
+        const category = field === "testMaterial" ? "study_material" : "practice_material";
+        formData.append("file_type", category);
+        formData.append("files", file);
+      }
+
+      // Execute the API Call
+      const res = await ApiServices.uploadStudyMaterial(formData);
+
+      if (res.data?.status === "success") {
+        showToast("Material uploaded successfully", "success");
+
+        // Optimistically update the local state upon success
+        setSubjects((prev) =>
+          prev.map((sub) => ({
+            ...sub,
+            chapters: sub.chapters.map((ch: any) =>
+              ch.id === id || ch.chapter_id === id
+                ? {
+                    ...ch,
+                    [field]: [...(ch[field] || []), { name: finalName, type }],
+                  }
+                : ch,
+            ),
+          })),
+        );
+      } else {
+        showToast(res.data?.message || "Failed to upload material", "error");
+      }
+    } catch (error) {
+      showToast("An error occurred while uploading material", "error");
+    } finally {
+      setIsLoading(false);
+      setNamingModal(null);
+      setNamingValue("");
+    }
   };
 
   const today = new Date().toISOString().split("T")[0];
@@ -222,11 +271,11 @@ const TeacherLearningPlanner: React.FC = () => {
       })),
     );
   };
+  
   const [profileImage, setProfileImage] = useState<string>(" ");
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
-
 
   const fetchLearningPlan = async () => {
     try {
@@ -266,21 +315,23 @@ const TeacherLearningPlanner: React.FC = () => {
 
         setSubjects(plans);
 
-        // Map stats for header
+        // Map stats for header AND capture IDs for payload
         setStats({
           teacher_name: data.teacher?.name,
           institute_name: data.institute?.name,
+          institute_id: data.institute?.id,
           board_name: data.board?.name,
+          board_id: data.board?.id,
           class_name: data.dropdowns?.classes?.[0]?.name,
+          class_id: data.dropdowns?.classes?.[0]?.id,
           section_name: data.dropdowns?.sections?.[0]?.name,
+          section_id: data.dropdowns?.sections?.[0]?.id,
         });
 
-        // Map dropdown options
+        // Map dropdown options (keep the whole object so we have name AND id)
         if (data.dropdowns) {
-          setClassOptions(data.dropdowns.classes?.map((c: any) => c.name) || []);
-          setSectionOptions(
-            data.dropdowns.sections?.map((s: any) => s.name) || [],
-          );
+          setClassOptions(data.dropdowns.classes || []);
+          setSectionOptions(data.dropdowns.sections || []);
         }
 
         if (plans.length > 0) {
@@ -333,8 +384,6 @@ const TeacherLearningPlanner: React.FC = () => {
       const res = await ApiServices.upsertTeacherPlanner(payload);
       if (res.data?.status === "success") {
         showToast("Chapter planner updated successfully", "success");
-        // Optionally refresh data
-        // fetchLearningPlan();
       } else {
         showToast(res.data?.message || "Failed to update", "error");
       }
@@ -351,14 +400,6 @@ const TeacherLearningPlanner: React.FC = () => {
         setSelectedSection(stats.section_name);
     }
   }, [stats]);
-
-  // const getNextPriority = (
-  //   current: "High" | "Medium" | "Low",
-  // ): "High" | "Medium" | "Low" => {
-  //   if (current === "High") return "Medium";
-  //   if (current === "Medium") return "Low";
-  //   return "High";
-  // };
 
   // Get first letter of name for avatar fallback
   const getInitial = () => {
@@ -428,8 +469,8 @@ const TeacherLearningPlanner: React.FC = () => {
                   <div className="m-0">
                     <SearchableSelect
                       options={classOptions.map((c) => ({
-                        label: c,
-                        value: c,
+                        label: c.name,
+                        value: c.name,
                       }))}
                       value={selectedClass}
                       onChange={(val) => setSelectedClass(val as string)}
@@ -440,8 +481,8 @@ const TeacherLearningPlanner: React.FC = () => {
                   <div className="px-2">
                     <SearchableSelect
                       options={sectionOptions.map((s) => ({
-                        label: s,
-                        value: s,
+                        label: s.name,
+                        value: s.name,
                       }))}
                       value={selectedSection}
                       onChange={(val) => setSelectedSection(val as string)}
@@ -603,6 +644,7 @@ const TeacherLearningPlanner: React.FC = () => {
                           >
                             {mat.type === "pdf" && <FileText size={10} />}
                             {mat.type === "excel" && <FileSpreadsheet size={10} className="text-green-600" />}
+                            {mat.type === "link" && <Link size={10} />}
                             <span className="truncate">{mat.name}</span>
                           </div>
                         ))}
