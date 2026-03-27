@@ -64,9 +64,15 @@ const ManageFacultyModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   // Per-teacher inline assign form (available tab)
   const [assigningTeacher, setAssigningTeacher] = useState<number | null>(null); // teacher_user_id being assigned
-  const [classIdsInput, setClassIdsInput] = useState<Record<number, string>>({});
   const [assignStatus, setAssignStatus] = useState<Record<number, { type: "success" | "error"; text: string }>>({});
   const [assignLoading, setAssignLoading] = useState<number | null>(null);
+
+  // Institute admin summary (class + subject dropdown data)
+  const [summaryData, setSummaryData] = useState<any[]>([]);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  // Per-teacher dropdown selections
+  const [selectedClassId, setSelectedClassId] = useState<Record<number, number>>({});
+  const [selectedSubjectId, setSelectedSubjectId] = useState<Record<number, number>>({});
 
   // Per-teacher remove state (assigned tab)
   const [confirmRemove, setConfirmRemove] = useState<AssignedTeacher | null>(null);
@@ -114,18 +120,34 @@ const ManageFacultyModal: React.FC<Props> = ({ isOpen, onClose }) => {
     if (activeTab === "available") fetchAvailable();
   }, [isOpen, activeTab]);
 
+  // Fetch summary once when modal opens
+  useEffect(() => {
+    if (!isOpen || summaryData.length > 0) return;
+    const fetchSummary = async () => {
+      setSummaryLoading(true);
+      try {
+        const res = await ApiServices.getInstituteAdminSummary();
+        if (res.data?.status === "success") {
+          setSummaryData(res.data.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch admin summary", err);
+      } finally {
+        setSummaryLoading(false);
+      }
+    };
+    fetchSummary();
+  }, [isOpen]);
+
   // ── Handlers ──
   const handleAssign = async (teacher: AvailableTeacher) => {
-    const raw = classIdsInput[teacher.teacher_user_id] || "";
-    const classIds = raw
-      .split(",")
-      .map((s) => parseInt(s.trim()))
-      .filter((n) => !isNaN(n) && n > 0);
+    const classId = selectedClassId[teacher.teacher_user_id];
+    const subjectId = selectedSubjectId[teacher.teacher_user_id];
 
-    if (classIds.length === 0) {
+    if (!classId) {
       setAssignStatus((prev) => ({
         ...prev,
-        [teacher.teacher_user_id]: { type: "error", text: "Enter at least one valid Class ID." },
+        [teacher.teacher_user_id]: { type: "error", text: "Please select a class." },
       }));
       return;
     }
@@ -136,14 +158,16 @@ const ManageFacultyModal: React.FC<Props> = ({ isOpen, onClose }) => {
     try {
       const res = await ApiServices.assignTeacher({
         teacher_user_id: teacher.teacher_user_id,
-        class_ids: classIds,
+        class_ids: [classId],
+        subject_ids: subjectId ? [subjectId] : [],
       });
       if (res.data?.status === "success") {
         setAssignStatus((prev) => ({
           ...prev,
           [teacher.teacher_user_id]: { type: "success", text: res.data?.message || "Assigned successfully!" },
         }));
-        setClassIdsInput((prev) => { const n = { ...prev }; delete n[teacher.teacher_user_id]; return n; });
+        setSelectedClassId((prev) => { const n = { ...prev }; delete n[teacher.teacher_user_id]; return n; });
+        setSelectedSubjectId((prev) => { const n = { ...prev }; delete n[teacher.teacher_user_id]; return n; });
         setAssigningTeacher(null);
         // Refresh both lists
         fetchAssigned();
@@ -520,42 +544,79 @@ const ManageFacultyModal: React.FC<Props> = ({ isOpen, onClose }) => {
                         {isExpanded && (
                           <div className="px-4 pb-4 space-y-3 border-t border-[#b0cb1f]/30 pt-3">
                             <p className="text-xs text-gray-500">
-                              Enter <strong>Class </strong> to assign{" "}
-                              <span className="font-semibold text-gray-700">{teacher.name.trim()}</span> to:
+                              Select details to assign{" "}
+                              <span className="font-semibold text-gray-700">{teacher.name.trim()}</span>:
                             </p>
-                            <div className="flex gap-2">
-                              <div className="relative flex-1">
-                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base">
-                                  class
-                                </span>
-                                <input
-                                  type="text"
-                                  placeholder="e.g. 3, 5, 9"
-                                  value={classIdsInput[teacher.teacher_user_id] || ""}
-                                  onChange={(e) =>
-                                    setClassIdsInput((prev) => ({
-                                      ...prev,
-                                      [teacher.teacher_user_id]: e.target.value,
-                                    }))
-                                  }
-                                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#b0cb1f] transition"
-                                />
+
+                            {summaryLoading ? (
+                              <div className="py-3 flex justify-center text-gray-400">
+                                <span className="material-symbols-outlined animate-spin text-xl">progress_activity</span>
                               </div>
-                              <button
-                                disabled={isLoading}
-                                onClick={() => handleAssign(teacher)}
-                                className="flex items-center gap-1.5 px-4 py-2 bg-[#b0cb1f] hover:bg-lime-400 text-gray-800 text-sm font-bold rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                              >
-                                {isLoading ? (
-                                  <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
-                                ) : (
-                                  <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
-                                    check_circle
-                                  </span>
-                                )}
-                                Assign
-                              </button>
+                            ) : (
+                            <>
+                            {/* Row: Class + Section + Subject */}
+                            <div className="flex gap-2">
+                              {/* Class Dropdown */}
+                              <div className="relative flex-1">
+                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base pointer-events-none">class</span>
+                                <select
+                                  value={selectedClassId[teacher.teacher_user_id] || ""}
+                                  onChange={(e) => {
+                                    setSelectedClassId((prev) => ({ ...prev, [teacher.teacher_user_id]: parseInt(e.target.value) }));
+                                    setSelectedSubjectId((prev) => { const n = { ...prev }; delete n[teacher.teacher_user_id]; return n; });
+                                  }}
+                                  className="w-full pl-9 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#b0cb1f] transition appearance-none text-gray-600"
+                                >
+                                  <option value="">Select Class</option>
+                                  {/* Dedupe classes by target_class_id */}
+                                  {Array.from(new Map(summaryData.map((r: any) => [r.target_class_id, r])).values()).map((r: any) => (
+                                    <option key={r.target_class_id} value={r.target_class_id}>{r.class_name}</option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              {/* Section Dropdown (static — no sections in API) */}
+                              <div className="relative flex-1">
+                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base pointer-events-none">view_list</span>
+                                <select className="w-full pl-9 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#b0cb1f] transition appearance-none text-gray-600">
+                                  <option value="">Select Section</option>
+                                </select>
+                              </div>
+
+                              {/* Subject Dropdown — filtered by selected class */}
+                              <div className="relative flex-1">
+                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base pointer-events-none">subject</span>
+                                <select
+                                  value={selectedSubjectId[teacher.teacher_user_id] || ""}
+                                  onChange={(e) => setSelectedSubjectId((prev) => ({ ...prev, [teacher.teacher_user_id]: parseInt(e.target.value) }))}
+                                  className="w-full pl-9 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#b0cb1f] transition appearance-none text-gray-600"
+                                  disabled={!selectedClassId[teacher.teacher_user_id]}
+                                >
+                                  <option value="">Select Subject</option>
+                                  {summaryData
+                                    .filter((r: any) => r.target_class_id === selectedClassId[teacher.teacher_user_id])
+                                    .map((r: any) => (
+                                      <option key={r.subject_id} value={r.subject_id}>{r.subject_name}</option>
+                                    ))}
+                                </select>
+                              </div>
                             </div>
+                            </>
+                            )}
+
+                            {/* Assign Button */}
+                            <button
+                              disabled={isLoading}
+                              onClick={() => handleAssign(teacher)}
+                              className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#b0cb1f] hover:bg-lime-400 text-gray-800 text-sm font-bold rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                              {isLoading ? (
+                                <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                              ) : (
+                                <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                              )}
+                              Assign Teacher
+                            </button>
                           </div>
                         )}
                       </div>

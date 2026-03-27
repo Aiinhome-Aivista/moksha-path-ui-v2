@@ -667,6 +667,11 @@ class ApiServices {
     // payload: { teacher_user_id: number }
     return axiosInstance.post(POST_APIS.remove_teacher, payload);
   }
+
+  // Get institute admin summary (class + subject list for assign dropdown)
+  getInstituteAdminSummary() {
+    return axiosInstance.get(GET_APIS.get_institute_admin_summary);
+  }
 }
 
 export default new ApiServices();
