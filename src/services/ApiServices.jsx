@@ -515,9 +515,12 @@ class ApiServices {
     });
   }
 
-  // GET Student Learning Planner
   getTeacherLearningPlanner() {
     return axiosInstance.get(GET_APIS.get_teacher_learning_planner);
+  }
+
+  getTeacherPlannerData() {
+    return axiosInstance.get(GET_APIS.teacher_planner_data);
   }
 
   getParentProfile() {

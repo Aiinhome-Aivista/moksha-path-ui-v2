@@ -159,7 +159,6 @@ const TeacherLearningPlanner: React.FC = () => {
   const [subjects, setSubjects] = useState<ApiSubjectPlan[]>([]);
   const [activeSubject, setActiveSubject] = useState("");
 
-  const [academicHierarchy, setAcademicHierarchy] = useState<any[]>([]);
   const [classOptions, setClassOptions] = useState<string[]>([]);
   const [sectionOptions, setSectionOptions] = useState<string[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("");
@@ -293,14 +292,32 @@ const TeacherLearningPlanner: React.FC = () => {
 
   const fetchLearningPlan = async () => {
     try {
-      const response = await ApiServices.getTeacherLearningPlanner();
+      setIsLoading(true);
+      const response = await ApiServices.getTeacherPlannerData();
       const result = response.data;
 
       if (result.status === "success") {
-        const plans = result.data?.subject_wise_plan || [];
+        const data = result.data;
+        const plans = data.subject_wise_chapters || [];
 
         setSubjects(plans);
-        setStats(result.data?.stats);
+
+        // Map stats for header
+        setStats({
+          teacher_name: data.teacher?.name,
+          institute_name: data.institute?.name,
+          board_name: data.board?.name,
+          class_name: data.dropdowns?.classes?.[0]?.name,
+          section_name: data.dropdowns?.sections?.[0]?.name,
+        });
+
+        // Map dropdown options
+        if (data.dropdowns) {
+          setClassOptions(data.dropdowns.classes?.map((c: any) => c.name) || []);
+          setSectionOptions(
+            data.dropdowns.sections?.map((s: any) => s.name) || [],
+          );
+        }
 
         if (plans.length > 0) {
           setActiveSubject((prev) => prev || plans[0]?.subject_name || "");
@@ -330,43 +347,30 @@ const TeacherLearningPlanner: React.FC = () => {
     fetchProfileImage();
   }, []);
 
+  // Sync demoChapters with dynamic API data
   useEffect(() => {
-    const fetchHierarchy = async () => {
-      try {
-        const res = await ApiServices.getAcademicHierarchy();
-        if (res.data?.status === "success" && Array.isArray(res.data.data)) {
-          setAcademicHierarchy(res.data.data);
-          const classes = Array.from(
-            new Set(res.data.data.map((item: any) => item.class_name)),
-          ).filter(Boolean) as string[];
-          setClassOptions(classes);
-        }
-      } catch (e) {}
-    };
-    fetchHierarchy();
-  }, []);
-
-  useEffect(() => {
-    if (!selectedClass) {
-      setSectionOptions([]);
-      return;
+    const activePlan = subjects.find((s) => s.subject_name === activeSubject);
+    if (activePlan) {
+      const mappedChapters = activePlan.chapters.map((ch: any) => {
+        // Find existing demo chapter data if any (to preserve materials or local changes)
+        const existing = demoChapters.find((d) => d.id === ch.id);
+        return {
+          id: ch.id,
+          chapter: ch.name || ch.chapter_name,
+          startDate: existing?.startDate || "--",
+          endDate: existing?.endDate || "--",
+          progress: existing?.progress || 0,
+          completed: existing?.completed || false,
+          testMaterial: existing?.testMaterial || [],
+          practiceMaterial: existing?.practiceMaterial || [],
+        };
+      });
+      setDemoChapters(mappedChapters);
+    } else if (subjects.length > 0) {
+      // Fallback if active subject not found in current subjects
+      setDemoChapters([]);
     }
-    const sections = academicHierarchy
-      .filter((item: any) => item.class_name === selectedClass)
-      .flatMap((item: any) => {
-        if (Array.isArray(item.sections)) {
-          return item.sections.map((s: any) => s.section_name || s.section);
-        }
-        return [];
-      })
-      .filter(Boolean);
-    const uniqueSections = Array.from(new Set(sections));
-    setSectionOptions(uniqueSections);
-
-    if (selectedSection && !uniqueSections.includes(selectedSection)) {
-      setSelectedSection("");
-    }
-  }, [selectedClass, academicHierarchy]);
+  }, [activeSubject, subjects]);
 
   useEffect(() => {
     if (stats) {
@@ -376,55 +380,6 @@ const TeacherLearningPlanner: React.FC = () => {
         setSelectedSection(stats.section_name);
     }
   }, [stats]);
-
-  const updateTopic = async (
-    chapterId: number,
-    topicId: number,
-    isCompleted: boolean,
-  ) => {
-    const payload = [
-      {
-        chapter_id: chapterId,
-        topic_id: topicId,
-        status: isCompleted ? "Pending" : "Completed",
-      },
-    ];
-
-    try {
-      await ApiServices.updateTopicStatus(payload);
-
-      //  Fetch updated data from backend
-      await fetchLearningPlan();
-
-      // Update UI locally after success
-      setSubjects((prev) =>
-        prev.map((sub) => ({
-          ...sub,
-          chapters: sub.chapters.map((ch) =>
-            ch.chapter_id === chapterId
-              ? {
-                  ...ch,
-                  topics: ch.topics.map((t) =>
-                    t.topic_id === topicId
-                      ? { ...t, is_completed: !isCompleted }
-                      : t,
-                  ),
-                }
-              : ch,
-          ),
-        })),
-      );
-    } catch (err) {
-      // console.error("Update topic failed", err);
-    }
-  };
-
-  const getProgressColor = (progress: number) => {
-    if (progress >= 80) return "bg-green-500";
-    if (progress >= 50) return "bg-yellow-400";
-    if (progress >= 30) return "bg-orange-500";
-    return "bg-red-500";
-  };
 
   // const getNextPriority = (
   //   current: "High" | "Medium" | "Low",
@@ -495,9 +450,8 @@ const TeacherLearningPlanner: React.FC = () => {
                 !
               </h1>
               <p className="text-sm text-primary font-medium m-0">
-                {stats.institute_name}
+                {stats.institute_name} {stats.board_name && `| ${stats.board_name}`}
               </p>
-              {/* <p className="text-sm text-primary m-0">{stats.board_name}</p> */}
               <div className="flex flex-col gap-2 mt-2">
                 <div className="flex gap-2">
                   <div className="m-0">
@@ -552,26 +506,7 @@ const TeacherLearningPlanner: React.FC = () => {
           </button>
         </div>
       </header>
-      <div className="flex flex-wrap gap-3 items-center justify-center mb-6">
-        {subjects.map((subject) => (
-          <button
-            key={subject.subject_name}
-            onClick={() => setActiveSubject(subject.subject_name)}
-            className={`px-6 py-2.5 rounded-full text-sm font-medium cursor-pointer transition-all duration-300 border-none
-      ${
-        activeSubject === subject.subject_name
-          ? "bg-button-primary text-primary font-semibold"
-          : "bg-primary text-white font-semibold"
-      }`}
-          >
-            {subject.subject_name}
-          </button>
-        ))}
-
-        {/* <div className="ml-auto cursor-pointer p-2">
-          <img src="/vec.svg" alt="Filter" />
-        </div> */}
-      </div>
+ 
       <div className="overflow-x-auto mb-6 border-t-4 border-gray-300 ">
         <table className="w-full border-collapse text-sm">
           <thead className="border-b-2 border-gray-300">
