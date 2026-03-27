@@ -535,7 +535,7 @@ const TeacherLearningPlanner: React.FC = () => {
           <tbody>
             {demoChapters.map((row, i) => (
               <tr key={i} className="border-b hover:bg-gray-50">
-                <td className="py-3 px-2 text-center">{row.id}</td>
+                <td className="py-3 px-2 text-center">{i+1}</td>
 
                 <td className="py-3 px-2 text-center font-medium">
                   {row.chapter}
