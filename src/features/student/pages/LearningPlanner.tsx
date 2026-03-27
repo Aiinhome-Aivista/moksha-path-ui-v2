@@ -757,20 +757,7 @@ const LearningPlanner: React.FC = () => {
               {academic && (
                 <>
                   <p className="text-sm text-primary font-medium m-0">{academic.institute}</p>
-                  <p className="text-sm text-primary m-0">{academic.board} | {academic.class}</p>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {academic.sections && academic.sections.length > 0 ? (
-                      academic.sections.map(sec => (
-                        <span key={sec} className="bg-[#BADA55]/20 text-[#6a9000] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#BADA55]/30">
-                          Section {sec}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="bg-gray-100 text-gray-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-200">
-                        No Section
-                      </span>
-                    )}
-                  </div>
+                  <p className="text-sm text-primary m-0">{academic.board} | {academic.class} | Section {academic.sections}</p>
                   <p className="text-sm text-primary m-0 break-words max-w-xl">
                     Subject: {subjects.map(s => s.subject_name).join(", ")}
                   </p>
@@ -787,7 +774,7 @@ const LearningPlanner: React.FC = () => {
         <div className="flex flex-wrap items-start gap-10">
           <div className="flex items-center gap-4">
             <div className="w-[6rem] h-[6rem] rounded-full bg-yellow flex items-center justify-center shadow-inner">
-              <span className="text-4xl font-bold text-red">?</span>
+              <span className="text-4xl font-bold text-red">00</span>
             </div>
             <div className="leading-snug">
               <p className="text-xs font-bold mt-7 text-primary">Days Left for<br />Annual<br />Exam</p>
