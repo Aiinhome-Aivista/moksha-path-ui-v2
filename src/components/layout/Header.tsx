@@ -141,6 +141,8 @@ import { useToast } from "../../app/providers/ToastProvider";
 import { UserCircle } from "lucide-react";
 import { ProfileDropdown } from "../../features/auth/modal/ProfileDropdown";
 
+import { track } from "../../services/tracker";
+
 interface HeaderProps {
   isSidebarOpen: boolean;
 }
@@ -159,6 +161,9 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
   // };
 
   const confirmLogout = async () => {
+    track("logout_confirmed", {
+      source: "header",
+    });
     try {
       await ApiServices.signOut();
     } catch (error) {
@@ -174,6 +179,11 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
   };
 
   const handleLogoClick = () => {
+    track("logo_clicked", {
+      source: "header",
+      authenticated: isAuthenticated,
+    });
+
     if (isAuthenticated) {
       const role = user?.role?.toLowerCase();
       if (role === "teacher") {
@@ -233,14 +243,33 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
                 Institutional Access
               </button>
               <button
-                onClick={() => navigate("/blogs")}
+                // onClick={() => navigate("/blogs")}
+                onClick={() => {
+
+                  track("navigation_clicked", {
+                    destination: "blogs",
+                    source: "header",
+                  });
+
+                  navigate("/blogs");
+
+                }}
                 className="text-sm font-semibold text-gray-700 hover:text-gray-900"
               >
                 Blogs
               </button>
               {!isAuthenticated && !location.pathname.startsWith('/admin') && (
                 <button
-                  onClick={openSignIn}
+                  // onClick={openSignIn}
+                  onClick={() => {
+
+                    track("signin_modal_opened", {
+                      source: "header",
+                    });
+
+                    openSignIn();
+
+                  }}
                   className="text-sm font-semibold text-gray-700 hover:text-gray-900"
                 >
                   Sign In
@@ -254,9 +283,18 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
               {isAuthenticated && user?.role !== 'admin' && (
                 <div className="relative flex items-center justify-center">
                   <button
-                    onClick={() =>
-                      setIsProfileDropdownOpen(!isProfileDropdownOpen)
-                    }
+                    // onClick={() =>
+                    //   setIsProfileDropdownOpen(!isProfileDropdownOpen)
+                    // }
+                    onClick={() => {
+
+                      track("profile_menu_opened", {
+                        source: "header",
+                      });
+
+                      setIsProfileDropdownOpen(!isProfileDropdownOpen);
+
+                    }}
                     className="p-2 rounded-full hover:bg-gray-100 transition"
                     title="Profile Menu"
                   >

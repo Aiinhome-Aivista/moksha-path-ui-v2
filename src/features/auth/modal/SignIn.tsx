@@ -4,6 +4,8 @@ import { useModal } from "../context/AuthContext";
 import { useToast } from "../../../app/providers/ToastProvider";
 import ApiServices from "../../../services/ApiServices";
 import { useAuth } from "../../../app/providers/AuthProvider";
+
+import { track } from "../../../services/tracker";
 export const SignInModal: React.FC = () => {
   const [formData, setFormData] = useState({
     username: "",
@@ -177,6 +179,12 @@ export const SignInModal: React.FC = () => {
 
   // Static OTP sending
   const handleSendOtp = async () => {
+    track("otp_send_clicked", {
+      source: "signin_modal",
+      identifier_type: isValidEmail(formData.emailOrMobile)
+        ? "email"
+        : "mobile",
+    });
     if (
       !isValidEmail(formData.emailOrMobile) &&
       !isValidMobile(formData.emailOrMobile)
@@ -222,6 +230,8 @@ export const SignInModal: React.FC = () => {
   };
 
   const handleResendOtp = () => {
+    track("otp_resend_clicked");
+
     setOtp(["", "", "", "", "", ""]);
     setOtpError("");
     setResendTimer(60);
@@ -234,6 +244,8 @@ export const SignInModal: React.FC = () => {
 
   // Static Recovery Flow
   const handleRecoveryNext = () => {
+    track("recovery_flow_started");
+
     if (!recoveryIdentifier) {
       setRecoveryError("Please enter your details");
       showToast("Please enter your details", "error");
@@ -257,6 +269,8 @@ export const SignInModal: React.FC = () => {
   };
 
   const handleVerifyRecoveryOtp = () => {
+    track("recovery_otp_verified");
+
     const otpValue = recoveryOtp.join("");
     if (otpValue.length !== 6) {
       setRecoveryError("Please enter complete 6-digit OTP");
@@ -289,6 +303,10 @@ export const SignInModal: React.FC = () => {
 
   // Static Login
   const handleSignIn = async () => {
+    track("signin_attempted", {
+      source: "signin_modal",
+    });
+
     if (!showOtp) {
       setOtpError("Please verify OTP first");
       showToast("Please verify OTP first", "error");
@@ -310,7 +328,7 @@ export const SignInModal: React.FC = () => {
       });
 
       if (res.data?.status === "success") {
-        const { auth_token, refresh_token,subscription_token } = res.data.data;
+        const { auth_token, refresh_token, subscription_token } = res.data.data;
 
         if (auth_token) localStorage.setItem("auth_token", auth_token);
         if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
@@ -414,6 +432,8 @@ export const SignInModal: React.FC = () => {
   };
 
   const handleCancel = () => {
+    track("signin_modal_closed");
+
     setFormData({ username: "", emailOrMobile: "" });
     setShowOtp(false);
     setOtp(["", "", "", "", "", ""]);
@@ -553,14 +573,13 @@ export const SignInModal: React.FC = () => {
                         (recoveryStep === "otp" &&
                           recoveryOtp.join("").length !== 6)
                       }
-                      className={`px-7 py-2.5 rounded-full text-sm font-medium transition-colors disabled:cursor-not-allowed ${
-                        (recoveryStep === "username" && !recoveryIdentifier) ||
+                      className={`px-7 py-2.5 rounded-full text-sm font-medium transition-colors disabled:cursor-not-allowed ${(recoveryStep === "username" && !recoveryIdentifier) ||
                         (recoveryStep === "otp" &&
                           recoveryOtp.join("").length !== 6) ||
                         isRecoveryLoading
-                          ? "bg-primary text-white"
-                          : "bg-button-primary text-primary hover:opacity-90"
-                      }`}
+                        ? "bg-primary text-white"
+                        : "bg-button-primary text-primary hover:opacity-90"
+                        }`}
                     >
                       {isRecoveryLoading
                         ? "Loading..."
@@ -639,13 +658,12 @@ export const SignInModal: React.FC = () => {
                         (!isValidEmail(formData.emailOrMobile) &&
                           !isValidMobile(formData.emailOrMobile))
                       }
-                      className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors disabled:cursor-not-allowed ${
-                        formData.emailOrMobile &&
+                      className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors disabled:cursor-not-allowed ${formData.emailOrMobile &&
                         (isValidEmail(formData.emailOrMobile) ||
                           isValidMobile(formData.emailOrMobile))
-                          ? "bg-button-primary text-primary border-button-primary hover:opacity-90"
-                          : "bg-primary text-white"
-                      }`}
+                        ? "bg-button-primary text-primary border-button-primary hover:opacity-90"
+                        : "bg-primary text-white"
+                        }`}
                     >
                       {isSendingOtp ? "Sending..." : "Send OTP"}
                     </button>
@@ -722,11 +740,10 @@ export const SignInModal: React.FC = () => {
                     isLoggingIn ||
                     (showOtp ? otp.join("").length !== 6 : !isVerified)
                   }
-                  className={`px-7 py-2.5 rounded-full text-sm font-medium transition-colors disabled:cursor-not-allowed ${
-                    (showOtp ? otp.join("").length === 6 : isVerified)
-                      ? "bg-button-primary text-primary hover:opacity-90"
-                      : "bg-primary text-white"
-                  }`}
+                  className={`px-7 py-2.5 rounded-full text-sm font-medium transition-colors disabled:cursor-not-allowed ${(showOtp ? otp.join("").length === 6 : isVerified)
+                    ? "bg-button-primary text-primary hover:opacity-90"
+                    : "bg-primary text-white"
+                    }`}
                 >
                   {isLoggingIn ? "Signing in..." : "Sign in"}
                 </button>

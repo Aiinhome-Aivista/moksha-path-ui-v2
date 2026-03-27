@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import ApiServices from "../../services/ApiServices";
 import { Loader2 } from "lucide-react";
 
+import { track } from "../../services/tracker";
+
 // ==========================================
 // GLOBAL DATE FORMATTER (DD/MM/YYYY)
 // ==========================================
@@ -49,6 +51,13 @@ export const BlogDetail = () => {
           setBlog(foundBlog || null);
 
           if (foundBlog) {
+            track("blog_viewed", {
+              blog_id: foundBlog.id,
+              blog_title: foundBlog.title,
+              category: foundBlog.category,
+              slug: foundBlog.slug,
+            });
+
             const currentIndex = allBlogs.findIndex(
               (b: any) =>
                 b.slug.toLowerCase().trim() === slug?.toLowerCase().trim(),
@@ -252,6 +261,12 @@ export const BlogDetail = () => {
                   {nextBlog && (
                     <Link
                       to={`/blogs/${nextBlog.slug}`}
+                      onClick={() =>
+                        track("previous_blog_clicked", {
+                          blog_id: nextBlog.id,
+                          blog_title: nextBlog.title,
+                        })
+                      }
                       className="block group"
                     >
                       <span className="block text-xs text-gray-400 mb-2">
@@ -267,6 +282,12 @@ export const BlogDetail = () => {
                   {prevBlog && (
                     <Link
                       to={`/blogs/${prevBlog.slug}`}
+                      onClick={() =>
+                        track("next_blog_clicked", {
+                          blog_id: prevBlog.id,
+                          blog_title: prevBlog.title,
+                        })
+                      }
                       className="block group"
                     >
                       <span className="block text-xs text-gray-400 mb-2">
@@ -294,6 +315,12 @@ export const BlogDetail = () => {
                 {latestArticles.map((article) => (
                   <Link
                     to={`/blogs/${article.slug}`}
+                    onClick={() =>
+                      track("latest_article_clicked", {
+                        blog_id: article.id,
+                        blog_title: article.title,
+                      })
+                    }
                     key={article.slug}
                     className="flex gap-4 group cursor-pointer"
                   >
@@ -333,6 +360,12 @@ export const BlogDetail = () => {
                 {relatedArticles.map((article) => (
                   <Link
                     to={`/blogs/${article.slug}`}
+                    onClick={() =>
+                      track("related_article_clicked", {
+                        blog_id: article.id,
+                        blog_title: article.title,
+                      })
+                    }
                     key={`related-${article.slug}`}
                     className="flex gap-4 group cursor-pointer"
                   >
