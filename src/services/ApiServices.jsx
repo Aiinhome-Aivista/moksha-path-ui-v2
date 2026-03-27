@@ -670,6 +670,10 @@ class ApiServices {
     // payload: { teacher_user_id: number }
     return axiosInstance.post(POST_APIS.remove_teacher, payload);
   }
+
+  upsertTeacherPlanner(payload) {
+    return axiosInstance.post(POST_APIS.upsert_teacher_planner, payload);
+  }
 }
 
 export default new ApiServices();

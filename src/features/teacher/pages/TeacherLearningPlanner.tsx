@@ -5,85 +5,21 @@ import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
 import { Calendar, Upload, Save, FileText, FileSpreadsheet, Link, X } from "lucide-react";
 import SearchableSelect from "../../../components/common/SearchableSelect";
+import { useToast } from "../../../app/providers/ToastProvider";
 
-// Function to navigate to student materials with stats and selected chapter
-const navigateToStudentMaterials = (
-  navigate: ReturnType<typeof useNavigate>,
-  stats: any,
-  subjects: any[],
-  selectedChapterId?: number,
-) => {
-  navigate("/student-materials", {
-    state: {
-      boardName: stats.board_name,
-      className: stats.class_name,
-      subjects: subjects.map((s) => s.subject_name),
-      subjectWisePlan: subjects,
-      stats: stats,
-      selectedChapterId: selectedChapterId,
-    },
-  });
-};
-
-const navigateToTests = (
-  navigate: ReturnType<typeof useNavigate>,
-  stats: any,
-  subjects: any[],
-  selectedChapterId: number,
-  selectedSubjectName: string,
-) => {
-  const selectedSubject = subjects.find(
-    (s) => s.subject_name === selectedSubjectName,
-  );
-
-  const selectedChapter = selectedSubject?.chapters.find(
-    (ch: any) => ch.chapter_id === selectedChapterId,
-  );
-
-  const selectedTopicIds =
-    selectedChapter?.topics
-      ?.filter((t: any) => t.is_completed) // or your logic
-      .map((t: any) => t.topic_id) || [];
-
-  navigate("/teacher-material", {
-    state: {
-      boardName: stats.board_name,
-      className: stats.class_name,
-      subjects: subjects.map((s) => s.subject_name),
-      subjectWisePlan: subjects,
-      stats: stats,
-      selectedChapterId: selectedChapterId,
-      activeResourceType: "Tests",
-      selectedSubjectName: selectedSubjectName,
-
-      // ✅ ADD THIS
-      selectedTopicIds: selectedTopicIds,
-    },
-  });
-};
 type Priority = "High" | "Medium" | "Low";
 
-interface ApiTopic {
-  topic_id: number;
-  topic_name: string;
-  is_completed: boolean;
-  estimated_hours: number;
-  status: string;
-}
-
 interface ApiChapter {
-  chapter_id: number;
-  chapter_name: string;
-  start_date: string;
-  end_date: string;
-  start_end_date: string;
-  estimated_hours: number;
-  remaining_hours: number;
-  priority: Priority;
-  progress_percentage: number;
-  status: string;
-  target_completion_days: number;
-  topics: ApiTopic[];
+  id: number;
+  chapter: string;
+  startDate: string;
+  endDate: string;
+  startDate_raw: string;
+  endDate_raw: string;
+  progress: number;
+  completed: boolean;
+  testMaterial: any[];
+  practiceMaterial: any[];
 }
 
 interface ApiSubjectPlan {
@@ -158,6 +94,7 @@ const demoChaptersData = [
 const TeacherLearningPlanner: React.FC = () => {
   const [subjects, setSubjects] = useState<ApiSubjectPlan[]>([]);
   const [activeSubject, setActiveSubject] = useState("");
+  const { showToast } = useToast();
 
   const [classOptions, setClassOptions] = useState<string[]>([]);
   const [sectionOptions, setSectionOptions] = useState<string[]>([]);
@@ -189,15 +126,16 @@ const TeacherLearningPlanner: React.FC = () => {
   } | null>(null);
   const [namingValue, setNamingValue] = useState("");
 
-  const [expandedChapters, setExpandedChapters] = useState<Set<number>>(
-    new Set(),
-  );
-
   const toggleDemoChapter = (id: number) => {
-    setDemoChapters((prev) =>
-      prev.map((ch) =>
-        ch.id === id ? { ...ch, completed: !ch.completed } : ch,
-      ),
+    setSubjects((prev) =>
+      prev.map((sub) => ({
+        ...sub,
+        chapters: sub.chapters.map((ch: any) =>
+          ch.id === id || ch.chapter_id === id
+            ? { ...ch, completed: !ch.completed, is_completed: !ch.completed }
+            : ch,
+        ),
+      })),
     );
   };
 
@@ -237,15 +175,18 @@ const TeacherLearningPlanner: React.FC = () => {
         : "pdf"
       : "link";
 
-    setDemoChapters((prev) =>
-      prev.map((row) =>
-        row.id === id
-          ? {
-              ...row,
-              [field]: [...(row[field] as any[]), { name: finalName, type }],
-            }
-          : row,
-      ),
+    setSubjects((prev) =>
+      prev.map((sub) => ({
+        ...sub,
+        chapters: sub.chapters.map((ch: any) =>
+          ch.id === id || ch.chapter_id === id
+            ? {
+                ...ch,
+                [field]: [...(ch[field] || []), { name: finalName, type }],
+              }
+            : ch,
+        ),
+      })),
     );
     setNamingModal(null);
     setNamingValue("");
@@ -266,29 +207,26 @@ const TeacherLearningPlanner: React.FC = () => {
       year: "numeric",
     });
 
-    setDemoChapters((prev) =>
-      prev.map((row) =>
-        row.id === id ? { ...row, [field]: formattedDate } : row,
-      ),
+    setSubjects((prev) =>
+      prev.map((sub) => ({
+        ...sub,
+        chapters: sub.chapters.map((ch: any) =>
+          ch.id === id || ch.chapter_id === id
+            ? {
+                ...ch,
+                [field]: formattedDate,
+                [`${field}_raw`]: value,
+              }
+            : ch,
+        ),
+      })),
     );
   };
   const [profileImage, setProfileImage] = useState<string>(" ");
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const navigate = useNavigate();
 
-  const toggleChapterAccordion = (chapterId: number) => {
-    setExpandedChapters((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(chapterId)) {
-        newSet.delete(chapterId);
-      } else {
-        newSet.add(chapterId);
-      }
-      return newSet;
-    });
-  };
 
   const fetchLearningPlan = async () => {
     try {
@@ -298,7 +236,33 @@ const TeacherLearningPlanner: React.FC = () => {
 
       if (result.status === "success") {
         const data = result.data;
-        const plans = data.subject_wise_chapters || [];
+        const plannerMap = new Map();
+        (data.chapter_planner || []).forEach((item: any) => {
+          plannerMap.set(item.chapter_id, item);
+        });
+
+        const plans = (data.subject_wise_chapters || []).map((sub: any) => ({
+          ...sub,
+          chapters: sub.chapters.map((ch: any) => {
+            const plannerData = plannerMap.get(ch.id || ch.chapter_id);
+            const rawStart = plannerData?.start_date || ch.start_date || "";
+            const rawEnd = plannerData?.end_date || ch.end_date || "";
+            
+            return {
+              ...ch,
+              id: ch.id || ch.chapter_id,
+              chapter: ch.name || ch.chapter_name,
+              startDate: rawStart ? new Date(rawStart).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "--",
+              endDate: rawEnd ? new Date(rawEnd).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "--",
+              startDate_raw: rawStart,
+              endDate_raw: rawEnd,
+              progress: ch.progress_percentage || 0,
+              completed: plannerData ? plannerData.is_completed : (ch.is_completed || false),
+              testMaterial: ch.testMaterial || [],
+              practiceMaterial: ch.practiceMaterial || [],
+            };
+          }),
+        }));
 
         setSubjects(plans);
 
@@ -351,26 +315,33 @@ const TeacherLearningPlanner: React.FC = () => {
   useEffect(() => {
     const activePlan = subjects.find((s) => s.subject_name === activeSubject);
     if (activePlan) {
-      const mappedChapters = activePlan.chapters.map((ch: any) => {
-        // Find existing demo chapter data if any (to preserve materials or local changes)
-        const existing = demoChapters.find((d) => d.id === ch.id);
-        return {
-          id: ch.id,
-          chapter: ch.name || ch.chapter_name,
-          startDate: existing?.startDate || "--",
-          endDate: existing?.endDate || "--",
-          progress: existing?.progress || 0,
-          completed: existing?.completed || false,
-          testMaterial: existing?.testMaterial || [],
-          practiceMaterial: existing?.practiceMaterial || [],
-        };
-      });
-      setDemoChapters(mappedChapters);
-    } else if (subjects.length > 0) {
-      // Fallback if active subject not found in current subjects
+      setDemoChapters(activePlan.chapters);
+    } else {
       setDemoChapters([]);
     }
   }, [activeSubject, subjects]);
+
+  const handleSave = async (row: any) => {
+    const payload = {
+      chapter_id: row.id,
+      start_date: row.startDate_raw || null,
+      end_date: row.endDate_raw || null,
+      is_completed: row.completed,
+    };
+
+    try {
+      const res = await ApiServices.upsertTeacherPlanner(payload);
+      if (res.data?.status === "success") {
+        showToast("Chapter planner updated successfully", "success");
+        // Optionally refresh data
+        // fetchLearningPlan();
+      } else {
+        showToast(res.data?.message || "Failed to update", "error");
+      }
+    } catch (error) {
+      showToast("An error occurred while saving", "error");
+    }
+  };
 
   useEffect(() => {
     if (stats) {
@@ -440,7 +411,7 @@ const TeacherLearningPlanner: React.FC = () => {
                 Hi{" "}
                 {stats.teacher_name
                   ? stats.teacher_name
-                      .split(" ")
+                      ?.split(" ")
                       .map(
                         (word: string) =>
                           word.charAt(0).toUpperCase() + word.slice(1),
@@ -650,7 +621,10 @@ const TeacherLearningPlanner: React.FC = () => {
                 </td>
 
                 <td className="py-3 px-2 text-center">
-                  <button className="p-2 inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium text-[#b9b7b7]">
+                  <button 
+                    onClick={() => handleSave(row)}
+                    className="p-2 inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium text-[#b9b7b7] hover:text-blue-600 transition-colors border-none bg-transparent cursor-pointer"
+                  >
                     <Save size={20} strokeWidth={2} />
                   </button>
                 </td>
