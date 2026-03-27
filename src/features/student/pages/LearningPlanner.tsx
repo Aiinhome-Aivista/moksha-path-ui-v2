@@ -552,7 +552,7 @@ const SubjectSection: React.FC<{
           </div>
 
           {/* Chapters */}
-          <div className="space-y-2.5 flex-1 overflow-y-auto min-h-0 pr-1">
+          <div className="space-y-2.5 flex-1 overflow-y-auto min-h-0 pr-1 max-h-56 custom-scrollbar">
             {selectedDayData ? (
               selectedDayData.chapters.length > 0 ? (
                 selectedDayData.chapters.map((ch, idx) => (
