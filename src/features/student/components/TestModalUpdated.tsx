@@ -90,6 +90,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
   const [textualAnswers, setTextualAnswers] = useState<
     Record<number, string>
   >({});
+  const [savedQuestions, setSavedQuestions] = useState<Set<number>>(new Set());
   const [skippedSet, setSkippedSet] = useState<Set<number>>(new Set());
   const [timeLeft, setTimeLeft] = useState(testDurationMinutes * 60);
   const [testFinished, setTestFinished] = useState(false);
@@ -114,6 +115,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
       setQuestionOrder(questions.map((q: Question) => q.id));
       setSelectedAnswers({});
       setTextualAnswers({});
+      setSavedQuestions(new Set());
       setSkippedSet(new Set());
       setTimeLeft(testDurationMinutes * 60);
       setTestFinished(false);
@@ -242,9 +244,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
 
   const isTextualQuestion = currentQuestion.options.length === 0;
   const totalQuestions = questionOrder.length;
-  const answeredCount = isTextualQuestion
-    ? Object.keys(textualAnswers).length + Object.keys(selectedAnswers).length
-    : Object.keys(selectedAnswers).length + Object.keys(textualAnswers).length;
+  const answeredCount = savedQuestions.size;
   const completedPercent = Math.round((answeredCount / totalQuestions) * 100);
 
   const handleSelectOption = (optionLabel: string) => {
@@ -322,6 +322,8 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
         time_taken: timeTaken,
       });
 
+      setSavedQuestions((prev) => new Set(prev).add(currentQuestion.id));
+
       if (currentQuestionIndex < totalQuestions - 1) {
         setCurrentQuestionIndex((prev) => prev + 1);
       } else {
@@ -350,7 +352,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity touch-none" />
 
       {/* Modal Container */}
-      <div className="relative w-[95vw] max-w-[1200px] h-[90vh] bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-gray-100 flex flex-col">
+      <div className="relative w-[98vw] max-w-[1300px] h-[90vh] bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-gray-100 flex flex-col">
 
         {/* Close button */}
         <button
@@ -363,9 +365,9 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
         {/* ─── Mobile Header: Timer + Progress (Hidden on Desktop) ─── */}
         <div className="md:hidden flex flex-col gap-3 p-4 sm:p-5 border-b border-gray-100 shrink-0">
           <div className="flex flex-row items-center gap-4">
-              <div className="px-4 py-2 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center shrink-0">
+              <div className="px-4 py-2 max-h-[15px] rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center shrink-0">
                   <span className="text-[#E91E7B] font-bold text-lg tracking-tight">
-                    {formatTime(timeLeft)}
+                      {formatTime(timeLeft)}
                   </span>
               </div>
               <div className="flex-1 pr-8">
@@ -408,7 +410,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
             {/* Desktop Timer (No Circle) */}
             <div className="flex flex-col items-center mt-4 w-full shrink-0">
                 <div className="bg-white px-6 py-8 rounded-2xl border border-gray-100 shadow-sm w-full text-center">
-                    <span className="text-4xl font-bold text-[#E91E7B] tracking-wider font-mono block">
+                    <span className="text-2xl font-bold text-[#E91E7B] tracking-wider font-mono block">
                         {formatTime(timeLeft)}
                     </span>
                     <span className="text-[10px] text-gray-400 mt-2 uppercase tracking-widest font-bold block">
@@ -457,7 +459,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
           {/* ─── Right Panel: Question Area ─── */}
           <div className="flex-1 flex flex-col p-5 sm:p-8 overflow-y-auto">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 pr-8 sm:pr-0">
-              Header
+              Assessment
             </h2>
 
             <p className="text-base sm:text-sm font-bold text-gray-800 mb-5 leading-relaxed">
@@ -522,14 +524,14 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                   <button
                       onClick={handlePrev}
                       disabled={currentQuestionIndex === 0}
-                      className="flex items-center gap-1 w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-gray-100 text-gray-700 text-base md:text-sm font-medium hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="flex items-center gap-1 w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-[#464646] text-white text-base md:text-sm font-medium hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                       <ChevronLeft size={16} /> Previous
                   </button>
                   <button
                       onClick={handleNext}
                       disabled={currentQuestionIndex === totalQuestions - 1}
-                      className="flex items-center gap-1 w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-gray-100 text-gray-700 text-base md:text-sm font-medium hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="flex items-center gap-1 w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-[#464646] text-white text-base md:text-sm font-medium hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                       Next <ChevronRight size={16} />
                   </button>
