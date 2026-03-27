@@ -10,6 +10,7 @@ export const GET_APIS = {
   get_user_academic_details: `${BASE_URL}academic/get_user_academic_details`,
   get_academic_hierarchy: `${BASE_URL}auth/get_academic_hierarchy`,
   get_student_learning_planner: `${BASE_URL}learning/student/learning_planner`,
+  student_planner_dashboard: `${BASE_URL}learning/student_planner_dashboard`,
   roles: `${BASE_URL}auth/user_profiles`,
 
   //Assessments API//

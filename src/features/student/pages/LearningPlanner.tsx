@@ -7,29 +7,27 @@ import { useToast } from "../../../app/providers/ToastProvider";
 
 // ─── Interfaces ─────────────────────────────────────────────────────────────
 
-type Priority = "High" | "Medium" | "Low";
+// ─── Interfaces ─────────────────────────────────────────────────────────────
 
-interface ApiTopic {
-  topic_id: number;
-  topic_name: string;
-  is_completed: boolean;
-  estimated_hours: number;
+interface ApiTask {
   status: string;
+  type: string;
+}
+
+interface ApiPlanner {
+  end_date: string | null;
+  is_completed: boolean | null;
+  start_date: string | null;
 }
 
 interface ApiChapter {
   chapter_id: number;
   chapter_name: string;
-  start_date: string;
-  end_date: string;
-  start_end_date: string;
-  estimated_hours: number;
-  remaining_hours: number;
-  priority: Priority;
-  progress_percentage: number;
-  status: string;
-  target_completion_days: number;
-  topics: ApiTopic[];
+  planner: ApiPlanner;
+  tasks: ApiTask[];
+  // Compatibility fields for the UI
+  status?: string;
+  progress_percentage?: number;
 }
 
 interface Task {
@@ -51,6 +49,19 @@ interface WeeklyPlanDay {
   progress: number;
   status?: string;
   chapters: ChapterDay[];
+}
+
+interface AcademicDetails {
+  academic_year: string;
+  board: string;
+  class: string;
+  institute: string;
+  sections?: string[];
+}
+
+interface StudentDetails {
+  id: number;
+  name: string;
 }
 
 interface ApiSubjectPlan {
@@ -102,45 +113,42 @@ const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
 
   const chapters = subject.chapters ?? [];
 
-  return weekDates.map((dateStr, idx) => {
-    const dayName = DAY_NAMES[new Date(dateStr).getDay()];
+  return weekDates.map((dateStr, dIdx) => {
     const dayChapters = chapters
-      .filter((_, ci) => ci % 7 === idx)
+      .filter((ch, ci) => {
+        if (!ch.planner.start_date || !ch.planner.end_date) {
+          // Spread undated chapters across the week
+          return ci % 7 === dIdx;
+        }
+        const start = new Date(ch.planner.start_date);
+        const end = new Date(ch.planner.end_date);
+        const current = new Date(dateStr);
+        return current >= start && current <= end;
+      })
       .map((ch) => ({
         chapter_id: ch.chapter_id,
         chapter_name: ch.chapter_name,
-        topics: ch.topics.map((t) => ({ topic_id: t.topic_id, topic_name: t.topic_name })),
-        tasks: [
-          {
-            type: "tutorial" as const,
-            progress: ch.progress_percentage,
-            status:
-              ch.status?.toLowerCase() === "completed" ? "completed"
-                : ch.progress_percentage > 0 ? "in_progress"
-                  : "pending",
-          },
-          {
-            type: "mock_test" as const,
-            progress:
-              ch.status?.toLowerCase() === "completed" ? 100
-                : Math.max(0, ch.progress_percentage - 20),
-            status: ch.status?.toLowerCase() === "completed" ? "completed" : "pending",
-          },
-        ],
+        tasks: ch.tasks.map((t) => ({
+          type: (t.type.toLowerCase().includes("mock") ? "mock_test" : "tutorial") as "tutorial" | "mock_test",
+          progress: t.status === "completed" ? 100 : 0,
+          status: t.status,
+        })),
       }));
 
     const avgProgress =
       dayChapters.length > 0
         ? Math.round(
           dayChapters.reduce(
-            (sum, ch) => sum + ch.tasks.reduce((s, t) => s + t.progress, 0) / ch.tasks.length,
+            (sum, ch) => sum + ch.tasks.reduce((s, t) => s + t.progress, 0) / (ch.tasks.length || 1),
             0,
           ) / dayChapters.length,
         )
         : 0;
 
     return {
-      date: dateStr, day: dayName, progress: avgProgress,
+      date: dateStr,
+      day: DAY_NAMES[new Date(dateStr).getDay()],
+      progress: avgProgress,
       status: avgProgress >= 100 ? "completed" : avgProgress > 0 ? "in_progress" : "pending",
       chapters: dayChapters,
     };
@@ -156,11 +164,26 @@ const getPrevWeekStatus = (
   return past.every((d) => d.progress >= 100) ? "green" : "red";
 };
 
-const patchSubjectPlan = (sub: ApiSubjectPlan): ApiSubjectPlan => ({
-  ...sub,
-  weekly_plan:
-    sub.weekly_plan && sub.weekly_plan.length > 0 ? sub.weekly_plan : generateWeeklyPlan(sub),
-});
+const patchSubjectPlan = (sub: ApiSubjectPlan): ApiSubjectPlan => {
+  const patchedChapters = sub.chapters.map(ch => {
+    const totalTasks = ch.tasks.length;
+    const completedTasks = ch.tasks.filter(t => t.status === "completed").length;
+    const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    
+    return {
+      ...ch,
+      progress_percentage: progress,
+      status: progress >= 100 ? "completed" : progress > 0 ? "in_progress" : "pending"
+    };
+  });
+
+  const updatedSub = { ...sub, chapters: patchedChapters };
+  return {
+    ...updatedSub,
+    weekly_plan:
+      sub.weekly_plan && sub.weekly_plan.length > 0 ? sub.weekly_plan : generateWeeklyPlan(updatedSub),
+  };
+};
 
 const DayCard: React.FC<{
   day: WeeklyPlanDay;
@@ -354,10 +377,8 @@ const SubjectSection: React.FC<{
     subject.chapters.length > 0
       ? Math.round(
           subject.chapters.reduce((sum, ch) => {
-            const mockProgress =
-              ch.status?.toLowerCase() === "completed"
-                ? 100
-                : Math.max(0, ch.progress_percentage - 20);
+            const mockTask = ch.tasks.find(t => t.type.toLowerCase().includes("mock"));
+            const mockProgress = mockTask?.status === "completed" ? 100 : 0;
             return sum + mockProgress;
           }, 0) / subject.chapters.length
         )
@@ -536,7 +557,7 @@ const SubjectSection: React.FC<{
               selectedDayData.chapters.length > 0 ? (
                 selectedDayData.chapters.map((ch, idx) => (
                   <ChapterAccordion
-                    key={ch.chapter_id}
+                    key={`${ch.chapter_id}-${idx}`}
                     chapter={ch}
                     index={idx}
                     onMockTestClick={(cid, cname) =>
@@ -581,8 +602,9 @@ const SUBJECT_COLORS = [
 
 const LearningPlanner: React.FC = () => {
   const [subjects, setSubjects] = useState<ApiSubjectPlan[]>([]);
+  const [academic, setAcademic] = useState<AcademicDetails | null>(null);
+  const [student, setStudent] = useState<StudentDetails | null>(null);
   const [profileImage, setProfileImage] = useState<string>(" ");
-  const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { showToast } = useToast();
@@ -595,7 +617,7 @@ const LearningPlanner: React.FC = () => {
 
   const handleMockTestClick = async (
     subjectId: number,
-    subjectName: string,
+    _subjectName: string,
     chapterId: number,
     chapterName: string,
   ) => {
@@ -655,23 +677,26 @@ const LearningPlanner: React.FC = () => {
 
   const fetchLearningPlan = async () => {
     try {
-      const getResponse = await ApiServices.getStudentLearningPlanner();
+      const getResponse = await ApiServices.getStudentPlannerDashboard();
       const getResult = getResponse.data;
 
-      if (getResult.status === "success" && getResult.data.subject_wise_plan?.length > 0) {
-        setSubjects(getResult.data.subject_wise_plan.map(patchSubjectPlan));
-        setStats(getResult.data.stats);
+      if (getResult.status === "success" && getResult.data.subjects?.length > 0) {
+        setSubjects(getResult.data.subjects.map(patchSubjectPlan));
+        setAcademic(getResult.data.academic);
+        setStudent(getResult.data.student);
         return;
       }
 
+      // If no plan, we might need to fallback to generation as before
       await ApiServices.generateLearningPlan({ topic_ids: null });
 
-      const newGetResponse = await ApiServices.getStudentLearningPlanner();
+      const newGetResponse = await ApiServices.getStudentPlannerDashboard();
       const newGetResult = newGetResponse.data;
 
-      if (newGetResult.status === "success" && newGetResult.data.subject_wise_plan?.length > 0) {
-        setSubjects(newGetResult.data.subject_wise_plan.map(patchSubjectPlan));
-        setStats(newGetResult.data.stats);
+      if (newGetResult.status === "success" && newGetResult.data.subjects?.length > 0) {
+        setSubjects(newGetResult.data.subjects.map(patchSubjectPlan));
+        setAcademic(newGetResult.data.academic);
+        setStudent(newGetResult.data.student);
       }
     } catch {
       // silent
@@ -693,7 +718,7 @@ const LearningPlanner: React.FC = () => {
     fetchProfileImage();
   }, []);
 
-  const getInitial = () => stats?.student_name?.charAt(0).toUpperCase();
+  const getInitial = () => student?.name?.charAt(0).toUpperCase();
 
   return (
     <div className="min-h-screen p-6 relative">
@@ -721,60 +746,60 @@ const LearningPlanner: React.FC = () => {
               </div>
             )}
           </div>
-          {stats && (
+          {student && (
             <div className="flex flex-col gap-0.5">
               <span className="text-2xl text-[#ABB3BC] font-bold tracking-wide">Learning Planner</span>
               <h1 className="text-3xl font-bold text-primary m-0">
-                Hi {stats.student_name
-                  ? stats.student_name.split(" ").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+                Hi {student.name
+                  ? student.name.split(" ").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
                   : ""}!
               </h1>
-              <p className="text-sm text-primary font-medium m-0">{stats.institute_name}</p>
-              <p className="text-sm text-primary m-0">{stats.board_name} | {stats.class_name}</p>
-              <p className="text-sm text-primary m-0 break-words max-w-xl">
-                Subject: {stats.subject_names?.join(", ")}
-              </p>
+              {academic && (
+                <>
+                  <p className="text-sm text-primary font-medium m-0">{academic.institute}</p>
+                  <p className="text-sm text-primary m-0">{academic.board} | {academic.class}</p>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {academic.sections && academic.sections.length > 0 ? (
+                      academic.sections.map(sec => (
+                        <span key={sec} className="bg-[#BADA55]/20 text-[#6a9000] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#BADA55]/30">
+                          Section {sec}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="bg-gray-100 text-gray-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-200">
+                        No Section
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-primary m-0 break-words max-w-xl">
+                    Subject: {subjects.map(s => s.subject_name).join(", ")}
+                  </p>
+                  <p className="text-sm text-primary m-0 break-words max-w-xl">
+                    Academic Year: {academic.academic_year}
+                  </p>
+                </>
+              )}
             </div>
           )}
         </div>
 
         {/* Stats */}
         <div className="flex flex-wrap items-start gap-10">
-          {stats && (
-            <div className="flex items-center gap-4">
-              <div className="w-[6rem] h-[6rem] rounded-full bg-yellow flex items-center justify-center shadow-inner">
-                <span className="text-4xl font-bold text-red">{stats.days_left}</span>
-              </div>
-              <div className="leading-snug">
-                <p className="text-xs font-bold mt-7 text-primary">Days Left for<br />Annual<br />Exam</p>
-                <br /><strong>{stats.examName}</strong>
-              </div>
+          <div className="flex items-center gap-4">
+            <div className="w-[6rem] h-[6rem] rounded-full bg-yellow flex items-center justify-center shadow-inner">
+              <span className="text-4xl font-bold text-red">?</span>
             </div>
-          )}
-          {stats && (
-            <>
-              {/* {[
-                { value: stats.chapters_assigned, label: "Chapters Assigned" },
-                { value: stats.completed_count, label: "Completed" },
-                { value: stats.pending_count, label: "Pending" },
-              ].map(({ value, label }) => (
-                <div key={label} className="text-center flex flex-col items-center">
-                  <div className="w-[4.688rem] h-[4.688rem] rounded-full bg-yellow flex items-center justify-center mb-1 shadow-inner">
-                    <span className="text-lg font-bold text-red">{value}</span>
-                  </div>
-                  <p className="text-xs font-medium text-primary w-[4.688rem] leading-tight">{label}</p>
-                </div>
-              ))} */}
+            <div className="leading-snug">
+              <p className="text-xs font-bold mt-7 text-primary">Days Left for<br />Annual<br />Exam</p>
+            </div>
+          </div>
 
-              {/* ── Leaderboard Position (hardcoded) ── */}
-              <div className="text-center flex flex-col items-center">
-                <div className="w-[4.688rem] h-[4.688rem] rounded-full bg-yellow flex items-center justify-center mb-1 shadow-inner">
-                  <span className="text-lg font-bold text-red">#12</span>
-                </div>
-                <p className="text-xs font-medium text-primary w-[4.688rem] leading-tight">Leadership Board Position</p>
-              </div>
-            </>
-          )}
+          <div className="text-center flex flex-col items-center">
+            <div className="w-[4.688rem] h-[4.688rem] rounded-full bg-yellow flex items-center justify-center mb-1 shadow-inner">
+              <span className="text-lg font-bold text-red">#12</span>
+            </div>
+            <p className="text-xs font-medium text-primary w-[4.688rem] leading-tight">Leadership Board Position</p>
+          </div>
         </div>
       </header>
 

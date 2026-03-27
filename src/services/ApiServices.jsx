@@ -226,6 +226,10 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.get_student_learning_planner);
   }
 
+  getStudentPlannerDashboard() {
+    return axiosInstance.get(GET_APIS.student_planner_dashboard);
+  }
+
   // Update Topic Status
   updateTopicStatus(payload) {
     return axiosInstance.post(POST_APIS.update_topic_status, payload);
