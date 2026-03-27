@@ -169,7 +169,7 @@ const patchSubjectPlan = (sub: ApiSubjectPlan): ApiSubjectPlan => {
     const totalTasks = ch.tasks.length;
     const completedTasks = ch.tasks.filter(t => t.status === "completed").length;
     const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-    
+
     return {
       ...ch,
       progress_percentage: progress,
@@ -219,28 +219,25 @@ const DayCard: React.FC<{
           Today
         </span>
       )}
-      <p className={`text-[9px] font-black uppercase tracking-widest mt-1 ${
-        isSelected ? "text-[#6a9000]" : isToday ? "text-primary" : "text-gray-400"
-      }`}>
+      <p className={`text-[9px] font-black uppercase tracking-widest mt-1 ${isSelected ? "text-[#6a9000]" : isToday ? "text-primary" : "text-gray-400"
+        }`}>
         {day.day}
       </p>
-      <p className={`text-sm font-extrabold leading-none ${
-        isSelected || isToday ? "text-primary" : "text-gray-700"
-      }`}>
+      <p className={`text-sm font-extrabold leading-none ${isSelected || isToday ? "text-primary" : "text-gray-700"
+        }`}>
         {formatDate(day.date)}
       </p>
       {/* Status dot */}
-      <span className={`w-2 h-2 rounded-full mt-1 ${
-        isSelected
-          ? "bg-[#BADA55]"
-          : allDone
-            ? "bg-green-500"
-            : hasPending
-              ? "bg-red-400"
-              : isToday
-                ? "bg-primary"
-                : "bg-gray-200"
-      }`} />
+      <span className={`w-2 h-2 rounded-full mt-1 ${isSelected
+        ? "bg-[#BADA55]"
+        : allDone
+          ? "bg-green-500"
+          : hasPending
+            ? "bg-red-400"
+            : isToday
+              ? "bg-primary"
+              : "bg-gray-200"
+        }`} />
     </div>
   );
 };
@@ -252,29 +249,28 @@ const TaskRow: React.FC<{ task: Task; onClick?: () => void }> = ({
   onClick,
 }) => (
   <div
-    className={`flex items-center gap-2 ${
-      task.type === "mock_test" ? "cursor-pointer group/task" : ""
-    }`}
+    className={`flex items-center gap-2 ${task.type === "mock_test" ? "cursor-pointer group/task" : ""
+      }`}
     onClick={task.type === "mock_test" ? onClick : undefined}
   >
     <span
-      className={`w-6 h-6 rounded-lg flex items-center justify-center text-white transition-transform ${
-        task.type === "mock_test"
-          ? "bg-primary group-hover/task:scale-110"
-          : "bg-[#BADA55]"
-      }`}
+      className={`w-6 h-6 rounded-lg flex items-center justify-center text-white transition-transform ${task.type === "mock_test"
+        ? "bg-primary group-hover/task:scale-110"
+        : "bg-[#BADA55]"
+        }`}
     >
       <span className="material-symbols-outlined" style={{ fontSize: 13 }}>
         {task.type === "mock_test" ? "quiz" : "play_circle"}
       </span>
     </span>
+
     <span
-      className={`text-xs font-semibold text-gray-700 ${
-        task.type === "mock_test" ? "group-hover/task:text-primary" : ""
-      }`}
+      className={`text-xs font-semibold text-gray-700 ${task.type === "mock_test" ? "group-hover/task:text-primary" : ""
+        }`}
     >
       {task.type === "mock_test" ? "Mock Test" : "Tutorial"}
     </span>
+
     {task.status && (
       <span
         className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full border ${statusPill(
@@ -284,10 +280,18 @@ const TaskRow: React.FC<{ task: Task; onClick?: () => void }> = ({
         {task.status.replace("_", " ")}
       </span>
     )}
+
+    {/* ✅ NEW BUTTON */}
     {task.type === "mock_test" && (
-      <span className="material-symbols-outlined text-[10px] text-primary opacity-0 group-hover/task:opacity-100 transition-opacity ml-auto">
-        arrow_forward_ios
-      </span>
+      <button
+        onClick={(e) => {
+          e.stopPropagation(); // prevent row click conflict
+          onClick?.();
+        }}
+        className="ml-auto text-[10px] px-2 py-1 bg-[#BADA55] text-[#2b3a00] font-semibold rounded-md hover:bg-[#a8c94a] hover:shadow-sm transition-all duration-200"
+      >
+        Take Test
+      </button>
     )}
   </div>
 );
@@ -376,12 +380,12 @@ const SubjectSection: React.FC<{
   const overallMockTestProgress =
     subject.chapters.length > 0
       ? Math.round(
-          subject.chapters.reduce((sum, ch) => {
-            const mockTask = ch.tasks.find(t => t.type.toLowerCase().includes("mock"));
-            const mockProgress = mockTask?.status === "completed" ? 100 : 0;
-            return sum + mockProgress;
-          }, 0) / subject.chapters.length
-        )
+        subject.chapters.reduce((sum, ch) => {
+          const mockTask = ch.tasks.find(t => t.type.toLowerCase().includes("mock"));
+          const mockProgress = mockTask?.status === "completed" ? 100 : 0;
+          return sum + mockProgress;
+        }, 0) / subject.chapters.length
+      )
       : 0;
   const mockTestStatus = overallMockTestProgress >= 100 ? "Completed" : "Pending";
 
@@ -427,12 +431,19 @@ const SubjectSection: React.FC<{
         <div className="flex items-center gap-3 flex-shrink-0 ml-auto">
           <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-xl px-3 py-1.5">
             <span className="material-symbols-outlined text-primary" style={{ fontSize: 16 }}>quiz</span>
+
             <div className="leading-tight">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Overall Mock Test</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">
+                Overall Mock Test
+              </p>
+
               <div className="flex items-center gap-1.5">
-                <span className="text-sm font-extrabold text-primary">{overallMockTestProgress}%</span>
+                <span className="text-sm font-extrabold text-primary">
+                  {overallMockTestProgress}%
+                </span>
+
                 <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border
-                  ${overallMockTestProgress >= 100
+        ${overallMockTestProgress >= 100
                     ? "bg-green-50 border-green-200 text-green-700"
                     : "bg-amber-50 border-amber-200 text-amber-700"}`}
                 >
@@ -440,6 +451,26 @@ const SubjectSection: React.FC<{
                 </span>
               </div>
             </div>
+
+            {/* ✅ NEW BUTTON */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                // OPTIONAL: you can trigger first chapter mock test
+                if (subject.chapters?.length > 0) {
+                  const firstChapter = subject.chapters[0];
+                  onMockTestClick?.(
+                    subject.subject_id,
+                    subject.subject_name,
+                    firstChapter.chapter_id,
+                    firstChapter.chapter_name
+                  );
+                }
+              }}
+              className="ml-auto text-[10px] px-2 py-1 bg-[#BADA55] text-[#2b3a00] font-semibold rounded-md hover:bg-[#a8c94a] hover:shadow-sm transition-all duration-200"
+            >
+              Take Overall Test
+            </button>
           </div>
           <span className={`material-symbols-outlined text-gray-400 transition-transform duration-300 ${isExpanded ? "rotate-180" : "rotate-0"}`}>
             expand_more
@@ -449,144 +480,142 @@ const SubjectSection: React.FC<{
 
       {/* ── Collapsible body ─────────────────────────────────────────── */}
       <div className={`transition-all duration-300 overflow-hidden ${isExpanded ? "max-h-[2000px]" : "max-h-0"}`}>
-      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex flex-col lg:flex-row gap-4">
 
-        {/* LEFT — Weekly Calendar (independent card) */}
-        <div className="w-full lg:w-[58%] bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-5">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Weekly Plan</p>
-            {weeklyPlan.length > 0 && (
-              <span className="text-[10px] text-gray-400 bg-gray-50 border border-gray-100 px-2.5 py-0.5 rounded-full font-semibold">
-                {formatDate(weeklyPlan[0].date)} – {formatDate(weeklyPlan[weeklyPlan.length - 1].date)}
-              </span>
-            )}
-          </div>
-
-          {weeklyPlan.length > 0 ? (
-            <div className="flex items-stretch gap-2 overflow-x-auto pb-1 pt-4">
-              {/* Prev-week card */}
-              <div
-                className={`flex-shrink-0 rounded-2xl px-3 py-2 border-2 flex flex-col items-center justify-center gap-1
-                  ${prevWeekStatus === "green"
-                    ? "bg-green-50 border-green-200"
-                    : prevWeekStatus === "red"
-                      ? "bg-red-50 border-red-200"
-                      : "bg-gray-50 border-gray-200"
-                  }`}
-              >
-                <span className={`material-symbols-outlined ${
-                  prevWeekStatus === "green" ? "text-green-500" : prevWeekStatus === "red" ? "text-red-400" : "text-gray-300"
-                }`} style={{ fontSize: 20 }}>
-                  {prevWeekStatus === "green" ? "verified" : prevWeekStatus === "red" ? "warning" : "history"}
+          {/* LEFT — Weekly Calendar (independent card) */}
+          <div className="w-full lg:w-[58%] bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-5">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Weekly Plan</p>
+              {weeklyPlan.length > 0 && (
+                <span className="text-[10px] text-gray-400 bg-gray-50 border border-gray-100 px-2.5 py-0.5 rounded-full font-semibold">
+                  {formatDate(weeklyPlan[0].date)} – {formatDate(weeklyPlan[weeklyPlan.length - 1].date)}
                 </span>
-                <p className="text-[8px] font-black uppercase tracking-widest text-gray-400 text-center leading-tight">Prev<br/>Week</p>
-                <p className={`text-[9px] font-extrabold text-center ${
-                  prevWeekStatus === "green" ? "text-green-600" : prevWeekStatus === "red" ? "text-red-500" : "text-gray-400"
-                }`}>
-                  {prevWeekStatus === "green" ? "Done" : prevWeekStatus === "red" ? "Pending" : "—"}
-                </p>
+              )}
+            </div>
+
+            {weeklyPlan.length > 0 ? (
+              <div className="flex items-stretch gap-2 overflow-x-auto pb-1 pt-4">
+                {/* Prev-week card */}
+                <div
+                  className={`flex-shrink-0 rounded-2xl px-3 py-2 border-2 flex flex-col items-center justify-center gap-1
+                  ${prevWeekStatus === "green"
+                      ? "bg-green-50 border-green-200"
+                      : prevWeekStatus === "red"
+                        ? "bg-red-50 border-red-200"
+                        : "bg-gray-50 border-gray-200"
+                    }`}
+                >
+                  <span className={`material-symbols-outlined ${prevWeekStatus === "green" ? "text-green-500" : prevWeekStatus === "red" ? "text-red-400" : "text-gray-300"
+                    }`} style={{ fontSize: 20 }}>
+                    {prevWeekStatus === "green" ? "verified" : prevWeekStatus === "red" ? "warning" : "history"}
+                  </span>
+                  <p className="text-[8px] font-black uppercase tracking-widest text-gray-400 text-center leading-tight">Prev<br />Week</p>
+                  <p className={`text-[9px] font-extrabold text-center ${prevWeekStatus === "green" ? "text-green-600" : prevWeekStatus === "red" ? "text-red-500" : "text-gray-400"
+                    }`}>
+                    {prevWeekStatus === "green" ? "Done" : prevWeekStatus === "red" ? "Pending" : "—"}
+                  </p>
+                </div>
+
+                <div className="w-px bg-gray-100 self-stretch flex-shrink-0 rounded-full" />
+
+                {weeklyPlan.map((day) => (
+                  <DayCard
+                    key={day.date}
+                    day={day}
+                    isSelected={selectedDate === day.date}
+                    isToday={day.date === today}
+                    isPast={day.date < today}
+                    onClick={() => handleDayClick(day)}
+                  />
+                ))}
               </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-gray-300 text-center">
+                <span className="material-symbols-outlined text-4xl mb-2">calendar_month</span>
+                <p className="text-xs font-medium text-gray-400">No plan available</p>
+              </div>
+            )}
 
-              <div className="w-px bg-gray-100 self-stretch flex-shrink-0 rounded-full" />
-
-              {weeklyPlan.map((day) => (
-                <DayCard
-                  key={day.date}
-                  day={day}
-                  isSelected={selectedDate === day.date}
-                  isToday={day.date === today}
-                  isPast={day.date < today}
-                  onClick={() => handleDayClick(day)}
-                />
+            {/* Legend */}
+            <div className="flex flex-wrap items-center gap-3 mt-4 pt-3 border-t border-gray-50">
+              {[
+                { color: "bg-green-500", label: "Completed" },
+                { color: "bg-[#BADA55]", label: "In Progress" },
+                { color: "bg-amber-400", label: "Partial" },
+                { color: "bg-red-400", label: "Pending" },
+              ].map(({ color, label }) => (
+                <div key={label} className="flex items-center gap-1">
+                  <span className={`w-2 h-2 rounded-full ${color}`} />
+                  <span className="text-[10px] text-gray-400 font-medium">{label}</span>
+                </div>
               ))}
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-gray-300 text-center">
-              <span className="material-symbols-outlined text-4xl mb-2">calendar_month</span>
-              <p className="text-xs font-medium text-gray-400">No plan available</p>
+          </div>
+
+          {/* RIGHT — Chapter Details (independent card) */}
+          <div className="w-full lg:w-[42%] bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-5 flex flex-col">
+            {/* Day header */}
+            <div className="mb-4">
+              {selectedDayData ? (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                      {formatFullDate(selectedDayData.date)}
+                    </p>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusPill(selectedDayData.status)}`}>
+                      {selectedDayData.progress}% done
+                    </span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ${progressBarColor(selectedDayData.progress)}`}
+                      style={{ width: `${selectedDayData.progress}%` }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <p className="text-xs font-bold text-gray-300 uppercase tracking-widest">
+                  Select a day
+                </p>
+              )}
             </div>
-          )}
 
-          {/* Legend */}
-          <div className="flex flex-wrap items-center gap-3 mt-4 pt-3 border-t border-gray-50">
-            {[
-              { color: "bg-green-500", label: "Completed" },
-              { color: "bg-[#BADA55]", label: "In Progress" },
-              { color: "bg-amber-400", label: "Partial" },
-              { color: "bg-red-400", label: "Pending" },
-            ].map(({ color, label }) => (
-              <div key={label} className="flex items-center gap-1">
-                <span className={`w-2 h-2 rounded-full ${color}`} />
-                <span className="text-[10px] text-gray-400 font-medium">{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* RIGHT — Chapter Details (independent card) */}
-        <div className="w-full lg:w-[42%] bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-5 flex flex-col">
-          {/* Day header */}
-          <div className="mb-4">
-            {selectedDayData ? (
-              <>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                    {formatFullDate(selectedDayData.date)}
-                  </p>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusPill(selectedDayData.status)}`}>
-                    {selectedDayData.progress}% done
-                  </span>
-                </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-700 ${progressBarColor(selectedDayData.progress)}`}
-                    style={{ width: `${selectedDayData.progress}%` }}
-                  />
-                </div>
-              </>
-            ) : (
-              <p className="text-xs font-bold text-gray-300 uppercase tracking-widest">
-                Select a day
-              </p>
-            )}
-          </div>
-
-          {/* Chapters */}
-          <div className="space-y-2.5 flex-1 overflow-y-auto min-h-0 pr-1 max-h-56 custom-scrollbar">
-            {selectedDayData ? (
-              selectedDayData.chapters.length > 0 ? (
-                selectedDayData.chapters.map((ch, idx) => (
-                  <ChapterAccordion
-                    key={`${ch.chapter_id}-${idx}`}
-                    chapter={ch}
-                    index={idx}
-                    onMockTestClick={(cid, cname) =>
-                      onMockTestClick?.(
-                        subject.subject_id,
-                        subject.subject_name,
-                        cid,
-                        cname,
-                      )
-                    }
-                  />
-                ))
+            {/* Chapters */}
+            <div className="space-y-2.5 flex-1 overflow-y-auto min-h-0 pr-1 max-h-56 custom-scrollbar">
+              {selectedDayData ? (
+                selectedDayData.chapters.length > 0 ? (
+                  selectedDayData.chapters.map((ch, idx) => (
+                    <ChapterAccordion
+                      key={`${ch.chapter_id}-${idx}`}
+                      chapter={ch}
+                      index={idx}
+                      onMockTestClick={(cid, cname) =>
+                        onMockTestClick?.(
+                          subject.subject_id,
+                          subject.subject_name,
+                          cid,
+                          cname,
+                        )
+                      }
+                    />
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-10 text-center">
+                    <span className="material-symbols-outlined text-4xl text-gray-200 mb-2">menu_book</span>
+                    <p className="text-sm font-medium text-gray-400">No chapters today</p>
+                    <p className="text-xs text-gray-300">Enjoy your free day! 🌟</p>
+                  </div>
+                )
               ) : (
                 <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <span className="material-symbols-outlined text-4xl text-gray-200 mb-2">menu_book</span>
-                  <p className="text-sm font-medium text-gray-400">No chapters today</p>
-                  <p className="text-xs text-gray-300">Enjoy your free day! 🌟</p>
+                  <span className="material-symbols-outlined text-4xl text-gray-100 mb-2">touch_app</span>
+                  <p className="text-sm font-medium text-gray-400">Click a day to view chapters</p>
                 </div>
-              )
-            ) : (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <span className="material-symbols-outlined text-4xl text-gray-100 mb-2">touch_app</span>
-                <p className="text-sm font-medium text-gray-400">Click a day to view chapters</p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
 
-      </div>
+        </div>
       </div>
     </div>
   );
