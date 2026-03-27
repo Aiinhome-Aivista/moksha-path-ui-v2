@@ -33,7 +33,9 @@ const demoChaptersData = [
     id: 1,
     chapter: "Set Theory",
     startDate: "--",
+    startDate_raw: "",
     endDate: "--",
+    endDate_raw: "",
     progress: 90,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
@@ -43,7 +45,9 @@ const demoChaptersData = [
     id: 2,
     chapter: "Algebra",
     startDate: "--",
+    startDate_raw: "",
     endDate: "--",
+    endDate_raw: "",
     progress: 85,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
@@ -53,7 +57,9 @@ const demoChaptersData = [
     id: 3,
     chapter: "Logarithm",
     startDate: "--",
+    startDate_raw: "",
     endDate: "--",
+    endDate_raw: "",
     progress: 58,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
@@ -63,7 +69,9 @@ const demoChaptersData = [
     id: 4,
     chapter: "Geometry",
     startDate: "--",
+    startDate_raw: "",
     endDate: "--",
+    endDate_raw: "",
     progress: 74,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
@@ -73,7 +81,9 @@ const demoChaptersData = [
     id: 5,
     chapter: "Trigonometry",
     startDate: "--",
+    startDate_raw: "",
     endDate: "--",
+    endDate_raw: "",
     progress: 45,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
@@ -83,7 +93,9 @@ const demoChaptersData = [
     id: 6,
     chapter: "Trigonometry",
     startDate: "--",
+    startDate_raw: "",
     endDate: "--",
+    endDate_raw: "",
     progress: 45,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
@@ -657,7 +669,10 @@ const TeacherLearningPlanner: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={row.completed}
-                    onChange={() => toggleDemoChapter(row.id)}
+                    onChange={() => {
+                      if (row.startDate && row.endDate_raw) toggleDemoChapter(row.id);
+                    }}
+                    disabled={!row.startDate_raw || !row.endDate_raw}
                     className="w-4 h-4 cursor-pointer"
                   />
                 </td>
@@ -665,6 +680,7 @@ const TeacherLearningPlanner: React.FC = () => {
                 <td className="py-3 px-2 text-center">
                   <button 
                     onClick={() => handleSave(row)}
+                    disabled={!row.completed}
                     className="p-2 inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium text-[#b9b7b7] hover:text-blue-600 transition-colors border-none bg-transparent cursor-pointer"
                   >
                     <Save size={20} strokeWidth={2} />
