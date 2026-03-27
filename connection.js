@@ -72,6 +72,7 @@ export const GET_APIS = {
 
   // Learning Planner for teacher and parent
   get_teacher_learning_planner: `${BASE_URL}learning/teacher/learning_planner`,
+  teacher_planner_data: `${BASE_URL}parent_teacher/teacher_planner_data`,
   parent_profile: `${BASE_URL}parent_teacher/dashboard/parent/parent-profile`,
 
   // Blogs APIs
