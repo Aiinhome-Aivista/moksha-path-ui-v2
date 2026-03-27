@@ -625,7 +625,7 @@ const LearningPlanner: React.FC = () => {
           )}
           {stats && (
             <>
-              {[
+              {/* {[
                 { value: stats.chapters_assigned, label: "Chapters Assigned" },
                 { value: stats.completed_count, label: "Completed" },
                 { value: stats.pending_count, label: "Pending" },
@@ -636,7 +636,7 @@ const LearningPlanner: React.FC = () => {
                   </div>
                   <p className="text-xs font-medium text-primary w-[4.688rem] leading-tight">{label}</p>
                 </div>
-              ))}
+              ))} */}
 
               {/* ── Leaderboard Position (hardcoded) ── */}
               <div className="text-center flex flex-col items-center">
