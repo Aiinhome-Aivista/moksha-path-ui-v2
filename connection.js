@@ -72,6 +72,7 @@ export const GET_APIS = {
 
   // Learning Planner for teacher and parent
   get_teacher_learning_planner: `${BASE_URL}learning/teacher/learning_planner`,
+  teacher_planner_data: `${BASE_URL}parent_teacher/teacher_planner_data`,
   parent_profile: `${BASE_URL}parent_teacher/dashboard/parent/parent-profile`,
 
   // Blogs APIs
@@ -187,4 +188,6 @@ export const POST_APIS = {
   // Institute Admin - Faculty Management
   assign_teacher: `${BASE_URL}institute_admin/assign_teacher`,
   remove_teacher: `${BASE_URL}institute_admin/remove_teacher`,
+
+  upsert_teacher_planner: `${BASE_URL}parent_teacher/teacher_chapter_planner_upsert`,
 };

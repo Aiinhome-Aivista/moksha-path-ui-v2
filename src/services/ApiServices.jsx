@@ -515,9 +515,12 @@ class ApiServices {
     });
   }
 
-  // GET Student Learning Planner
   getTeacherLearningPlanner() {
     return axiosInstance.get(GET_APIS.get_teacher_learning_planner);
+  }
+
+  getTeacherPlannerData() {
+    return axiosInstance.get(GET_APIS.teacher_planner_data);
   }
 
   getParentProfile() {
@@ -671,6 +674,9 @@ class ApiServices {
   // Get institute admin summary (class + subject list for assign dropdown)
   getInstituteAdminSummary() {
     return axiosInstance.get(GET_APIS.get_institute_admin_summary);
+  }
+  upsertTeacherPlanner(payload) {
+    return axiosInstance.post(POST_APIS.upsert_teacher_planner, payload);
   }
 }
 

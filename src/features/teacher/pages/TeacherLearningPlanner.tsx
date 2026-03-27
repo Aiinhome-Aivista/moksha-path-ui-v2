@@ -5,85 +5,21 @@ import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
 import { Calendar, Upload, Save, FileText, FileSpreadsheet, Link, X } from "lucide-react";
 import SearchableSelect from "../../../components/common/SearchableSelect";
+import { useToast } from "../../../app/providers/ToastProvider";
 
-// Function to navigate to student materials with stats and selected chapter
-const navigateToStudentMaterials = (
-  navigate: ReturnType<typeof useNavigate>,
-  stats: any,
-  subjects: any[],
-  selectedChapterId?: number,
-) => {
-  navigate("/student-materials", {
-    state: {
-      boardName: stats.board_name,
-      className: stats.class_name,
-      subjects: subjects.map((s) => s.subject_name),
-      subjectWisePlan: subjects,
-      stats: stats,
-      selectedChapterId: selectedChapterId,
-    },
-  });
-};
-
-const navigateToTests = (
-  navigate: ReturnType<typeof useNavigate>,
-  stats: any,
-  subjects: any[],
-  selectedChapterId: number,
-  selectedSubjectName: string,
-) => {
-  const selectedSubject = subjects.find(
-    (s) => s.subject_name === selectedSubjectName,
-  );
-
-  const selectedChapter = selectedSubject?.chapters.find(
-    (ch: any) => ch.chapter_id === selectedChapterId,
-  );
-
-  const selectedTopicIds =
-    selectedChapter?.topics
-      ?.filter((t: any) => t.is_completed) // or your logic
-      .map((t: any) => t.topic_id) || [];
-
-  navigate("/teacher-material", {
-    state: {
-      boardName: stats.board_name,
-      className: stats.class_name,
-      subjects: subjects.map((s) => s.subject_name),
-      subjectWisePlan: subjects,
-      stats: stats,
-      selectedChapterId: selectedChapterId,
-      activeResourceType: "Tests",
-      selectedSubjectName: selectedSubjectName,
-
-      // ✅ ADD THIS
-      selectedTopicIds: selectedTopicIds,
-    },
-  });
-};
 type Priority = "High" | "Medium" | "Low";
 
-interface ApiTopic {
-  topic_id: number;
-  topic_name: string;
-  is_completed: boolean;
-  estimated_hours: number;
-  status: string;
-}
-
 interface ApiChapter {
-  chapter_id: number;
-  chapter_name: string;
-  start_date: string;
-  end_date: string;
-  start_end_date: string;
-  estimated_hours: number;
-  remaining_hours: number;
-  priority: Priority;
-  progress_percentage: number;
-  status: string;
-  target_completion_days: number;
-  topics: ApiTopic[];
+  id: number;
+  chapter: string;
+  startDate: string;
+  endDate: string;
+  startDate_raw: string;
+  endDate_raw: string;
+  progress: number;
+  completed: boolean;
+  testMaterial: any[];
+  practiceMaterial: any[];
 }
 
 interface ApiSubjectPlan {
@@ -143,17 +79,39 @@ const demoChaptersData = [
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
     practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[] ,
   },
+  {
+    id: 6,
+    chapter: "Trigonometry",
+    startDate: "--",
+    endDate: "--",
+    progress: 45,
+    completed: false,
+    testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
+  },
 ];
 
 const TeacherLearningPlanner: React.FC = () => {
   const [subjects, setSubjects] = useState<ApiSubjectPlan[]>([]);
   const [activeSubject, setActiveSubject] = useState("");
+  const { showToast } = useToast();
 
-  const [academicHierarchy, setAcademicHierarchy] = useState<any[]>([]);
   const [classOptions, setClassOptions] = useState<string[]>([]);
   const [sectionOptions, setSectionOptions] = useState<string[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("");
   const [selectedSection, setSelectedSection] = useState<string>("");
+
+  const [selectionModal, setSelectionModal] = useState<{ id: number } | null>(null);
+  const [isMockModalOpen, setIsMockModalOpen] = useState(false);
+  const [selectedMockChapterIds, setSelectedMockChapterIds] = useState<number[]>([]);
+  const [demoChapters, setDemoChapters] = useState(demoChaptersData);
+
+  useEffect(() => {
+    if (isMockModalOpen) {
+      const completedIds = demoChapters.filter((ch) => ch.completed).map((ch) => ch.id);
+      setSelectedMockChapterIds(completedIds);
+    }
+  }, [isMockModalOpen, demoChapters]);
 
   const [uploadModal, setUploadModal] = useState<{
     id: number;
@@ -168,16 +126,16 @@ const TeacherLearningPlanner: React.FC = () => {
   } | null>(null);
   const [namingValue, setNamingValue] = useState("");
 
-  const [expandedChapters, setExpandedChapters] = useState<Set<number>>(
-    new Set(),
-  );
-  const [demoChapters, setDemoChapters] = useState(demoChaptersData);
-
   const toggleDemoChapter = (id: number) => {
-    setDemoChapters((prev) =>
-      prev.map((ch) =>
-        ch.id === id ? { ...ch, completed: !ch.completed } : ch,
-      ),
+    setSubjects((prev) =>
+      prev.map((sub) => ({
+        ...sub,
+        chapters: sub.chapters.map((ch: any) =>
+          ch.id === id || ch.chapter_id === id
+            ? { ...ch, completed: !ch.completed, is_completed: !ch.completed }
+            : ch,
+        ),
+      })),
     );
   };
 
@@ -217,15 +175,18 @@ const TeacherLearningPlanner: React.FC = () => {
         : "pdf"
       : "link";
 
-    setDemoChapters((prev) =>
-      prev.map((row) =>
-        row.id === id
-          ? {
-              ...row,
-              [field]: [...(row[field] as any[]), { name: finalName, type }],
-            }
-          : row,
-      ),
+    setSubjects((prev) =>
+      prev.map((sub) => ({
+        ...sub,
+        chapters: sub.chapters.map((ch: any) =>
+          ch.id === id || ch.chapter_id === id
+            ? {
+                ...ch,
+                [field]: [...(ch[field] || []), { name: finalName, type }],
+              }
+            : ch,
+        ),
+      })),
     );
     setNamingModal(null);
     setNamingValue("");
@@ -246,40 +207,81 @@ const TeacherLearningPlanner: React.FC = () => {
       year: "numeric",
     });
 
-    setDemoChapters((prev) =>
-      prev.map((row) =>
-        row.id === id ? { ...row, [field]: formattedDate } : row,
-      ),
+    setSubjects((prev) =>
+      prev.map((sub) => ({
+        ...sub,
+        chapters: sub.chapters.map((ch: any) =>
+          ch.id === id || ch.chapter_id === id
+            ? {
+                ...ch,
+                [field]: formattedDate,
+                [`${field}_raw`]: value,
+              }
+            : ch,
+        ),
+      })),
     );
   };
   const [profileImage, setProfileImage] = useState<string>(" ");
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const navigate = useNavigate();
 
-  const toggleChapterAccordion = (chapterId: number) => {
-    setExpandedChapters((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(chapterId)) {
-        newSet.delete(chapterId);
-      } else {
-        newSet.add(chapterId);
-      }
-      return newSet;
-    });
-  };
 
   const fetchLearningPlan = async () => {
     try {
-      const response = await ApiServices.getTeacherLearningPlanner();
+      setIsLoading(true);
+      const response = await ApiServices.getTeacherPlannerData();
       const result = response.data;
 
       if (result.status === "success") {
-        const plans = result.data?.subject_wise_plan || [];
+        const data = result.data;
+        const plannerMap = new Map();
+        (data.chapter_planner || []).forEach((item: any) => {
+          plannerMap.set(item.chapter_id, item);
+        });
+
+        const plans = (data.subject_wise_chapters || []).map((sub: any) => ({
+          ...sub,
+          chapters: sub.chapters.map((ch: any) => {
+            const plannerData = plannerMap.get(ch.id || ch.chapter_id);
+            const rawStart = plannerData?.start_date || ch.start_date || "";
+            const rawEnd = plannerData?.end_date || ch.end_date || "";
+            
+            return {
+              ...ch,
+              id: ch.id || ch.chapter_id,
+              chapter: ch.name || ch.chapter_name,
+              startDate: rawStart ? new Date(rawStart).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "--",
+              endDate: rawEnd ? new Date(rawEnd).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "--",
+              startDate_raw: rawStart,
+              endDate_raw: rawEnd,
+              progress: ch.progress_percentage || 0,
+              completed: plannerData ? plannerData.is_completed : (ch.is_completed || false),
+              testMaterial: ch.testMaterial || [],
+              practiceMaterial: ch.practiceMaterial || [],
+            };
+          }),
+        }));
 
         setSubjects(plans);
-        setStats(result.data?.stats);
+
+        // Map stats for header
+        setStats({
+          teacher_name: data.teacher?.name,
+          institute_name: data.institute?.name,
+          board_name: data.board?.name,
+          class_name: data.dropdowns?.classes?.[0]?.name,
+          section_name: data.dropdowns?.sections?.[0]?.name,
+        });
+
+        // Map dropdown options
+        if (data.dropdowns) {
+          setClassOptions(data.dropdowns.classes?.map((c: any) => c.name) || []);
+          setSectionOptions(
+            data.dropdowns.sections?.map((s: any) => s.name) || [],
+          );
+        }
 
         if (plans.length > 0) {
           setActiveSubject((prev) => prev || plans[0]?.subject_name || "");
@@ -309,43 +311,37 @@ const TeacherLearningPlanner: React.FC = () => {
     fetchProfileImage();
   }, []);
 
+  // Sync demoChapters with dynamic API data
   useEffect(() => {
-    const fetchHierarchy = async () => {
-      try {
-        const res = await ApiServices.getAcademicHierarchy();
-        if (res.data?.status === "success" && Array.isArray(res.data.data)) {
-          setAcademicHierarchy(res.data.data);
-          const classes = Array.from(
-            new Set(res.data.data.map((item: any) => item.class_name)),
-          ).filter(Boolean) as string[];
-          setClassOptions(classes);
-        }
-      } catch (e) {}
+    const activePlan = subjects.find((s) => s.subject_name === activeSubject);
+    if (activePlan) {
+      setDemoChapters(activePlan.chapters);
+    } else {
+      setDemoChapters([]);
+    }
+  }, [activeSubject, subjects]);
+
+  const handleSave = async (row: any) => {
+    const payload = {
+      chapter_id: row.id,
+      start_date: row.startDate_raw || null,
+      end_date: row.endDate_raw || null,
+      is_completed: row.completed,
     };
-    fetchHierarchy();
-  }, []);
 
-  useEffect(() => {
-    if (!selectedClass) {
-      setSectionOptions([]);
-      return;
+    try {
+      const res = await ApiServices.upsertTeacherPlanner(payload);
+      if (res.data?.status === "success") {
+        showToast("Chapter planner updated successfully", "success");
+        // Optionally refresh data
+        // fetchLearningPlan();
+      } else {
+        showToast(res.data?.message || "Failed to update", "error");
+      }
+    } catch (error) {
+      showToast("An error occurred while saving", "error");
     }
-    const sections = academicHierarchy
-      .filter((item: any) => item.class_name === selectedClass)
-      .flatMap((item: any) => {
-        if (Array.isArray(item.sections)) {
-          return item.sections.map((s: any) => s.section_name || s.section);
-        }
-        return [];
-      })
-      .filter(Boolean);
-    const uniqueSections = Array.from(new Set(sections));
-    setSectionOptions(uniqueSections);
-
-    if (selectedSection && !uniqueSections.includes(selectedSection)) {
-      setSelectedSection("");
-    }
-  }, [selectedClass, academicHierarchy]);
+  };
 
   useEffect(() => {
     if (stats) {
@@ -355,55 +351,6 @@ const TeacherLearningPlanner: React.FC = () => {
         setSelectedSection(stats.section_name);
     }
   }, [stats]);
-
-  const updateTopic = async (
-    chapterId: number,
-    topicId: number,
-    isCompleted: boolean,
-  ) => {
-    const payload = [
-      {
-        chapter_id: chapterId,
-        topic_id: topicId,
-        status: isCompleted ? "Pending" : "Completed",
-      },
-    ];
-
-    try {
-      await ApiServices.updateTopicStatus(payload);
-
-      //  Fetch updated data from backend
-      await fetchLearningPlan();
-
-      // Update UI locally after success
-      setSubjects((prev) =>
-        prev.map((sub) => ({
-          ...sub,
-          chapters: sub.chapters.map((ch) =>
-            ch.chapter_id === chapterId
-              ? {
-                  ...ch,
-                  topics: ch.topics.map((t) =>
-                    t.topic_id === topicId
-                      ? { ...t, is_completed: !isCompleted }
-                      : t,
-                  ),
-                }
-              : ch,
-          ),
-        })),
-      );
-    } catch (err) {
-      // console.error("Update topic failed", err);
-    }
-  };
-
-  const getProgressColor = (progress: number) => {
-    if (progress >= 80) return "bg-green-500";
-    if (progress >= 50) return "bg-yellow-400";
-    if (progress >= 30) return "bg-orange-500";
-    return "bg-red-500";
-  };
 
   // const getNextPriority = (
   //   current: "High" | "Medium" | "Low",
@@ -464,7 +411,7 @@ const TeacherLearningPlanner: React.FC = () => {
                 Hi{" "}
                 {stats.teacher_name
                   ? stats.teacher_name
-                      .split(" ")
+                      ?.split(" ")
                       .map(
                         (word: string) =>
                           word.charAt(0).toUpperCase() + word.slice(1),
@@ -474,12 +421,11 @@ const TeacherLearningPlanner: React.FC = () => {
                 !
               </h1>
               <p className="text-sm text-primary font-medium m-0">
-                {stats.institute_name}
+                {stats.institute_name} {stats.board_name && `| ${stats.board_name}`}
               </p>
-              {/* <p className="text-sm text-primary m-0">{stats.board_name}</p> */}
               <div className="flex flex-col gap-2 mt-2">
                 <div className="flex gap-2">
-                  <div className="w-40">
+                  <div className="m-0">
                     <SearchableSelect
                       options={classOptions.map((c) => ({
                         label: c,
@@ -488,10 +434,10 @@ const TeacherLearningPlanner: React.FC = () => {
                       value={selectedClass}
                       onChange={(val) => setSelectedClass(val as string)}
                       placeholder="Select Class"
-                      className="text-sm text-primary m-0"
+                      className="px-2 py-2 appearance-none bg-white border border-gray-200 rounded-lg text-sm text-primary font-medium focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 shadow-sm"
                     />
                   </div>
-                  <div className="w-40">
+                  <div className="px-2">
                     <SearchableSelect
                       options={sectionOptions.map((s) => ({
                         label: s,
@@ -500,10 +446,10 @@ const TeacherLearningPlanner: React.FC = () => {
                       value={selectedSection}
                       onChange={(val) => setSelectedSection(val as string)}
                       placeholder="Select Section"
-                      className="text-sm text-primary m-0"
+                      className="px-2 py-2 appearance-none bg-white border border-gray-200 rounded-lg text-sm text-primary font-medium focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 shadow-sm"
                     />
                   </div>
-                  <div className="w-60">
+                  <div className="m-0">
                     <SearchableSelect
                       options={subjects.map((s) => ({
                         label: s.subject_name,
@@ -512,7 +458,7 @@ const TeacherLearningPlanner: React.FC = () => {
                       value={activeSubject}
                       onChange={(val) => setActiveSubject(val as string)}
                       placeholder="Select Subject"
-                      className="text-sm text-primary m-0"
+                       className="px-2 py-2 appearance-none bg-white border border-gray-200 rounded-lg text-sm text-primary font-medium focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 shadow-sm"
                     />
                   </div>
                 </div>
@@ -522,85 +468,16 @@ const TeacherLearningPlanner: React.FC = () => {
         </div>
 
         {/* Stats Badges */}
-        <div className="flex flex-wrap items-center gap-20">
-          {stats && (
-            <div className="flex items-center gap-4">
-              <div className="w-[6rem] h-[6rem] rounded-full bg-yellow flex items-center justify-center">
-                <span className="text-4xl font-bold text-red">
-                  {stats.days_left}
-                </span>
-              </div>
-
-              <div className="leading-snug">
-                <p className="text-xs font-bold mt-7 text-primary">
-                  Days Left for
-                  <br />
-                  Annual
-                  <br />
-                  Exam
-                </p>
-                <br />
-                <strong>{stats.examName}</strong>
-              </div>
-            </div>
-          )}
-          {stats && (
-            <>
-              {/* Chapters Assigned */}
-              <div className="text-center">
-                <div className="w-[4.688rem] h-[4.688rem] rounded-full bg-yellow flex items-center justify-center mx-auto mb-1">
-                  <span className="text-lg font-bold text-red">
-                    {stats.chapters_assigned_globally}
-                  </span>
-                </div>
-                <p className="text-xs font-medium text-primary">
-                  Chapters Assigned
-                </p>
-              </div>
-
-              {/* Completed */}
-              <div className="text-center">
-                <div className="w-[4.688rem] h-[4.688rem] rounded-full bg-yellow flex items-center justify-center mx-auto mb-1">
-                  <span className="text-lg font-bold text-red">
-                    {stats?.completed_count ? stats.completed_count : 0}
-                  </span>
-                </div>
-                <p className="text-xs font-medium text-primary">Completed</p>
-              </div>
-
-              {/* Pending */}
-              <div className="text-center">
-                <div className="w-[4.688rem] h-[4.688rem] rounded-full bg-yellow flex items-center justify-center mx-auto mb-1">
-                  <span className="text-lg font-bold text-red">
-                    {stats?.pending_count ? stats.pending_count : 0}
-                  </span>
-                </div>
-                <p className="text-xs font-medium text-primary">Pending</p>
-              </div>
-            </>
-          )}
+        <div className="flex justify-end items-end gap-20 relative top-20">
+          <button 
+            onClick={() => setIsMockModalOpen(true)}
+            className="w-full p-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors border-none cursor-pointer"
+          >
+           Generate Overall Mock
+          </button>
         </div>
       </header>
-      <div className="flex flex-wrap gap-3 items-center justify-center mb-6">
-        {subjects.map((subject) => (
-          <button
-            key={subject.subject_name}
-            onClick={() => setActiveSubject(subject.subject_name)}
-            className={`px-6 py-2.5 rounded-full text-sm font-medium cursor-pointer transition-all duration-300 border-none
-      ${
-        activeSubject === subject.subject_name
-          ? "bg-button-primary text-primary font-semibold"
-          : "bg-primary text-white font-semibold"
-      }`}
-          >
-            {subject.subject_name}
-          </button>
-        ))}
-
-        {/* <div className="ml-auto cursor-pointer p-2">
-          <img src="/vec.svg" alt="Filter" />
-        </div> */}
-      </div>
+ 
       <div className="overflow-x-auto mb-6 border-t-4 border-gray-300 ">
         <table className="w-full border-collapse text-sm">
           <thead className="border-b-2 border-gray-300">
@@ -618,10 +495,7 @@ const TeacherLearningPlanner: React.FC = () => {
                 End Date
               </th>
               <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Study Material
-              </th>
-              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Practice Material
+                Upload Material
               </th>
               <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
                 Completion Status
@@ -632,7 +506,7 @@ const TeacherLearningPlanner: React.FC = () => {
           <tbody>
             {demoChapters.map((row, i) => (
               <tr key={i} className="border-b hover:bg-gray-50">
-                <td className="py-3 px-2 text-center">{row.id}</td>
+                <td className="py-3 px-2 text-center">{i+1}</td>
 
                 <td className="py-3 px-2 text-center font-medium">
                   {row.chapter}
@@ -675,7 +549,7 @@ const TeacherLearningPlanner: React.FC = () => {
                 <td className="py-3 px-2 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <button
-                      onClick={() => setUploadModal({ id: row.id, field: "testMaterial" })}
+                      onClick={() => setSelectionModal({ id: row.id })}
                       className="cursor-pointer flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-md transition-colors border-none"
                     >
                       <Upload size={12} />
@@ -691,8 +565,19 @@ const TeacherLearningPlanner: React.FC = () => {
                         handleFileUpload(row.id, "testMaterial", e)
                       }
                     />
+                    <input
+                      id={`file-prac-${row.id}`}
+                      type="file"
+                      multiple
+                      accept=".pdf,.xls,.xlsx"
+                      className="hidden"
+                      onChange={(e) =>
+                        handleFileUpload(row.id, "practiceMaterial", e)
+                      }
+                    />
                     {row.testMaterial.length > 0 && (
                       <div className="flex flex-col mt-1 gap-1">
+                        <span className="text-[9px] font-bold text-gray-400 uppercase">Study</span>
                         {row.testMaterial.map((mat, idx) => (
                           <div
                             key={idx}
@@ -707,30 +592,9 @@ const TeacherLearningPlanner: React.FC = () => {
                         ))}
                       </div>
                     )}
-                  </div>
-                </td>
-
-                <td className="py-3 px-2 text-center">
-                  <div className="flex flex-col items-center justify-center">
-                    <button
-                      onClick={() => document.getElementById(`file-prac-${row.id}`)?.click()}
-                      className="cursor-pointer flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-md transition-colors border-none"
-                    >
-                      <Upload size={12} />
-                      <span>Upload</span>
-                    </button>
-                    <input
-                      id={`file-prac-${row.id}`}
-                      type="file"
-                      multiple
-                      accept=".pdf,.xls,.xlsx"
-                      className="hidden"
-                      onChange={(e) =>
-                        handleFileUpload(row.id, "practiceMaterial", e)
-                      }
-                    />
                     {row.practiceMaterial.length > 0 && (
-                      <div className="flex flex-col mt-1 gap-1">
+                      <div className="flex flex-col mt-2 gap-1 border-t border-gray-100 pt-1">
+                        <span className="text-[9px] font-bold text-gray-400 uppercase">Practice</span>
                         {row.practiceMaterial.map((mat, idx) => (
                           <div
                             key={idx}
@@ -739,7 +603,6 @@ const TeacherLearningPlanner: React.FC = () => {
                           >
                             {mat.type === "pdf" && <FileText size={10} />}
                             {mat.type === "excel" && <FileSpreadsheet size={10} className="text-green-600" />}
-                            {mat.type === "link" && <Link size={10} />}
                             <span className="truncate">{mat.name}</span>
                           </div>
                         ))}
@@ -758,7 +621,10 @@ const TeacherLearningPlanner: React.FC = () => {
                 </td>
 
                 <td className="py-3 px-2 text-center">
-                  <button className="p-2 inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium text-[#b9b7b7]">
+                  <button 
+                    onClick={() => handleSave(row)}
+                    className="p-2 inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium text-[#b9b7b7] hover:text-blue-600 transition-colors border-none bg-transparent cursor-pointer"
+                  >
                     <Save size={20} strokeWidth={2} />
                   </button>
                 </td>
@@ -779,7 +645,48 @@ const TeacherLearningPlanner: React.FC = () => {
       </div>
       {isChatOpen && <Chat onClose={() => setIsChatOpen(false)} />}
 
-      {/* Upload Selection Modal */}
+      {/* Step 1: Material Type Selection Modal */}
+      {selectionModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in duration-200">
+            <button 
+              onClick={() => setSelectionModal(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 border-none bg-transparent cursor-pointer transition-colors"
+            >
+              <X size={20} />
+            </button>
+            
+            <h3 className="text-xl font-bold text-primary mb-6 text-center">Select Material Type</h3>
+            
+            <div className="grid grid-cols-1 gap-4">
+              <button
+                onClick={() => {
+                  setUploadModal({ id: selectionModal.id, field: "testMaterial" });
+                  setSelectionModal(null);
+                }}
+                className="flex items-center justify-center gap-3 p-4 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-all border border-blue-200 font-bold cursor-pointer"
+              >
+                <FileText size={20} />
+                <span>Study Material</span>
+              </button>
+              
+              <button
+                onClick={() => {
+                  const inputId = `file-prac-${selectionModal.id}`;
+                  document.getElementById(inputId)?.click();
+                  setSelectionModal(null);
+                }}
+                className="flex items-center justify-center gap-3 p-4 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-all border border-green-200 font-bold cursor-pointer"
+              >
+                <FileSpreadsheet size={20} />
+                <span>Practice Material</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Study Material Source Modal */}
       {uploadModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in duration-200">
@@ -789,8 +696,7 @@ const TeacherLearningPlanner: React.FC = () => {
             >
               <X size={20} />
             </button>
-            
-            <h3 className="text-xl font-bold text-primary mb-6 text-center">Choose Content Type</h3>
+            <h3 className="text-xl font-bold text-primary mb-6 text-center">Study Material Source</h3>
             
             <div className="grid grid-cols-1 gap-4">
               <button
@@ -814,6 +720,72 @@ const TeacherLearningPlanner: React.FC = () => {
               >
                 <Link size={20} />
                 <span>Add External Link</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Overall Mock Selection Modal */}
+      {isMockModalOpen && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 relative animate-in fade-in zoom-in duration-200">
+            <button
+              onClick={() => setIsMockModalOpen(false)}
+              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 bg-transparent hover:bg-gray-100 rounded-full transition-all z-10 border-none cursor-pointer"
+            >
+              <X size={20} />
+            </button>
+            
+            <h2 className="text-2xl font-bold text-primary mb-6">Generate Overall Mock</h2>
+            
+            <div className="max-h-60 overflow-y-auto custom-scrollbar border border-gray-200 rounded-lg mb-6">
+              <table className="w-full border-collapse">
+                <thead className="bg-gray-50 sticky top-0">
+                  <tr>
+                    <th className="py-3 px-4 text-left font-bold text-gray-600 border-b w-20">Select</th>
+                    <th className="py-3 px-4 text-left font-bold text-gray-600 border-b">Chapter Name</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {demoChapters.map((ch) => (
+                    <tr key={ch.id} className="border-b hover:bg-gray-50 transition-colors">
+                      <td className="py-3 px-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedMockChapterIds.includes(ch.id)}
+                          disabled={!ch.completed}
+                          onChange={() => {
+                            setSelectedMockChapterIds((prev) =>
+                              prev.includes(ch.id)
+                                ? prev.filter((id) => id !== ch.id)
+                                : [...prev, ch.id]
+                            );
+                          }}
+                          className={`w-4 h-4 accent-[#BADA55] ${!ch.completed ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                        />
+                      </td>
+                      <td className={`py-3 px-4 text-sm font-medium ${!ch.completed ? 'text-gray-400 italic' : 'text-gray-700'}`}>
+                        {ch.chapter} {!ch.completed && "(Incomplete)"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsMockModalOpen(false)}
+                className="px-6 py-2 rounded-lg font-bold text-gray-500 hover:bg-gray-100 transition-colors border-none cursor-pointer bg-transparent"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => setIsMockModalOpen(false)}
+                className="px-8 py-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-all shadow-md hover:shadow-lg border-none cursor-pointer"
+              >
+                Submit
               </button>
             </div>
           </div>
