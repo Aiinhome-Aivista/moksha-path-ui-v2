@@ -5,6 +5,7 @@ import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
 import TestModalUpdated from "../components/TestModalUpdated";
 import { useToast } from "../../../app/providers/ToastProvider";
+import { useNotification } from "../../../app/providers/NotificationProvider";
 
 // ─── Interfaces ─────────────────────────────────────────────────────────────
 
@@ -639,6 +640,7 @@ const LearningPlanner: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { showToast } = useToast();
+  const { refresh: refreshNotificationCount } = useNotification();
 
   const location = useLocation();
   const assignmentIdFromState = location.state?.assignmentId;
@@ -684,8 +686,6 @@ const LearningPlanner: React.FC = () => {
         error.response?.data?.message || "Something went wrong",
         "error",
       );
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -776,10 +776,8 @@ const LearningPlanner: React.FC = () => {
         setAcademic(newPlannerData.academic);
         setStudent(newPlannerData.student);
       }
-    } catch (error) {
-      console.error("Failed to fetch or generate learning plan:", error);
-    } finally {
-      setIsLoading(false);
+    } catch {
+      // silent
     }
   };
 
@@ -792,13 +790,23 @@ const LearningPlanner: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchLearningPlan();
-    fetchProfileImage();
+    const init = async () => {
+      setIsLoading(true);
+      try {
+        await Promise.all([fetchLearningPlan(), fetchProfileImage()]);
 
-    // Check if we came from notification with an assignmentId
-    if (assignmentIdFromState) {
-      handleTestModalUpdate(assignmentIdFromState);
-    }
+        // Check if we came from notification with an assignmentId
+        if (assignmentIdFromState) {
+          await handleTestModalUpdate(assignmentIdFromState);
+        }
+      } catch (err) {
+        console.error("Initialization error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    init();
   }, [assignmentIdFromState]);
 
   const getInitial = () => student?.name?.charAt(0).toUpperCase();
@@ -917,6 +925,7 @@ const LearningPlanner: React.FC = () => {
           console.log("Test completed:", result);
           // Refresh data to show progress
           fetchLearningPlan();
+          refreshNotificationCount();
         }}
       />
     </div>

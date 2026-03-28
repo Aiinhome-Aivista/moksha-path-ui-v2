@@ -7,6 +7,7 @@ import { ThemeProvider } from "./providers/ThemeProvider";
 import { AuthProvider as ModalProvider } from "../features/auth/context/AuthContext";
 import { ToastProvider } from "./providers/ToastProvider";
 import { SeoProvider } from "../context/SeoContext";
+import { NotificationProvider } from "./providers/NotificationProvider";
 
 const App: React.FC = () => {
   return (
@@ -15,9 +16,11 @@ const App: React.FC = () => {
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>
-              <ModalProvider>
-                <RouterProvider router={router} />
-              </ModalProvider>
+              <NotificationProvider>
+                <ModalProvider>
+                  <RouterProvider router={router} />
+                </ModalProvider>
+              </NotificationProvider>
             </ToastProvider>
           </AuthProvider>
         </ThemeProvider>

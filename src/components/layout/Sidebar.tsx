@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import ApiServices from "../../services/ApiServices";
 import { useToast } from "../../app/providers/ToastProvider";
+import { useNotification } from "../../app/providers/NotificationProvider";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -56,6 +57,7 @@ const IconMap: Record<string, LucideIcon> = {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const { logout, isAuthenticated, user } = useAuth();
   const { menuItems, isMenuLoaded, fetchMenu, clearMenu } = useModal();
+  const { count: notificationCount } = useNotification();
   const navigate = useNavigate();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const { showToast } = useToast();
@@ -252,7 +254,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 title={!isOpen ? item.page_name : undefined}
               >
                 <div className={`flex items-center min-w-0 ${isOpen ? "gap-3" : ""}`}>
-                  <span className="shrink-0">{renderIcon(item.icon)}</span>
+                  <div className="relative shrink-0">
+                    {renderIcon(item.icon)}
+                    {item.icon === "notification" && notificationCount > 0 && (
+                      <span className={`absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white shadow-sm`}>
+                        {notificationCount > 99 ? "99+" : notificationCount}
+                      </span>
+                    )}
+                  </div>
                   {isOpen && (
                     <span
                       className="text-[15px] font-medium truncate transition-opacity duration-300"
