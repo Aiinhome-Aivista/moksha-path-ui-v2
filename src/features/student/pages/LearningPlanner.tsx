@@ -316,11 +316,16 @@ const ChapterAccordion: React.FC<{
         className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50/80 transition-colors"
       >
         <span className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold ${allDone ? "bg-green-500 text-white" : "bg-[#BADA55]/20 text-[#6a9000]"}`}>
-          {allDone
-            ? <span className="material-symbols-outlined" style={{ fontSize: 14 }}>check</span>
-            : index + 1}
+          {index + 1}
         </span>
-        <span className="flex-1 font-semibold text-sm text-primary">{chapter.chapter_name}</span>
+        <span className="flex-1 font-semibold text-sm text-primary flex items-center gap-2">
+          <span>{chapter.chapter_name}</span>
+          {allDone && (
+            <span className="material-symbols-outlined text-green-500" style={{ fontSize: 16, fontVariationSettings: "'FILL' 1" }}>
+              check_circle
+            </span>
+          )}
+        </span>
         <span className={`material-symbols-outlined text-lg text-gray-400 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`}>
           expand_more
         </span>
