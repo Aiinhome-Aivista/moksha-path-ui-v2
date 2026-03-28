@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
-import { Calendar, Upload, Save, FileText, FileSpreadsheet, Link, X } from "lucide-react";
+import { Calendar, Upload, Save, FileText, FileSpreadsheet, Link, X, Loader2 } from "lucide-react";
 import SearchableSelect from "../../../components/common/SearchableSelect";
 import { useToast } from "../../../app/providers/ToastProvider";
 
@@ -114,6 +114,7 @@ const TeacherLearningPlanner: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState<string>("");
   const [selectedSection, setSelectedSection] = useState<string>("");
 
+  const [savingChapterId, setSavingChapterId] = useState<number | null>(null);
   const [selectionModal, setSelectionModal] = useState<{ id: number } | null>(null);
   const [isMockModalOpen, setIsMockModalOpen] = useState(false);
   const [selectedMockChapterIds, setSelectedMockChapterIds] = useState<number[]>([]);
@@ -407,16 +408,15 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
   // };
 
 
-  const handleSave = async (row: any) => {
+const handleSave = async (row: any) => {
   const payload = {
     chapter_id: row.id,
     start_date: row.startDate_raw || null,
     end_date: row.endDate_raw || null,
     is_completed: row.completed,
   };
-
+  setSavingChapterId(row.id);
   try {
-    setIsLoading(true); // save loader
 
     const res = await ApiServices.upsertTeacherPlanner(payload);
 
@@ -451,7 +451,7 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
   } catch (error) {
     showToast("An error occurred while saving", "error");
   } finally {
-    setIsLoading(false);
+    setSavingChapterId(null);
   }
 };
   useEffect(() => {
@@ -720,20 +720,24 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
                     type="checkbox"
                     checked={row.completed}
                     onChange={() => {
-                      if (row.startDate && row.endDate_raw) toggleDemoChapter(row.id);
+                      if (row.startDate_raw && row.endDate_raw) toggleDemoChapter(row.id);
                     }}
                     disabled={!row.startDate_raw || !row.endDate_raw}
-                    className="w-4 h-4 cursor-pointer"
+                    className="w-4 h-4 cursor-pointer rounded border-gray-300 text-[#b0cb1f] focus:ring-[#b0cb1f]"
                   />
                 </td>
 
                 <td className="py-3 px-2 text-center">
                   <button
                     onClick={() => handleSave(row)}
-                    disabled={!row.completed}
-                    className="p-2 inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium text-[#b9b7b7] hover:text-blue-600 transition-colors border-none bg-transparent cursor-pointer"
+                    disabled={!row.startDate_raw || !row.endDate_raw || savingChapterId !== null}
+                    className="p-2 inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium text-gray-400 hover:text-blue-600 transition-colors border-none bg-transparent hover:bg-blue-50 cursor-pointer disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent"
                   >
-                    <Save size={20} strokeWidth={2} />
+                    {savingChapterId === row.id ? (
+                      <Loader2 size={20} className="animate-spin text-blue-500" />
+                    ) : (
+                      <Save size={20} strokeWidth={2} />
+                    )}
                   </button>
                 </td>
               </tr>
