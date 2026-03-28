@@ -5,7 +5,7 @@ import { useNotification } from "../../../app/providers/NotificationProvider";
 
 type InvitationStatus = "Pending" | "Accepted" | "Rejected";
 type ProfileStatus = "Complete" | "Pending" | "Rejected";
-type ActiveTab = "subscription" | "test" | "profile";
+type ActiveTab = "test" | "subscription" | "profile";
 
 interface ReceivedInvitation {
   id: number;
@@ -128,7 +128,7 @@ function normalize(item: any, type: "received" | "sent"): ReceivedInvitation {
 }
 
 const Notifications: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("subscription");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("test");
   const [invitations, setInvitations] = useState<ReceivedInvitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
