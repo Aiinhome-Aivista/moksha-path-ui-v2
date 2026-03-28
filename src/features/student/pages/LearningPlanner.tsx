@@ -5,6 +5,7 @@ import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
 import TestModalUpdated from "../components/TestModalUpdated";
 import { useToast } from "../../../app/providers/ToastProvider";
+import { useNotification } from "../../../app/providers/NotificationProvider";
 
 // ─── Interfaces ─────────────────────────────────────────────────────────────
 
@@ -639,6 +640,7 @@ const LearningPlanner: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { showToast } = useToast();
+  const { refresh: refreshNotificationCount } = useNotification();
 
   const location = useLocation();
   const assignmentIdFromState = location.state?.assignmentId;
@@ -923,6 +925,7 @@ const LearningPlanner: React.FC = () => {
           console.log("Test completed:", result);
           // Refresh data to show progress
           fetchLearningPlan();
+          refreshNotificationCount();
         }}
       />
     </div>
