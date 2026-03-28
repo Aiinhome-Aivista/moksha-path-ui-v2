@@ -683,8 +683,6 @@ const LearningPlanner: React.FC = () => {
         error.response?.data?.message || "Something went wrong",
         "error",
       );
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -773,8 +771,6 @@ const LearningPlanner: React.FC = () => {
       }
     } catch {
       // silent
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -787,13 +783,23 @@ const LearningPlanner: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchLearningPlan();
-    fetchProfileImage();
+    const init = async () => {
+      setIsLoading(true);
+      try {
+        await Promise.all([fetchLearningPlan(), fetchProfileImage()]);
 
-    // Check if we came from notification with an assignmentId
-    if (assignmentIdFromState) {
-      handleTestModalUpdate(assignmentIdFromState);
-    }
+        // Check if we came from notification with an assignmentId
+        if (assignmentIdFromState) {
+          await handleTestModalUpdate(assignmentIdFromState);
+        }
+      } catch (err) {
+        console.error("Initialization error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    init();
   }, [assignmentIdFromState]);
 
   const getInitial = () => student?.name?.charAt(0).toUpperCase();
