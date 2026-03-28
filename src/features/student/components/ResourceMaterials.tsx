@@ -1,5 +1,6 @@
 import React from "react";
-import { Play, ExternalLink, Loader2 } from "lucide-react";
+import { Play, ExternalLink, Loader2, Link as LinkIcon } from "lucide-react";
+import { type StudyMaterialItem } from "./Notes";
 
 export interface YouTubeLink {
   title: string;
@@ -9,11 +10,13 @@ export interface YouTubeLink {
 
 interface ResourceMaterialsProps {
   youtubeLinks: YouTubeLink[];
+  externalLinks?: StudyMaterialItem[];
   isLoading?: boolean;
 }
 
 const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
   youtubeLinks,
+  externalLinks = [],
   isLoading = false,
 }) => {
   if (isLoading) {
@@ -25,11 +28,11 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
     );
   }
 
-  if (youtubeLinks.length === 0) {
+  if (youtubeLinks.length === 0 && externalLinks.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-gray-400">
         <Play size={40} className="mb-3 opacity-50" />
-        <p className="text-sm font-medium">No videos available</p>
+        <p className="text-sm font-medium">No videos or links available</p>
         <p className="text-xs mt-1">
           Select a chapter and topic from the sidebar to load videos
         </p>
@@ -64,15 +67,18 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-4">
-        <Play size={20} className="text-red-500" />
-        <h2 className="text-lg font-semibold text-gray-800">Videos</h2>
-        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-          {youtubeLinks.length} videos
-        </span>
-      </div>
+      {/* Videos Section */}
+      {youtubeLinks.length > 0 && (
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Play size={20} className="text-red-500" />
+            <h2 className="text-lg font-semibold text-gray-800">Videos</h2>
+            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+              {youtubeLinks.length} videos
+            </span>
+          </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {youtubeLinks.map((link, index) => {
           const thumbnail = getThumbnail(link.url);
 
@@ -135,6 +141,51 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
           );
         })}
       </div>
+        </div>
+      )}
+
+      {/* External Links Section */}
+      {externalLinks.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <LinkIcon size={20} className="text-blue-500" />
+            <h2 className="text-lg font-semibold text-gray-800">External Links</h2>
+            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+              {externalLinks.length} links
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {externalLinks.map((link) => (
+              <a
+                key={link.id}
+                href={link.link_url || link.resource}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg hover:border-blue-400/40 border border-gray-200 transition-all cursor-pointer group no-underline flex flex-col"
+              >
+                {/* Visual Header / Box */}
+                <div className="flex-1 min-h-[144px] flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-blue-50 to-blue-100 border-b border-gray-100 p-5">
+                  <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <LinkIcon size={32} className="text-blue-500" />
+                  </div>
+                </div>
+
+                {/* Card Content */}
+                <div className="p-3 bg-white">
+                  <h4 className="font-semibold text-sm text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                    {link.title}
+                  </h4>
+                  <div className="flex items-center gap-1 text-[11px] text-gray-400">
+                    <ExternalLink size={12} className="flex-shrink-0" />
+                    <span className="truncate">{link.link_url || link.resource}</span>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -7,7 +7,7 @@ import ResourceMaterials, {
 } from "../components/ResourceMaterials";
 import Practice from "../components/Practice";
 import Tests from "../components/Tests";
-import Notes, { type NoteData } from "../components/Notes";
+import Notes, { type NoteData, type StudyMaterialItem } from "../components/Notes";
 import ApiServices from "../../../services/ApiServices";
 import IconChat from "../../../assets/icon/chat2.svg";
 import Chat from "../../auth/modal/chat";
@@ -71,6 +71,7 @@ const StudentMaterials = () => {
   // ── Resource data from API ──
   const [youtubeLinks, setYoutubeLinks] = useState<YouTubeLink[]>([]);
   const [notesData, setNotesData] = useState<NoteData[]>([]);
+  const [studyMaterials, setStudyMaterials] = useState<StudyMaterialItem[]>([]);
   const [isResourcesLoading, setIsResourcesLoading] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
@@ -529,6 +530,28 @@ const StudentMaterials = () => {
     // planSource,
   ]);
 
+  // ── Fetch study materials from get_study_material API ──
+  useEffect(() => {
+    const fetchStudyMaterials = async () => {
+      try {
+        console.log("[StudyMaterial] Calling get_study_material API...");
+        const res = await ApiServices.getStudyMaterial();
+        console.log("[StudyMaterial] API response:", res.data);
+
+        if (res.data?.status === "success" && Array.isArray(res.data?.data)) {
+          setStudyMaterials(res.data.data);
+        } else {
+          setStudyMaterials([]);
+        }
+      } catch (err) {
+        console.error("[StudyMaterial] API error:", err);
+        setStudyMaterials([]);
+      }
+    };
+
+    fetchStudyMaterials();
+  }, []);
+
   useEffect(() => {
     if (!planSource || !activeSubject || chapters.length === 0) return;
 
@@ -702,8 +725,10 @@ const StudentMaterials = () => {
           {activeResourceType === "Videos" && (
             <ResourceMaterials
               youtubeLinks={youtubeLinks}
+              externalLinks={studyMaterials.filter(
+                (m) => m.file_type === "link"
+              )}
               isLoading={isResourcesLoading}
-              // isLoading={false}
             />
           )}
           {activeResourceType === "Practice" && <Practice />}
@@ -725,7 +750,11 @@ const StudentMaterials = () => {
             />
           )}
           {activeResourceType === "Notes" && (
-            <Notes notes={notesData} isLoading={isResourcesLoading} />
+            <Notes
+              notes={notesData}
+              studyMaterials={studyMaterials}
+              isLoading={isResourcesLoading}
+            />
           )}
         </div>
       </div>

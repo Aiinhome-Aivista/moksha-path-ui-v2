@@ -105,6 +105,9 @@ export const GET_APIS = {
   get_assigned_teacher_list: `${BASE_URL}institute_admin/assigned_teacher_list`,
   get_available_teachers: `${BASE_URL}institute_admin/available_teachers`,
   get_institute_admin_summary: `${BASE_URL}parent_teacher/institute_admin_summary`,
+
+  // Study Material
+  get_study_material: `${BASE_URL}parent_teacher/get_study_material`,
 };
 
 export const POST_APIS = {
