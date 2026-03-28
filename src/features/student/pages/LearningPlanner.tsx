@@ -699,6 +699,8 @@ const LearningPlanner: React.FC = () => {
         error.response?.data?.message || "Something went wrong",
         "error",
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 

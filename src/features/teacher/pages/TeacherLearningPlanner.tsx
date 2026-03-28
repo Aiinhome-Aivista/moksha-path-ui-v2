@@ -936,9 +936,17 @@ const handleSave = async (row: any) => {
 
               <button
                 onClick={confirmNaming}
-                className="w-full py-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors border-none cursor-pointer"
+                disabled={isLoading}
+                className="w-full py-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 flex items-center justify-center gap-2 transition-colors border-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {namingModal.isLink ? "Add Link" : "Confirm Upload"}
+                {isLoading ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  namingModal.isLink ? "Add Link" : "Confirm Upload"
+                )}
               </button>
             </div>
           </div>
