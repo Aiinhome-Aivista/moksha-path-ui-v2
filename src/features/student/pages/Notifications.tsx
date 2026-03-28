@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import ApiServices from "../../../services/ApiServices";
 import { useNavigate } from "react-router-dom";
+import { useNotification } from "../../../app/providers/NotificationProvider";
 
 type InvitationStatus = "Pending" | "Accepted" | "Rejected";
 type ProfileStatus = "Complete" | "Pending" | "Rejected";
-type ActiveTab = "subscription" | "test" | "profile";
+type ActiveTab = "test" | "subscription" | "profile";
 
 interface ReceivedInvitation {
   id: number;
@@ -127,7 +128,7 @@ function normalize(item: any, type: "received" | "sent"): ReceivedInvitation {
 }
 
 const Notifications: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("subscription");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("test");
   const [invitations, setInvitations] = useState<ReceivedInvitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -167,6 +168,7 @@ const Notifications: React.FC = () => {
 
 
   const navigate = useNavigate();
+  const { count: notificationCount, refresh: refreshNotificationCount } = useNotification();
   // ── fetch on mount ─────────────────────────────────────────────────────
   useEffect(() => {
     fetchInvites();
@@ -344,6 +346,7 @@ const Notifications: React.FC = () => {
       }));
     } finally {
       setActioningState(null);
+      refreshNotificationCount();
     }
   };
 
@@ -352,8 +355,6 @@ const Notifications: React.FC = () => {
     activeFilter === "All"
       ? invitations
       : invitations.filter((inv) => inv.status === activeFilter);
-
-  const pendingCount = invitations.filter((i) => i.status === "Pending").length;
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice(
@@ -441,6 +442,7 @@ const Notifications: React.FC = () => {
       // console.error("Error updating profile request status", error);
     } finally {
       setIsUpdatingProfileRequest(null);
+      refreshNotificationCount();
     }
   };
 
@@ -460,9 +462,9 @@ const Notifications: React.FC = () => {
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold text-gray-800">Notifications</h1>
-            {pendingCount > 0 && (
+            {notificationCount > 0 && (
               <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-400 text-white text-xs font-bold shadow-sm">
-                {pendingCount}
+                {notificationCount}
               </span>
             )}
           </div>
