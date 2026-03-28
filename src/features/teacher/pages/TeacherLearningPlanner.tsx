@@ -39,7 +39,7 @@ const demoChaptersData = [
     progress: 90,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[] ,
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
   },
   {
     id: 2,
@@ -51,7 +51,7 @@ const demoChaptersData = [
     progress: 85,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[] ,
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
   },
   {
     id: 3,
@@ -63,7 +63,7 @@ const demoChaptersData = [
     progress: 58,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[] ,
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
   },
   {
     id: 4,
@@ -75,7 +75,7 @@ const demoChaptersData = [
     progress: 74,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[] ,
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
   },
   {
     id: 5,
@@ -87,7 +87,7 @@ const demoChaptersData = [
     progress: 45,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[] ,
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
   },
   {
     id: 6,
@@ -99,7 +99,7 @@ const demoChaptersData = [
     progress: 45,
     completed: false,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[] ,
+    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[],
   },
 ];
 
@@ -183,7 +183,7 @@ const TeacherLearningPlanner: React.FC = () => {
         file.name.endsWith(".xlsx") ||
         file.type === "application/vnd.ms-excel" ||
         file.type ===
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         ? "excel"
         : "pdf"
       : "link";
@@ -192,18 +192,18 @@ const TeacherLearningPlanner: React.FC = () => {
 
     try {
       const formData = new FormData();
-      
+
       // 1. Append Required IDs
       formData.append("chapter_id", id.toString());
       formData.append("board_id", stats?.board_id?.toString() || "");
       formData.append("institute_id", stats?.institute_id?.toString() || "");
-      
+
       const currentClassObj = classOptions.find(c => c.name === selectedClass);
-      formData.append("class_id", currentClassObj?.id?.toString() || stats?.class_id?.toString() || ""); 
-      
+      formData.append("class_id", currentClassObj?.id?.toString() || stats?.class_id?.toString() || "");
+
       const currentSectionObj = sectionOptions.find(s => s.name === selectedSection);
       formData.append("section_id", currentSectionObj?.id?.toString() || stats?.section_id?.toString() || "");
-      
+
       const currentSubject = subjects.find(s => s.subject_name === activeSubject);
       formData.append("subject_id", currentSubject?.subject_id?.toString() || "");
 
@@ -234,9 +234,9 @@ const TeacherLearningPlanner: React.FC = () => {
             chapters: sub.chapters.map((ch: any) =>
               ch.id === id || ch.chapter_id === id
                 ? {
-                    ...ch,
-                    [field]: [...(ch[field] || []), { name: finalName, type }],
-                  }
+                  ...ch,
+                  [field]: [...(ch[field] || []), { name: finalName, type }],
+                }
                 : ch,
             ),
           })),
@@ -274,16 +274,16 @@ const TeacherLearningPlanner: React.FC = () => {
         chapters: sub.chapters.map((ch: any) =>
           ch.id === id || ch.chapter_id === id
             ? {
-                ...ch,
-                [field]: formattedDate,
-                [`${field}_raw`]: value,
-              }
+              ...ch,
+              [field]: formattedDate,
+              [`${field}_raw`]: value,
+            }
             : ch,
         ),
       })),
     );
   };
-  
+
   const [profileImage, setProfileImage] = useState<string>(" ");
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -302,28 +302,30 @@ const TeacherLearningPlanner: React.FC = () => {
           plannerMap.set(item.chapter_id, item);
         });
 
-        const plans = (data.subject_wise_chapters || []).map((sub: any) => ({
-          ...sub,
-          chapters: sub.chapters.map((ch: any) => {
-            const plannerData = plannerMap.get(ch.id || ch.chapter_id);
-            const rawStart = plannerData?.start_date || ch.start_date || "";
-            const rawEnd = plannerData?.end_date || ch.end_date || "";
-            
-            return {
-              ...ch,
-              id: ch.id || ch.chapter_id,
-              chapter: ch.name || ch.chapter_name,
-              startDate: rawStart ? new Date(rawStart).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "--",
-              endDate: rawEnd ? new Date(rawEnd).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "--",
-              startDate_raw: rawStart,
-              endDate_raw: rawEnd,
-              progress: ch.progress_percentage || 0,
-              completed: plannerData ? plannerData.is_completed : (ch.is_completed || false),
-              testMaterial: ch.testMaterial || [],
-              practiceMaterial: ch.practiceMaterial || [],
-            };
-          }),
-        }));
+        const plans = (data.subject_wise_chapters || [])
+          .filter((sub: any) => Array.isArray(sub.chapters) && sub.chapters.length > 0)
+          .map((sub: any) => ({
+            ...sub,
+            chapters: (sub.chapters || []).map((ch: any) => {
+              const plannerData = plannerMap.get(ch.id || ch.chapter_id);
+              const rawStart = plannerData?.start_date || ch.start_date || "";
+              const rawEnd = plannerData?.end_date || ch.end_date || "";
+
+              return {
+                ...ch,
+                id: ch.id || ch.chapter_id,
+                chapter: ch.name || ch.chapter_name,
+                startDate: rawStart ? new Date(rawStart).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "--",
+                endDate: rawEnd ? new Date(rawEnd).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "--",
+                startDate_raw: rawStart,
+                endDate_raw: rawEnd,
+                progress: ch.progress_percentage || 0,
+                completed: plannerData ? plannerData.is_completed : (ch.is_completed || false),
+                testMaterial: ch.testMaterial || [],
+                practiceMaterial: ch.practiceMaterial || [],
+              };
+            }),
+          }));
 
         setSubjects(plans);
 
@@ -464,12 +466,12 @@ const TeacherLearningPlanner: React.FC = () => {
                 Hi{" "}
                 {stats.teacher_name
                   ? stats.teacher_name
-                      ?.split(" ")
-                      .map(
-                        (word: string) =>
-                          word.charAt(0).toUpperCase() + word.slice(1),
-                      )
-                      .join(" ")
+                    ?.split(" ")
+                    .map(
+                      (word: string) =>
+                        word.charAt(0).toUpperCase() + word.slice(1),
+                    )
+                    .join(" ")
                   : ""}{" "}
                 !
               </h1>
@@ -511,7 +513,7 @@ const TeacherLearningPlanner: React.FC = () => {
                       value={activeSubject}
                       onChange={(val) => setActiveSubject(val as string)}
                       placeholder="Select Subject"
-                       className="px-2 py-2 appearance-none bg-white border border-gray-200 rounded-lg text-sm text-primary font-medium focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 shadow-sm"
+                      className="px-2 py-2 appearance-none bg-white border border-gray-200 rounded-lg text-sm text-primary font-medium focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 shadow-sm"
                     />
                   </div>
                 </div>
@@ -522,15 +524,15 @@ const TeacherLearningPlanner: React.FC = () => {
 
         {/* Stats Badges */}
         <div className="flex justify-end items-end gap-20 relative top-20">
-          <button 
+          <button
             onClick={() => setIsMockModalOpen(true)}
             className="w-full p-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors border-none cursor-pointer"
           >
-           Generate Overall Mock
+            Generate Overall Mock
           </button>
         </div>
       </header>
- 
+
       <div className="overflow-x-auto mb-6 border-t-4 border-gray-300 ">
         <table className="w-full border-collapse text-sm">
           <thead className="border-b-2 border-gray-300">
@@ -559,7 +561,7 @@ const TeacherLearningPlanner: React.FC = () => {
           <tbody>
             {demoChapters.map((row, i) => (
               <tr key={i} className="border-b hover:bg-gray-50">
-                <td className="py-3 px-2 text-center">{i+1}</td>
+                <td className="py-3 px-2 text-center">{i + 1}</td>
 
                 <td className="py-3 px-2 text-center font-medium">
                   {row.chapter}
@@ -678,7 +680,7 @@ const TeacherLearningPlanner: React.FC = () => {
                 </td>
 
                 <td className="py-3 px-2 text-center">
-                  <button 
+                  <button
                     onClick={() => handleSave(row)}
                     disabled={!row.completed}
                     className="p-2 inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium text-[#b9b7b7] hover:text-blue-600 transition-colors border-none bg-transparent cursor-pointer"
@@ -707,15 +709,15 @@ const TeacherLearningPlanner: React.FC = () => {
       {selectionModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in duration-200">
-            <button 
+            <button
               onClick={() => setSelectionModal(null)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 border-none bg-transparent cursor-pointer transition-colors"
             >
               <X size={20} />
             </button>
-            
+
             <h3 className="text-xl font-bold text-primary mb-6 text-center">Select Material Type</h3>
-            
+
             <div className="grid grid-cols-1 gap-4">
               <button
                 onClick={() => {
@@ -727,7 +729,7 @@ const TeacherLearningPlanner: React.FC = () => {
                 <FileText size={20} />
                 <span>Study Material</span>
               </button>
-              
+
               <button
                 onClick={() => {
                   const inputId = `file-prac-${selectionModal.id}`;
@@ -748,14 +750,14 @@ const TeacherLearningPlanner: React.FC = () => {
       {uploadModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in duration-200">
-            <button 
+            <button
               onClick={() => setUploadModal(null)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 border-none bg-transparent cursor-pointer transition-colors"
             >
               <X size={20} />
             </button>
             <h3 className="text-xl font-bold text-primary mb-6 text-center">Study Material Source</h3>
-            
+
             <div className="grid grid-cols-1 gap-4">
               <button
                 onClick={() => {
@@ -768,7 +770,7 @@ const TeacherLearningPlanner: React.FC = () => {
                 <FileText size={20} />
                 <span>Upload Local File</span>
               </button>
-              
+
               <button
                 onClick={() => {
                   handleLinkUpload(uploadModal.id, uploadModal.field);
@@ -794,9 +796,9 @@ const TeacherLearningPlanner: React.FC = () => {
             >
               <X size={20} />
             </button>
-            
+
             <h2 className="text-2xl font-bold text-primary mb-6">Generate Overall Mock</h2>
-            
+
             <div className="max-h-60 overflow-y-auto custom-scrollbar border border-gray-200 rounded-lg mb-6">
               <table className="w-full border-collapse">
                 <thead className="bg-gray-50 sticky top-0">
@@ -831,7 +833,7 @@ const TeacherLearningPlanner: React.FC = () => {
                 </tbody>
               </table>
             </div>
-            
+
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setIsMockModalOpen(false)}
