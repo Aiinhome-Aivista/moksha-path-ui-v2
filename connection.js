@@ -194,4 +194,5 @@ export const POST_APIS = {
 
   upsert_teacher_planner: `${BASE_URL}parent_teacher/teacher_chapter_planner_upsert`,
   upload_study_material: `${BASE_URL}parent_teacher/upload_study_material`,
+  generate_test_from_planner: `${BASE_URL}learning/generate_test_from_planner`
 };

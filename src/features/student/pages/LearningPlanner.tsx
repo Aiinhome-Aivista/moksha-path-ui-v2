@@ -166,7 +166,8 @@ const getPrevWeekStatus = (
 };
 
 const patchSubjectPlan = (sub: ApiSubjectPlan): ApiSubjectPlan => {
-  const patchedChapters = sub.chapters.map(ch => {
+  // Ensure chapters is an array before mapping to prevent errors if it's null
+  const patchedChapters = (sub.chapters || []).map(ch => {
     const totalTasks = ch.tasks.length;
     const completedTasks = ch.tasks.filter(t => t.status === "completed").length;
     const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
@@ -749,12 +750,15 @@ const LearningPlanner: React.FC = () => {
   const fetchLearningPlan = async () => {
     try {
       const getResponse = await ApiServices.getStudentPlannerDashboard();
-      const getResult = getResponse.data;
+      const result = getResponse.data;
 
-      if (getResult.status === "success" && getResult.data.subjects?.length > 0) {
-        setSubjects(getResult.data.subjects.map(patchSubjectPlan));
-        setAcademic(getResult.data.academic);
-        setStudent(getResult.data.student);
+      // Handle both wrapped ({status, data}) and direct data responses
+      const plannerData = result.status === 'success' ? result.data : result;
+
+      if (plannerData && plannerData.subjects?.length > 0) {
+        setSubjects(plannerData.subjects.map(patchSubjectPlan));
+        setAcademic(plannerData.academic);
+        setStudent(plannerData.student);
         return;
       }
 
@@ -762,12 +766,13 @@ const LearningPlanner: React.FC = () => {
       await ApiServices.generateLearningPlan({ topic_ids: null });
 
       const newGetResponse = await ApiServices.getStudentPlannerDashboard();
-      const newGetResult = newGetResponse.data;
+      const newResult = newGetResponse.data;
+      const newPlannerData = newResult.status === 'success' ? newResult.data : newResult;
 
-      if (newGetResult.status === "success" && newGetResult.data.subjects?.length > 0) {
-        setSubjects(newGetResult.data.subjects.map(patchSubjectPlan));
-        setAcademic(newGetResult.data.academic);
-        setStudent(newGetResult.data.student);
+      if (newPlannerData && newPlannerData.subjects?.length > 0) {
+        setSubjects(newPlannerData.subjects.map(patchSubjectPlan));
+        setAcademic(newPlannerData.academic);
+        setStudent(newPlannerData.student);
       }
     } catch {
       // silent
