@@ -1022,7 +1022,7 @@ const Notifications: React.FC = () => {
                     {isPending ? (
                       <button
                         onClick={() => {
-                          navigate("/tests", {
+                          navigate("/learning-planner", {
                             state: {
                               assignmentId: test.assignment_id,
                               selectedSubjectName: test.subject_name,

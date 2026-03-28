@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
@@ -638,11 +639,54 @@ const LearningPlanner: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { showToast } = useToast();
 
+  const location = useLocation();
+  const assignmentIdFromState = location.state?.assignmentId;
+
   // Test Modal State
   const [testModalOpen, setTestModalOpen] = useState(false);
   const [assessmentDetails, setAssessmentDetails] = useState<any>(null);
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [testDuration, setTestDuration] = useState(30);
+
+  const handleTestModalUpdate = async (assignmentId: number) => {
+    try {
+      setIsLoading(true);
+
+      // 1. Get Assessment Details
+      const detailsRes = await ApiServices.getAssessmentDetails(assignmentId);
+      if (detailsRes.data?.status === "success") {
+        setAssessmentDetails(detailsRes.data.data);
+        setTestDuration(detailsRes.data.data.duration_minutes || 30);
+
+        // 2. Start Assessment Attempt
+        const startRes = await ApiServices.startAssessment({
+          assignment_id: assignmentId,
+        });
+        if (startRes.data?.status === "success") {
+          setAttemptId(startRes.data.data.attempt_id);
+          setTestModalOpen(true);
+          showToast("Assessment started!", "success");
+        } else {
+          showToast(
+            startRes.data?.message || "Failed to start assessment",
+            "error",
+          );
+        }
+      } else {
+        showToast(
+          detailsRes.data?.message || "Failed to get assessment details",
+          "error",
+        );
+      }
+    } catch (error: any) {
+      showToast(
+        error.response?.data?.message || "Something went wrong",
+        "error",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleMockTestClick = async (
     subjectId: number,
@@ -745,7 +789,12 @@ const LearningPlanner: React.FC = () => {
   useEffect(() => {
     fetchLearningPlan();
     fetchProfileImage();
-  }, []);
+
+    // Check if we came from notification with an assignmentId
+    if (assignmentIdFromState) {
+      handleTestModalUpdate(assignmentIdFromState);
+    }
+  }, [assignmentIdFromState]);
 
   const getInitial = () => student?.name?.charAt(0).toUpperCase();
 
