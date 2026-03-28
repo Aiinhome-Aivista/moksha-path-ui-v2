@@ -118,7 +118,7 @@ const TeacherLearningPlanner: React.FC = () => {
   const [isMockModalOpen, setIsMockModalOpen] = useState(false);
   const [selectedMockChapterIds, setSelectedMockChapterIds] = useState<number[]>([]);
   const [demoChapters, setDemoChapters] = useState(demoChaptersData);
-
+const [isGeneratingTest, setIsGeneratingTest] = useState(false);
   useEffect(() => {
     if (isMockModalOpen) {
       const completedIds = demoChapters.filter((ch) => ch.completed).map((ch) => ch.id);
@@ -384,26 +384,74 @@ const TeacherLearningPlanner: React.FC = () => {
     }
   }, [activeSubject, subjects]);
 
-  const handleSave = async (row: any) => {
-    const payload = {
-      chapter_id: row.id,
-      start_date: row.startDate_raw || null,
-      end_date: row.endDate_raw || null,
-      is_completed: row.completed,
-    };
+  // const handleSave = async (row: any) => {
+  //   const payload = {
+  //     chapter_id: row.id,
+  //     start_date: row.startDate_raw || null,
+  //     end_date: row.endDate_raw || null,
+  //     is_completed: row.completed,
+  //   };
 
-    try {
-      const res = await ApiServices.upsertTeacherPlanner(payload);
-      if (res.data?.status === "success") {
-        showToast("Chapter planner updated successfully", "success");
-      } else {
-        showToast(res.data?.message || "Failed to update", "error");
-      }
-    } catch (error) {
-      showToast("An error occurred while saving", "error");
-    }
+  //   try {
+  //     const res = await ApiServices.upsertTeacherPlanner(payload);
+  //     if (res.data?.status === "success") {
+  //       showToast("Chapter planner updated successfully", "success");
+  //     } else {
+  //       showToast(res.data?.message || "Failed to update", "error");
+  //     }
+  //   } catch (error) {
+  //     showToast("An error occurred while saving", "error");
+  //   }
+  // };
+
+
+  const handleSave = async (row: any) => {
+  const payload = {
+    chapter_id: row.id,
+    start_date: row.startDate_raw || null,
+    end_date: row.endDate_raw || null,
+    is_completed: row.completed,
   };
 
+  try {
+    setIsLoading(true); // save loader
+
+    const res = await ApiServices.upsertTeacherPlanner(payload);
+
+    if (res.data?.status === "success") {
+      showToast("Chapter planner updated successfully", "success");
+
+      // 🔥 CALL TEST GENERATION
+      if (row.completed === true) {
+        try {
+          setIsGeneratingTest(true); // 👈 start loader
+
+          const genRes = await ApiServices.generateTestFromPlanner({
+            subscription_id: stats?.subscription_id
+          });
+
+          if (genRes.data?.status === "success") {
+            showToast("Test generated successfully", "success");
+          } else {
+            showToast(genRes.data?.message || "Test generation failed", "error");
+          }
+
+        } catch (err) {
+          showToast("Error while generating test", "error");
+        } finally {
+          setIsGeneratingTest(false); // 👈 stop loader
+        }
+      }
+    } else {
+      showToast(res.data?.message || "Failed to update", "error");
+    }
+
+  } catch (error) {
+    showToast("An error occurred while saving", "error");
+  } finally {
+    setIsLoading(false);
+  }
+};
   useEffect(() => {
     if (stats) {
       if (!selectedClass && stats.class_name)
