@@ -539,7 +539,7 @@ const handleSave = async (row: any) => {
                       className="px-2 py-2 appearance-none bg-white border border-gray-200 rounded-lg text-sm text-primary font-medium focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 shadow-sm"
                     />
                   </div>
-                  <div className="m-0">
+                  <div className="m-0 min-w-20">
                     <SearchableSelect
                       options={sectionOptions.map((s) => ({
                         label: s.name,
