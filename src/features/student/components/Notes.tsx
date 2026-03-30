@@ -281,67 +281,71 @@ const DocumentPreviewModal: React.FC<{
 }> = ({ item, onClose }) => {
   if (!item) return null;
 
-  const resourceUrl = getFullResourceUrl(item.resource);
+  let resourceUrl = getFullResourceUrl(item.resource);
   const isExcel =
     item.file_name?.endsWith(".xlsx") || item.file_name?.endsWith(".xls");
+  const isPdf =
+    item.file_name?.toLowerCase().endsWith(".pdf") ||
+    item.resource?.toLowerCase().endsWith(".pdf");
+
+  // Disable PDF controls (download, print, etc.) using viewer parameters
+  if (isPdf) {
+    resourceUrl = `${resourceUrl}#toolbar=0&navpanes=0`;
+  }
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-      onClick={onClose}
+      className="fixed inset-0 z-[200] bg-white flex flex-col animate-in fade-in duration-200"
+      onContextMenu={(e) => e.preventDefault()}
     >
-      <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 bg-gray-50 flex-shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
-            {getFileIcon(item)}
-            <div className="min-w-0">
-              <h3 className="text-base font-bold text-gray-800 truncate m-0">
-                {item.title}
-              </h3>
-              {item.file_name && item.file_name !== item.title && (
-                <p className="text-xs text-gray-400 truncate m-0">
-                  {item.file_name}
-                </p>
-              )}
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors border-none bg-transparent cursor-pointer flex-shrink-0"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* Modal Body */}
-        <div className="flex-1 overflow-hidden bg-gray-100">
-          {isExcel ? (
-            <div className="flex flex-col items-center justify-center h-full gap-4">
-              <FileSpreadsheet size={48} className="text-green-600" />
-              <p className="text-sm text-gray-600 font-medium">
-                Excel files cannot be previewed directly.
+      {/* Modal Header */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 bg-gray-50 flex-shrink-0 shadow-sm z-10">
+        <div className="flex items-center gap-3 min-w-0">
+          {getFileIcon(item)}
+          <div className="min-w-0">
+            <h3 className="text-base font-bold text-gray-800 truncate m-0">
+              {item.title}
+            </h3>
+            {item.file_name && item.file_name !== item.title && (
+              <p className="text-xs text-gray-400 truncate m-0">
+                {item.file_name}
               </p>
-              <a
-                href={resourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 bg-[#F27927] text-white rounded-lg text-sm font-semibold no-underline hover:bg-[#d96820] transition-colors"
-              >
-                Open in New Tab
-              </a>
-            </div>
-          ) : (
-            <iframe
-              src={resourceUrl}
-              title={item.title}
-              className="w-full h-full border-none bg-white"
-            />
-          )}
+            )}
+          </div>
         </div>
+        <button
+          onClick={onClose}
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors border-none bg-transparent cursor-pointer flex-shrink-0"
+        >
+          <X size={20} />
+        </button>
+      </div>
+
+      {/* Modal Body */}
+      <div className="flex-1 overflow-hidden bg-gray-100 relative">
+        {isExcel ? (
+          <div className="flex flex-col items-center justify-center h-full gap-4">
+            <FileSpreadsheet size={48} className="text-green-600" />
+            <p className="text-sm text-gray-600 font-medium">
+              Excel files cannot be previewed directly.
+            </p>
+            <a
+              href={resourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-[#F27927] text-white rounded-lg text-sm font-semibold no-underline hover:bg-[#d96820] transition-colors"
+            >
+              Open in New Tab
+            </a>
+          </div>
+        ) : (
+          <iframe
+            src={resourceUrl}
+            title={item.title}
+            className="w-full h-full border-none bg-white"
+            onContextMenu={(e) => e.preventDefault()}
+          />
+        )}
       </div>
     </div>
   );
