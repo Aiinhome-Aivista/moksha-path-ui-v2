@@ -789,7 +789,7 @@ import { MockExamDashboard } from "./MockExamDashboard";
 import SubjectGrid from "./subject/SubjectGrid";
 import Remediation from "./remediation/Remediation";
 
-export const Dashboard = () => {
+export const DashboardParent = () => {
   const [activeTab, setActiveTab] = useState("performance");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedExam, setSelectedExam] = useState("");
