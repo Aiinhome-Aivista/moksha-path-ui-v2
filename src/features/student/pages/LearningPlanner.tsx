@@ -6,6 +6,7 @@ import Chat from "../../auth/modal/chat";
 import TestModalUpdated from "../components/TestModalUpdated";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { useNotification } from "../../../app/providers/NotificationProvider";
+import { CheckCircle } from "lucide-react";
 
 // ─── Interfaces ─────────────────────────────────────────────────────────────
 
@@ -295,9 +296,14 @@ const TaskRow: React.FC<{ task: Task; onClick?: () => void }> = ({
           e.stopPropagation(); // prevent row click conflict
           onClick?.();
         }}
-        className="ml-auto text-[10px] px-2 py-1 bg-[#BADA55] text-[#2b3a00] font-semibold rounded-md hover:bg-[#a8c94a] hover:shadow-sm transition-all duration-200"
+        disabled={!(task.status === "assigned" || task.status === "completed")}
+        className={`ml-auto text-[10px] px-2 py-1 font-semibold rounded-md transition-all duration-200 ${
+          task.status === "assigned" || task.status === "completed"
+            ? "bg-[#BADA55] text-[#2b3a00] hover:bg-[#a8c94a] hover:shadow-sm"
+            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+        }`}
       >
-        Take Test
+        {task.status === "completed" ? "Retake Test" : "Take Test"}
       </button>
     )}
   </div>
@@ -482,7 +488,8 @@ const SubjectSection: React.FC<{
                   );
                 }
               }}
-              className="ml-auto text-[10px] px-2 py-1 bg-[#BADA55] text-[#2b3a00] font-semibold rounded-md hover:bg-[#a8c94a] hover:shadow-sm transition-all duration-200"
+              disabled // Disabled for now
+              className="ml-auto text-[10px] px-2 py-1 bg-gray-200 text-gray-400 font-semibold rounded-md cursor-not-allowed"
             >
               Take Overall Test
             </button>
@@ -814,6 +821,7 @@ const LearningPlanner: React.FC = () => {
 
   const getInitial = () => student?.name?.charAt(0).toUpperCase();
 
+  const [showResultComingSoon, setShowResultComingSoon] = useState(false);
   return (
     <div className="min-h-screen p-6 relative">
       {/* ── Loading overlay ─────────────────────────────────────────── */}
@@ -929,8 +937,27 @@ const LearningPlanner: React.FC = () => {
           // Refresh data to show progress
           fetchLearningPlan();
           refreshNotificationCount();
+          setShowResultComingSoon(true);
         }}
       />
+
+      {showResultComingSoon && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center relative animate-in fade-in zoom-in duration-200">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+              <CheckCircle size={32} className="text-green-500" />
+            </div>
+            <h3 className="text-xl font-bold text-primary mb-2">Assessment Submitted!</h3>
+            <p className="text-gray-500 text-sm mb-6">Your results are being processed and will be available soon in the "Tests" section.</p>
+            <button
+              onClick={() => setShowResultComingSoon(false)}
+              className="w-full px-6 py-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
