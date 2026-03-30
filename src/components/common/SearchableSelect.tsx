@@ -65,7 +65,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
             {isOpen && (
                 <div
-                    className={`absolute z-[9999] w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg left-0 flex flex-col ${dropdownClassName}`}
+                    className={`absolute z-[9999] w-full bg-white border border-gray-200 rounded-xl shadow-lg left-0 flex flex-col ${dropdownClassName}`}
                 >
                     <div className="p-2 border-b border-gray-100 flex items-center gap-2 sticky top-0 bg-white rounded-t-xl z-10">
                         {/* <Search className="w-4 h-4 text-gray-400 shrink-0" /> */}
