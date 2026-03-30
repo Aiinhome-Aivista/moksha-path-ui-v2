@@ -136,7 +136,7 @@ const MaterialsSidebar: React.FC<Props> = ({
       </div>
 
       {/* Chapters */}
-      <div className="mb-6 pt-2">
+      {/* <div className="mb-6 pt-2">
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-semibold text-gray-800"> Chapters</h3>
           <button
@@ -171,10 +171,10 @@ const MaterialsSidebar: React.FC<Props> = ({
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Core Topics */}
-      <div>
+      {/* <div>
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-semibold text-gray-800">Core Topics</h3>
           <button
@@ -211,7 +211,7 @@ const MaterialsSidebar: React.FC<Props> = ({
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
