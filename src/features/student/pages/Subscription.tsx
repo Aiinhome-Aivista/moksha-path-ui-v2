@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import IconChat from "../../../assets/icon/chat2.svg";
+// import IconChat from "../../../assets/icon/chat2.svg";
 // @ts-ignore
 import ApiServices from "../../../services/ApiServices";
 import { useToast } from "../../../app/providers/ToastProvider";
@@ -1697,9 +1697,9 @@ const Subscription: React.FC = () => {
       )}
 
       {/* Chat Bot Icon */}
-      <div className="fixed bottom-6 right-6 z-[100]">
+      {/* <div className="fixed bottom-6 right-6 z-[100]">
         <img src={IconChat} alt="Chat" className="w-[95px]" />
-      </div>
+      </div> */}
     </div>
   );
 };

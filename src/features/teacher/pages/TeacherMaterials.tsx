@@ -8,7 +8,7 @@ import ResourceMaterials, {
 import Tests from "../components/TeacherTests";
 import Notes, { type NoteData } from "../components/Notes";
 import ApiServices from "../../../services/ApiServices";
-import IconChat from "../../../assets/icon/chat2.svg";
+// import IconChat from "../../../assets/icon/chat2.svg";
 import Chat from "../../auth/modal/chat";
 
 interface ChapterItem {
@@ -598,7 +598,7 @@ const TeacherMaterials = () => {
           )}
         </div>
       </div>
-      <div className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100]">
+      {/* <div className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100]">
         <button
           onClick={() => setIsChatOpen(true)}
           aria-label="Open chat"
@@ -606,7 +606,7 @@ const TeacherMaterials = () => {
         >
           <img src={IconChat} alt="Chat" className="w-[95px]" />
         </button>
-      </div>
+      </div> */}
       {isChatOpen && <Chat onClose={() => setIsChatOpen(false)} />}
 
     </div>

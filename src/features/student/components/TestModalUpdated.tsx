@@ -297,52 +297,56 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
       ? textualAnswers[currentQuestion.id]
       : selectedAnswers[currentQuestion.id];
 
-    if (!answer) {
-      showToast("Please select or enter an answer", "error");
+    // On the last question, allow submitting without an answer. For all other questions, an answer is required to save.
+    if (!answer && currentQuestionIndex < totalQuestions - 1) {
+      showToast("Please select or enter an answer to save and continue.", "error");
       return;
     }
 
-    const timeTaken = Math.floor(
-      (Date.now() - questionStartTimeRef.current) / 1000,
-    );
-
-    const apiQuestion = assessmentDetails?.questions?.find(
-      (q: ApiQuestion) => q.question_id === currentQuestion.id,
-    );
-    const slNo = apiQuestion?.sl_no || currentQuestionIndex + 1;
-
     setIsSubmitting(true);
 
-    try {
-      await ApiServices.saveAssessmentAnswer({
-        attempt_id: attemptId,
-        question_id: currentQuestion.id,
-        sl_no: slNo,
-        answer: answer,
-        time_taken: timeTaken,
-      });
-
-      setSavedQuestions((prev) => new Set(prev).add(currentQuestion.id));
-      // If a question is saved, it's no longer skipped
-      setSkippedSet(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(currentQuestion.id);
-        return newSet;
-      });
-
-
-      if (currentQuestionIndex < totalQuestions - 1) {
-        setCurrentQuestionIndex((prev) => prev + 1);
-      } else {
-        await finishAssessmentAndShowResult();
-      }
-    } catch (error: any) {
-      showToast(
-        error.response?.data?.message || "Failed to save answer",
-        "error",
+    // If an answer was provided (for any question, including the last), save it.
+    if (answer) {
+      const timeTaken = Math.floor(
+        (Date.now() - questionStartTimeRef.current) / 1000,
       );
-    } finally {
+      const apiQuestion = assessmentDetails?.questions?.find(
+        (q: ApiQuestion) => q.question_id === currentQuestion.id,
+      );
+      const slNo = apiQuestion?.sl_no || currentQuestionIndex + 1;
+
+      try {
+        await ApiServices.saveAssessmentAnswer({
+          attempt_id: attemptId,
+          question_id: currentQuestion.id,
+          sl_no: slNo,
+          answer: answer,
+          time_taken: timeTaken,
+        });
+
+        setSavedQuestions((prev) => new Set(prev).add(currentQuestion.id));
+        setSkippedSet(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(currentQuestion.id);
+          return newSet;
+        });
+      } catch (error: any) {
+        showToast(
+          error.response?.data?.message || "Failed to save answer",
+          "error",
+        );
+        setIsSubmitting(false); // Reset on failure
+        return;
+      }
+    }
+
+    // After attempting to save, decide the next step.
+    if (currentQuestionIndex < totalQuestions - 1) {
+      setCurrentQuestionIndex((prev) => prev + 1);
       setIsSubmitting(false);
+    } else {
+      // This is the last question, so finish the assessment.
+      await finishAssessmentAndShowResult();
     }
   };
 
@@ -557,7 +561,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                   disabled={isSubmitting}
                   className="w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-[#b0cb1f] text-gray-900 text-base md:text-sm font-semibold hover:bg-[#c5de3a] transition-all sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:sm:hover:scale-100"
                 >
-                  {isSubmitting ? "Submitting..." : (currentQuestionIndex === totalQuestions - 1 ? "Submit" : "Save & Next")}
+                  {isSubmitting ? "Submitting..." : (currentQuestionIndex === totalQuestions - 1 ? "Final Submit" : "Save & continue")}
                 </button>
               </div>
             </div>

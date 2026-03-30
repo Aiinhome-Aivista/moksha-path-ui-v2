@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import IconChat from "../../../assets/icon/chat2.svg";
+// import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
 
@@ -803,7 +803,7 @@ const TutorLearningPlanner: React.FC = () => {
           </p>
         </div>
       </div>
-
+{/* 
       <div className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100]">
         <button
           onClick={() => setIsChatOpen(true)}
@@ -812,7 +812,7 @@ const TutorLearningPlanner: React.FC = () => {
         >
           <img src={IconChat} alt="Chat" className="w-[95px]" />
         </button>
-      </div>
+      </div> */}
       {isChatOpen && <Chat onClose={() => setIsChatOpen(false)} />}
     </div>
   );
