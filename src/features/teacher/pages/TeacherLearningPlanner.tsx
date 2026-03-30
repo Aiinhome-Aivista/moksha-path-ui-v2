@@ -504,7 +504,6 @@ const handleSave = async (row: any) => {
           </div>
 
           {/* Profile Info */}
-
           {stats && (
             <div className="flex flex-col gap-0.5 ">
               <span className="text-2xl text-[#ABB3BC] font-bold tracking-wide">
@@ -540,7 +539,7 @@ const handleSave = async (row: any) => {
                       className="px-2 py-2 appearance-none bg-white border border-gray-200 rounded-lg text-sm text-primary font-medium focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 shadow-sm"
                     />
                   </div>
-                  <div className="px-2">
+                  <div className="m-0">
                     <SearchableSelect
                       options={sectionOptions.map((s) => ({
                         label: s.name,
@@ -549,10 +548,10 @@ const handleSave = async (row: any) => {
                       value={selectedSection}
                       onChange={(val) => setSelectedSection(val as string)}
                       placeholder="Select Section"
-                      className="px-2 py-2 appearance-none bg-white border border-gray-200 rounded-lg text-sm text-primary font-medium focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 shadow-sm"
+                      className="px-2 py-2 w-full appearance-none bg-white border border-gray-200 rounded-lg text-sm text-primary font-medium focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 shadow-sm"
                     />
                   </div>
-                  <div className="m-0">
+                  <div className="m-0 min-w-40">
                     <SearchableSelect
                       options={subjects.map((s) => ({
                         label: s.subject_name,
@@ -561,7 +560,7 @@ const handleSave = async (row: any) => {
                       value={activeSubject}
                       onChange={(val) => setActiveSubject(val as string)}
                       placeholder="Select Subject"
-                      className="px-2 py-2 appearance-none bg-white border border-gray-200 rounded-lg text-sm text-primary font-medium focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 shadow-sm"
+                      className="px-2 py-2 w-full appearance-none bg-white border border-gray-200 rounded-lg text-sm text-primary font-medium focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 shadow-sm"
                     />
                   </div>
                 </div>
@@ -627,7 +626,7 @@ const handleSave = async (row: any) => {
                           handleDateChange(row.id, "startDate", e.target.value)
                         }
                       />
-                      <Calendar size={16} className="text-gray-400" />
+                      <Calendar size={16} className="text-primary" />
                     </label>
                   </div>
                 </td>
@@ -644,7 +643,7 @@ const handleSave = async (row: any) => {
                           handleDateChange(row.id, "endDate", e.target.value)
                         }
                       />
-                      <Calendar size={16} className="text-gray-400" />
+                      <Calendar size={16} className="text-primary" />
                     </label>
                   </div>
                 </td>
@@ -731,7 +730,7 @@ const handleSave = async (row: any) => {
                   <button
                     onClick={() => handleSave(row)}
                     disabled={!row.startDate_raw || !row.endDate_raw || savingChapterId !== null}
-                    className="p-2 inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium text-gray-400 hover:text-blue-600 transition-colors border-none bg-transparent hover:bg-blue-50 cursor-pointer disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent"
+                    className="p-2 inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium text-secondary hover:text-blue-600 transition-colors border-none bg-transparent disabled:text-[#AAA] cursor-pointer disabled:cursor-not-allowed"
                   >
                     {savingChapterId === row.id ? (
                       <Loader2 size={20} className="animate-spin text-blue-500" />
