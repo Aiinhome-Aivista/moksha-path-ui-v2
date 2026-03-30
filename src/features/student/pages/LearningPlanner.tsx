@@ -948,7 +948,7 @@ const LearningPlanner: React.FC = () => {
               <CheckCircle size={32} className="text-green-500" />
             </div>
             <h3 className="text-xl font-bold text-primary mb-2">Assessment Submitted!</h3>
-            <p className="text-gray-500 text-sm mb-6">Your results are being processed and will be available soon in the "Tests" section.</p>
+            <p className="text-gray-500 text-sm mb-6">Your result is being processed and will be available soon in the <strong>Dashboard</strong></p>
             <button
               onClick={() => setShowResultComingSoon(false)}
               className="w-full px-6 py-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors"
