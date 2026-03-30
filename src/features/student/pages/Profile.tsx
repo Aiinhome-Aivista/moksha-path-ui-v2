@@ -970,7 +970,7 @@ const StudentProfile: React.FC = () => {
             })}
 
             {/* Add Profile Item */}
-            {user?.role === "parent" && (
+            {(user?.role === "parent" || JSON.parse(localStorage.getItem("active_profile") || "{}")?.role_id === 2) && (
               <div
                 className="flex flex-col items-center gap-2 group cursor-pointer shrink-0 transition-transform active:scale-95"
                 onClick={() => openSelectRole()}
