@@ -12,7 +12,7 @@ interface Props {
   setSelectedChapters: (v: number[]) => void;
   selectedTopics: number[];
   setSelectedTopics: (v: number[]) => void;
-  sectionName: { section_id: number; section_name: string }[];
+  sectionName: (string | { section_id: number; section_name: string })[];
 }
 
 const MaterialsSidebar: React.FC<Props> = ({
@@ -97,7 +97,7 @@ const MaterialsSidebar: React.FC<Props> = ({
           <div className="w-full flex items-center pb-2 border-b border-gray-300 text-sm font-medium">
             <span className="text-gray-700">
               {sectionName?.length
-                ? sectionName.map((s) => s.section_name).join(", ")
+                ? sectionName.map((s) => (typeof s === "string" ? s : s.section_name)).join(", ")
                 : "N/A"}
             </span>
           </div>
