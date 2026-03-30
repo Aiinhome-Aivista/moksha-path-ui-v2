@@ -46,9 +46,9 @@ export const PerformanceCards = () => {
 
   return (
     <>
-      <div className="flex justify-end gap-2 relative -top-6">
+      <div className="flex justify-end gap-1 2xl:gap-12 xl:relative xl:-top-6">
         {stats.map((item, i) => (
-          <div key={i} className="w-72 p-1 ">
+          <div key={i} className="w-56 2xl:w-60 p-1 ">
             <div className="grid grid-cols-3">
               <h3 className="text-4xl font-normal">{item.value}</h3>
               <p className="text-sm text-primary col-span-2 mb-1 flex flex-col justify-end">
@@ -64,13 +64,13 @@ export const PerformanceCards = () => {
           </div>
         ))}
       </div>
-      <div className="absolute grid grid-cols-1 md:grid-cols-2 mt-1 gap-4">
-        <div className="grid grid-cols-1 gap-4">
+      <div className="absolute grid grid-cols-1 lg:grid-cols-2 m-1 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+        <div className="grid grid-cols-1 gap-2">
           <div className="grid grid-cols-2 gap-4 row-span-2">
             {performanceStatsData.map((item, i) => (
               <div
                 key={i}
-                className="px-4 border-b-4"
+                className="px-4 border-b-4 h-36"
                 style={{ borderColor: item.borderColor }}
               >
                 <h3
@@ -111,7 +111,7 @@ export const PerformanceCards = () => {
             ))}
           </div>
 
-          <div className="relative left-12 bg-primary text-white p-4 rounded-xl w-full">
+          <div className="bg-primary text-white p-4 rounded-xl w-full lg:w-[107%] z-10">
             {/* Title */}
             <h2 className="text-3xl font-bold">Mock Score Trend</h2>
             <p className="text-sm text-gray-400 mb-4">
@@ -209,14 +209,14 @@ export const PerformanceCards = () => {
             ))}
           </div>
 
-          <div className=" grid grid-cols-3 gap-4 row-span-2 bg-[#e0dfdf] p-4 mr-12 rounded-xl shadow">
-            <div>
+          <div className=" grid grid-cols-3 gap-4 row-span-2 bg-[#e0dfdf] p-4 mr-4 rounded-xl shadow">
+            <div className="max-w-52 h-80">
               <h3 className="font-semibold text-2xl text-primary text-center my-2">
                 Your Action
               </h3>
               <img
                 src="https://thirdeyeblindproductions.com/wp-content/uploads/2025/02/Screenshot-2025-02-24-115914.png"
-                className="max-w-60 h-60 xl:h-80"
+                className="w-full h-full xl:h-80"
               />
             </div>
             <div className="col-span-2 flex flex-col justify-between">
