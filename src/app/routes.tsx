@@ -45,6 +45,7 @@ import TutorMaterials from "../features/private-tutor/pages/TutorMaterials";
 import DashboardDyn from "../features/student/pages/DashboardDyn";
 import { TeacherDashboardDyn } from "../features/teacher/pages/TeacherDashboardDyn";
 import DiscussionBoard from "../features/student/pages/DiscussionBoard";
+import { DashboardParent } from "../features/parent/pages/dashboard/DashboardParent";
 
 const routes: RouteObject[] = [
   // Standalone Routes
@@ -91,7 +92,8 @@ const routes: RouteObject[] = [
       { path: "teacher-notes", element: <TeacherMaterials /> },
 
       //parent routes
-      { path: "parent/dashboard", element: <ParentDashboard /> },
+      { path: "parent/dashboard", element: <DashboardParent /> },
+      { path: "parent/dashboard-dyn", element: <ParentDashboard /> },
       { path: "parent/parentlearning-planner", element: <ParentLearningPlanner /> },
       { path: "parent-material", element: <ParentMaterials /> },
       { path: "parent-tests", element: <ParentMaterials /> },
