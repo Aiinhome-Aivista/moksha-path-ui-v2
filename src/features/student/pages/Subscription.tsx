@@ -104,6 +104,7 @@ const createEmptyProfile = (): AcademicProfile => ({
   isExpanded: true,
   seats: 1,
 });
+
 const Subscription: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -120,13 +121,10 @@ const Subscription: React.FC = () => {
 
   const [isValidating, setIsValidating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [sheetCount, setSheetCount] = useState<number>(1);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
-  const [currentTotalAmount, setCurrentTotalAmount] = useState(0);
   const [discountedAmount, setDiscountedAmount] = useState(0);
   const [showSetupModal, setShowSetupModal] = useState(false);
-  const [profileImage, setProfileImage] = useState<string>("");
 
   const [boards, setBoards] = useState<Board[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
@@ -150,10 +148,6 @@ const Subscription: React.FC = () => {
     const user = JSON.parse(localStorage.getItem("active_profile") || "{}");
     setLocalUser(user);
   }, [location.pathname]);
-  const [plansExpanded, setPlansExpanded] = useState(true);
-  const togglePlansAccordion = () => {
-    setPlansExpanded((prev) => !prev);
-  };
 
   useEffect(() => {
     const preselected = location.state?.preselectedAcademicDetails;
@@ -227,7 +221,6 @@ const Subscription: React.FC = () => {
   }, [boards, schools, classes, academicYears]);
 
   React.useEffect(() => {
-    fetchProfileImage();
     fetchAcademicMasterData();
     transformData(defaultPlans);
   }, []);
@@ -335,15 +328,6 @@ const Subscription: React.FC = () => {
       showToast("School added successfully", "success");
     }
     setIsAddingSchool(false);
-  };
-
-  const fetchProfileImage = async () => {
-    try {
-      const response = await ApiServices.getUserProfileImage();
-      if (response.data?.status === "success" && response.data?.data?.image) {
-        setProfileImage(response.data.data.image);
-      }
-    } catch (error) { }
   };
 
   React.useEffect(() => {
@@ -567,7 +551,6 @@ const Subscription: React.FC = () => {
       };
       const response = await ApiServices.validatePlanAmount(validatePayload);
       if (response.data?.status === "success") {
-        setCurrentTotalAmount(uiTotalAmount);
         setShowPaymentModal(true);
       } else {
         showToast(response.data?.message || "Plan validation failed", "error");
@@ -617,7 +600,6 @@ const Subscription: React.FC = () => {
       if (response.data?.status === "success") {
         const data = response.data?.data;
         setDiscountedAmount(Number((data?.db_discount || 0).toFixed(2)));
-        setCurrentTotalAmount(Number((data?.db_final || 0).toFixed(2)));
         showToast("Coupon applied successfully!", "success");
 
         return {
@@ -816,7 +798,6 @@ const Subscription: React.FC = () => {
       availableSubjects: data.availableSubjects,
       selectedSubjects: data.selectedSubjects,
     });
-    setSheetCount(data.sheetCount);
     setShowSetupModal(false);
   };
 
@@ -1698,7 +1679,11 @@ const Subscription: React.FC = () => {
 
       {/* Chat Bot Icon */}
       <div className="fixed bottom-6 right-6 z-[100]">
-        <img src={IconChat} alt="Chat" className="w-[95px]" />
+        <button
+           className="bg-transparent border-0 p-0 m-0 cursor-pointer focus:outline-none"
+        >
+            <img src={IconChat} alt="Chat" className="w-[95px]" />
+        </button>
       </div>
     </div>
   );

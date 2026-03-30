@@ -11,7 +11,7 @@ const PaymentGateway: React.FC = () => {
   const { showToast } = useToast();
   const { fetchMenu } = useModal();
   const [isProcessing, setIsProcessing] = React.useState(false);
-  const [localUser, setLocalUser] = React.useState<any>({});
+  const [setLocalUser] = React.useState<any>({});
 
   React.useEffect(() => {
     window.scrollTo(0, 0);

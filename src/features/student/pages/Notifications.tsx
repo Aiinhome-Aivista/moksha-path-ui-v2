@@ -147,14 +147,11 @@ const Notifications: React.FC = () => {
   const [tests, setTests] = useState<TestNotification[]>([]);
   const [testLoading, setTestLoading] = useState(false);
   const [testError, setTestError] = useState("");
-  const [profileFilter, setProfileFilter] = useState<ProfileStatus | "All">(
-    "All",
-  );
+  
+  const [profileFilter, setProfileFilter] = useState<ProfileStatus | "All">("All");
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState("");
-  const [profileExpandedId, setProfileExpandedId] = useState<number | null>(
-    null,
-  );
+  const [profileExpandedId, setProfileExpandedId] = useState<number | null>(null);
 
   //profile notification
   const [profileRequests, setProfileRequests] = useState<any[]>([]);
@@ -166,9 +163,9 @@ const Notifications: React.FC = () => {
   });
   const [isUpdatingProfileRequest, setIsUpdatingProfileRequest] = useState<string | null>(null);
 
-
   const navigate = useNavigate();
   const { count: notificationCount, refresh: refreshNotificationCount } = useNotification();
+  
   // ── fetch on mount ─────────────────────────────────────────────────────
   useEffect(() => {
     fetchInvites();
@@ -199,40 +196,6 @@ const Notifications: React.FC = () => {
     }
   };
 
-  // // ── accept / decline ───────────────────────────────────────────────────
-  // const respondInvite = async (
-  //   inv: ReceivedInvitation,
-  //   action: "accept" | "reject",
-  // ) => {
-  //   setActioningId(inv.id);
-  //   setActionError((prev) => ({ ...prev, [inv.id]: "" }));
-  //   try {
-  //     const res = await ApiServices.respondToInvite(inv.inviteToken, action);
-  //     if (res.data?.status === "success") {
-  //       setInvitations((prev) =>
-  //         prev.map((i) =>
-  //           i.id === inv.id
-  //             ? { ...i, status: action === "accept" ? "Accepted" : "Rejected" }
-  //             : i,
-  //         ),
-  //       );
-  //       setExpandedId(null);
-  //     } else {
-  //       setActionError((prev) => ({
-  //         ...prev,
-  //         [inv.id]: res.data?.message || "Action failed.",
-  //       }));
-  //     }
-  //   } catch (err: any) {
-  //     setActionError((prev) => ({
-  //       ...prev,
-  //       [inv.id]: err?.response?.data?.message || "Something went wrong.",
-  //     }));
-  //   } finally {
-  //     setActioningId(null);
-  //   }
-  // };
-  // ── accept / decline ───────────────────────────────────────────────────
   const respondInvite = async (
     inv: ReceivedInvitation,
     action: "accept" | "reject",
@@ -257,46 +220,15 @@ const Notifications: React.FC = () => {
         // ===================================================================
         if (action === "accept") {
           try {
-            // 1. Fetch their profiles (the DB just created/updated one for them!)
             const profilesRes = await ApiServices.getUserProfiles();
 
             if (profilesRes.data?.status === "success") {
               const allProfiles = profilesRes.data.data;
-
-              // 2. Find the profile that matches the invite they just accepted
-              // (Or fallback to the first available profile if names mismatch)
               const newlyActivatedProfile =
                 allProfiles.find(
                   (p: any) => p.subscription_name === inv.subscriptionName,
                 ) || allProfiles[0];
 
-              // if (newlyActivatedProfile) {
-              //   // 3. Call the Switch Profile API to get a FRESH token
-              //   const switchRes = await ApiServices.switchUserProfile({
-              //     profile_id: newlyActivatedProfile.profile_id
-              //   });
-
-              //   if (switchRes.data?.status === "success") {
-              //     // 4. Save the new token and profile
-              //     const newToken = switchRes.data.data.auth_token;
-              //     if (newToken) {
-              //       localStorage.setItem("auth_token", newToken);
-              //     }
-              //     const newSubscription_token = switchRes.data.data.subscription_token;
-              //     if (newSubscription_token) {
-              //       localStorage.setItem("subscription_token", newSubscription_token);
-              //     }
-
-              //     const newActiveProfile = switchRes.data.data.active_profile;
-              //     if (newActiveProfile) {
-              //       localStorage.setItem("active_profile", JSON.stringify(newActiveProfile));
-              //     }
-
-              //     // 5. Hard Redirect to Dashboard so the whole app reloads with the new token
-              //     // window.location.href = "/dashboard";
-              //     return; // Stop execution here so it doesn't clear the loading state prematurely
-              //   }
-              // }
               if (newlyActivatedProfile) {
                 const switchRes = await ApiServices.switchUserProfile({
                   profile_id: newlyActivatedProfile.profile_id,
@@ -305,10 +237,6 @@ const Notifications: React.FC = () => {
                 if (switchRes.data?.status === "success") {
                   const { subscription_token, active_profile } =
                     switchRes.data.data;
-
-                  // if (auth_token) {
-                  //   localStorage.setItem("auth_token", auth_token);
-                  // }
 
                   if (subscription_token) {
                     localStorage.setItem(
@@ -456,6 +384,16 @@ const Notifications: React.FC = () => {
       fetchProfileRequests();
     }
   }, [activeTab]);
+
+  // Derive filtered profile requests so we can check for empty states
+  const filteredProfileRequests = profileRequests.filter((p) => 
+    profileFilter === "All" || 
+    p.status_label === profileFilter || 
+    (profileFilter === "Complete" && p.status_label === "Accepted") || 
+    (profileFilter === "Pending" && p.status_label === "Pending") || 
+    (profileFilter === "Rejected" && p.status_label === "Rejected")
+  );
+
   return (
     <div className="min-h-screen p-4 space-y-6">
       <div>
@@ -1050,7 +988,7 @@ const Notifications: React.FC = () => {
           )}
         </div>
       ) : (
-        /* ── Profile Tab (Hardcoded) ── */
+        /* ── Profile Tab ── */
         <div className="space-y-4">
           {/* Inner Tabs / Filters */}
           <div className="flex flex-wrap gap-2">
@@ -1087,11 +1025,51 @@ const Notifications: React.FC = () => {
             })}
           </div>
 
-          {/*Profile Invitation Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
-            {profileRequests
-              .filter((p) => profileFilter === "All" || p.status_label === profileFilter || (profileFilter === "Complete" && p.status_label === "Accepted") || (profileFilter === "Pending" && p.status_label === "Pending") || (profileFilter === "Rejected" && p.status_label === "Rejected"))
-              .map((p) => {
+          {/* ── Loading / Error / Empty / Profile Cards ── */}
+          {profileLoading ? (
+            <div className="flex items-center justify-center py-24 gap-3 text-gray-400">
+              <span
+                className="material-symbols-outlined text-3xl animate-spin"
+                style={{ fontVariationSettings: "'wght' 300" }}
+              >
+                progress_activity
+              </span>
+              <span className="text-sm">Loading profile requests…</span>
+            </div>
+          ) : profileError ? (
+            <div className="flex flex-col items-center justify-center py-24 gap-2 text-red-400">
+              <span
+                className="material-symbols-outlined text-4xl"
+                style={{ fontVariationSettings: "'wght' 200, 'FILL' 0" }}
+              >
+                error
+              </span>
+              <p className="text-sm font-semibold">{profileError}</p>
+              <button
+                onClick={fetchProfileRequests}
+                className="mt-2 text-xs text-gray-500 underline hover:text-gray-700"
+              >
+                Try again
+              </button>
+            </div>
+          ) : filteredProfileRequests.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-24 gap-2 text-gray-400">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+                <span
+                  className="material-symbols-outlined text-4xl text-gray-300"
+                  style={{ fontVariationSettings: "'wght' 200, 'opsz' 48" }}
+                >
+                  person_off
+                </span>
+              </div>
+              <p className="text-sm font-semibold text-gray-500">
+                No profile requests
+              </p>
+              <p className="text-xs">No profile requests match this filter.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+              {filteredProfileRequests.map((p) => {
                 const isExpanded = profileExpandedId === p.link_id;
 
                 // mapped backwards compatibility
@@ -1139,12 +1117,7 @@ const Notifications: React.FC = () => {
                             {profileStatusConfig[mappedStatus as ProfileStatus]?.label || mappedStatus}
                           </span>
                         </div>
-                        {/* <p className="text-xs text-gray-500 truncate">
-                          Invited you to{" "}
-                          <span className="font-semibold text-gray-700">
-                           {p.role}
-                          </span>
-                        </p> */}
+                        
                         <p className="text-xs text-gray-500 truncate">
                           {p.request_type?.toLowerCase() === "sent"
                             ? "You sent a mapping request"
@@ -1278,9 +1251,9 @@ const Notifications: React.FC = () => {
                   </div>
                 );
               })}
-          </div>
+            </div>
+          )}
         </div>
-
       )}
     </div>
   );

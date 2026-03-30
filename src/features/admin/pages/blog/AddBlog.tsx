@@ -11,9 +11,8 @@ export const AddBlog: React.FC = () => {
   const { showToast } = useToast();
   const editId = searchParams.get("edit");
   const isEditMode = !!editId;
-
   const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("Arpan Dutta");
+  // const [author, setAuthor] = useState("Arpan Dutta");
   const [categoryId, setCategoryId] = useState("");
   const [content, setContent] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -62,7 +61,7 @@ export const AddBlog: React.FC = () => {
             );
             if (blogToEdit) {
               setTitle(blogToEdit.blog_title || "");
-              setAuthor(blogToEdit.blog_author || "");
+              // setAuthor(blogToEdit.blog_author || "");
               setCategoryId(blogToEdit.category_id?.toString() || "");
               setSelectedAuthorId(blogToEdit.blog_author?.toString() || "");
               setContent(blogToEdit.blog_content || "");

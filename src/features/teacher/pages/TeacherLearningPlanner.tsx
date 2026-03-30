@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
@@ -7,7 +6,6 @@ import { Calendar, Upload, Save, FileText, FileSpreadsheet, Link, X, Loader2 } f
 import SearchableSelect from "../../../components/common/SearchableSelect";
 import { useToast } from "../../../app/providers/ToastProvider";
 
-type Priority = "High" | "Medium" | "Low";
 
 interface ApiChapter {
   id: number;
@@ -119,7 +117,8 @@ const TeacherLearningPlanner: React.FC = () => {
   const [isMockModalOpen, setIsMockModalOpen] = useState(false);
   const [selectedMockChapterIds, setSelectedMockChapterIds] = useState<number[]>([]);
   const [demoChapters, setDemoChapters] = useState(demoChaptersData);
-const [isGeneratingTest, setIsGeneratingTest] = useState(false);
+  const [isGeneratingTest, setIsGeneratingTest] = useState(false);
+
   useEffect(() => {
     if (isMockModalOpen) {
       const completedIds = demoChapters.filter((ch) => ch.completed).map((ch) => ch.id);
@@ -341,6 +340,7 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
           class_id: data.dropdowns?.classes?.[0]?.id,
           section_name: data.dropdowns?.sections?.[0]?.name,
           section_id: data.dropdowns?.sections?.[0]?.id,
+          subscription_id: data.subscription_id, // Might need to capture this depending on your payload
         });
 
         // Map dropdown options (keep the whole object so we have name AND id)
@@ -387,73 +387,52 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
     }
   }, [activeSubject, subjects]);
 
-  // const handleSave = async (row: any) => {
-  //   const payload = {
-  //     chapter_id: row.id,
-  //     start_date: row.startDate_raw || null,
-  //     end_date: row.endDate_raw || null,
-  //     is_completed: row.completed,
-  //   };
+  const handleSave = async (row: any) => {
+    const payload = {
+      chapter_id: row.id,
+      start_date: row.startDate_raw || null,
+      end_date: row.endDate_raw || null,
+      is_completed: row.completed,
+    };
+    setSavingChapterId(row.id);
+    try {
 
-  //   try {
-  //     const res = await ApiServices.upsertTeacherPlanner(payload);
-  //     if (res.data?.status === "success") {
-  //       showToast("Chapter planner updated successfully", "success");
-  //     } else {
-  //       showToast(res.data?.message || "Failed to update", "error");
-  //     }
-  //   } catch (error) {
-  //     showToast("An error occurred while saving", "error");
-  //   }
-  // };
+      const res = await ApiServices.upsertTeacherPlanner(payload);
 
+      if (res.data?.status === "success") {
+        showToast("Chapter planner updated successfully", "success");
 
-const handleSave = async (row: any) => {
-  const payload = {
-    chapter_id: row.id,
-    start_date: row.startDate_raw || null,
-    end_date: row.endDate_raw || null,
-    is_completed: row.completed,
-  };
-  setSavingChapterId(row.id);
-  try {
+        // 🔥 CALL TEST GENERATION
+        if (row.completed === true) {
+          try {
+            setIsGeneratingTest(true); // 👈 start loader
 
-    const res = await ApiServices.upsertTeacherPlanner(payload);
+            const genRes = await ApiServices.generateTestFromPlanner({
+              subscription_id: stats?.subscription_id
+            });
 
-    if (res.data?.status === "success") {
-      showToast("Chapter planner updated successfully", "success");
+            if (genRes.data?.status === "success") {
+              showToast("Test generated successfully", "success");
+            } else {
+              showToast(genRes.data?.message || "Test generation failed", "error");
+            }
 
-      // 🔥 CALL TEST GENERATION
-      if (row.completed === true) {
-        try {
-          setIsGeneratingTest(true); // 👈 start loader
-
-          const genRes = await ApiServices.generateTestFromPlanner({
-            subscription_id: stats?.subscription_id
-          });
-
-          if (genRes.data?.status === "success") {
-            showToast("Test generated successfully", "success");
-          } else {
-            showToast(genRes.data?.message || "Test generation failed", "error");
+          } catch (err) {
+            showToast("Error while generating test", "error");
+          } finally {
+            setIsGeneratingTest(false); // 👈 stop loader
           }
-
-        } catch (err) {
-          showToast("Error while generating test", "error");
-        } finally {
-          setIsGeneratingTest(false); // 👈 stop loader
         }
+      } else {
+        showToast(res.data?.message || "Failed to update", "error");
       }
-    } else {
-      showToast(res.data?.message || "Failed to update", "error");
-    }
 
-  } catch (error) {
-    showToast("An error occurred while saving", "error");
-  } finally {
-    setSavingChapterId(null);
-  }
-};
+    } catch (error) {
+      showToast("An error occurred while saving", "error");
+    } finally {
+      setSavingChapterId(null);
+    }
+  };
   useEffect(() => {
     if (stats) {
       if (!selectedClass && stats.class_name)
@@ -484,6 +463,19 @@ const handleSave = async (row: any) => {
           </div>
         </div>
       )}
+
+      {/* NEW: Test Generation Loading Overlay */}
+      {isGeneratingTest && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-10 h-10 border-4 border-gray-200 border-t-[#BADA55] rounded-full animate-spin"></div>
+            <span className="text-sm text-gray-500 font-medium">
+              Generating your test... This may take a moment.
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <header className="flex flex-wrap justify-between items-start gap-6 pb-6">
         <div className="flex gap-4 items-start">
