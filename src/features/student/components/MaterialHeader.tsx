@@ -37,7 +37,7 @@ const MaterialsHeader: React.FC<Props> = ({
             </div>
 
             {/* Subjects */}
-            <div className="flex flex-wrap gap-2 mb-4">
+            {/* <div className="flex flex-wrap gap-2 mb-4">
                 {subjects.map((subject) => (
                     <button
                         key={subject}
@@ -50,7 +50,7 @@ const MaterialsHeader: React.FC<Props> = ({
                         {subject}
                     </button>
                 ))}
-            </div>
+            </div> */}
 
             {/* Resource Types */}
             <div className="flex gap-2">
