@@ -323,6 +323,13 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
       });
 
       setSavedQuestions((prev) => new Set(prev).add(currentQuestion.id));
+      // If a question is saved, it's no longer skipped
+      setSkippedSet(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(currentQuestion.id);
+        return newSet;
+      });
+
 
       if (currentQuestionIndex < totalQuestions - 1) {
         setCurrentQuestionIndex((prev) => prev + 1);

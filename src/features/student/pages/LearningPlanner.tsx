@@ -14,6 +14,8 @@ import { useNotification } from "../../../app/providers/NotificationProvider";
 interface ApiTask {
   status: string;
   type: string;
+  assignment_id?: number | null;
+  assignment_count?: number;
 }
 
 interface ApiPlanner {
@@ -36,6 +38,7 @@ interface Task {
   type: "tutorial" | "mock_test";
   progress: number;
   status?: string;
+  assignment_id?: number | null;
 }
 
 interface ChapterDay {
@@ -134,6 +137,7 @@ const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
           type: (t.type.toLowerCase().includes("mock") ? "mock_test" : "tutorial") as "tutorial" | "mock_test",
           progress: t.status === "completed" ? 100 : 0,
           status: t.status,
+          assignment_id: t.assignment_id,
         })),
       }));
 
@@ -304,7 +308,7 @@ const TaskRow: React.FC<{ task: Task; onClick?: () => void }> = ({
 const ChapterAccordion: React.FC<{
   chapter: ChapterDay;
   index: number;
-  onMockTestClick?: (chapterId: number, chapterName: string) => void;
+  onMockTestClick?: (chapterId: number, chapterName: string, assignmentId: number | null | undefined) => void;
 }> = ({ chapter, index, onMockTestClick }) => {
   const [open, setOpen] = useState(false);
   const allDone = chapter.tasks.every((t) => t.progress >= 100);
@@ -342,7 +346,7 @@ const ChapterAccordion: React.FC<{
                     key={idx}
                     task={task}
                     onClick={() =>
-                      onMockTestClick?.(chapter.chapter_id, chapter.chapter_name)
+                      onMockTestClick?.(chapter.chapter_id, chapter.chapter_name, task.assignment_id)
                     }
                   />
                 ))}
@@ -366,6 +370,7 @@ const SubjectSection: React.FC<{
     subjectName: string,
     chapterId: number,
     chapterName: string,
+    assignmentId: number | null | undefined,
   ) => void;
 }> = ({ subject, accentColor, defaultExpanded, onMockTestClick }) => {
   const today = getTodayDate();
@@ -467,11 +472,13 @@ const SubjectSection: React.FC<{
                 // OPTIONAL: you can trigger first chapter mock test
                 if (subject.chapters?.length > 0) {
                   const firstChapter = subject.chapters[0];
+                  const mockTask = firstChapter.tasks.find(t => t.type.toLowerCase().includes("mock"));
                   onMockTestClick?.(
                     subject.subject_id,
                     subject.subject_name,
                     firstChapter.chapter_id,
-                    firstChapter.chapter_name
+                    firstChapter.chapter_name,
+                    mockTask?.assignment_id
                   );
                 }
               }}
@@ -597,12 +604,13 @@ const SubjectSection: React.FC<{
                       key={`${ch.chapter_id}-${idx}`}
                       chapter={ch}
                       index={idx}
-                      onMockTestClick={(cid, cname) =>
+                      onMockTestClick={(cid, cname, aid) =>
                         onMockTestClick?.(
                           subject.subject_id,
                           subject.subject_name,
                           cid,
                           cname,
+                          aid,
                         )
                       }
                     />
@@ -697,54 +705,42 @@ const LearningPlanner: React.FC = () => {
   };
 
   const handleMockTestClick = async (
-    subjectId: number,
+    _subjectId: number,
     _subjectName: string,
-    chapterId: number,
-    chapterName: string,
+    _chapterId: number,
+    _chapterName: string,
+    assignmentId: number | null | undefined,
   ) => {
+    if (!assignmentId) {
+      showToast("This mock test is not available yet.", "info");
+      return;
+    }
+
     try {
       setIsLoading(true);
 
-      // 1. Assign/Create Assessment for this chapter
-      const assignPayload = {
-        subject_id: subjectId,
-        chapter_ids: [chapterId],
-        test_name: `${chapterName} Mock Test`,
-        total_questions: 10, // Default 10 questions
-        duration_minutes: 30, // Default 30 minutes
-        difficulty_level: "Mixed",
-      };
+      // 1. Get Assessment Details
+      const detailsRes = await ApiServices.getAssessmentDetails(assignmentId);
+      if (detailsRes.data?.status === "success") {
+        setAssessmentDetails(detailsRes.data.data);
+        setTestDuration(detailsRes.data.data.duration_minutes || 30);
 
-      const assignRes = await ApiServices.assignSelfAssessment(assignPayload);
-
-      if (assignRes.data?.status === "success") {
-        const assignmentId = assignRes.data.data.assignment_id;
-
-        // 2. Get Assessment Details
-        const detailsRes = await ApiServices.getAssessmentDetails(assignmentId);
-        if (detailsRes.data?.status === "success") {
-          setAssessmentDetails(detailsRes.data.data);
-          setTestDuration(detailsRes.data.data.duration_minutes || 30);
-
-          // 3. Start Assessment Attempt
-          const startRes = await ApiServices.startAssessment({
-            assignment_id: assignmentId,
-          });
-          if (startRes.data?.status === "success") {
-            setAttemptId(startRes.data.data.attempt_id);
-            setTestModalOpen(true);
-            showToast("Mock test started!", "success");
-          } else {
-            showToast(startRes.data?.message || "Failed to start test", "error");
-          }
+        // 2. Start Assessment Attempt
+        const startRes = await ApiServices.startAssessment({
+          assignment_id: assignmentId,
+        });
+        if (startRes.data?.status === "success") {
+          setAttemptId(startRes.data.data.attempt_id);
+          setTestModalOpen(true);
+          showToast("Mock test started!", "success");
         } else {
-          showToast(
-            detailsRes.data?.message || "Failed to get test details",
-            "error",
-          );
+          showToast(startRes.data?.message || "Failed to start test", "error");
         }
       } else {
-        showToast(assignRes.data?.message || "Failed to assign test", "error");
+        showToast(
+          detailsRes.data?.message || "Failed to get test details",
+          "error",
+        );
       }
     } catch (error: any) {
       showToast(
