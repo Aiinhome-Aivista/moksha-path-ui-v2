@@ -83,7 +83,7 @@ const MaterialsSidebar: React.FC<Props> = ({
         <div className="w-[280px] flex-shrink-0">
             {/* Tutor Image */}
             <div className="flex justify-start mb-2">
-                <img src="/guy.svg" alt="Tutor" />
+                <img src="/Guy.svg" alt="Tutor" />
             </div>
 
             {/* Filters */}
