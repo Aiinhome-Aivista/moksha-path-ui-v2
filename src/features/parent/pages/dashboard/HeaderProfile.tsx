@@ -43,18 +43,17 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
   return (
     <>
       <div className="grid grid-cols-1 mb-1 lg:grid-cols-3 xl:grid-cols-4 items-center relative -ml-6">
-        <div className="flex items-center gap-4 bg-gray-800 text-white p-4 h-28 z-10 min-w96 rounded-tr-full rounded-br-full">
+        <div className="flex items-center gap-4 bg-gray-800 text-white p-4 h-28 z-10 min-w-80 rounded-tr-full rounded-br-full">
           <img
             src="https://www.picsman.ai/blog/wp-content/uploads/2025/01/free-passport-photo-maker-1.webp"
             className="w-24 h-24 rounded-full"
             alt="profile"
           />
           <div>
-            <h2 className="text-lg font-semibold">Hi Aarav !</h2>
+            <h2 className="text-lg font-semibold">Hi Pabitra Sarkar !</h2>
             <p className="text-sm text-gray-300">
               St. Thomas School for Boys (ICSE) | Class 9
             </p>
-            <span className="text-xs text-yellow-400">Top 10%</span>
           </div>
         </div>
 
