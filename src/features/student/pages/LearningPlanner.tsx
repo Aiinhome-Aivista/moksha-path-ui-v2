@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
 import TestModalUpdated from "../components/TestModalUpdated";
 import { useToast } from "../../../app/providers/ToastProvider";
+import { useNotification } from "../../../app/providers/NotificationProvider";
+import { CheckCircle } from "lucide-react";
 
 // ─── Interfaces ─────────────────────────────────────────────────────────────
 
@@ -12,6 +15,8 @@ import { useToast } from "../../../app/providers/ToastProvider";
 interface ApiTask {
   status: string;
   type: string;
+  assignment_id?: number | null;
+  assignment_count?: number;
 }
 
 interface ApiPlanner {
@@ -34,6 +39,7 @@ interface Task {
   type: "tutorial" | "mock_test";
   progress: number;
   status?: string;
+  assignment_id?: number | null;
 }
 
 interface ChapterDay {
@@ -132,6 +138,7 @@ const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
           type: (t.type.toLowerCase().includes("mock") ? "mock_test" : "tutorial") as "tutorial" | "mock_test",
           progress: t.status === "completed" ? 100 : 0,
           status: t.status,
+          assignment_id: t.assignment_id,
         })),
       }));
 
@@ -165,7 +172,8 @@ const getPrevWeekStatus = (
 };
 
 const patchSubjectPlan = (sub: ApiSubjectPlan): ApiSubjectPlan => {
-  const patchedChapters = sub.chapters.map(ch => {
+  // Ensure chapters is an array before mapping to prevent errors if it's null
+  const patchedChapters = (sub.chapters || []).map(ch => {
     const totalTasks = ch.tasks.length;
     const completedTasks = ch.tasks.filter(t => t.status === "completed").length;
     const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
@@ -288,9 +296,14 @@ const TaskRow: React.FC<{ task: Task; onClick?: () => void }> = ({
           e.stopPropagation(); // prevent row click conflict
           onClick?.();
         }}
-        className="ml-auto text-[10px] px-2 py-1 bg-[#BADA55] text-[#2b3a00] font-semibold rounded-md hover:bg-[#a8c94a] hover:shadow-sm transition-all duration-200"
+        disabled={!(task.status === "assigned" || task.status === "completed")}
+        className={`ml-auto text-[10px] px-2 py-1 font-semibold rounded-md transition-all duration-200 ${
+          task.status === "assigned" || task.status === "completed"
+            ? "bg-[#BADA55] text-[#2b3a00] hover:bg-[#a8c94a] hover:shadow-sm"
+            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+        }`}
       >
-        Take Test
+        {task.status === "completed" ? "Retake Test" : "Take Test"}
       </button>
     )}
   </div>
@@ -301,7 +314,7 @@ const TaskRow: React.FC<{ task: Task; onClick?: () => void }> = ({
 const ChapterAccordion: React.FC<{
   chapter: ChapterDay;
   index: number;
-  onMockTestClick?: (chapterId: number, chapterName: string) => void;
+  onMockTestClick?: (chapterId: number, chapterName: string, assignmentId: number | null | undefined) => void;
 }> = ({ chapter, index, onMockTestClick }) => {
   const [open, setOpen] = useState(false);
   const allDone = chapter.tasks.every((t) => t.progress >= 100);
@@ -313,11 +326,16 @@ const ChapterAccordion: React.FC<{
         className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50/80 transition-colors"
       >
         <span className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold ${allDone ? "bg-green-500 text-white" : "bg-[#BADA55]/20 text-[#6a9000]"}`}>
-          {allDone
-            ? <span className="material-symbols-outlined" style={{ fontSize: 14 }}>check</span>
-            : index + 1}
+          {index + 1}
         </span>
-        <span className="flex-1 font-semibold text-sm text-primary">{chapter.chapter_name}</span>
+        <span className="flex-1 font-semibold text-sm text-primary flex items-center gap-2">
+          <span>{chapter.chapter_name}</span>
+          {allDone && (
+            <span className="material-symbols-outlined text-green-500" style={{ fontSize: 16, fontVariationSettings: "'FILL' 1" }}>
+              check_circle
+            </span>
+          )}
+        </span>
         <span className={`material-symbols-outlined text-lg text-gray-400 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`}>
           expand_more
         </span>
@@ -334,7 +352,7 @@ const ChapterAccordion: React.FC<{
                     key={idx}
                     task={task}
                     onClick={() =>
-                      onMockTestClick?.(chapter.chapter_id, chapter.chapter_name)
+                      onMockTestClick?.(chapter.chapter_id, chapter.chapter_name, task.assignment_id)
                     }
                   />
                 ))}
@@ -358,6 +376,7 @@ const SubjectSection: React.FC<{
     subjectName: string,
     chapterId: number,
     chapterName: string,
+    assignmentId: number | null | undefined,
   ) => void;
 }> = ({ subject, accentColor, defaultExpanded, onMockTestClick }) => {
   const today = getTodayDate();
@@ -459,15 +478,18 @@ const SubjectSection: React.FC<{
                 // OPTIONAL: you can trigger first chapter mock test
                 if (subject.chapters?.length > 0) {
                   const firstChapter = subject.chapters[0];
+                  const mockTask = firstChapter.tasks.find(t => t.type.toLowerCase().includes("mock"));
                   onMockTestClick?.(
                     subject.subject_id,
                     subject.subject_name,
                     firstChapter.chapter_id,
-                    firstChapter.chapter_name
+                    firstChapter.chapter_name,
+                    mockTask?.assignment_id
                   );
                 }
               }}
-              className="ml-auto text-[10px] px-2 py-1 bg-[#BADA55] text-[#2b3a00] font-semibold rounded-md hover:bg-[#a8c94a] hover:shadow-sm transition-all duration-200"
+              disabled // Disabled for now
+              className="ml-auto text-[10px] px-2 py-1 bg-gray-200 text-gray-400 font-semibold rounded-md cursor-not-allowed"
             >
               Take Overall Test
             </button>
@@ -589,12 +611,13 @@ const SubjectSection: React.FC<{
                       key={`${ch.chapter_id}-${idx}`}
                       chapter={ch}
                       index={idx}
-                      onMockTestClick={(cid, cname) =>
+                      onMockTestClick={(cid, cname, aid) =>
                         onMockTestClick?.(
                           subject.subject_id,
                           subject.subject_name,
                           cid,
                           cname,
+                          aid,
                         )
                       }
                     />
@@ -637,6 +660,10 @@ const LearningPlanner: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { showToast } = useToast();
+  const { refresh: refreshNotificationCount } = useNotification();
+
+  const location = useLocation();
+  const assignmentIdFromState = location.state?.assignmentId;
 
   // Test Modal State
   const [testModalOpen, setTestModalOpen] = useState(false);
@@ -644,55 +671,83 @@ const LearningPlanner: React.FC = () => {
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [testDuration, setTestDuration] = useState(30);
 
-  const handleMockTestClick = async (
-    subjectId: number,
-    _subjectName: string,
-    chapterId: number,
-    chapterName: string,
-  ) => {
+  const handleTestModalUpdate = async (assignmentId: number) => {
     try {
       setIsLoading(true);
 
-      // 1. Assign/Create Assessment for this chapter
-      const assignPayload = {
-        subject_id: subjectId,
-        chapter_ids: [chapterId],
-        test_name: `${chapterName} Mock Test`,
-        total_questions: 10, // Default 10 questions
-        duration_minutes: 30, // Default 30 minutes
-        difficulty_level: "Mixed",
-      };
+      // 1. Get Assessment Details
+      const detailsRes = await ApiServices.getAssessmentDetails(assignmentId);
+      if (detailsRes.data?.status === "success") {
+        setAssessmentDetails(detailsRes.data.data);
+        setTestDuration(detailsRes.data.data.duration_minutes || 30);
 
-      const assignRes = await ApiServices.assignSelfAssessment(assignPayload);
-
-      if (assignRes.data?.status === "success") {
-        const assignmentId = assignRes.data.data.assignment_id;
-
-        // 2. Get Assessment Details
-        const detailsRes = await ApiServices.getAssessmentDetails(assignmentId);
-        if (detailsRes.data?.status === "success") {
-          setAssessmentDetails(detailsRes.data.data);
-          setTestDuration(detailsRes.data.data.duration_minutes || 30);
-
-          // 3. Start Assessment Attempt
-          const startRes = await ApiServices.startAssessment({
-            assignment_id: assignmentId,
-          });
-          if (startRes.data?.status === "success") {
-            setAttemptId(startRes.data.data.attempt_id);
-            setTestModalOpen(true);
-            showToast("Mock test started!", "success");
-          } else {
-            showToast(startRes.data?.message || "Failed to start test", "error");
-          }
+        // 2. Start Assessment Attempt
+        const startRes = await ApiServices.startAssessment({
+          assignment_id: assignmentId,
+        });
+        if (startRes.data?.status === "success") {
+          setAttemptId(startRes.data.data.attempt_id);
+          setTestModalOpen(true);
+          showToast("Assessment started!", "success");
         } else {
           showToast(
-            detailsRes.data?.message || "Failed to get test details",
+            startRes.data?.message || "Failed to start assessment",
             "error",
           );
         }
       } else {
-        showToast(assignRes.data?.message || "Failed to assign test", "error");
+        showToast(
+          detailsRes.data?.message || "Failed to get assessment details",
+          "error",
+        );
+      }
+    } catch (error: any) {
+      showToast(
+        error.response?.data?.message || "Something went wrong",
+        "error",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleMockTestClick = async (
+    _subjectId: number,
+    _subjectName: string,
+    _chapterId: number,
+    _chapterName: string,
+    assignmentId: number | null | undefined,
+  ) => {
+    if (!assignmentId) {
+      showToast("This mock test is not available yet.", "info");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      // 1. Get Assessment Details
+      const detailsRes = await ApiServices.getAssessmentDetails(assignmentId);
+      if (detailsRes.data?.status === "success") {
+        setAssessmentDetails(detailsRes.data.data);
+        setTestDuration(detailsRes.data.data.duration_minutes || 30);
+
+        // 2. Start Assessment Attempt
+        const startRes = await ApiServices.startAssessment({
+          assignment_id: assignmentId,
+        });
+        if (startRes.data?.status === "success") {
+          setAttemptId(startRes.data.data.attempt_id);
+          setTestModalOpen(true);
+          showToast("Mock test started!", "success");
+        } else {
+          showToast(startRes.data?.message || "Failed to start test", "error");
+        }
+      } else {
+        showToast(
+          detailsRes.data?.message || "Failed to get test details",
+          "error",
+        );
       }
     } catch (error: any) {
       showToast(
@@ -707,12 +762,15 @@ const LearningPlanner: React.FC = () => {
   const fetchLearningPlan = async () => {
     try {
       const getResponse = await ApiServices.getStudentPlannerDashboard();
-      const getResult = getResponse.data;
+      const result = getResponse.data;
 
-      if (getResult.status === "success" && getResult.data.subjects?.length > 0) {
-        setSubjects(getResult.data.subjects.map(patchSubjectPlan));
-        setAcademic(getResult.data.academic);
-        setStudent(getResult.data.student);
+      // Handle both wrapped ({status, data}) and direct data responses
+      const plannerData = result.status === 'success' ? result.data : result;
+
+      if (plannerData && plannerData.subjects?.length > 0) {
+        setSubjects(plannerData.subjects.map(patchSubjectPlan));
+        setAcademic(plannerData.academic);
+        setStudent(plannerData.student);
         return;
       }
 
@@ -720,17 +778,16 @@ const LearningPlanner: React.FC = () => {
       await ApiServices.generateLearningPlan({ topic_ids: null });
 
       const newGetResponse = await ApiServices.getStudentPlannerDashboard();
-      const newGetResult = newGetResponse.data;
+      const newResult = newGetResponse.data;
+      const newPlannerData = newResult.status === 'success' ? newResult.data : newResult;
 
-      if (newGetResult.status === "success" && newGetResult.data.subjects?.length > 0) {
-        setSubjects(newGetResult.data.subjects.map(patchSubjectPlan));
-        setAcademic(newGetResult.data.academic);
-        setStudent(newGetResult.data.student);
+      if (newPlannerData && newPlannerData.subjects?.length > 0) {
+        setSubjects(newPlannerData.subjects.map(patchSubjectPlan));
+        setAcademic(newPlannerData.academic);
+        setStudent(newPlannerData.student);
       }
     } catch {
       // silent
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -743,12 +800,28 @@ const LearningPlanner: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchLearningPlan();
-    fetchProfileImage();
-  }, []);
+    const init = async () => {
+      setIsLoading(true);
+      try {
+        await Promise.all([fetchLearningPlan(), fetchProfileImage()]);
+
+        // Check if we came from notification with an assignmentId
+        if (assignmentIdFromState) {
+          await handleTestModalUpdate(assignmentIdFromState);
+        }
+      } catch (err) {
+        console.error("Initialization error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    init();
+  }, [assignmentIdFromState]);
 
   const getInitial = () => student?.name?.charAt(0).toUpperCase();
 
+  const [showResultComingSoon, setShowResultComingSoon] = useState(false);
   return (
     <div className="min-h-screen p-6 relative">
       {/* ── Loading overlay ─────────────────────────────────────────── */}
@@ -863,8 +936,28 @@ const LearningPlanner: React.FC = () => {
           console.log("Test completed:", result);
           // Refresh data to show progress
           fetchLearningPlan();
+          refreshNotificationCount();
+          setShowResultComingSoon(true);
         }}
       />
+
+      {showResultComingSoon && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center relative animate-in fade-in zoom-in duration-200">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+              <CheckCircle size={32} className="text-green-500" />
+            </div>
+            <h3 className="text-xl font-bold text-primary mb-2">Assessment Submitted!</h3>
+            <p className="text-gray-500 text-sm mb-6">Your results are being processed and will be available soon in the "Tests" section.</p>
+            <button
+              onClick={() => setShowResultComingSoon(false)}
+              className="w-full px-6 py-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

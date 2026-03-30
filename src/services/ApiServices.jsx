@@ -688,6 +688,12 @@ class ApiServices {
   uploadStudyMaterial(payload) {
     return axiosInstance.post(POST_APIS.upload_study_material, payload);
   }
+  generateTestFromPlanner(payload) {
+    return axiosInstance.post(POST_APIS.generate_test_from_planner, payload);
+  }
+  getStudyMaterial(params = {}) {
+    return axiosInstance.get(GET_APIS.get_study_material, { params });
+  }
 }
 
 export default new ApiServices();
