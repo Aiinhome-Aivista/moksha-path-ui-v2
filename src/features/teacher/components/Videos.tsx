@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Play, ExternalLink, Loader2} from "lucide-react";
+import { Play, ExternalLink, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 
 export interface YouTubeLink {
   title: string;
@@ -12,26 +12,28 @@ interface ResourceMaterialsProps {
   isLoading?: boolean;
 }
 
+const ITEMS_PER_PAGE = 8;
+
 const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
   youtubeLinks,
   isLoading = false,
 }) => {
   const [uploadedVideos] = useState<YouTubeLink[]>([]);
-
-  // const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = event.target.files?.[0];
-  //   if (file) {
-  //     const videoUrl = URL.createObjectURL(file);
-  //     const newVideo: YouTubeLink = {
-  //       title: file.name,
-  //       url: videoUrl,
-  //       duration: "Local",
-  //     };
-  //     setUploadedVideos((prev) => [...prev, newVideo]);
-  //   }
-  // };
+  const [currentPage, setCurrentPage] = useState(1);
 
   const allVideos = [...youtubeLinks, ...uploadedVideos];
+
+  // Pagination Logic
+  const totalPages = Math.ceil(allVideos.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const currentVideos = allVideos.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-gray-400">
@@ -100,7 +102,7 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {allVideos.map((link, index) => {
+        {currentVideos.map((link, index) => {
           const thumbnail = getThumbnail(link.url);
 
           return (
@@ -125,22 +127,6 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
                   </div>
                 )}
 
-                {/* Play overlay */}
-                {/* <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                  <div className="w-12 h-12 bg-red-600/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
-                    <Play
-                      size={20}
-                      className="text-white ml-0.5"
-                      fill="white"
-                    />
-                  </div>
-                </div> */}
-
-                {/* YouTube badge */}
-                {/* <span className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
-                  YouTube
-                </span> */}
-
                 {link.duration && (
                   <span className="absolute bottom-2 right-2 bg-black/80 text-white text-[11px] font-semibold px-1.5 py-0.5 rounded">
                     {link.duration}
@@ -162,6 +148,49 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
           );
         })}
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-8">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`p-2 rounded-lg border flex items-center justify-center transition-colors ${
+              currentPage === 1
+                ? "border-gray-100 text-gray-300 cursor-not-allowed"
+                : "border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-red-500"
+            }`}
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <div className="flex items-center gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`w-8 h-8 rounded-lg text-sm font-medium flex items-center justify-center transition-all ${
+                  currentPage === page
+                    ? "bg-red-600 text-white shadow-md"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`p-2 rounded-lg border flex items-center justify-center transition-colors ${
+              currentPage === totalPages
+                ? "border-gray-100 text-gray-300 cursor-not-allowed"
+                : "border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-red-500"
+            }`}
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

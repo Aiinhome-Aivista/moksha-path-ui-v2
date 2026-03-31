@@ -7,7 +7,7 @@ import ResourceMaterials, {
 } from "../components/ResourceMaterials";
 import Practice from "../components/Practice";
 import Tests from "../components/Tests";
-import Notes, { type NoteData, type StudyMaterialItem } from "../components/Notes";
+import Notes, { type StudyMaterialItem } from "../components/Notes";
 import ApiServices from "../../../services/ApiServices";
 // import IconChat from "../../../assets/icon/chat2.svg";
 import Chat from "../../auth/modal/chat";
@@ -61,7 +61,6 @@ const StudentMaterials = () => {
 
   // ── Resource data from API ──
   const [youtubeLinks, setYoutubeLinks] = useState<YouTubeLink[]>([]);
-  const [notesData, setNotesData] = useState<NoteData[]>([]);
   const [studyMaterials, setStudyMaterials] = useState<StudyMaterialItem[]>([]);
   const [isResourcesLoading, setIsResourcesLoading] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -278,7 +277,6 @@ const StudentMaterials = () => {
     const fetchResources = async () => {
       if (selectedChapters.length === 0) {
         setYoutubeLinks([]);
-        setNotesData([]);
         return;
       }
 
@@ -331,38 +329,11 @@ const StudentMaterials = () => {
             (item: any) => item.youtube_links || item.videos || [],
           );
           setYoutubeLinks(allLinks);
-
-          const allNotes: NoteData[] = result.data
-            .filter((item: any) => item.notes)
-            .map((item: any) => {
-              let parsedContent: any = item.notes;
-
-              if (typeof item.notes === "string") {
-                try {
-                  parsedContent = JSON.parse(item.notes);
-                } catch {
-                  parsedContent = item.notes;
-                }
-              }
-
-              return {
-                topic_id: item.topic_id || item.id,
-                topic_title:
-                  item.topic_title || item.topic_name || item.name ||
-                  (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)
-                    ? parsedContent.title || parsedContent.topic
-                    : `Topic ${item.topic_id || item.id || ""}`),
-                content: parsedContent,
-              };
-            });
-          setNotesData(allNotes);
         } else {
             setYoutubeLinks([]);
-            setNotesData([]);
         }
       } catch (error) {
         setYoutubeLinks([]);
-        setNotesData([]);
       } finally {
         setIsResourcesLoading(false);
       }
@@ -565,7 +536,6 @@ const StudentMaterials = () => {
           )}
           {activeResourceType === "Notes" && (
             <Notes
-              notes={notesData}
               studyMaterials={filteredStudyMaterials}
               isLoading={isResourcesLoading}
             />

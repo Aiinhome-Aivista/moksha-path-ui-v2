@@ -11,9 +11,9 @@ interface Props {
 }
 
 const MaterialsHeader: React.FC<Props> = ({
-    subjects,
-    activeSubject,
-    setActiveSubject,
+    // subjects,
+    // activeSubject,
+    // setActiveSubject,
     resourceTypes,
     activeResourceType,
     setActiveResourceType,

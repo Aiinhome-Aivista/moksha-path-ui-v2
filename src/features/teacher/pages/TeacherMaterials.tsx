@@ -4,7 +4,7 @@ import MaterialsSidebar from "../components/Materialsidebar";
 import MaterialsHeader from "../components/MaterialHeader";
 import ResourceMaterials from "../components/Videos";
 import Tests from "../components/TeacherTests";
-import Notes, { type NoteData } from "../components/Notes";
+import Notes from "../components/Notes";
 import ApiServices from "../../../services/ApiServices";
 // import IconChat from "../../../assets/icon/chat2.svg";
 import Chat from "../../auth/modal/chat";
@@ -55,7 +55,7 @@ const TeacherMaterials = () => {
     locationState?.selectedSubjectName || locationState?.subjects?.[0] || "",
   );
   const [activeResourceType, setActiveResourceType] = useState(
-    locationState?.activeResourceType || "",
+    locationState?.activeResourceType || "Videos",
   );
 
   const [selectedChapters, setSelectedChapters] = useState<number[]>([]);
@@ -70,7 +70,6 @@ const TeacherMaterials = () => {
   const [isResourcesLoading, setIsResourcesLoading] = useState(false);
 
   const resourceTypes = ["Videos", "Tests", "Notes"];
-
   const effectiveSubjectWisePlan = locationState?.subjectWisePlan || null;
 
 
@@ -199,7 +198,6 @@ const TeacherMaterials = () => {
     [filteredMaterialItems]
   );
 
-  const [notesData, setNotesData] = useState<NoteData[]>([]);
 
   // ── Update chapters and topics dynamically based on active subject ──
   // useEffect(() => {
@@ -386,8 +384,6 @@ const TeacherMaterials = () => {
     const fetchResources = async () => {
       // We need at least one selected chapter
       if (selectedChapters.length === 0) {
-        // Clear resources when no chapters are selected
-        setNotesData([]);
         return;
       }
 
@@ -450,39 +446,9 @@ const TeacherMaterials = () => {
 
         if (result.status === "success" && Array.isArray(result.data)) {
           // youtubeLinks are now handled dynamically from getTeacherStudyMaterial
-          
-          // Parse notes for each topic
-          const allNotes: NoteData[] = result.data
-            .filter((item: any) => item.notes)
-            .map((item: any) => {
-              let parsedContent: any = item.notes;
-
-              // If it's a string, try to parse it, otherwise keep as is
-              if (typeof item.notes === "string") {
-                try {
-                  parsedContent = JSON.parse(item.notes);
-                } catch {
-                  parsedContent = item.notes;
-                }
-              }
-
-              return {
-                topic_id: item.topic_id,
-                topic_title:
-                  item.topic_title ||
-                  (parsedContent &&
-                    typeof parsedContent === "object" &&
-                    !Array.isArray(parsedContent)
-                    ? parsedContent.title || parsedContent.topic
-                    : `Topic ${item.topic_id}`),
-                content: parsedContent,
-              };
-            });
-          setNotesData(allNotes);
         }
       } catch (error) {
         // console.error("Failed to fetch resources:", error);
-        setNotesData([]);
       } finally {
         setIsResourcesLoading(false);
       }
@@ -588,7 +554,6 @@ const TeacherMaterials = () => {
           )}
           {activeResourceType === "Notes" && (
             <Notes 
-              notes={notesData} 
               studyMaterials={dynamicStudyMaterials} 
               isLoading={isResourcesLoading} 
             />
