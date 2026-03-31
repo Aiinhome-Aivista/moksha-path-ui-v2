@@ -153,7 +153,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
       <div className="grid grid-cols-1 mb-1 lg:grid-cols-3 xl:grid-cols-4 items-center relative -ml-6">
         
         {/* ─── Profile Card ────────────────────────────────────────────── */}
-        <div className="flex items-center gap-4 bg-[#212b36] text-white p-4 h-28 z-10 min-w-80 rounded-tr-full rounded-br-full shadow-md">
+        <div className="flex items-center gap-4 bg-[#212b36] text-white p-4 h-24 z-10 min-w-80 rounded-tr-full rounded-br-full shadow-md">
           <div className="relative flex-shrink-0">
             {profileImage ? (
               <img
@@ -181,9 +181,6 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
               {displaySchool} <br/>
               {displayBoard ? `(${displayBoard}) | ` : ""}{displayClass}
             </p>
-            <span className="text-[10px] font-bold text-[#BADA55] uppercase tracking-widest mt-1 block">
-              Top 10%
-            </span>
           </div>
         </div>
 
