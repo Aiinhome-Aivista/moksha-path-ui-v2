@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 interface Tab {
   name: string;
@@ -24,6 +24,28 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
 }) => {
   const [showDropdown, setShowDropdown] = React.useState(false);
   const [showExamDropdown, setShowExamDropdown] = useState(false);
+  const subjectDropdownRef = useRef<HTMLDivElement>(null);
+  const examDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        subjectDropdownRef.current &&
+        !subjectDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+      if (
+        examDropdownRef.current &&
+        !examDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowExamDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const tabs: Tab[] = [
     { name: "Performance Overview", key: "performance" },
@@ -65,12 +87,16 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
           {tabs.map((tab) => {
             if (tab.key === "subject") {
               return (
-                <div key={tab.key} className="relative">
+                <div key={tab.key} className="relative" ref={subjectDropdownRef}>
                   {/* Subject Button */}
                   <button
                     onClick={() => {
                       onTabChange(tab.key);
+                      if (!selectedSubject) {
+                        onSubjectSelect(subjectsList[0]);
+                      }
                       setShowDropdown(!showDropdown);
+                      setShowExamDropdown(false); // close exam dropdown
                     }}
                     className={`px-6 py-1 flex items-center rounded-full text-lg font-bold ${
                       activeTab === tab.key
@@ -110,11 +136,14 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
 
             if (tab.key === "exam") {
               return (
-                <div key={tab.key} className="relative">
+                <div key={tab.key} className="relative" ref={examDropdownRef}>
                   {/* Exam Button */}
                   <button
                     onClick={() => {
                       onTabChange(tab.key);
+                      if (!selectedExam) {
+                        onExamSelect(examList[0]);
+                      }
                       setShowExamDropdown(!showExamDropdown);
                       setShowDropdown(false); // close subject dropdown
                     }}
@@ -157,7 +186,11 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
             return (
               <button
                 key={tab.key}
-                onClick={() => onTabChange(tab.key)}
+                onClick={() => {
+                  onTabChange(tab.key);
+                  setShowDropdown(false);
+                  setShowExamDropdown(false);
+                }}
                 className={`px-6 py-1 rounded-full text-lg font-bold whitespace-nowrap ${
                   activeTab === tab.key
                     ? "bg-[#E59003] text-white"
