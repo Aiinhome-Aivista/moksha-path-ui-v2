@@ -506,7 +506,7 @@ const TeacherLearningPlanner: React.FC = () => {
     <div className="flex justify-end items-end gap-20">
           <button
             onClick={() => setIsMockModalOpen(true)}
-            className="w-full p-2.5 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors border-none cursor-pointer"
+            className="w-full p-2 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors border-none cursor-pointer"
           >
             Generate Overall Mock
           </button>
