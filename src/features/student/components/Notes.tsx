@@ -27,6 +27,9 @@ export interface StudyMaterialItem {
   link_url: string | null;
   resource: string;
   section_id: number;
+  section_name?: string;
+  subject_id?: number;
+  subject_name?: string;
   uploaded_at: string;
   uploaded_by: number;
 }

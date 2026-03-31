@@ -421,7 +421,7 @@ const TeacherLearningPlanner: React.FC = () => {
       )}
 
       {/* Header Section */}
-      <header className="flex flex-wrap justify-between items-start gap-6 pb-6">
+     <header className="flex flex-wrap justify-between items-end gap-6 pb-6">
         <div className="flex gap-4 items-start">
           {/* Avatar */}
           <div className="w-[90px] h-[90px] rounded-full overflow-hidden flex-shrink-0 border-3 border-gray-200 flex items-center justify-center bg-gray-100">
@@ -503,10 +503,10 @@ const TeacherLearningPlanner: React.FC = () => {
         </div>
 
         {/* Stats Badges */}
-        <div className="flex justify-end items-end gap-20 relative top-20">
+    <div className="flex justify-end items-end gap-20">
           <button
             onClick={() => setIsMockModalOpen(true)}
-            className="w-full p-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors border-none cursor-pointer"
+            className="w-full p-2.5 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors border-none cursor-pointer"
           >
             Generate Overall Mock
           </button>
