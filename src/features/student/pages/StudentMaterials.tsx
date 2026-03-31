@@ -162,7 +162,7 @@ const StudentMaterials = () => {
     };
 
     loadInitData();
-  }, [location.state, refreshTrigger]);
+  }, [location.state]); // Removed refreshTrigger from here
 
   // 2. Transform Chapters and Topics based on Active Subject
   useEffect(() => {
@@ -324,6 +324,7 @@ const StudentMaterials = () => {
   // 4. Fetch Global Study Materials
   useEffect(() => {
     const fetchStudyMaterials = async () => {
+      setIsResourcesLoading(true);
       try {
         const res = await ApiServices.getStudyMaterial();
         if (res.data?.status === "success" && Array.isArray(res.data?.data)) {
@@ -336,6 +337,8 @@ const StudentMaterials = () => {
         }
       } catch (err) {
         setStudyMaterials([]);
+      } finally {
+        setIsResourcesLoading(false);
       }
     };
     fetchStudyMaterials();
@@ -398,7 +401,7 @@ const StudentMaterials = () => {
   };
 
   return (
-    <div className="min-h-screen relative p-6 bg-gray-50">
+    <div className="h-full relative p-6">
       {isPageLoading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl">
           <div className="flex flex-col items-center gap-3">
@@ -432,7 +435,7 @@ const StudentMaterials = () => {
           sectionName={sectionName}
         />
 
-        <div className="flex-1 pr-6 pb-20">
+        <div className="flex-1">
           <MaterialsHeader
             subjects={subjectsList}
             activeSubject={activeSubject}

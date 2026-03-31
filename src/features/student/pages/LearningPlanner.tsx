@@ -17,6 +17,7 @@ interface ApiTask {
   type: string;
   assignment_id?: number | null;
   assignment_count?: number;
+  assignment_end_date?: string | null;
 }
 
 interface ApiPlanner {
@@ -40,6 +41,7 @@ interface Task {
   progress: number;
   status?: string;
   assignment_id?: number | null;
+  assignment_end_date?: string | null;
 }
 
 interface ChapterDay {
@@ -47,6 +49,10 @@ interface ChapterDay {
   chapter_name: string;
   topics?: { topic_id: number; topic_name: string }[];
   tasks: Task[];
+  is_overdue?: boolean;
+  is_orange?: boolean;
+  end_date_raw?: string | null;
+  original_index?: number;
 }
 
 interface WeeklyPlanDay {
@@ -120,27 +126,145 @@ const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
   const chapters = subject.chapters ?? [];
 
   return weekDates.map((dateStr, dIdx) => {
-    const dayChapters = chapters
-      .filter((ch, ci) => {
-        if (!ch.planner.start_date || !ch.planner.end_date) {
-          // Spread undated chapters across the week
-          return ci % 7 === dIdx;
-        }
+    const current = new Date(dateStr);
+    current.setHours(0, 0, 0, 0);
+    const todayLocal = new Date();
+    todayLocal.setHours(0, 0, 0, 0);
+    const isThisDayToday = current.getTime() === todayLocal.getTime();
+
+    const normalDayChapters: ChapterDay[] = [];
+    const overdueDayChapters: ChapterDay[] = [];
+
+    chapters.forEach((ch, ci) => {
+      let fallsOnDate = false;
+      const chEnd = ch.planner.end_date ? new Date(ch.planner.end_date) : null;
+      if (chEnd) chEnd.setHours(0, 0, 0, 0);
+
+      if (!ch.planner.start_date || !ch.planner.end_date) {
+        fallsOnDate = ci % 7 === dIdx;
+      } else {
         const start = new Date(ch.planner.start_date);
-        const end = new Date(ch.planner.end_date);
-        const current = new Date(dateStr);
-        return current >= start && current <= end;
-      })
-      .map((ch) => ({
-        chapter_id: ch.chapter_id,
-        chapter_name: ch.chapter_name,
-        tasks: ch.tasks.map((t) => ({
-          type: (t.type.toLowerCase().includes("mock") ? "mock_test" : "tutorial") as "tutorial" | "mock_test",
+        start.setHours(0, 0, 0, 0);
+        fallsOnDate = current >= start && current <= chEnd!;
+      }
+
+      // Check if it's completely done
+      const isCompleted = ch.tasks.length > 0 && ch.tasks.every((t) => t.status === "completed");
+
+      // Find absolute max assignment deadline
+      let maxAssignEnd: Date | null = null;
+      for (const t of ch.tasks) {
+        if (t.assignment_end_date) {
+          const assignEnd = new Date(t.assignment_end_date);
+          assignEnd.setHours(0, 0, 0, 0);
+          if (!maxAssignEnd || assignEnd > maxAssignEnd) {
+            maxAssignEnd = assignEnd;
+          }
+        }
+      }
+
+      // Unified carry-forward logic
+      let isCarriedForward = false;
+      if (!isCompleted && chEnd && current > chEnd) {
+        if (current.getTime() === todayLocal.getTime()) {
+          // Always carry incomplete past-scheduled chapters onto today
+          isCarriedForward = true;
+        } else if (current > todayLocal && maxAssignEnd !== null && current <= (maxAssignEnd as Date)) {
+          // Continue carrying onto forward dates up strictly to the assignment deadline
+          isCarriedForward = true;
+        }
+      }
+
+      const tasksToAdd: Task[] = [];
+      const addedTaskIds = new Set<string>();
+
+      ch.tasks.forEach((t) => {
+        const isMock = t.type.toLowerCase().includes("mock");
+        const mappedType = isMock ? "mock_test" : "tutorial";
+        const taskIdKey = `${mappedType}-${t.assignment_id || "none"}`;
+
+        const mappedTask: Task = {
+          type: mappedType,
           progress: t.status === "completed" ? 100 : 0,
           status: t.status,
           assignment_id: t.assignment_id,
-        })),
-      }));
+          assignment_end_date: t.assignment_end_date,
+        };
+
+        // If it naturally falls here or is carried forward, add it!
+        let addThisTask = false;
+        if (fallsOnDate || isCarriedForward) {
+          addThisTask = true;
+        }
+
+        if (addThisTask && !addedTaskIds.has(taskIdKey)) {
+          tasksToAdd.push(mappedTask);
+          addedTaskIds.add(taskIdKey);
+        }
+      });
+
+      if (tasksToAdd.length > 0) {
+        // Sorting of Tasks: 1. Completed, 2. Assigned/Active, 3. Pending
+        tasksToAdd.sort((a, b) => {
+          const getOrder = (status?: string) => {
+            const s = status?.toLowerCase();
+            if (s === "completed") return 1;
+            if (s === "pending" || !s) return 3;
+            return 2;
+          };
+          
+          const orderDiff = getOrder(a.status) - getOrder(b.status);
+          if (orderDiff !== 0) return orderDiff;
+          
+          if (a.type === "tutorial" && b.type === "mock_test") return -1;
+          if (a.type === "mock_test" && b.type === "tutorial") return 1;
+          
+          return 0;
+        });
+
+        // Compute needsAlert: past scheduled end date or viewing past date
+        const needsAlert = !isCompleted && (current < todayLocal || (chEnd !== null && current > chEnd));
+        
+        let isOrange = false;
+        let isRed = false;
+
+        if (needsAlert) {
+           if (maxAssignEnd && todayLocal <= maxAssignEnd) {
+              isOrange = true;
+           } else {
+              isRed = true;
+           }
+        }
+
+        const chapterRecord: ChapterDay = {
+          chapter_id: ch.chapter_id,
+          chapter_name: ch.chapter_name,
+          tasks: tasksToAdd,
+          is_overdue: isRed,
+          is_orange: isOrange,
+          end_date_raw: ch.planner.end_date,
+          original_index: ci
+        };
+
+        if ((isRed || isOrange) && !fallsOnDate) {
+          overdueDayChapters.push(chapterRecord);
+        } else {
+          normalDayChapters.push(chapterRecord);
+        }
+      }
+    });
+
+    let dayChapters = [...normalDayChapters, ...overdueDayChapters];
+    
+    // Sort logic ONLY for today's view (Latest end date top, response order desc fallback)
+    if (isThisDayToday) {
+      dayChapters.sort((a, b) => {
+        const tA = a.end_date_raw ? new Date(a.end_date_raw).getTime() : 0;
+        const tB = b.end_date_raw ? new Date(b.end_date_raw).getTime() : 0;
+        if (tB !== tA) return tB - tA;
+        return (a.original_index ?? 0) - (b.original_index ?? 0);
+      });
+    }
 
     const avgProgress =
       dayChapters.length > 0
@@ -211,7 +335,11 @@ const DayCard: React.FC<{
         flex flex-col items-center gap-1.5
         transition-all duration-200 select-none
         ${isSelected
-          ? "bg-gradient-to-b from-[#BADA55]/30 to-[#BADA55]/10 border-[#BADA55] shadow-lg shadow-[#BADA55]/20 scale-[1.04]"
+          ? hasPending
+              ? "bg-red-50 border-red-300 shadow-lg shadow-red-500/20 scale-[1.04]"
+              : allDone
+                  ? "bg-green-50 border-green-300 shadow-lg shadow-green-500/20 scale-[1.04]"
+                  : "bg-gradient-to-b from-[#BADA55]/30 to-[#BADA55]/10 border-[#BADA55] shadow-lg shadow-[#BADA55]/20 scale-[1.04]"
           : isToday
             ? "bg-gradient-to-b from-white to-gray-50 border-primary shadow-md"
             : allDone
@@ -227,17 +355,39 @@ const DayCard: React.FC<{
           Today
         </span>
       )}
-      <p className={`text-[9px] font-black uppercase tracking-widest mt-1 ${isSelected ? "text-[#6a9000]" : isToday ? "text-primary" : "text-gray-400"
+      <p className={`text-[9px] font-black uppercase tracking-widest mt-1 ${
+        isSelected 
+          ? hasPending 
+              ? "text-red-500" 
+              : allDone 
+                  ? "text-green-600" 
+                  : "text-[#6a9000]"
+          : isToday 
+            ? "text-primary" 
+            : "text-gray-400"
         }`}>
         {day.day}
       </p>
-      <p className={`text-sm font-extrabold leading-none ${isSelected || isToday ? "text-primary" : "text-gray-700"
+      <p className={`text-sm font-extrabold leading-none ${
+        isSelected 
+          ? hasPending
+              ? "text-red-600"
+              : allDone
+                  ? "text-green-700"
+                  : "text-primary"
+          : isToday 
+            ? "text-primary" 
+            : "text-gray-700"
         }`}>
         {formatDate(day.date)}
       </p>
       {/* Status dot */}
       <span className={`w-2 h-2 rounded-full mt-1 ${isSelected
-        ? "bg-[#BADA55]"
+        ? hasPending
+            ? "bg-red-500"
+            : allDone
+                ? "bg-green-500"
+                : "bg-[#BADA55]"
         : allDone
           ? "bg-green-500"
           : hasPending
@@ -290,22 +440,54 @@ const TaskRow: React.FC<{ task: Task; onClick?: () => void }> = ({
     )}
 
     {/* ✅ NEW BUTTON */}
-    {task.type === "mock_test" && (
-      <button
-        onClick={(e) => {
-          e.stopPropagation(); // prevent row click conflict
-          onClick?.();
-        }}
-        disabled={!(task.status === "assigned" || task.status === "completed")}
-        className={`ml-auto text-[10px] px-2 py-1 font-semibold rounded-md transition-all duration-200 ${
-          task.status === "assigned" || task.status === "completed"
-            ? "bg-[#BADA55] text-[#2b3a00] hover:bg-[#a8c94a] hover:shadow-sm"
-            : "bg-gray-200 text-gray-400 cursor-not-allowed"
-        }`}
-      >
-        {task.status === "completed" ? "Retake Test" : "Take Test"}
-      </button>
-    )}
+    {task.type === "mock_test" && (() => {
+      let btnText = "Take Test";
+      let btnClasses = "bg-[#BADA55] text-[#2b3a00] hover:bg-[#a8c94a] hover:shadow-sm";
+      let isDisabled = !(task.status === "assigned" || task.status === "completed");
+
+      if (task.status === "completed") {
+        btnText = "Retake Test";
+        btnClasses = "bg-green-500 text-white hover:bg-green-600 hover:shadow-sm";
+        isDisabled = false;
+      } else if (task.assignment_end_date) {
+        const todayD = new Date();
+        todayD.setHours(0, 0, 0, 0);
+        const endD = new Date(task.assignment_end_date);
+        endD.setHours(0, 0, 0, 0);
+        const diffDays = Math.floor((todayD.getTime() - endD.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (diffDays > 0) {
+          btnText = "Expired";
+          btnClasses = "bg-red-500 text-white cursor-not-allowed";
+          isDisabled = true;
+        } else if (diffDays >= -5 && diffDays <= 0) {
+          btnText = "Take Test";
+          btnClasses = "bg-orange-400 text-white hover:bg-orange-500 hover:shadow-sm";
+          isDisabled = false;
+        } else {
+          btnText = "Take Test";
+          btnClasses = "bg-[#BADA55] text-[#2b3a00] hover:bg-[#a8c94a] hover:shadow-sm";
+          isDisabled = false;
+        }
+      } else {
+        if (isDisabled) {
+          btnClasses = "bg-gray-200 text-gray-400 cursor-not-allowed";
+        }
+      }
+
+      return (
+        <button
+          onClick={(e) => {
+            e.stopPropagation(); // prevent row click conflict
+            onClick?.();
+          }}
+          disabled={isDisabled}
+          className={`ml-auto text-[10px] px-2 py-1 font-semibold rounded-md transition-all duration-200 flex-shrink-0 ${btnClasses}`}
+        >
+          {btnText}
+        </button>
+      );
+    })()}
   </div>
 );
 
@@ -320,16 +502,20 @@ const ChapterAccordion: React.FC<{
   const allDone = chapter.tasks.every((t) => t.progress >= 100);
 
   return (
-    <div className={`rounded-2xl overflow-hidden border transition-all duration-200 shadow-sm hover:shadow-md ${allDone ? "border-green-200 bg-green-50/40" : "border-gray-100 bg-white"}`}>
+    <div className={`rounded-2xl overflow-hidden border transition-all duration-200 shadow-sm hover:shadow-md ${allDone ? "border-green-200 bg-green-50/40" : chapter.is_overdue ? "border-red-200 bg-red-50" : chapter.is_orange ? "border-orange-200 bg-orange-50/50" : "border-gray-100 bg-white"}`}>
       <button
         onClick={() => setOpen((p) => !p)}
         className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50/80 transition-colors"
       >
-        <span className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold ${allDone ? "bg-green-500 text-white" : "bg-[#BADA55]/20 text-[#6a9000]"}`}>
+        <span className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold ${allDone ? "bg-green-500 text-white" : chapter.is_overdue ? "bg-red-100 text-red-500" : chapter.is_orange ? "bg-orange-100 text-orange-500" : "bg-[#BADA55]/20 text-[#6a9000]"}`}>
           {index + 1}
         </span>
-        <span className="flex-1 font-semibold text-sm text-primary flex items-center gap-2">
-          <span>{chapter.chapter_name}</span>
+        <span className={`flex-1 font-semibold text-sm flex items-center gap-2 ${chapter.is_overdue ? "text-red-500" : chapter.is_orange ? "text-orange-500" : "text-primary"}`}>
+          <span>
+            {chapter.chapter_name}{" "}
+            {chapter.is_overdue && <span className="text-[10px] text-red-500 font-bold ml-1 uppercase">(Expired)</span>}
+            {chapter.is_orange && <span className="text-[10px] text-orange-500 font-bold ml-1 uppercase">(Pending)</span>}
+          </span>
           {allDone && (
             <span className="material-symbols-outlined text-green-500" style={{ fontSize: 16, fontVariationSettings: "'FILL' 1" }}>
               check_circle
