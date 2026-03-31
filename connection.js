@@ -72,6 +72,7 @@ export const GET_APIS = {
   teacher_top_bottom_students: `${BASE_URL}parent_teacher/dashboard/top-bottom-students`,
 
   teacher_profile: `${BASE_URL}parent_teacher/dashboard/teacher-profile`,
+  student_profile: `${BASE_URL}parent_teacher/dashboard/teacher-profile`,
 
   // Learning Planner for teacher and parent
   get_teacher_learning_planner: `${BASE_URL}learning/teacher/learning_planner`,
@@ -108,6 +109,8 @@ export const GET_APIS = {
 
   // Study Material
   get_study_material: `${BASE_URL}parent_teacher/get_study_material_v3`,
+  get_student_subjects_tab_info: `${BASE_URL}learning/get_student_subjects_tab_info`,
+
 };
 
 export const POST_APIS = {

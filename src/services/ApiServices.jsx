@@ -513,6 +513,9 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.teacher_profile);
   }
 
+    getStudentProfile() {
+    return axiosInstance.get(GET_APIS.student_profile);
+  }
   getParentStrengthWeakness(student_id) {
     return axiosInstance.get(GET_APIS.parent_strength_weakness, {
       params: { student_id },
@@ -530,6 +533,12 @@ class ApiServices {
   getParentProfile() {
     return axiosInstance.get(GET_APIS.parent_profile);
   }
+
+  getStudentSubjectsTabInfo() {
+    return axiosInstance.get(GET_APIS.get_student_subjects_tab_info);
+  }
+
+
 
   // =======================
   // BLOGS APIs
