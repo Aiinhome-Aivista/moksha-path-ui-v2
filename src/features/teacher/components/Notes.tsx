@@ -434,7 +434,7 @@ const Notes: React.FC<NotesProps> = ({
         <p className="text-xs mt-1">
           Select a chapter and topic from the sidebar to load notes
         </p>
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <label className="flex items-center gap-2 cursor-pointer bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#A3C627] transition-colors">
             <span>Upload PDF</span>
             <input
@@ -444,7 +444,7 @@ const Notes: React.FC<NotesProps> = ({
               onChange={handleFileUpload}
             />
           </label>
-        </div>
+        </div> */}
       </div>
     );
   }

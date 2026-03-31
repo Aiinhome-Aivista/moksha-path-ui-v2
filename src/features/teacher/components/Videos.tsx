@@ -49,12 +49,12 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
         <p className="text-xs mt-1">
           Select a chapter and topic from the sidebar to load videos
         </p>
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <label className="flex items-center gap-2 cursor-pointer bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#A3C627] transition-colors">
             <span>Upload Video</span>
             <input type="file" className="hidden" accept="video/*" onChange={handleFileUpload} />
           </label>
-        </div>
+        </div> */}
       </div>
     );
   }
