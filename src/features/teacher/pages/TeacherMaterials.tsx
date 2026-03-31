@@ -188,7 +188,8 @@ const TeacherMaterials = () => {
       .filter((m: any) => m.file_type === "link")
       .map((m: any) => ({
         title: m.title,
-        url: m.resource
+        url: m.resource,
+        thumbnail: m.thumbnail,
       })),
     [filteredMaterialItems]
   );

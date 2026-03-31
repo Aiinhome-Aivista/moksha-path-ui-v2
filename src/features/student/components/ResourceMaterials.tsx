@@ -53,13 +53,14 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
   //     return null;
   // };
   const getThumbnail = (url: string) => {
+    if (!url) return null;
     try {
-      const videoId = new URL(url).searchParams.get("v");
-
-      if (videoId) {
-        return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+      const regex =
+        /(?:v=|\/embed\/|youtu\.be\/|\/v\/|\/e\/|watch\?v=|\/watch\?feature=player_embedded&v=)([a-zA-Z0-9_-]{11})/;
+      const match = url.match(regex);
+      if (match) {
+        return `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg`;
       }
-
       return null;
     } catch {
       return null;

@@ -4,7 +4,8 @@ import { Play, ExternalLink, Loader2, ChevronLeft, ChevronRight } from "lucide-r
 export interface YouTubeLink {
   title: string;
   url: string;
-  duration?: string; // Optional duration field
+  duration?: string;
+  thumbnail?: string | null;
 }
 
 interface ResourceMaterialsProps {
@@ -73,13 +74,14 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
   //     return null;
   // };
   const getThumbnail = (url: string) => {
+    if (!url) return null;
     try {
-      const videoId = new URL(url).searchParams.get("v");
-
-      if (videoId) {
-        return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+      const regex =
+        /(?:v=|\/embed\/|youtu\.be\/|\/v\/|\/e\/|watch\?v=|\/watch\?feature=player_embedded&v=)([a-zA-Z0-9_-]{11})/;
+      const match = url.match(regex);
+      if (match) {
+        return `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg`;
       }
-
       return null;
     } catch {
       return null;
@@ -103,7 +105,7 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {currentVideos.map((link, index) => {
-          const thumbnail = getThumbnail(link.url);
+          const thumbnail = link.thumbnail || getThumbnail(link.url);
 
           return (
             <a
