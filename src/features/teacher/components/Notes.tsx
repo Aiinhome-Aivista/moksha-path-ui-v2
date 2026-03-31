@@ -1,9 +1,15 @@
 import React, { useState } from "react";
 import {
   StickyNote,
+  ChevronDown,
+  ChevronUp,
   Loader2,
   ChevronLeft,
   ChevronRight,
+  FileText,
+  FileSpreadsheet,
+  Link as LinkIcon,
+  X,
   Upload,
 } from "lucide-react";
 
@@ -13,12 +19,104 @@ export interface NoteData {
   content: any; // Can be string, array, or object
 }
 
+export interface StudyMaterialItem {
+  id: number;
+  title: string;
+  file_name: string | null;
+  file_type: string; // "study_material" | "practice_material" | "link"
+  file_url: string | null;
+  link_url: string | null;
+  resource: string;
+  section_id: number;
+  section_name?: string;
+  subject_id?: number;
+  subject_name?: string;
+  uploaded_at: string;
+  uploaded_by: number;
+}
+
 interface NotesProps {
   notes?: NoteData[];
+  studyMaterials?: StudyMaterialItem[];
   isLoading?: boolean;
 }
 
 const ITEMS_PER_PAGE = 8;
+
+// Build full URL for file downloads
+const getFullResourceUrl = (resource: string): string => {
+  if (!resource) return "#";
+  // If already a full URL (link type), return as-is
+  if (resource.startsWith("http://") || resource.startsWith("https://")) {
+    return resource;
+  }
+  // For file uploads, prepend the API base URL (without /api/v1/)
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+  // Remove trailing /api/v1/ to get the domain
+  const domainUrl = baseUrl.replace(/\/api\/v1\/?$/, "");
+  return `${domainUrl}${resource}`;
+};
+
+// Get icon for file type
+const getFileIcon = (item: StudyMaterialItem) => {
+  if (item.file_type === "link") {
+    return <LinkIcon size={18} className="text-blue-500" />;
+  }
+  const fileName = item.file_name || item.resource || "";
+  if (fileName.endsWith(".xlsx") || fileName.endsWith(".xls")) {
+    return <FileSpreadsheet size={18} className="text-green-600" />;
+  }
+  return <FileText size={18} className="text-red-500" />;
+};
+
+// Get badge color for file type
+const getTypeBadge = (fileType: string) => {
+  switch (fileType) {
+    case "study_material":
+      return {
+        label: "Study Material",
+        bg: "bg-blue-50",
+        text: "text-blue-700",
+        border: "border-blue-200",
+      };
+    case "practice_material":
+      return {
+        label: "Practice Material",
+        bg: "bg-green-50",
+        text: "text-green-700",
+        border: "border-green-200",
+      };
+    case "link":
+      return {
+        label: "External Link",
+        bg: "bg-purple-50",
+        text: "text-purple-700",
+        border: "border-purple-200",
+      };
+    default:
+      return {
+        label: fileType,
+        bg: "bg-gray-50",
+        text: "text-gray-700",
+        border: "border-gray-200",
+      };
+  }
+};
+
+// Format date
+const formatDate = (dateStr: string): string => {
+  if (!dateStr) return "";
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+};
 
 // Recursively render note content in a readable format
 const RenderNoteContent: React.FC<{ data: any; depth?: number }> = ({
@@ -120,18 +218,167 @@ const RenderNoteContent: React.FC<{ data: any; depth?: number }> = ({
   return <p className="text-sm text-gray-700">{String(data)}</p>;
 };
 
-const Notes: React.FC<NotesProps> = ({ notes = [], isLoading = false }) => {
+// ── Study Materials Card Component ──
+const StudyMaterialCard: React.FC<{
+  item: StudyMaterialItem;
+  onClick: (item: StudyMaterialItem) => void;
+}> = ({ item, onClick }) => {
+  const badge = getTypeBadge(item.file_type);
+  const isLink = item.file_type === "link";
+
+  return (
+    <div
+      onClick={() => onClick(item)}
+      className="group block bg-white rounded-xl border border-gray-200 p-4 hover:shadow-lg hover:border-[#F27927]/40 transition-all duration-200 cursor-pointer"
+    >
+      <div className="flex items-start gap-3">
+        {/* Icon */}
+        <div className="w-10 h-10 rounded-lg bg-gray-50 group-hover:bg-orange-50 flex items-center justify-center flex-shrink-0 transition-colors">
+          {getFileIcon(item)}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <h4 className="text-sm font-semibold text-gray-800 truncate m-0 mb-1">
+            {item.title}
+          </h4>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Type badge */}
+            <span
+              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${badge.bg} ${badge.text} ${badge.border}`}
+            >
+              {badge.label}
+            </span>
+
+            {/* File name (if different from title) */}
+            {item.file_name && item.file_name !== item.title && (
+              <span className="text-[10px] text-gray-400 truncate max-w-[150px]">
+                {item.file_name}
+              </span>
+            )}
+
+            {/* Date */}
+            {item.uploaded_at && (
+              <span className="text-[10px] text-gray-400">
+                {formatDate(item.uploaded_at)}
+              </span>
+            )}
+          </div>
+
+          {/* Link URL preview for link type */}
+          {isLink && item.link_url && (
+            <p className="text-[11px] text-blue-500 truncate mt-1 m-0">
+              {item.link_url}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Document Preview Modal ──
+const DocumentPreviewModal: React.FC<{
+  item: StudyMaterialItem | null;
+  onClose: () => void;
+}> = ({ item, onClose }) => {
+  if (!item) return null;
+
+  let resourceUrl = getFullResourceUrl(item.resource);
+  const isExcel =
+    item.file_name?.endsWith(".xlsx") || item.file_name?.endsWith(".xls");
+  const isPdf =
+    item.file_name?.toLowerCase().endsWith(".pdf") ||
+    item.resource?.toLowerCase().endsWith(".pdf");
+
+  // Disable PDF controls (download, print, etc.) using viewer parameters
+  if (isPdf) {
+    resourceUrl = `${resourceUrl}#toolbar=0&navpanes=0`;
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] bg-white flex flex-col animate-in fade-in duration-200"
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      {/* Modal Header */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 bg-gray-50 flex-shrink-0 shadow-sm z-10">
+        <div className="flex items-center gap-3 min-w-0">
+          {getFileIcon(item)}
+          <div className="min-w-0">
+            <h3 className="text-base font-bold text-gray-800 truncate m-0">
+              {item.title}
+            </h3>
+            {item.file_name && item.file_name !== item.title && (
+              <p className="text-xs text-gray-400 truncate m-0">
+                {item.file_name}
+              </p>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors border-none bg-transparent cursor-pointer flex-shrink-0"
+        >
+          <X size={20} />
+        </button>
+      </div>
+
+      {/* Modal Body */}
+      <div className="flex-1 overflow-hidden bg-gray-100 relative">
+        {isExcel ? (
+          <div className="flex flex-col items-center justify-center h-full gap-4">
+            <FileSpreadsheet size={48} className="text-green-600" />
+            <p className="text-sm text-gray-600 font-medium">
+              Excel files cannot be previewed directly.
+            </p>
+            <a
+              href={resourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-[#F27927] text-white rounded-lg text-sm font-semibold no-underline hover:bg-[#d96820] transition-colors"
+            >
+              Open in New Tab
+            </a>
+          </div>
+        ) : (
+          <iframe
+            src={resourceUrl}
+            title={item.title}
+            className="w-full h-full border-none bg-white"
+            onContextMenu={(e) => e.preventDefault()}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+const Notes: React.FC<NotesProps> = ({
+  notes = [],
+  studyMaterials = [],
+  isLoading = false,
+}) => {
   const [expandedNotes, setExpandedNotes] = useState<Set<number>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
-  const [uploadedNotes, setUploadedNotes] = useState<NoteData[]>([]);
+  const [previewItem, setPreviewItem] = useState<StudyMaterialItem | null>(null);
+  const [uploadedNotes, setUploadedNotes] = useState<StudyMaterialItem[]>([]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const newNote: NoteData = {
-        topic_id: Date.now(),
-        topic_title: file.name,
-        content: "File uploaded locally.",
+      const newNote: StudyMaterialItem = {
+        id: Date.now(),
+        title: file.name,
+        file_name: file.name,
+        file_type: "study_material",
+        file_url: URL.createObjectURL(file),
+        link_url: null,
+        resource: URL.createObjectURL(file),
+        section_id: 1,
+        uploaded_at: new Date().toISOString(),
+        uploaded_by: 0,
       };
       setUploadedNotes((prev) => [...prev, newNote]);
     }
@@ -146,20 +393,29 @@ const Notes: React.FC<NotesProps> = ({ notes = [], isLoading = false }) => {
     });
   };
 
-  const allNotes = [...notes, ...uploadedNotes];
-
   // Pagination Logic
-  const totalPages = Math.ceil(allNotes.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(notes.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentNotes = allNotes.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const currentNotes = notes.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      // Optionally scroll to top of notes list
-      // window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
+
+  const allStudyMaterials = [...studyMaterials, ...uploadedNotes];
+
+  // Separate study materials by type
+  const studyMats = allStudyMaterials.filter(
+    (m) => m.file_type === "study_material",
+  );
+  const practiceMats = allStudyMaterials.filter(
+    (m) => m.file_type === "practice_material",
+  );
+
+  const hasStudyMaterials = studyMats.length > 0 || practiceMats.length > 0;
+  const hasNotes = notes.length > 0;
 
   if (isLoading) {
     return (
@@ -170,7 +426,7 @@ const Notes: React.FC<NotesProps> = ({ notes = [], isLoading = false }) => {
     );
   }
 
-  if (allNotes.length === 0) {
+  if (!hasNotes && !hasStudyMaterials) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-gray-400">
         <StickyNote size={40} className="mb-3 opacity-50" />
@@ -195,121 +451,190 @@ const Notes: React.FC<NotesProps> = ({ notes = [], isLoading = false }) => {
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-4">
-        <StickyNote size={20} className="text-[#F27927]" />
-        <h2 className="text-lg font-semibold text-gray-800">Notes</h2>
-        <span className="px-4 py-2 rounded-full text-xs  bg-[#464646] text-white font-bold hover:bg-[#555555]">
-          {allNotes.length} notes
-        </span>
-        {/* Page indicator (optional, small top right) */}
-        {totalPages > 1 && (
-          <span className="text-xs text-gray-500 ">
-            Page {currentPage} of {totalPages}
-          </span>
-        )}
-        <label className="px-4 py-2 rounded-full text-xs  bg-[#A3C627] text-left text-primary font-bold ml-auto flex items-center gap-2 cursor-pointer transition-colors">
-          <Upload size={14} />
-          <span>Upload</span>
-          <input
-            type="file"
-            className="hidden"
-            accept="application/pdf"
-            onChange={handleFileUpload}
-          />
-        </label>
-      </div>
-
-      <div className="space-y-4 min-h-[500px]">
-        {" "}
-        {/* Added min-height to reduce layout shift */}
-        {currentNotes.map((note) => {
-          const isExpanded = expandedNotes.has(note.topic_id);
-
-          return (
-            <div
-              key={note.topic_id}
-              className="bg-white rounded-lg border-l-4 border-l-[#F27927] border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
-            >
-              {/* Header - clickable */}
-              <button
-                onClick={() => toggleNote(note.topic_id)}
-                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors text-left"
-              >
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
-                    <StickyNote size={20} className="text-[#F27927]" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-base text-gray-800">
-                      {note.topic_title}
-                    </h3>
-                  </div>
-                </div>
-              </button>
-
-              {/* Expandable content */}
-              {isExpanded && (
-                <div className="px-5 pb-5 border-t border-gray-200 bg-gray-50">
-                  <div className="pt-4">
-                    <RenderNoteContent data={note.content} />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            
-          );
-        })}
-      </div>
-
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-8 mb-4">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={`p-2 rounded-lg border flex items-center justify-center transition-colors ${
-              currentPage === 1
-                ? "border-gray-100 text-gray-300 cursor-not-allowed"
-                : "border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#F27927]"
-            }`}
-            title="Previous Page"
-          >
-            <ChevronLeft size={20} />
-          </button>
-
-          <div className="flex items-center gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              // Logic to show limited page numbers if many pages (e.g., 1, 2, ..., 10) can be added here
-              // For now, showing all up to a reasonable amount, user likely won't have 100s of pages of notes per topic
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                className={`w-8 h-8 rounded-lg text-sm font-medium flex items-center justify-center transition-all ${
-                  currentPage === page
-                    ? "bg-[#F27927] text-white shadow-md shadow-orange-100"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
+      {/* ── Study Materials Section (Dynamic Files) ── */}
+      {(hasStudyMaterials || uploadedNotes.length > 0) && (
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <FileText size={20} className="text-[#F27927]" />
+            <h2 className="text-lg font-semibold text-gray-800">
+              Study Materials
+            </h2>
+            <span className="text-xs bg-orange-50 text-[#F27927] px-2 py-0.5 rounded-full font-medium">
+              {allStudyMaterials.length} files
+            </span>
+            <label className="px-4 py-2 rounded-full text-xs bg-[#A3C627] text-primary font-bold ml-auto flex items-center gap-2 cursor-pointer transition-colors shadow-sm hover:shadow-md">
+              <Upload size={14} />
+              <span>Upload</span>
+              <input
+                type="file"
+                className="hidden"
+                accept="application/pdf"
+                onChange={handleFileUpload}
+              />
+            </label>
           </div>
 
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`p-2 rounded-lg border flex items-center justify-center transition-colors ${
-              currentPage === totalPages
-                ? "border-gray-100 text-gray-300 cursor-not-allowed"
-                : "border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#F27927]"
-            }`}
-            title="Next Page"
-          >
-            <ChevronRight size={20} />
-          </button>
+          {/* Study Material */}
+          {studyMats.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                📚 Study Material
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {studyMats.map((item) => (
+                  <StudyMaterialCard key={item.id} item={item} onClick={setPreviewItem} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Practice Material */}
+          {practiceMats.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                📝 Practice Material
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {practiceMats.map((item) => (
+                  <StudyMaterialCard key={item.id} item={item} onClick={setPreviewItem} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Divider between study materials and notes */}
+          {hasNotes && (
+            <div className="border-t border-gray-200 mt-6 mb-6" />
+          )}
         </div>
       )}
+
+      {/* ── AI-Generated Notes Section ── */}
+      {hasNotes && (
+        <>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <StickyNote size={20} className="text-[#F27927]" />
+              <h2 className="text-lg font-semibold text-gray-800">AI Notes</h2>
+              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                {notes.length} notes
+              </span>
+            </div>
+
+            {/* Page indicator */}
+            {totalPages > 1 && (
+              <span className="text-xs text-gray-500">
+                Page {currentPage} of {totalPages}
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-4 min-h-[500px]">
+            {currentNotes.map((note) => {
+              const isExpanded = expandedNotes.has(note.topic_id);
+
+              return (
+                <div
+                  key={note.topic_id}
+                  className="bg-white rounded-lg border-l-4 border-l-[#F27927] border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  {/* Header - clickable */}
+                  <button
+                    onClick={() => toggleNote(note.topic_id)}
+                    className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors text-left border-none bg-transparent cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                        <StickyNote size={20} className="text-[#F27927]" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-base text-gray-800">
+                          {note.topic_title}
+                        </h3>
+                      </div>
+                    </div>
+                    {isExpanded ? (
+                      <ChevronUp
+                        size={20}
+                        className="text-[#F27927] flex-shrink-0"
+                      />
+                    ) : (
+                      <ChevronDown
+                        size={20}
+                        className="text-gray-400 flex-shrink-0"
+                      />
+                    )}
+                  </button>
+
+                  {/* Expandable content */}
+                  {isExpanded && (
+                    <div className="px-5 pb-5 border-t border-gray-200 bg-gray-50">
+                      <div className="pt-4">
+                        <RenderNoteContent data={note.content} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8 mb-4">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`p-2 rounded-lg border flex items-center justify-center transition-colors ${
+                  currentPage === 1
+                    ? "border-gray-100 text-gray-300 cursor-not-allowed"
+                    : "border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#F27927]"
+                }`}
+                title="Previous Page"
+              >
+                <ChevronLeft size={20} />
+              </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`w-8 h-8 rounded-lg text-sm font-medium flex items-center justify-center transition-all ${
+                        currentPage === page
+                          ? "bg-[#F27927] text-white shadow-md shadow-orange-100"
+                          : "text-gray-600 hover:bg-gray-100"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ),
+                )}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-lg border flex items-center justify-center transition-colors ${
+                  currentPage === totalPages
+                    ? "border-gray-100 text-gray-300 cursor-not-allowed"
+                    : "border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#F27927]"
+                }`}
+                title="Next Page"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Document Preview Modal */}
+      <DocumentPreviewModal
+        item={previewItem}
+        onClose={() => setPreviewItem(null)}
+      />
     </div>
   );
 };

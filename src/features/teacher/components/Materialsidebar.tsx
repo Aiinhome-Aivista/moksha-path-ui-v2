@@ -8,10 +8,12 @@ interface Props {
 
     boardOptions?: string[];
     classOptions?: string[];
+    subjectOptions?: string[];
     sectionOptions?: string[];
-
+    
     setBoard?: (v: string) => void;
     setClassName?: (v: string) => void;
+    setSubject?: (v: string) => void;
     setSection?: (v: string) => void;
 
     activeSubject: string;
@@ -34,7 +36,9 @@ const MaterialsSidebar: React.FC<Props> = ({
     setBoard,
     setClassName,
     setSection,
-    activeSubject: _activeSubject, // currently unused but may be useful later
+    activeSubject: subject, // Renamed for clarity in sidebar logic
+    subjectOptions,
+    setSubject,
     chapters,
     coreTopics,
     selectedChapters,
@@ -132,8 +136,30 @@ const MaterialsSidebar: React.FC<Props> = ({
                     </div>
                 </div>
 
+                {/* Subject */}
+                <div className="relative">
+                    <p className="text-sm font-semibold text-gray-800 mb-1">Choose Subject</p>
+                    <div className="w-full flex items-center pb-2 border-b border-gray-300 text-sm font-medium">
+                        {setSubject && subjectOptions ? (
+                            <select
+                                value={subject}
+                                onChange={(e) => setSubject(e.target.value)}
+                                className="text-sm bg-white focus:outline-none"
+                            >
+                                {subjectOptions.map((s) => (
+                                    <option key={s} value={s}>
+                                        {s}
+                                    </option>
+                                ))}
+                            </select>
+                        ) : (
+                            <span className="text-gray-700">{subject}</span>
+                        )}
+                    </div>
+                </div>
+
                 {/* Section (optional) */}
-                {setSection && sectionOptions && (
+                {/* {setSection && sectionOptions && (
                     <div className="relative">
                         <p className="text-sm font-semibold text-gray-800 mb-1">Choose your Section</p>
                         <div className="w-full flex items-center pb-2 border-b border-gray-300 text-sm font-medium">
@@ -151,7 +177,7 @@ const MaterialsSidebar: React.FC<Props> = ({
                             </select>
                         </div>
                     </div>
-                )}
+                )} */}
 
                 {/* Difficulty */}
                 {/* <div className="relative">
@@ -186,7 +212,7 @@ const MaterialsSidebar: React.FC<Props> = ({
             </div>
 
             {/* Chapters */}
-            <div className="mb-6 pt-2">
+            {/* <div className="mb-6 pt-2">
                 <div className="flex justify-between items-center mb-3">
                     <h3 className="font-semibold text-gray-800"> Chapters</h3>
                     <button
@@ -218,10 +244,10 @@ const MaterialsSidebar: React.FC<Props> = ({
                         ))}
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             {/* Core Topics */}
-            <div>
+            {/* <div>
                 <div className="flex justify-between items-center mb-3">
                     <h3 className="font-semibold text-gray-800">Core Topics</h3>
                     <button
@@ -253,7 +279,7 @@ const MaterialsSidebar: React.FC<Props> = ({
                         ))}
                     </div>
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 };

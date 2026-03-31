@@ -108,6 +108,7 @@ export const GET_APIS = {
 
   // Study Material
   get_study_material: `${BASE_URL}parent_teacher/get_study_material_v3`,
+  get_teacher_study_material_v4: `${BASE_URL}parent_teacher/get_teacher_study_material`,
 };
 
 export const POST_APIS = {

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import IconChat from "../../../assets/icon/chat2.svg";
+// import { useNavigate } from "react-router-dom";
+// import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
 import { Calendar, Upload, Save, FileText, FileSpreadsheet, Link, X, Loader2 } from "lucide-react";
 import SearchableSelect from "../../../components/common/SearchableSelect";
 import { useToast } from "../../../app/providers/ToastProvider";
 
-type Priority = "High" | "Medium" | "Low";
+// type Priority = "High" | "Medium" | "Low";
 
 interface ApiChapter {
   id: number;
