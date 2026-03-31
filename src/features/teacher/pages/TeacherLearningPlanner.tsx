@@ -80,7 +80,7 @@ const TeacherLearningPlanner: React.FC = () => {
     file: File | null;
     linkUrl: string;
     displayName: string;
-    description: string;
+    description: string; // <-- Description state bound here
   }>({
     isOpen: false,
     chapterId: null,
@@ -125,7 +125,6 @@ const TeacherLearningPlanner: React.FC = () => {
       showToast("Please enter a valid URL.", "error");
       return;
     }
-    // ✅ NEW: Mandatory Display Name validation
     if (!displayName.trim()) {
       showToast("Please enter a display name.", "error");
       return;
@@ -151,7 +150,7 @@ const TeacherLearningPlanner: React.FC = () => {
     try {
       const formData = new FormData();
 
-      // 1. Append Required IDs
+      // 1. Append Required IDs (Matches your Postman screenshot perfectly)
       formData.append("chapter_id", chapterId.toString());
       formData.append("board_id", stats?.board_id?.toString() || "");
       formData.append("institute_id", stats?.institute_id?.toString() || "");
@@ -165,7 +164,7 @@ const TeacherLearningPlanner: React.FC = () => {
       const currentSubject = subjects.find(s => s.subject_name === activeSubject);
       formData.append("subject_id", currentSubject?.subject_id?.toString() || "");
 
-      // 2. Append Title & Description
+      // 2. Append Title & Description (Exactly as shown in your Postman body)
       formData.append("title", finalName);
       formData.append("description", description.trim());
 
