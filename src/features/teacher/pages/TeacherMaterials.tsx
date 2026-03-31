@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import MaterialsSidebar from "../components/Materialsidebar";
 import MaterialsHeader from "../components/MaterialHeader";
 import ResourceMaterials from "../components/Videos";
-import Tests from "../components/TeacherTests";
+// import Tests from "../components/TeacherTests";
 import Notes from "../components/Notes";
 import ApiServices from "../../../services/ApiServices";
 // import IconChat from "../../../assets/icon/chat2.svg";
@@ -74,7 +74,7 @@ const TeacherMaterials = () => {
   const [subjectOptions, setSubjectOptions] = useState<string[]>([]);
   const [isResourcesLoading, setIsResourcesLoading] = useState(false);
 
-  const resourceTypes = ["Videos", "Tests", "Notes"];
+  const resourceTypes = ["Videos", /* "Tests", */ "Notes"];
   const effectiveSubjectWisePlan = locationState?.subjectWisePlan || null;
 
 
@@ -473,33 +473,33 @@ const TeacherMaterials = () => {
   ]);
 
   // Get subject_id and chapter_ids for Tests component
-  const getSubjectId = () => {
-    if (!effectiveSubjectWisePlan || !activeSubject) return undefined;
-    const selectedSubjectPlan = effectiveSubjectWisePlan.find(
-      (plan: any) => plan.subject_name === activeSubject,
-    );
-    return selectedSubjectPlan?.subject_id;
-  };
+  // const getSubjectId = () => {
+  //   if (!effectiveSubjectWisePlan || !activeSubject) return undefined;
+  //   const selectedSubjectPlan = effectiveSubjectWisePlan.find(
+  //     (plan: any) => plan.subject_name === activeSubject,
+  //   );
+  //   return selectedSubjectPlan?.subject_id;
+  // };
 
-  const getSelectedChapterIds = () => {
-    if (selectedChapters.length === 0) return null;
-    const chapterIds = selectedChapters
-      .map((index) => chapters[index]?.chapter_id)
-      .filter((id) => id !== undefined) as number[];
-    return chapterIds.length > 0 ? chapterIds : null;
-  };
+  // const getSelectedChapterIds = () => {
+  //   if (selectedChapters.length === 0) return null;
+  //   const chapterIds = selectedChapters
+  //     .map((index) => chapters[index]?.chapter_id)
+  //     .filter((id) => id !== undefined) as number[];
+  //   return chapterIds.length > 0 ? chapterIds : null;
+  // };
 
-  const getSelectedChapterNames = () => {
-    if (selectedChapters.length === 0) return [];
-    return selectedChapters
-      .map((index) => chapters[index]?.name)
-      .filter((name) => name !== undefined) as string[];
-  };
+  // const getSelectedChapterNames = () => {
+  //   if (selectedChapters.length === 0) return [];
+  //   return selectedChapters
+  //     .map((index) => chapters[index]?.name)
+  //     .filter((name) => name !== undefined) as string[];
+  // };
 
-  const getClassId = () => {
-    if (locationState?.stats?.class_id) return locationState.stats.class_id;
-    return availableFilters?.classes?.find((c: any) => c.name === className)?.id;
-  };
+  // const getClassId = () => {
+  //   if (locationState?.stats?.class_id) return locationState.stats.class_id;
+  //   return availableFilters?.classes?.find((c: any) => c.name === className)?.id;
+  // };
 
   return (
     <div className="min-h-screen">
@@ -544,7 +544,7 @@ const TeacherMaterials = () => {
                 isLoading={isResourcesLoading}
               />
             )}
-            {activeResourceType === "Tests" && (
+            {/* {activeResourceType === "Tests" && (
               <Tests
                 subjectId={getSubjectId()}
                 subjectName={activeSubject}
@@ -561,7 +561,7 @@ const TeacherMaterials = () => {
                 classIds={getClassId() ? [getClassId()] : []}
                 stats={locationState?.stats}
               />
-            )}
+            )} */}
             {activeResourceType === "Notes" && (
               <Notes
                 studyMaterials={dynamicStudyMaterials}

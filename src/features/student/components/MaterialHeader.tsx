@@ -56,10 +56,10 @@ const MaterialsHeader: React.FC<Props> = ({
                 ))}
 
                 {onRefresh && (
-                    <button
+                  <button
                         onClick={onRefresh}
                         disabled={isRefreshing}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary border border-gray-200 rounded-full text-sm font-medium text-white hover:bg-[#A3C627] hover:text-white transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed group border-none cursor-pointer"
+                        className="flex items-center gap-2 px-4 py-2 bg-primary border border-gray-200 rounded-full text-sm font-medium text-white hover:bg-[#A3C627] hover:text-white hover:border-[#F27927]/30 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed group border-none cursor-pointer"
                         title="Refresh Materials"
                     >
                         <RotateCcw 
