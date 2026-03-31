@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 // import { useNavigate } from "react-router-dom";
-import IconChat from "../../../assets/icon/chat2.svg";
+// import IconChat from "../../../assets/icon/chat2.svg";
 import IconLamb from "../../../assets/icon/lamb.svg";
 import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
@@ -819,14 +819,14 @@ const ParentDashboard: React.FC = () => {
         </section>
       </div>
 
-      <div className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100]">
+      {/* <div className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100]">
         <button
           onClick={() => setIsChatOpen(true)}
           className="p-0 bg-transparent border-0 cursor-pointer"
         >
           <img src={IconChat} alt="Chat" className="w-[95px]" />
         </button>
-      </div>
+      </div> */}
       {isChatOpen && <Chat onClose={() => setIsChatOpen(false)} />}
     </div>
   );

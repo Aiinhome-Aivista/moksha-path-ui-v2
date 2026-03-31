@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import IconChat from "../../../assets/icon/chat2.svg";
+// import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
 import TestModalUpdated from "../components/TestModalUpdated";
@@ -919,11 +919,11 @@ const LearningPlanner: React.FC = () => {
       )}
 
       {/* ── Chat ────────────────────────────────────────────────────── */}
-      <div className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100]">
+      {/* <div className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100]">
         <button onClick={() => setIsChatOpen(true)} aria-label="Open chat" className="p-0 bg-transparent border-0 cursor-pointer">
           <img src={IconChat} alt="Chat" className="w-[95px]" />
         </button>
-      </div>
+      </div> */}
       {isChatOpen && <Chat onClose={() => setIsChatOpen(false)} />}
 
       <TestModalUpdated
@@ -948,7 +948,7 @@ const LearningPlanner: React.FC = () => {
               <CheckCircle size={32} className="text-green-500" />
             </div>
             <h3 className="text-xl font-bold text-primary mb-2">Assessment Submitted!</h3>
-            <p className="text-gray-500 text-sm mb-6">Your results are being processed and will be available soon in the "Tests" section.</p>
+            <p className="text-gray-500 text-sm mb-6">Your result is being processed and will be available soon in the <strong>Dashboard</strong></p>
             <button
               onClick={() => setShowResultComingSoon(false)}
               className="w-full px-6 py-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors"

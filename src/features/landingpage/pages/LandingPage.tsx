@@ -937,7 +937,7 @@ import end_comma_gray from "../../../assets/icon/end_comma_gray.svg";
 import IcoSearch from "../../../assets/icon/ico_search.svg";
 import IcoMenu from "../../../assets/icon/ico_menu.svg";
 import IconPlan from "../../../assets/icon/group4.svg";
-import IconChat from "../../../assets/icon/chat2.svg";
+// import IconChat from "../../../assets/icon/chat2.svg";
 import Chat from "../../auth/modal/chat";
 import Layer_school from "../../../assets/icon/Layer_school.svg";
 // import HeroRobot from "../../../assets/icon/hero.svg";
@@ -1120,12 +1120,12 @@ export default function LandingPage() {
       </div>
 
       {/* CHAT ICON BUTTON */}
-      <div
+      {/* <div
         className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100] cursor-pointer hover:scale-105 transition-transform"
         onClick={() => setIsChatOpen(true)}
       >
         <img src={IconChat} alt="Chat" className="w-[95px]" />
-      </div>
+      </div> */}
 
       {/* RENDER MODAL CONDITIONALLY */}
       {isChatOpen && <Chat onClose={() => setIsChatOpen(false)} />}

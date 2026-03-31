@@ -12,7 +12,7 @@ interface Props {
   setSelectedChapters: (v: number[]) => void;
   selectedTopics: number[];
   setSelectedTopics: (v: number[]) => void;
-  sectionName: { section_id: number; section_name: string }[];
+  sectionName: (string | { section_id: number; section_name: string })[];
 }
 
 const MaterialsSidebar: React.FC<Props> = ({
@@ -66,7 +66,7 @@ const MaterialsSidebar: React.FC<Props> = ({
     <div className="w-[280px] flex-shrink-0">
       {/* Tutor Image */}
       <div className="flex justify-start mb-2">
-        <img src="/guy.svg" alt="Tutor" />
+        <img src="/Guy.svg" alt="Tutor" />
       </div>
 
       {/* Filters */}
@@ -97,7 +97,7 @@ const MaterialsSidebar: React.FC<Props> = ({
           <div className="w-full flex items-center pb-2 border-b border-gray-300 text-sm font-medium">
             <span className="text-gray-700">
               {sectionName?.length
-                ? sectionName.map((s) => s.section_name).join(", ")
+                ? sectionName.map((s) => (typeof s === "string" ? s : s.section_name)).join(", ")
                 : "N/A"}
             </span>
           </div>
@@ -136,7 +136,7 @@ const MaterialsSidebar: React.FC<Props> = ({
       </div>
 
       {/* Chapters */}
-      <div className="mb-6 pt-2">
+      {/* <div className="mb-6 pt-2">
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-semibold text-gray-800"> Chapters</h3>
           <button
@@ -171,10 +171,10 @@ const MaterialsSidebar: React.FC<Props> = ({
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Core Topics */}
-      <div>
+      {/* <div>
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-semibold text-gray-800">Core Topics</h3>
           <button
@@ -211,7 +211,7 @@ const MaterialsSidebar: React.FC<Props> = ({
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

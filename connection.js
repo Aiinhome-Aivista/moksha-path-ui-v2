@@ -107,7 +107,7 @@ export const GET_APIS = {
   get_institute_admin_summary: `${BASE_URL}parent_teacher/institute_admin_summary`,
 
   // Study Material
-  get_study_material: `${BASE_URL}parent_teacher/get_study_material`,
+  get_study_material: `${BASE_URL}parent_teacher/get_study_material_v3`,
 };
 
 export const POST_APIS = {

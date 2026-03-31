@@ -636,22 +636,24 @@ const InstituteAdminProfile: React.FC = () => {
             })}
 
             {/* Add Profile Item */}
-            <div
-              className="flex flex-col items-center gap-2 group cursor-pointer shrink-0 transition-transform active:scale-95"
-              onClick={() => openSelectRole()}
-            >
-              <div className="relative w-14 h-14 rounded-full flex items-center justify-center text-lg font-light text-gray-400 border-2 border-dashed border-gray-200 hover:border-gray-300 hover:bg-gray-50 bg-gray-50/50 transition-all">
-                <PlusCircle size={24} strokeWidth={1} />
+            {(user?.role === "parent" || JSON.parse(localStorage.getItem("active_profile") || "{}")?.role_id === 2) && (
+              <div
+                className="flex flex-col items-center gap-2 group cursor-pointer shrink-0 transition-transform active:scale-95"
+                onClick={() => openSelectRole()}
+              >
+                <div className="relative w-14 h-14 rounded-full flex items-center justify-center text-lg font-light text-gray-400 border-2 border-dashed border-gray-200 hover:border-gray-300 hover:bg-gray-50 bg-gray-50/50 transition-all">
+                  <PlusCircle size={24} strokeWidth={1} />
+                </div>
+                <div className="flex flex-col items-center">
+                  <p className="text-[10px] font-bold text-gray-400 group-hover:text-gray-500">
+                    Add New
+                  </p>
+                  <p className="text-[8px] text-gray-300 font-medium uppercase tracking-tighter">
+                    Profile
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-col items-center">
-                <p className="text-[10px] font-bold text-gray-400 group-hover:text-gray-500">
-                  Add New
-                </p>
-                <p className="text-[8px] text-gray-300 font-medium uppercase tracking-tighter">
-                  Profile
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       )}

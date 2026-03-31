@@ -53,54 +53,6 @@ const demoChaptersData = [
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
     practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
   },
-  {
-    id: 3,
-    chapter: "Logarithm",
-    startDate: "--",
-    startDate_raw: "",
-    endDate: "--",
-    endDate_raw: "",
-    progress: 58,
-    completed: false,
-    testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-  },
-  {
-    id: 4,
-    chapter: "Geometry",
-    startDate: "--",
-    startDate_raw: "",
-    endDate: "--",
-    endDate_raw: "",
-    progress: 74,
-    completed: false,
-    testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-  },
-  {
-    id: 5,
-    chapter: "Trigonometry",
-    startDate: "--",
-    startDate_raw: "",
-    endDate: "--",
-    endDate_raw: "",
-    progress: 45,
-    completed: false,
-    testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-  },
-  {
-    id: 6,
-    chapter: "Trigonometry",
-    startDate: "--",
-    startDate_raw: "",
-    endDate: "--",
-    endDate_raw: "",
-    progress: 45,
-    completed: false,
-    testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
-    practiceMaterial: [] as { name: string; type: "pdf" | "excel" }[],
-  },
 ];
 
 const TeacherLearningPlanner: React.FC = () => {
@@ -108,37 +60,44 @@ const TeacherLearningPlanner: React.FC = () => {
   const [activeSubject, setActiveSubject] = useState("");
   const { showToast } = useToast();
 
-  // Changed to store objects so we can access IDs for the API payload
   const [classOptions, setClassOptions] = useState<{ id: number; name: string }[]>([]);
   const [sectionOptions, setSectionOptions] = useState<{ id: number; name: string }[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("");
   const [selectedSection, setSelectedSection] = useState<string>("");
 
   const [savingChapterId, setSavingChapterId] = useState<number | null>(null);
-  const [selectionModal, setSelectionModal] = useState<{ id: number } | null>(null);
   const [isMockModalOpen, setIsMockModalOpen] = useState(false);
   const [selectedMockChapterIds, setSelectedMockChapterIds] = useState<number[]>([]);
   const [demoChapters, setDemoChapters] = useState(demoChaptersData);
-const [isGeneratingTest, setIsGeneratingTest] = useState(false);
+  const [isGeneratingTest, setIsGeneratingTest] = useState(false);
+
+  // ─── UNIFIED UPLOAD MODAL STATE ────────────────────────────────────────────────
+  const [uploadForm, setUploadForm] = useState<{
+    isOpen: boolean;
+    chapterId: number | null;
+    category: "testMaterial" | "practiceMaterial";
+    sourceType: "file" | "link";
+    file: File | null;
+    linkUrl: string;
+    displayName: string;
+    description: string; // <-- Description state bound here
+  }>({
+    isOpen: false,
+    chapterId: null,
+    category: "testMaterial",
+    sourceType: "file",
+    file: null,
+    linkUrl: "",
+    displayName: "",
+    description: "", 
+  });
+
   useEffect(() => {
     if (isMockModalOpen) {
       const completedIds = demoChapters.filter((ch) => ch.completed).map((ch) => ch.id);
       setSelectedMockChapterIds(completedIds);
     }
   }, [isMockModalOpen, demoChapters]);
-
-  const [uploadModal, setUploadModal] = useState<{
-    id: number;
-    field: "testMaterial" | "practiceMaterial";
-  } | null>(null);
-
-  const [namingModal, setNamingModal] = useState<{
-    id: number;
-    field: "testMaterial" | "practiceMaterial";
-    file?: File;
-    isLink?: boolean;
-  } | null>(null);
-  const [namingValue, setNamingValue] = useState("");
 
   const toggleDemoChapter = (id: number) => {
     setSubjects((prev) =>
@@ -153,38 +112,35 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
     );
   };
 
-  const handleFileUpload = (
-    id: number,
-    field: "testMaterial" | "practiceMaterial",
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setNamingModal({ id, field, file });
-      setNamingValue(file.name);
+  const handleUploadSubmit = async () => {
+    const { chapterId, category, sourceType, file, linkUrl, displayName, description } = uploadForm;
+    if (!chapterId) return;
+
+    // Validation
+    if (sourceType === "file" && !file) {
+      showToast("Please select a file to upload.", "error");
+      return;
     }
-    e.target.value = "";
-  };
+    if (sourceType === "link" && !linkUrl.trim()) {
+      showToast("Please enter a valid URL.", "error");
+      return;
+    }
+    if (!displayName.trim()) {
+      showToast("Please enter a display name.", "error");
+      return;
+    }
+    if (!description.trim()) {
+      showToast("Please enter a description.", "error");
+      return;
+    }
 
-  const handleLinkUpload = (
-    id: number,
-    field: "testMaterial" | "practiceMaterial",
-  ) => {
-    setNamingModal({ id, field, isLink: true });
-    setNamingValue("");
-  };
+    const finalName = displayName.trim();
 
-  const confirmNaming = async () => {
-    if (!namingModal) return;
-    const { id, field, file, isLink } = namingModal;
-    const finalName = namingValue.trim() || (file ? file.name : "Link");
-
-    const type = file
+    const type = sourceType === "file" && file
       ? file.name.endsWith(".xls") ||
         file.name.endsWith(".xlsx") ||
         file.type === "application/vnd.ms-excel" ||
-        file.type ===
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         ? "excel"
         : "pdf"
       : "link";
@@ -194,8 +150,8 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
     try {
       const formData = new FormData();
 
-      // 1. Append Required IDs
-      formData.append("chapter_id", id.toString());
+      // 1. Append Required IDs (Matches your Postman screenshot perfectly)
+      formData.append("chapter_id", chapterId.toString());
       formData.append("board_id", stats?.board_id?.toString() || "");
       formData.append("institute_id", stats?.institute_id?.toString() || "");
 
@@ -208,17 +164,17 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
       const currentSubject = subjects.find(s => s.subject_name === activeSubject);
       formData.append("subject_id", currentSubject?.subject_id?.toString() || "");
 
-      // 2. Append Title
+      // 2. Append Title & Description (Exactly as shown in your Postman body)
       formData.append("title", finalName);
+      formData.append("description", description.trim());
 
       // 3. Handle File vs Link correctly
-      if (isLink) {
+      if (sourceType === "link") {
         formData.append("file_type", "link");
-        formData.append("link_url", namingValue.trim());
+        formData.append("link_url", linkUrl.trim());
       } else if (file) {
-        // Map UI field names to exact backend requirements
-        const category = field === "testMaterial" ? "study_material" : "practice_material";
-        formData.append("file_type", category);
+        const backendCategory = category === "testMaterial" ? "study_material" : "practice_material";
+        formData.append("file_type", backendCategory);
         formData.append("files", file);
       }
 
@@ -228,20 +184,23 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
       if (res.data?.status === "success") {
         showToast("Material uploaded successfully", "success");
 
-        // Optimistically update the local state upon success
+        // Optimistically update the local state
         setSubjects((prev) =>
           prev.map((sub) => ({
             ...sub,
             chapters: sub.chapters.map((ch: any) =>
-              ch.id === id || ch.chapter_id === id
+              ch.id === chapterId || ch.chapter_id === chapterId
                 ? {
                   ...ch,
-                  [field]: [...(ch[field] || []), { name: finalName, type }],
+                  [category]: [...(ch[category] || []), { name: finalName, type }],
                 }
                 : ch,
             ),
           })),
         );
+        
+        // Close modal
+        setUploadForm({ ...uploadForm, isOpen: false });
       } else {
         showToast(res.data?.message || "Failed to upload material", "error");
       }
@@ -249,8 +208,6 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
       showToast("An error occurred while uploading material", "error");
     } finally {
       setIsLoading(false);
-      setNamingModal(null);
-      setNamingValue("");
     }
   };
 
@@ -330,7 +287,6 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
 
         setSubjects(plans);
 
-        // Map stats for header AND capture IDs for payload
         setStats({
           teacher_name: data.teacher?.name,
           institute_name: data.institute?.name,
@@ -341,9 +297,9 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
           class_id: data.dropdowns?.classes?.[0]?.id,
           section_name: data.dropdowns?.sections?.[0]?.name,
           section_id: data.dropdowns?.sections?.[0]?.id,
+          subscription_id: data.subscription_id, 
         });
 
-        // Map dropdown options (keep the whole object so we have name AND id)
         if (data.dropdowns) {
           setClassOptions(data.dropdowns.classes || []);
           setSectionOptions(data.dropdowns.sections || []);
@@ -354,7 +310,7 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
         }
       }
     } catch (error) {
-      // console.error("Learning Planner Error:", error);
+      // Handle error
     } finally {
       setIsLoading(false);
     }
@@ -363,12 +319,11 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
   const fetchProfileImage = async () => {
     try {
       const response = await ApiServices.getUserProfileImage();
-
       if (response.data?.status === "success" && response.data?.data?.image) {
-        setProfileImage(response.data.data.image); // base64 image
+        setProfileImage(response.data.data.image); 
       }
     } catch (error) {
-      // console.error("Failed to fetch profile image", error);
+      // Handle error
     }
   };
 
@@ -377,7 +332,6 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
     fetchProfileImage();
   }, []);
 
-  // Sync demoChapters with dynamic API data
   useEffect(() => {
     const activePlan = subjects.find((s) => s.subject_name === activeSubject);
     if (activePlan) {
@@ -387,88 +341,58 @@ const [isGeneratingTest, setIsGeneratingTest] = useState(false);
     }
   }, [activeSubject, subjects]);
 
-  // const handleSave = async (row: any) => {
-  //   const payload = {
-  //     chapter_id: row.id,
-  //     start_date: row.startDate_raw || null,
-  //     end_date: row.endDate_raw || null,
-  //     is_completed: row.completed,
-  //   };
+  const handleSave = async (row: any) => {
+    const payload = {
+      chapter_id: row.id,
+      start_date: row.startDate_raw || null,
+      end_date: row.endDate_raw || null,
+      is_completed: row.completed,
+    };
+    setSavingChapterId(row.id);
+    try {
+      const res = await ApiServices.upsertTeacherPlanner(payload);
 
-  //   try {
-  //     const res = await ApiServices.upsertTeacherPlanner(payload);
-  //     if (res.data?.status === "success") {
-  //       showToast("Chapter planner updated successfully", "success");
-  //     } else {
-  //       showToast(res.data?.message || "Failed to update", "error");
-  //     }
-  //   } catch (error) {
-  //     showToast("An error occurred while saving", "error");
-  //   }
-  // };
+      if (res.data?.status === "success") {
+        showToast("Chapter planner updated successfully", "success");
 
-
-const handleSave = async (row: any) => {
-  const payload = {
-    chapter_id: row.id,
-    start_date: row.startDate_raw || null,
-    end_date: row.endDate_raw || null,
-    is_completed: row.completed,
-  };
-  setSavingChapterId(row.id);
-  try {
-
-    const res = await ApiServices.upsertTeacherPlanner(payload);
-
-    if (res.data?.status === "success") {
-      showToast("Chapter planner updated successfully", "success");
-
-      // 🔥 CALL TEST GENERATION
-      if (row.completed === true) {
-        try {
-          setIsGeneratingTest(true); // 👈 start loader
-
-          const genRes = await ApiServices.generateTestFromPlanner({
-            subscription_id: stats?.subscription_id
-          });
-
-          if (genRes.data?.status === "success") {
-            showToast("Test generated successfully", "success");
-          } else {
-            showToast(genRes.data?.message || "Test generation failed", "error");
+        if (row.completed === true) {
+          try {
+            setIsGeneratingTest(true);
+            const genRes = await ApiServices.generateTestFromPlanner({
+              subscription_id: stats?.subscription_id
+            });
+            if (genRes.data?.status === "success") {
+              showToast("Test generated successfully", "success");
+            } else {
+              showToast(genRes.data?.message || "Test generation failed", "error");
+            }
+          } catch (err) {
+            showToast("Error while generating test", "error");
+          } finally {
+            setIsGeneratingTest(false);
           }
-
-        } catch (err) {
-          showToast("Error while generating test", "error");
-        } finally {
-          setIsGeneratingTest(false); // 👈 stop loader
         }
+      } else {
+        showToast(res.data?.message || "Failed to update", "error");
       }
-    } else {
-      showToast(res.data?.message || "Failed to update", "error");
+    } catch (error) {
+      showToast("An error occurred while saving", "error");
+    } finally {
+      setSavingChapterId(null);
     }
+  };
 
-  } catch (error) {
-    showToast("An error occurred while saving", "error");
-  } finally {
-    setSavingChapterId(null);
-  }
-};
   useEffect(() => {
     if (stats) {
-      if (!selectedClass && stats.class_name)
-        setSelectedClass(stats.class_name);
-      if (!selectedSection && stats.section_name)
-        setSelectedSection(stats.section_name);
+      if (!selectedClass && stats.class_name) setSelectedClass(stats.class_name);
+      if (!selectedSection && stats.section_name) setSelectedSection(stats.section_name);
     }
   }, [stats]);
 
-  // Get first letter of name for avatar fallback
   const getInitial = () => {
     return (
       stats?.teacher_name?.charAt(0).toUpperCase() ||
-      stats?.student_name?.charAt(0).toUpperCase() ||
-      ""
+      stats?.student_name?.charAt(0).toUpperCase() || ""
     );
   };
 
@@ -484,6 +408,18 @@ const handleSave = async (row: any) => {
           </div>
         </div>
       )}
+
+      {isGeneratingTest && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-10 h-10 border-4 border-gray-200 border-t-[#BADA55] rounded-full animate-spin"></div>
+            <span className="text-sm text-gray-500 font-medium">
+              Generating your test... This may take a moment.
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <header className="flex flex-wrap justify-between items-start gap-6 pb-6">
         <div className="flex gap-4 items-start">
@@ -514,10 +450,7 @@ const handleSave = async (row: any) => {
                 {stats.teacher_name
                   ? stats.teacher_name
                     ?.split(" ")
-                    .map(
-                      (word: string) =>
-                        word.charAt(0).toUpperCase() + word.slice(1),
-                    )
+                    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
                     .join(" ")
                   : ""}{" "}
                 !
@@ -584,24 +517,12 @@ const handleSave = async (row: any) => {
         <table className="w-full border-collapse text-sm">
           <thead className="border-b-2 border-gray-300">
             <tr>
-              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Sl No.
-              </th>
-              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Chapter Name
-              </th>
-              <th className="text-right py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Start Date
-              </th>
-              <th className="text-right py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                End Date
-              </th>
-              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Upload Material
-              </th>
-              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
-                Completion Status
-              </th>
+              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">Sl No.</th>
+              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">Chapter Name</th>
+              <th className="text-right py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">Start Date</th>
+              <th className="text-right py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">End Date</th>
+              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">Upload Material</th>
+              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">Completion Status</th>
               <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">Action</th>
             </tr>
           </thead>
@@ -622,11 +543,9 @@ const handleSave = async (row: any) => {
                         type="date"
                         min={today}
                         className="absolute inset-0 opacity-0 w-full h-full z-10 cursor-pointer"
-                        onChange={(e) =>
-                          handleDateChange(row.id, "startDate", e.target.value)
-                        }
+                        onChange={(e) => handleDateChange(row.id, "startDate", e.target.value)}
                       />
-                      <Calendar size={16} className="text-primary" />
+                      <Calendar size={16} className="text-primary pointer-events-none" />
                     </label>
                   </div>
                 </td>
@@ -639,11 +558,9 @@ const handleSave = async (row: any) => {
                         type="date"
                         min={today}
                         className="absolute inset-0 opacity-0 w-full h-full z-10 cursor-pointer"
-                        onChange={(e) =>
-                          handleDateChange(row.id, "endDate", e.target.value)
-                        }
+                        onChange={(e) => handleDateChange(row.id, "endDate", e.target.value)}
                       />
-                      <Calendar size={16} className="text-primary" />
+                      <Calendar size={16} className="text-primary pointer-events-none" />
                     </label>
                   </div>
                 </td>
@@ -651,41 +568,24 @@ const handleSave = async (row: any) => {
                 <td className="py-3 px-2 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <button
-                      onClick={() => setSelectionModal({ id: row.id })}
+                      onClick={() => setUploadForm({
+                        ...uploadForm,
+                        isOpen: true,
+                        chapterId: row.id,
+                        displayName: "",
+                        description: ""
+                      })}
                       className="cursor-pointer flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-md transition-colors border-none"
                     >
                       <Upload size={12} />
                       <span>Upload</span>
                     </button>
-                    <input
-                      id={`file-test-${row.id}`}
-                      type="file"
-                      multiple
-                      accept=".pdf,.xls,.xlsx"
-                      className="hidden"
-                      onChange={(e) =>
-                        handleFileUpload(row.id, "testMaterial", e)
-                      }
-                    />
-                    <input
-                      id={`file-prac-${row.id}`}
-                      type="file"
-                      multiple
-                      accept=".pdf,.xls,.xlsx"
-                      className="hidden"
-                      onChange={(e) =>
-                        handleFileUpload(row.id, "practiceMaterial", e)
-                      }
-                    />
+                    
                     {row.testMaterial.length > 0 && (
                       <div className="flex flex-col mt-1 gap-1">
                         <span className="text-[9px] font-bold text-gray-400 uppercase">Study</span>
                         {row.testMaterial.map((mat, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-1 text-[10px] text-gray-500 max-w-[120px]"
-                            title={mat.name}
-                          >
+                          <div key={idx} className="flex items-center gap-1 text-[10px] text-gray-500 max-w-[120px]" title={mat.name}>
                             {mat.type === "pdf" && <FileText size={10} />}
                             {mat.type === "excel" && <FileSpreadsheet size={10} className="text-green-600" />}
                             {mat.type === "link" && <Link size={10} />}
@@ -698,11 +598,7 @@ const handleSave = async (row: any) => {
                       <div className="flex flex-col mt-2 gap-1 border-t border-gray-100 pt-1">
                         <span className="text-[9px] font-bold text-gray-400 uppercase">Practice</span>
                         {row.practiceMaterial.map((mat, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-1 text-[10px] text-gray-500 max-w-[120px]"
-                            title={mat.name}
-                          >
+                          <div key={idx} className="flex items-center gap-1 text-[10px] text-gray-500 max-w-[120px]" title={mat.name}>
                             {mat.type === "pdf" && <FileText size={10} />}
                             {mat.type === "excel" && <FileSpreadsheet size={10} className="text-green-600" />}
                             {mat.type === "link" && <Link size={10} />}
@@ -745,92 +641,152 @@ const handleSave = async (row: any) => {
         </table>
       </div>
 
-      <div className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100]">
-        <button
-          onClick={() => setIsChatOpen(true)}
-          aria-label="Open chat"
-          className="p-0 bg-transparent border-0 cursor-pointer"
-        >
-          <img src={IconChat} alt="Chat" className="w-[95px]" />
-        </button>
-      </div>
       {isChatOpen && <Chat onClose={() => setIsChatOpen(false)} />}
 
-      {/* Step 1: Material Type Selection Modal */}
-      {selectionModal && (
+      {/* ─── UNIFIED UPLOAD MODAL ────────────────────────────────────── */}
+      {uploadForm.isOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative animate-in fade-in zoom-in duration-200">
             <button
-              onClick={() => setSelectionModal(null)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 border-none bg-transparent cursor-pointer transition-colors"
+              onClick={() => setUploadForm({ ...uploadForm, isOpen: false, file: null, linkUrl: "", displayName: "", description: "" })}
+              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 bg-transparent hover:bg-gray-100 rounded-full transition-all z-10 border-none cursor-pointer"
             >
               <X size={20} />
             </button>
 
-            <h3 className="text-xl font-bold text-primary mb-6 text-center">Select Material Type</h3>
+            <h3 className="text-xl font-bold text-primary mb-6 text-center">
+              Upload Material
+            </h3>
 
-            <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-4">
+              {/* Material Category */}
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Category</label>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setUploadForm({ ...uploadForm, category: "testMaterial" })}
+                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer ${
+                      uploadForm.category === "testMaterial"
+                        ? "bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-500/20"
+                        : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
+                    }`}
+                  >
+                    Study Material
+                  </button>
+                  <button
+                    onClick={() => setUploadForm({ ...uploadForm, category: "practiceMaterial" })}
+                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer ${
+                      uploadForm.category === "practiceMaterial"
+                        ? "bg-green-50 border-green-500 text-green-700 ring-2 ring-green-500/20"
+                        : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
+                    }`}
+                  >
+                    Practice Material
+                  </button>
+                </div>
+              </div>
+
+              {/* Source Type */}
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Source Type</label>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setUploadForm({ ...uploadForm, sourceType: "file" })}
+                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${
+                      uploadForm.sourceType === "file"
+                        ? "bg-[#F7FAE9] border-[#BADA55] text-gray-800 ring-2 ring-[#BADA55]/40"
+                        : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
+                    }`}
+                  >
+                    <FileText size={16} /> Local File
+                  </button>
+                  <button
+                    onClick={() => setUploadForm({ ...uploadForm, sourceType: "link" })}
+                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${
+                      uploadForm.sourceType === "link"
+                        ? "bg-[#F7FAE9] border-[#BADA55] text-gray-800 ring-2 ring-[#BADA55]/40"
+                        : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
+                    }`}
+                  >
+                    <Link size={16} /> External Link
+                  </button>
+                </div>
+              </div>
+
+              {/* Display Name (Mandatory) */}
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                  Display Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={uploadForm.displayName}
+                  onChange={(e) => setUploadForm({ ...uploadForm, displayName: e.target.value })}
+                  placeholder="Enter a name for this material..."
+                  className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 transition-all bg-white text-sm"
+                />
+              </div>
+
+              {/* Description (Mandatory) */}
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                  Description <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={uploadForm.description}
+                  onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
+                  placeholder="Add a brief description..."
+                  rows={2}
+                  className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 transition-all bg-white text-sm resize-none"
+                />
+              </div>
+
+              {/* File or Link Input */}
+              {uploadForm.sourceType === "file" ? (
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Select File</label>
+                  <input
+                    type="file"
+                    accept=".pdf,.xls,.xlsx"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setUploadForm({
+                        ...uploadForm,
+                        file: file,
+                        displayName: file && !uploadForm.displayName ? file.name : uploadForm.displayName
+                      });
+                    }}
+                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#BADA55]/20 file:text-[#6a8412] hover:file:bg-[#BADA55]/30 cursor-pointer"
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1.5">Accepted formats: PDF, Excel (.xls, .xlsx)</p>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">URL / Link</label>
+                  <input
+                    type="url"
+                    value={uploadForm.linkUrl}
+                    onChange={(e) => setUploadForm({ ...uploadForm, linkUrl: e.target.value })}
+                    placeholder="https://..."
+                    className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 transition-all bg-white text-sm"
+                  />
+                </div>
+              )}
+
+              {/* Submit Button */}
               <button
-                onClick={() => {
-                  setUploadModal({ id: selectionModal.id, field: "testMaterial" });
-                  setSelectionModal(null);
-                }}
-                className="flex items-center justify-center gap-3 p-4 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-all border border-blue-200 font-bold cursor-pointer"
+                onClick={handleUploadSubmit}
+                disabled={isLoading}
+                className="w-full py-3.5 mt-2 bg-[#BADA55] text-gray-900 rounded-lg font-bold hover:bg-lime-400 flex items-center justify-center gap-2 transition-colors border-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 shadow-sm"
               >
-                <FileText size={20} />
-                <span>Study Material</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  const inputId = `file-prac-${selectionModal.id}`;
-                  document.getElementById(inputId)?.click();
-                  setSelectionModal(null);
-                }}
-                className="flex items-center justify-center gap-3 p-4 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-all border border-green-200 font-bold cursor-pointer"
-              >
-                <FileSpreadsheet size={20} />
-                <span>Practice Material</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Step 2: Study Material Source Modal */}
-      {uploadModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in duration-200">
-            <button
-              onClick={() => setUploadModal(null)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 border-none bg-transparent cursor-pointer transition-colors"
-            >
-              <X size={20} />
-            </button>
-            <h3 className="text-xl font-bold text-primary mb-6 text-center">Study Material Source</h3>
-
-            <div className="grid grid-cols-1 gap-4">
-              <button
-                onClick={() => {
-                  const inputId = uploadModal.field === "testMaterial" ? `file-test-${uploadModal.id}` : `file-prac-${uploadModal.id}`;
-                  document.getElementById(inputId)?.click();
-                  setUploadModal(null);
-                }}
-                className="flex items-center justify-center gap-3 p-4 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-all border border-blue-200 font-bold cursor-pointer"
-              >
-                <FileText size={20} />
-                <span>Upload Local File</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  handleLinkUpload(uploadModal.id, uploadModal.field);
-                  setUploadModal(null);
-                }}
-                className="flex items-center justify-center gap-3 p-4 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-all border border-green-200 font-bold cursor-pointer"
-              >
-                <Link size={20} />
-                <span>Add External Link</span>
+                {isLoading ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    <span>Uploading...</span>
+                  </>
+                ) : (
+                  "Confirm Upload"
+                )}
               </button>
             </div>
           </div>
@@ -894,58 +850,9 @@ const handleSave = async (row: any) => {
               </button>
               <button
                 onClick={() => setIsMockModalOpen(false)}
-                className="px-8 py-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-all shadow-md hover:shadow-lg border-none cursor-pointer"
+                className="px-8 py-3 bg-[#BADA55] text-gray-900 rounded-lg font-bold hover:bg-opacity-90 transition-all shadow-md hover:shadow-lg border-none cursor-pointer"
               >
                 Submit
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Naming / Link Modal */}
-      {namingModal && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-sm p-6 relative animate-in fade-in zoom-in duration-200">
-            <button
-              onClick={() => setNamingModal(null)}
-              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 bg-transparent hover:bg-gray-100 rounded-full transition-all z-10  border-none cursor-pointer"
-            >
-              <X size={20} />
-            </button>
-
-            <h3 className="text-xl font-bold text-primary mb-6 text-center">
-              {namingModal.isLink ? "Add Link" : "Rename File"}
-            </h3>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                  {namingModal.isLink ? "URL / Link" : "Display Name"}
-                </label>
-                <input
-                  type="text"
-                  value={namingValue}
-                  onChange={(e) => setNamingValue(e.target.value)}
-                  placeholder={namingModal.isLink ? "Enter link..." : "Enter name..."}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#BADA55] transition-all"
-                  autoFocus
-                />
-              </div>
-
-              <button
-                onClick={confirmNaming}
-                disabled={isLoading}
-                className="w-full py-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 flex items-center justify-center gap-2 transition-colors border-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 size={18} className="animate-spin" />
-                    <span>Processing...</span>
-                  </>
-                ) : (
-                  namingModal.isLink ? "Add Link" : "Confirm Upload"
-                )}
               </button>
             </div>
           </div>

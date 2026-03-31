@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import IconChat from "../../../assets/icon/chat2.svg";
+// import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices"; // Assuming ApiServices path
 import { useToast } from "../../../app/providers/ToastProvider";
 import { useModal } from "../../auth/context/AuthContext";
@@ -186,9 +186,9 @@ const PaymentGateway: React.FC = () => {
         </button>
       </div>
 
-      <div className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100]">
+      {/* <div className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100]">
         <img src={IconChat} alt="Chat" className="w-[95px]" />
-      </div>
+      </div> */}
     </div>
   );
 };
