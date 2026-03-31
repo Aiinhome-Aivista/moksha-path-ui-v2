@@ -27,6 +27,7 @@ export interface StudyMaterialItem {
   subject_name?: string;
   uploaded_at: string;
   uploaded_by: number;
+  thumbnail?: string | null;
 }
 
 interface NotesProps {
