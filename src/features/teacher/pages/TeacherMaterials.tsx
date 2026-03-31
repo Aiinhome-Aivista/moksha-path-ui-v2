@@ -502,7 +502,7 @@ const TeacherMaterials = () => {
   // };
 
   return (
-    <div className="min-h-screen">
+    <div className="h-full p-6">
       <div className="flex gap-6">
         <MaterialsSidebar
           board={board}
