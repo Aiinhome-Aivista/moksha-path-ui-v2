@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import MaterialsSidebar from "../components/Materialsidebar";
 import MaterialsHeader from "../components/MaterialHeader";
@@ -57,6 +57,11 @@ const TeacherMaterials = () => {
   const [activeResourceType, setActiveResourceType] = useState(
     locationState?.activeResourceType || "Videos",
   );
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const handleRefresh = useCallback(() => {
+    setRefreshTrigger((prev) => prev + 1);
+  }, []);
 
   const [selectedChapters, setSelectedChapters] = useState<number[]>([]);
   const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
@@ -146,7 +151,7 @@ const TeacherMaterials = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [refreshTrigger]);
 
   // Filter materials based on current selection
   const filteredMaterialItems = useMemo(() => {
@@ -178,7 +183,7 @@ const TeacherMaterials = () => {
   }, [allMaterials, availableFilters, className, activeSubject, section]);
 
   // Derive youtubeLinks and studyMaterials from filtered items
-  const dynamicYoutubeLinks = useMemo(() => 
+  const dynamicYoutubeLinks = useMemo(() =>
     filteredMaterialItems
       .filter((m: any) => m.file_type === "link")
       .map((m: any) => ({
@@ -188,7 +193,7 @@ const TeacherMaterials = () => {
     [filteredMaterialItems]
   );
 
-  const dynamicStudyMaterials = useMemo(() => 
+  const dynamicStudyMaterials = useMemo(() =>
     filteredMaterialItems
       .filter((m: any) => m.file_type === "study_material" || m.file_type === "practice_material")
       .map((m: any) => ({
@@ -463,6 +468,7 @@ const TeacherMaterials = () => {
     activeSubject,
     locationState?.stats,
     effectiveSubjectWisePlan,
+    refreshTrigger, // Re-fetch on refresh
   ]);
 
   // Get subject_id and chapter_ids for Tests component
@@ -526,38 +532,42 @@ const TeacherMaterials = () => {
             resourceTypes={resourceTypes}
             activeResourceType={activeResourceType}
             setActiveResourceType={setActiveResourceType}
+            onRefresh={handleRefresh}
+            isRefreshing={isResourcesLoading}
           />
 
-          {activeResourceType === "Videos" && (
-            <ResourceMaterials
-              youtubeLinks={dynamicYoutubeLinks}
-              isLoading={isResourcesLoading}
-            />
-          )}
-          {activeResourceType === "Tests" && (
-            <Tests
-              subjectId={getSubjectId()}
-              subjectName={activeSubject}
-              chapterIds={getSelectedChapterIds()}
-              chapterNames={getSelectedChapterNames()}
-              allChapters={chapters}
-              allTopics={coreTopics}
-              topicIds={selectedTopics
-                .map((i) => coreTopics[i]?.topic_id)
-                .filter((id): id is number => id !== undefined)}
-              topicNames={selectedTopics
-                .map((i) => coreTopics[i]?.name)
-                .filter((name): name is string => name !== undefined)}
-              classIds={getClassId() ? [getClassId()] : []}
-              stats={locationState?.stats}
-            />
-          )}
-          {activeResourceType === "Notes" && (
-            <Notes 
-              studyMaterials={dynamicStudyMaterials} 
-              isLoading={isResourcesLoading} 
-            />
-          )}
+          <div className="pr-6">
+            {activeResourceType === "Videos" && (
+              <ResourceMaterials
+                youtubeLinks={dynamicYoutubeLinks}
+                isLoading={isResourcesLoading}
+              />
+            )}
+            {activeResourceType === "Tests" && (
+              <Tests
+                subjectId={getSubjectId()}
+                subjectName={activeSubject}
+                chapterIds={getSelectedChapterIds()}
+                chapterNames={getSelectedChapterNames()}
+                allChapters={chapters}
+                allTopics={coreTopics}
+                topicIds={selectedTopics
+                  .map((i) => coreTopics[i]?.topic_id)
+                  .filter((id): id is number => id !== undefined)}
+                topicNames={selectedTopics
+                  .map((i) => coreTopics[i]?.name)
+                  .filter((name): name is string => name !== undefined)}
+                classIds={getClassId() ? [getClassId()] : []}
+                stats={locationState?.stats}
+              />
+            )}
+            {activeResourceType === "Notes" && (
+              <Notes
+                studyMaterials={dynamicStudyMaterials}
+                isLoading={isResourcesLoading}
+              />
+            )}
+          </div>
         </div>
       </div>
       {/* <div className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100]">

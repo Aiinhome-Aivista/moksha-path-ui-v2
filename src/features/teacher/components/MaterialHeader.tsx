@@ -1,5 +1,4 @@
-import React from "react";
-// import IconChat from "../../../assets/icon/chat2.svg";
+import { RotateCcw } from "lucide-react";
 
 interface Props {
     subjects: string[];
@@ -8,6 +7,8 @@ interface Props {
     resourceTypes: string[];
     activeResourceType: string;
     setActiveResourceType: (v: string) => void;
+    onRefresh?: () => void;
+    isRefreshing?: boolean;
 }
 
 const MaterialsHeader: React.FC<Props> = ({
@@ -17,6 +18,8 @@ const MaterialsHeader: React.FC<Props> = ({
     resourceTypes,
     activeResourceType,
     setActiveResourceType,
+    onRefresh,
+    isRefreshing = false,
 }) => {
 
 
@@ -67,7 +70,23 @@ const MaterialsHeader: React.FC<Props> = ({
                         {type}
                     </button>
                 ))}
+                
+                {onRefresh && (
+                    <button
+                        onClick={onRefresh}
+                        disabled={isRefreshing}
+                        className="flex items-center gap-2 px-4 py-2 bg-primary border border-gray-200 rounded-full text-sm font-medium text-white hover:bg-[#A3C627] hover:text-white hover:border-[#F27927]/30 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed group border-none cursor-pointer"
+                        title="Refresh Materials"
+                    >
+                        <RotateCcw 
+                            size={16} 
+                            className={`${isRefreshing ? "animate-spin" : "group-hover:rotate-180"} transition-transform duration-500`}
+                        />
+                        <span>{isRefreshing ? "Refreshing..." : "Refresh"}</span>
+                    </button>
+                )}
             </div>
+            
         </div>
     );
 };

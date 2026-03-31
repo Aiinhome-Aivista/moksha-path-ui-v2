@@ -1,5 +1,5 @@
 import React from "react";
-// import { Check } from "lucide-react";
+//import { Check } from "lucide-react";
 
 interface Props {
   board: string;
@@ -40,7 +40,7 @@ const MaterialsSidebar: React.FC<Props> = ({
   //   }
   // };
 
-  // // Handle select all chapters
+  // Handle select all chapters
   // const toggleSelectAllChapters = () => {
   //   if (selectedChapters.length === chapters.length) {
   //     setSelectedChapters([]);
@@ -58,7 +58,7 @@ const MaterialsSidebar: React.FC<Props> = ({
   //   }
   // };
 
-  // // Handle select all topics
+  // Handle select all topics
   // const toggleSelectAllTopics = () => {
   //   if (selectedTopics.length === coreTopics.length) {
   //     setSelectedTopics([]);

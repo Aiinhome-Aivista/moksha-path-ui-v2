@@ -1,5 +1,5 @@
 import React from "react";
-// import IconChat from "../../../assets/icon/chat2.svg";
+import { RotateCcw } from "lucide-react";
 
 interface Props {
     subjects: string[];
@@ -8,15 +8,19 @@ interface Props {
     resourceTypes: string[];
     activeResourceType: string;
     setActiveResourceType: (v: string) => void;
+    onRefresh?: () => void;
+    isRefreshing?: boolean;
 }
 
 const MaterialsHeader: React.FC<Props> = ({
-    subjects,
-    activeSubject,
-    setActiveSubject,
+    // subjects,
+    // activeSubject,
+    // setActiveSubject,
     resourceTypes,
     activeResourceType,
     setActiveResourceType,
+    onRefresh,
+    isRefreshing = false,
 }) => {
 
 
@@ -36,36 +40,35 @@ const MaterialsHeader: React.FC<Props> = ({
                 </div>
             </div>
 
-            {/* Subjects */}
-            {/* <div className="flex flex-wrap gap-2 mb-4">
-                {subjects.map((subject) => (
-                    <button
-                        key={subject}
-                        onClick={() => setActiveSubject(subject)}
-                        className={`text-xs px-4 py-2 rounded-full ${activeSubject === subject
-                            ? "bg-button-primary text-primary font-bold"
-                            : "bg-primary text-white hover:bg-secondary font-bold"
-                            }`}
-                    >
-                        {subject}
-                    </button>
-                ))}
-            </div> */}
-
             {/* Resource Types */}
             <div className="flex gap-2">
                 {resourceTypes.map((type) => (
                     <button
                         key={type}
                         onClick={() => setActiveResourceType(type)}
-                        className={`px-4 py-2 rounded-full text-xs  ${activeResourceType === type
-                            ? "bg-[#A3C627] text-primary font-bold"
-                            : "bg-[#464646] text-white font-bold hover:bg-[#555555]"
+                        className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 ${activeResourceType === type
+                            ? "bg-[#A3C627] text-white"
+                            : "bg-[#464646] text-white hover:bg-[#555555]"
                             }`}
                     >
                         {type}
                     </button>
                 ))}
+
+                {onRefresh && (
+                    <button
+                        onClick={onRefresh}
+                        disabled={isRefreshing}
+                        className="flex items-center gap-2 px-4 py-2 bg-primary border border-gray-200 rounded-full text-sm font-medium text-white hover:bg-[#A3C627] hover:text-white transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed group border-none cursor-pointer"
+                        title="Refresh Materials"
+                    >
+                        <RotateCcw 
+                            size={16} 
+                            className={`${isRefreshing ? "animate-spin" : "group-hover:rotate-180"} transition-transform duration-500`}
+                        />
+                        <span>{isRefreshing ? "Refreshing..." : "Refresh"}</span>
+                    </button>
+                )}
             </div>
         </div>
     );
