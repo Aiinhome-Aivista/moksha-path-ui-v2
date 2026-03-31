@@ -18,6 +18,7 @@ interface ApiChapter {
   endDate_raw: string;
   progress: number;
   completed: boolean;
+  isSaved?: boolean;
   testMaterial: any[];
   practiceMaterial: any[];
 }
@@ -38,6 +39,7 @@ const demoChaptersData = [
     endDate_raw: "",
     progress: 90,
     completed: false,
+    isSaved: true,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
     practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
   },
@@ -50,6 +52,7 @@ const demoChaptersData = [
     endDate_raw: "",
     progress: 85,
     completed: false,
+    isSaved: true,
     testMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
     practiceMaterial: [] as { name: string; type: "pdf" | "excel" | "link" }[],
   },
@@ -68,7 +71,7 @@ const TeacherLearningPlanner: React.FC = () => {
   const [savingChapterId, setSavingChapterId] = useState<number | null>(null);
   const [isMockModalOpen, setIsMockModalOpen] = useState(false);
   const [selectedMockChapterIds, setSelectedMockChapterIds] = useState<number[]>([]);
-  const [demoChapters, setDemoChapters] = useState(demoChaptersData);
+  const [demoChapters, setDemoChapters] = useState<ApiChapter[]>(demoChaptersData);
   const [isGeneratingTest, setIsGeneratingTest] = useState(false);
 
   // ─── UNIFIED UPLOAD MODAL STATE ────────────────────────────────────────────────
@@ -105,7 +108,7 @@ const TeacherLearningPlanner: React.FC = () => {
         ...sub,
         chapters: sub.chapters.map((ch: any) =>
           ch.id === id || ch.chapter_id === id
-            ? { ...ch, completed: !ch.completed, is_completed: !ch.completed }
+            ? { ...ch, completed: !ch.completed, is_completed: !ch.completed, isSaved: false }
             : ch,
         ),
       })),
@@ -235,6 +238,7 @@ const TeacherLearningPlanner: React.FC = () => {
               ...ch,
               [field]: formattedDate,
               [`${field}_raw`]: value,
+              isSaved: false,
             }
             : ch,
         ),
@@ -279,6 +283,7 @@ const TeacherLearningPlanner: React.FC = () => {
                 endDate_raw: rawEnd,
                 progress: ch.progress_percentage || 0,
                 completed: plannerData ? plannerData.is_completed : (ch.is_completed || false),
+                isSaved: true,
                 testMaterial: ch.testMaterial || [],
                 practiceMaterial: ch.practiceMaterial || [],
               };
@@ -354,6 +359,17 @@ const TeacherLearningPlanner: React.FC = () => {
 
       if (res.data?.status === "success") {
         showToast("Chapter planner updated successfully", "success");
+
+        setSubjects((prev) =>
+          prev.map((sub) => ({
+            ...sub,
+            chapters: sub.chapters.map((ch: any) =>
+              ch.id === row.id || ch.chapter_id === row.id
+                ? { ...ch, isSaved: true }
+                : ch,
+            ),
+          })),
+        );
 
         if (row.completed === true) {
           try {
@@ -469,7 +485,7 @@ const TeacherLearningPlanner: React.FC = () => {
                       value={selectedClass}
                       onChange={(val) => setSelectedClass(val as string)}
                       placeholder="Select Class"
-                      className="px-2 py-2 appearance-none bg-white border border-gray-200 rounded-lg text-sm text-primary font-medium focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 shadow-sm"
+                      className="px-2 py-2 w-full appearance-none bg-white border border-gray-200 rounded-lg text-sm text-primary font-medium focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 shadow-sm"
                     />
                   </div>
                   <div className="m-0 min-w-20">
@@ -538,14 +554,15 @@ const TeacherLearningPlanner: React.FC = () => {
                 <td className="py-3 px-2 text-center">
                   <div className="flex justify-end items-center gap-2">
                     {row.startDate || "—"}
-                    <label className="relative cursor-pointer">
+                    <label className={`relative ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}>
                       <input
                         type="date"
                         min={today}
-                        className="absolute inset-0 opacity-0 w-full h-full z-10 cursor-pointer"
+                        disabled={row.completed && row.isSaved === true}
+                        className={`absolute inset-0 opacity-0 w-full h-full z-10 ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}
                         onChange={(e) => handleDateChange(row.id, "startDate", e.target.value)}
                       />
-                      <Calendar size={16} className="text-primary pointer-events-none" />
+                      <Calendar size={16} className={`${row.completed && row.isSaved === true ? "text-gray-400" : "text-primary"} pointer-events-none`} />
                     </label>
                   </div>
                 </td>
@@ -553,14 +570,15 @@ const TeacherLearningPlanner: React.FC = () => {
                 <td className="py-3 px-2 text-center">
                   <div className="flex justify-end items-center gap-2">
                     {row.endDate || "—"}
-                    <label className="relative cursor-pointer">
+                    <label className={`relative ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}>
                       <input
                         type="date"
                         min={today}
-                        className="absolute inset-0 opacity-0 w-full h-full z-10 cursor-pointer"
+                        disabled={row.completed && row.isSaved === true}
+                        className={`absolute inset-0 opacity-0 w-full h-full z-10 ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}
                         onChange={(e) => handleDateChange(row.id, "endDate", e.target.value)}
                       />
-                      <Calendar size={16} className="text-primary pointer-events-none" />
+                      <Calendar size={16} className={`${row.completed && row.isSaved === true ? "text-gray-400" : "text-primary"} pointer-events-none`} />
                     </label>
                   </div>
                 </td>
@@ -617,15 +635,15 @@ const TeacherLearningPlanner: React.FC = () => {
                     onChange={() => {
                       if (row.startDate_raw && row.endDate_raw) toggleDemoChapter(row.id);
                     }}
-                    disabled={!row.startDate_raw || !row.endDate_raw}
-                    className="w-4 h-4 cursor-pointer rounded border-gray-300 text-[#b0cb1f] focus:ring-[#b0cb1f]"
+                    disabled={!row.startDate_raw || !row.endDate_raw || (row.completed && row.isSaved === true)}
+                    className={`w-4 h-4 rounded border-gray-300 text-[#b0cb1f] focus:ring-[#b0cb1f] ${row.completed && row.isSaved === true ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                   />
                 </td>
 
                 <td className="py-3 px-2 text-center">
                   <button
                     onClick={() => handleSave(row)}
-                    disabled={!row.startDate_raw || !row.endDate_raw || savingChapterId !== null}
+                    disabled={!row.startDate_raw || !row.endDate_raw || savingChapterId !== null || (row.completed && row.isSaved === true)}
                     className="p-2 inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium text-secondary hover:text-blue-600 transition-colors border-none bg-transparent disabled:text-[#AAA] cursor-pointer disabled:cursor-not-allowed"
                   >
                     {savingChapterId === row.id ? (
