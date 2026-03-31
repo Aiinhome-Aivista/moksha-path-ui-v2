@@ -3,7 +3,16 @@ import React, { useEffect, useState } from "react";
 // import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
-import { Calendar, Upload, Save, FileText, FileSpreadsheet, Link, X, Loader2 } from "lucide-react";
+import {
+  Calendar,
+  Upload,
+  Save,
+  FileText,
+  FileSpreadsheet,
+  Link,
+  X,
+  Loader2,
+} from "lucide-react";
 import SearchableSelect from "../../../components/common/SearchableSelect";
 import { useToast } from "../../../app/providers/ToastProvider";
 
@@ -63,15 +72,22 @@ const TeacherLearningPlanner: React.FC = () => {
   const [activeSubject, setActiveSubject] = useState("");
   const { showToast } = useToast();
 
-  const [classOptions, setClassOptions] = useState<{ id: number; name: string }[]>([]);
-  const [sectionOptions, setSectionOptions] = useState<{ id: number; name: string }[]>([]);
+  const [classOptions, setClassOptions] = useState<
+    { id: number; name: string }[]
+  >([]);
+  const [sectionOptions, setSectionOptions] = useState<
+    { id: number; name: string }[]
+  >([]);
   const [selectedClass, setSelectedClass] = useState<string>("");
   const [selectedSection, setSelectedSection] = useState<string>("");
 
   const [savingChapterId, setSavingChapterId] = useState<number | null>(null);
   const [isMockModalOpen, setIsMockModalOpen] = useState(false);
-  const [selectedMockChapterIds, setSelectedMockChapterIds] = useState<number[]>([]);
-  const [demoChapters, setDemoChapters] = useState<ApiChapter[]>(demoChaptersData);
+  const [selectedMockChapterIds, setSelectedMockChapterIds] = useState<
+    number[]
+  >([]);
+  const [demoChapters, setDemoChapters] =
+    useState<ApiChapter[]>(demoChaptersData);
   const [isGeneratingTest, setIsGeneratingTest] = useState(false);
 
   // ─── UNIFIED UPLOAD MODAL STATE ────────────────────────────────────────────────
@@ -92,12 +108,14 @@ const TeacherLearningPlanner: React.FC = () => {
     file: null,
     linkUrl: "",
     displayName: "",
-    description: "", 
+    description: "",
   });
 
   useEffect(() => {
     if (isMockModalOpen) {
-      const completedIds = demoChapters.filter((ch) => ch.completed).map((ch) => ch.id);
+      const completedIds = demoChapters
+        .filter((ch) => ch.completed)
+        .map((ch) => ch.id);
       setSelectedMockChapterIds(completedIds);
     }
   }, [isMockModalOpen, demoChapters]);
@@ -108,7 +126,12 @@ const TeacherLearningPlanner: React.FC = () => {
         ...sub,
         chapters: sub.chapters.map((ch: any) =>
           ch.id === id || ch.chapter_id === id
-            ? { ...ch, completed: !ch.completed, is_completed: !ch.completed, isSaved: false }
+            ? {
+                ...ch,
+                completed: !ch.completed,
+                is_completed: !ch.completed,
+                isSaved: false,
+              }
             : ch,
         ),
       })),
@@ -116,7 +139,15 @@ const TeacherLearningPlanner: React.FC = () => {
   };
 
   const handleUploadSubmit = async () => {
-    const { chapterId, category, sourceType, file, linkUrl, displayName, description } = uploadForm;
+    const {
+      chapterId,
+      category,
+      sourceType,
+      file,
+      linkUrl,
+      displayName,
+      description,
+    } = uploadForm;
     if (!chapterId) return;
 
     // Validation
@@ -139,14 +170,16 @@ const TeacherLearningPlanner: React.FC = () => {
 
     const finalName = displayName.trim();
 
-    const type = sourceType === "file" && file
-      ? file.name.endsWith(".xls") ||
-        file.name.endsWith(".xlsx") ||
-        file.type === "application/vnd.ms-excel" ||
-        file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        ? "excel"
-        : "pdf"
-      : "link";
+    const type =
+      sourceType === "file" && file
+        ? file.name.endsWith(".xls") ||
+          file.name.endsWith(".xlsx") ||
+          file.type === "application/vnd.ms-excel" ||
+          file.type ===
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          ? "excel"
+          : "pdf"
+        : "link";
 
     setIsLoading(true);
 
@@ -158,14 +191,31 @@ const TeacherLearningPlanner: React.FC = () => {
       formData.append("board_id", stats?.board_id?.toString() || "");
       formData.append("institute_id", stats?.institute_id?.toString() || "");
 
-      const currentClassObj = classOptions.find(c => c.name === selectedClass);
-      formData.append("class_id", currentClassObj?.id?.toString() || stats?.class_id?.toString() || "");
+      const currentClassObj = classOptions.find(
+        (c) => c.name === selectedClass,
+      );
+      formData.append(
+        "class_id",
+        currentClassObj?.id?.toString() || stats?.class_id?.toString() || "",
+      );
 
-      const currentSectionObj = sectionOptions.find(s => s.name === selectedSection);
-      formData.append("section_id", currentSectionObj?.id?.toString() || stats?.section_id?.toString() || "");
+      const currentSectionObj = sectionOptions.find(
+        (s) => s.name === selectedSection,
+      );
+      formData.append(
+        "section_id",
+        currentSectionObj?.id?.toString() ||
+          stats?.section_id?.toString() ||
+          "",
+      );
 
-      const currentSubject = subjects.find(s => s.subject_name === activeSubject);
-      formData.append("subject_id", currentSubject?.subject_id?.toString() || "");
+      const currentSubject = subjects.find(
+        (s) => s.subject_name === activeSubject,
+      );
+      formData.append(
+        "subject_id",
+        currentSubject?.subject_id?.toString() || "",
+      );
 
       // 2. Append Title & Description (Exactly as shown in your Postman body)
       formData.append("title", finalName);
@@ -176,7 +226,8 @@ const TeacherLearningPlanner: React.FC = () => {
         formData.append("file_type", "link");
         formData.append("link_url", linkUrl.trim());
       } else if (file) {
-        const backendCategory = category === "testMaterial" ? "study_material" : "practice_material";
+        const backendCategory =
+          category === "testMaterial" ? "study_material" : "practice_material";
         formData.append("file_type", backendCategory);
         formData.append("files", file);
       }
@@ -194,14 +245,17 @@ const TeacherLearningPlanner: React.FC = () => {
             chapters: sub.chapters.map((ch: any) =>
               ch.id === chapterId || ch.chapter_id === chapterId
                 ? {
-                  ...ch,
-                  [category]: [...(ch[category] || []), { name: finalName, type }],
-                }
+                    ...ch,
+                    [category]: [
+                      ...(ch[category] || []),
+                      { name: finalName, type },
+                    ],
+                  }
                 : ch,
             ),
           })),
         );
-        
+
         // Close modal
         setUploadForm({ ...uploadForm, isOpen: false });
       } else {
@@ -235,11 +289,11 @@ const TeacherLearningPlanner: React.FC = () => {
         chapters: sub.chapters.map((ch: any) =>
           ch.id === id || ch.chapter_id === id
             ? {
-              ...ch,
-              [field]: formattedDate,
-              [`${field}_raw`]: value,
-              isSaved: false,
-            }
+                ...ch,
+                [field]: formattedDate,
+                [`${field}_raw`]: value,
+                isSaved: false,
+              }
             : ch,
         ),
       })),
@@ -265,7 +319,10 @@ const TeacherLearningPlanner: React.FC = () => {
         });
 
         const plans = (data.subject_wise_chapters || [])
-          .filter((sub: any) => Array.isArray(sub.chapters) && sub.chapters.length > 0)
+          .filter(
+            (sub: any) =>
+              Array.isArray(sub.chapters) && sub.chapters.length > 0,
+          )
           .map((sub: any) => ({
             ...sub,
             chapters: (sub.chapters || []).map((ch: any) => {
@@ -277,12 +334,26 @@ const TeacherLearningPlanner: React.FC = () => {
                 ...ch,
                 id: ch.id || ch.chapter_id,
                 chapter: ch.name || ch.chapter_name,
-                startDate: rawStart ? new Date(rawStart).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "--",
-                endDate: rawEnd ? new Date(rawEnd).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "--",
+                startDate: rawStart
+                  ? new Date(rawStart).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "--",
+                endDate: rawEnd
+                  ? new Date(rawEnd).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "--",
                 startDate_raw: rawStart,
                 endDate_raw: rawEnd,
                 progress: ch.progress_percentage || 0,
-                completed: plannerData ? plannerData.is_completed : (ch.is_completed || false),
+                completed: plannerData
+                  ? plannerData.is_completed
+                  : ch.is_completed || false,
                 isSaved: true,
                 testMaterial: ch.testMaterial || [],
                 practiceMaterial: ch.practiceMaterial || [],
@@ -302,7 +373,7 @@ const TeacherLearningPlanner: React.FC = () => {
           class_id: data.dropdowns?.classes?.[0]?.id,
           section_name: data.dropdowns?.sections?.[0]?.name,
           section_id: data.dropdowns?.sections?.[0]?.id,
-          subscription_id: data.subscription_id, 
+          subscription_id: data.subscription_id,
         });
 
         if (data.dropdowns) {
@@ -325,7 +396,7 @@ const TeacherLearningPlanner: React.FC = () => {
     try {
       const response = await ApiServices.getUserProfileImage();
       if (response.data?.status === "success" && response.data?.data?.image) {
-        setProfileImage(response.data.data.image); 
+        setProfileImage(response.data.data.image);
       }
     } catch (error) {
       // Handle error
@@ -375,12 +446,15 @@ const TeacherLearningPlanner: React.FC = () => {
           try {
             setIsGeneratingTest(true);
             const genRes = await ApiServices.generateTestFromPlanner({
-              subscription_id: stats?.subscription_id
+              subscription_id: stats?.subscription_id,
             });
             if (genRes.data?.status === "success") {
               showToast("Test generated successfully", "success");
             } else {
-              showToast(genRes.data?.message || "Test generation failed", "error");
+              showToast(
+                genRes.data?.message || "Test generation failed",
+                "error",
+              );
             }
           } catch (err) {
             showToast("Error while generating test", "error");
@@ -400,15 +474,18 @@ const TeacherLearningPlanner: React.FC = () => {
 
   useEffect(() => {
     if (stats) {
-      if (!selectedClass && stats.class_name) setSelectedClass(stats.class_name);
-      if (!selectedSection && stats.section_name) setSelectedSection(stats.section_name);
+      if (!selectedClass && stats.class_name)
+        setSelectedClass(stats.class_name);
+      if (!selectedSection && stats.section_name)
+        setSelectedSection(stats.section_name);
     }
   }, [stats]);
 
   const getInitial = () => {
     return (
       stats?.teacher_name?.charAt(0).toUpperCase() ||
-      stats?.student_name?.charAt(0).toUpperCase() || ""
+      stats?.student_name?.charAt(0).toUpperCase() ||
+      ""
     );
   };
 
@@ -437,7 +514,7 @@ const TeacherLearningPlanner: React.FC = () => {
       )}
 
       {/* Header Section */}
-     <header className="flex flex-wrap justify-between items-end gap-6 pb-6">
+      <header className="flex flex-wrap justify-between items-end gap-6 pb-6">
         <div className="flex gap-4 items-start">
           {/* Avatar */}
           <div className="w-[90px] h-[90px] rounded-full overflow-hidden flex-shrink-0 border-3 border-gray-200 flex items-center justify-center bg-gray-100">
@@ -465,14 +542,18 @@ const TeacherLearningPlanner: React.FC = () => {
                 Hi{" "}
                 {stats.teacher_name
                   ? stats.teacher_name
-                    ?.split(" ")
-                    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(" ")
+                      ?.split(" ")
+                      .map(
+                        (word: string) =>
+                          word.charAt(0).toUpperCase() + word.slice(1),
+                      )
+                      .join(" ")
                   : ""}{" "}
                 !
               </h1>
               <p className="text-sm text-primary font-medium m-0">
-                {stats.institute_name} {stats.board_name && `| ${stats.board_name}`}
+                {stats.institute_name}{" "}
+                {stats.board_name && `| ${stats.board_name}`}
               </p>
               <div className="flex flex-col gap-2 mt-2">
                 <div className="flex gap-2">
@@ -519,7 +600,7 @@ const TeacherLearningPlanner: React.FC = () => {
         </div>
 
         {/* Stats Badges */}
-    <div className="flex justify-end items-end gap-20">
+        <div className="flex justify-end items-end gap-20">
           <button
             onClick={() => setIsMockModalOpen(true)}
             className="w-full p-2 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors border-none cursor-pointer"
@@ -533,13 +614,27 @@ const TeacherLearningPlanner: React.FC = () => {
         <table className="w-full border-collapse text-sm">
           <thead className="border-b-2 border-gray-300">
             <tr>
-              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">Sl No.</th>
-              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">Chapter Name</th>
-              <th className="text-right py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">Start Date</th>
-              <th className="text-right py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">End Date</th>
-              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">Upload Material</th>
-              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">Completion Status</th>
-              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">Action</th>
+              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
+                Sl No.
+              </th>
+              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
+                Chapter Name
+              </th>
+              <th className="text-right py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
+                Start Date
+              </th>
+              <th className="text-right py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
+                End Date
+              </th>
+              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
+                Upload Material
+              </th>
+              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
+                Completion Status
+              </th>
+              <th className="text-center py-3 px-2 font-bold text-primary text-lg whitespace-nowrap">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -554,15 +649,22 @@ const TeacherLearningPlanner: React.FC = () => {
                 <td className="py-3 px-2 text-center">
                   <div className="flex justify-end items-center gap-2">
                     {row.startDate || "—"}
-                    <label className={`relative ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}>
+                    <label
+                      className={`relative ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}
+                    >
                       <input
                         type="date"
                         min={today}
                         disabled={row.completed && row.isSaved === true}
                         className={`absolute inset-0 opacity-0 w-full h-full z-10 ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}
-                        onChange={(e) => handleDateChange(row.id, "startDate", e.target.value)}
+                        onChange={(e) =>
+                          handleDateChange(row.id, "startDate", e.target.value)
+                        }
                       />
-                      <Calendar size={16} className={`${row.completed && row.isSaved === true ? "text-gray-400" : "text-primary"} pointer-events-none`} />
+                      <Calendar
+                        size={16}
+                        className={`${row.completed && row.isSaved === true ? "text-gray-400" : "text-primary"} pointer-events-none`}
+                      />
                     </label>
                   </div>
                 </td>
@@ -570,15 +672,22 @@ const TeacherLearningPlanner: React.FC = () => {
                 <td className="py-3 px-2 text-center">
                   <div className="flex justify-end items-center gap-2">
                     {row.endDate || "—"}
-                    <label className={`relative ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}>
+                    <label
+                      className={`relative ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}
+                    >
                       <input
                         type="date"
                         min={today}
                         disabled={row.completed && row.isSaved === true}
                         className={`absolute inset-0 opacity-0 w-full h-full z-10 ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}
-                        onChange={(e) => handleDateChange(row.id, "endDate", e.target.value)}
+                        onChange={(e) =>
+                          handleDateChange(row.id, "endDate", e.target.value)
+                        }
                       />
-                      <Calendar size={16} className={`${row.completed && row.isSaved === true ? "text-gray-400" : "text-primary"} pointer-events-none`} />
+                      <Calendar
+                        size={16}
+                        className={`${row.completed && row.isSaved === true ? "text-gray-400" : "text-primary"} pointer-events-none`}
+                      />
                     </label>
                   </div>
                 </td>
@@ -586,43 +695,51 @@ const TeacherLearningPlanner: React.FC = () => {
                 <td className="py-3 px-2 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <button
-                      onClick={() => setUploadForm({
-                        ...uploadForm,
-                        isOpen: true,
-                        chapterId: row.id,
-                        displayName: "",
-                        description: ""
-                      })}
+                      onClick={() =>
+                        setUploadForm({
+                          ...uploadForm,
+                          isOpen: true,
+                          chapterId: row.id,
+                          displayName: "",
+                          description: "",
+                        })
+                      }
                       className="cursor-pointer flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-md transition-colors border-none"
                     >
                       <Upload size={12} />
                       <span>Upload</span>
                     </button>
-                    
+
                     {row.testMaterial.length > 0 && (
-                      <div className="flex flex-col mt-1 gap-1">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase">Study</span>
-                        {row.testMaterial.map((mat, idx) => (
-                          <div key={idx} className="flex items-center gap-1 text-[10px] text-gray-500 max-w-[120px]" title={mat.name}>
-                            {mat.type === "pdf" && <FileText size={10} />}
-                            {mat.type === "excel" && <FileSpreadsheet size={10} className="text-green-600" />}
-                            {mat.type === "link" && <Link size={10} />}
-                            <span className="truncate">{mat.name}</span>
-                          </div>
-                        ))}
+                      <div
+                        className="flex gap-2 cursor-pointer"
+                        title={row.testMaterial
+                          .map((m: any) => m.name)
+                          .join(",\n")}
+                      >
+                        <span className="text-[9px] font-bold text-primary uppercase">
+                          Study
+                        </span>
+                        <span className="text-xs text-blue-700 font-medium underline decoration-dotted">
+                          {row.testMaterial.length}{" "}
+                          {row.testMaterial.length === 1 ? "file" : "files"}
+                        </span>
                       </div>
                     )}
                     {row.practiceMaterial.length > 0 && (
-                      <div className="flex flex-col mt-2 gap-1 border-t border-gray-100 pt-1">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase">Practice</span>
-                        {row.practiceMaterial.map((mat, idx) => (
-                          <div key={idx} className="flex items-center gap-1 text-[10px] text-gray-500 max-w-[120px]" title={mat.name}>
-                            {mat.type === "pdf" && <FileText size={10} />}
-                            {mat.type === "excel" && <FileSpreadsheet size={10} className="text-green-600" />}
-                            {mat.type === "link" && <Link size={10} />}
-                            <span className="truncate">{mat.name}</span>
-                          </div>
-                        ))}
+                      <div
+                        className="flex gap-2 cursor-pointer"
+                        title={row.practiceMaterial
+                          .map((m: any) => m.name)
+                          .join(",\n")}
+                      >
+                        <span className="text-[9px] font-bold text-primary uppercase">
+                          Practice
+                        </span>
+                        <span className="text-xs text-green-700 font-medium underline decoration-dotted">
+                          {row.practiceMaterial.length}{" "}
+                          {row.practiceMaterial.length === 1 ? "file" : "files"}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -633,21 +750,36 @@ const TeacherLearningPlanner: React.FC = () => {
                     type="checkbox"
                     checked={row.completed}
                     onChange={() => {
-                      if (row.startDate_raw && row.endDate_raw) toggleDemoChapter(row.id);
+                      if (row.startDate_raw && row.endDate_raw)
+                        toggleDemoChapter(row.id);
                     }}
-                    disabled={!row.startDate_raw || !row.endDate_raw || (row.completed && row.isSaved === true)}
-                    className={`w-4 h-4 rounded border-gray-300 text-[#b0cb1f] focus:ring-[#b0cb1f] ${row.completed && row.isSaved === true ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                    disabled={
+                      !row.startDate_raw ||
+                      !row.endDate_raw ||
+                      savingChapterId !== null ||
+                      (row.completed && row.isSaved === true)
+                    }
+                    className="w-4 h-4 accent-secondary disabled:accent-[#AAA] cursor-pointer disabled:cursor-not-allowed opacity-100"
                   />
                 </td>
+                {/*  className={`w-4 h-4 cursor-pointer disabled:cursor-not-allowed transition-colors ${row.completed && row.isSaved === true ? "accent-red-400 text-red-400" : "accent-green-400 text-green-400"}`} */}
 
                 <td className="py-3 px-2 text-center">
                   <button
                     onClick={() => handleSave(row)}
-                    disabled={!row.startDate_raw || !row.endDate_raw || savingChapterId !== null || (row.completed && row.isSaved === true)}
+                    disabled={
+                      !row.startDate_raw ||
+                      !row.endDate_raw ||
+                      savingChapterId !== null ||
+                      (row.completed && row.isSaved === true)
+                    }
                     className="p-2 inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium text-secondary hover:text-blue-600 transition-colors border-none bg-transparent disabled:text-[#AAA] cursor-pointer disabled:cursor-not-allowed"
                   >
                     {savingChapterId === row.id ? (
-                      <Loader2 size={20} className="animate-spin text-blue-500" />
+                      <Loader2
+                        size={20}
+                        className="animate-spin text-blue-500"
+                      />
                     ) : (
                       <Save size={20} strokeWidth={2} />
                     )}
@@ -666,7 +798,16 @@ const TeacherLearningPlanner: React.FC = () => {
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative animate-in fade-in zoom-in duration-200">
             <button
-              onClick={() => setUploadForm({ ...uploadForm, isOpen: false, file: null, linkUrl: "", displayName: "", description: "" })}
+              onClick={() =>
+                setUploadForm({
+                  ...uploadForm,
+                  isOpen: false,
+                  file: null,
+                  linkUrl: "",
+                  displayName: "",
+                  description: "",
+                })
+              }
               className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 bg-transparent hover:bg-gray-100 rounded-full transition-all z-10 border-none cursor-pointer"
             >
               <X size={20} />
@@ -679,10 +820,14 @@ const TeacherLearningPlanner: React.FC = () => {
             <div className="space-y-4">
               {/* Material Category */}
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Category</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                  Category
+                </label>
                 <div className="flex gap-3">
                   <button
-                    onClick={() => setUploadForm({ ...uploadForm, category: "testMaterial" })}
+                    onClick={() =>
+                      setUploadForm({ ...uploadForm, category: "testMaterial" })
+                    }
                     className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer ${
                       uploadForm.category === "testMaterial"
                         ? "bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-500/20"
@@ -692,7 +837,12 @@ const TeacherLearningPlanner: React.FC = () => {
                     Study Material
                   </button>
                   <button
-                    onClick={() => setUploadForm({ ...uploadForm, category: "practiceMaterial" })}
+                    onClick={() =>
+                      setUploadForm({
+                        ...uploadForm,
+                        category: "practiceMaterial",
+                      })
+                    }
                     className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer ${
                       uploadForm.category === "practiceMaterial"
                         ? "bg-green-50 border-green-500 text-green-700 ring-2 ring-green-500/20"
@@ -706,10 +856,14 @@ const TeacherLearningPlanner: React.FC = () => {
 
               {/* Source Type */}
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Source Type</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                  Source Type
+                </label>
                 <div className="flex gap-3">
                   <button
-                    onClick={() => setUploadForm({ ...uploadForm, sourceType: "file" })}
+                    onClick={() =>
+                      setUploadForm({ ...uploadForm, sourceType: "file" })
+                    }
                     className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${
                       uploadForm.sourceType === "file"
                         ? "bg-[#F7FAE9] border-[#BADA55] text-gray-800 ring-2 ring-[#BADA55]/40"
@@ -719,7 +873,9 @@ const TeacherLearningPlanner: React.FC = () => {
                     <FileText size={16} /> Local File
                   </button>
                   <button
-                    onClick={() => setUploadForm({ ...uploadForm, sourceType: "link" })}
+                    onClick={() =>
+                      setUploadForm({ ...uploadForm, sourceType: "link" })
+                    }
                     className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${
                       uploadForm.sourceType === "link"
                         ? "bg-[#F7FAE9] border-[#BADA55] text-gray-800 ring-2 ring-[#BADA55]/40"
@@ -739,7 +895,12 @@ const TeacherLearningPlanner: React.FC = () => {
                 <input
                   type="text"
                   value={uploadForm.displayName}
-                  onChange={(e) => setUploadForm({ ...uploadForm, displayName: e.target.value })}
+                  onChange={(e) =>
+                    setUploadForm({
+                      ...uploadForm,
+                      displayName: e.target.value,
+                    })
+                  }
                   placeholder="Enter a name for this material..."
                   className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 transition-all bg-white text-sm"
                 />
@@ -752,7 +913,12 @@ const TeacherLearningPlanner: React.FC = () => {
                 </label>
                 <textarea
                   value={uploadForm.description}
-                  onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
+                  onChange={(e) =>
+                    setUploadForm({
+                      ...uploadForm,
+                      description: e.target.value,
+                    })
+                  }
                   placeholder="Add a brief description..."
                   rows={2}
                   className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 transition-all bg-white text-sm resize-none"
@@ -762,7 +928,9 @@ const TeacherLearningPlanner: React.FC = () => {
               {/* File or Link Input */}
               {uploadForm.sourceType === "file" ? (
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Select File</label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                    Select File
+                  </label>
                   <input
                     type="file"
                     accept=".pdf,.xls,.xlsx"
@@ -771,20 +939,29 @@ const TeacherLearningPlanner: React.FC = () => {
                       setUploadForm({
                         ...uploadForm,
                         file: file,
-                        displayName: file && !uploadForm.displayName ? file.name : uploadForm.displayName
+                        displayName:
+                          file && !uploadForm.displayName
+                            ? file.name
+                            : uploadForm.displayName,
                       });
                     }}
                     className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#BADA55]/20 file:text-[#6a8412] hover:file:bg-[#BADA55]/30 cursor-pointer"
                   />
-                  <p className="text-[10px] text-gray-400 mt-1.5">Accepted formats: PDF, Excel (.xls, .xlsx)</p>
+                  <p className="text-[10px] text-gray-400 mt-1.5">
+                    Accepted formats: PDF, Excel (.xls, .xlsx)
+                  </p>
                 </div>
               ) : (
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">URL / Link</label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                    URL / Link
+                  </label>
                   <input
                     type="url"
                     value={uploadForm.linkUrl}
-                    onChange={(e) => setUploadForm({ ...uploadForm, linkUrl: e.target.value })}
+                    onChange={(e) =>
+                      setUploadForm({ ...uploadForm, linkUrl: e.target.value })
+                    }
                     placeholder="https://..."
                     className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 transition-all bg-white text-sm"
                   />
@@ -822,19 +999,28 @@ const TeacherLearningPlanner: React.FC = () => {
               <X size={20} />
             </button>
 
-            <h2 className="text-2xl font-bold text-primary mb-6">Generate Overall Mock</h2>
+            <h2 className="text-2xl font-bold text-primary mb-6">
+              Generate Overall Mock
+            </h2>
 
             <div className="max-h-60 overflow-y-auto custom-scrollbar border border-gray-200 rounded-lg mb-6">
               <table className="w-full border-collapse">
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
-                    <th className="py-3 px-4 text-left font-bold text-gray-600 border-b w-20">Select</th>
-                    <th className="py-3 px-4 text-left font-bold text-gray-600 border-b">Chapter Name</th>
+                    <th className="py-3 px-4 text-left font-bold text-gray-600 border-b w-20">
+                      Select
+                    </th>
+                    <th className="py-3 px-4 text-left font-bold text-gray-600 border-b">
+                      Chapter Name
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {demoChapters.map((ch) => (
-                    <tr key={ch.id} className="border-b hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={ch.id}
+                      className="border-b hover:bg-gray-50 transition-colors"
+                    >
                       <td className="py-3 px-4">
                         <input
                           type="checkbox"
@@ -844,13 +1030,15 @@ const TeacherLearningPlanner: React.FC = () => {
                             setSelectedMockChapterIds((prev) =>
                               prev.includes(ch.id)
                                 ? prev.filter((id) => id !== ch.id)
-                                : [...prev, ch.id]
+                                : [...prev, ch.id],
                             );
                           }}
-                          className={`w-4 h-4 accent-[#BADA55] ${!ch.completed ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                          className={`w-4 h-4 accent-[#BADA55] ${!ch.completed ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                         />
                       </td>
-                      <td className={`py-3 px-4 text-sm font-medium ${!ch.completed ? 'text-gray-400 italic' : 'text-gray-700'}`}>
+                      <td
+                        className={`py-3 px-4 text-sm font-medium ${!ch.completed ? "text-gray-400 italic" : "text-gray-700"}`}
+                      >
                         {ch.chapter} {!ch.completed && "(Incomplete)"}
                       </td>
                     </tr>
