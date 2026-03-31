@@ -396,6 +396,14 @@ const StudentMaterials = () => {
     fetchStudyMaterials();
   }, []);
 
+  // 5. Filter Global Study Materials by Active Subject
+  const filteredStudyMaterials = useMemo(() => {
+    if (!activeSubject) return studyMaterials;
+    return studyMaterials.filter(
+      (m) => m.subject_name?.toLowerCase() === activeSubject.toLowerCase()
+    );
+  }, [studyMaterials, activeSubject]);
+
   // Update Core Topics when chapters change manually
   useEffect(() => {
     if (!planSource || !activeSubject || chapters.length === 0) return;
@@ -504,7 +512,9 @@ const StudentMaterials = () => {
           board={statsSource?.board_name || statsSource?.board || locationState?.boardName || ""}
           className={statsSource?.class_name || statsSource?.class || locationState?.className || ""}
           sectionName={safeSectionArray} // ✅ GUARANTEED TO BE AN ARRAY
+          subjects={subjectsList}
           activeSubject={activeSubject}
+          setActiveSubject={setActiveSubject}
           chapters={chapters}
           coreTopics={coreTopics}
           selectedChapters={selectedChapters}
@@ -529,7 +539,7 @@ const StudentMaterials = () => {
           {activeResourceType === "Videos" && (
             <ResourceMaterials
               youtubeLinks={youtubeLinks}
-              externalLinks={studyMaterials.filter(
+              externalLinks={filteredStudyMaterials.filter(
                 (m) => m.file_type === "link"
               )}
               isLoading={isResourcesLoading}
@@ -556,7 +566,7 @@ const StudentMaterials = () => {
           {activeResourceType === "Notes" && (
             <Notes
               notes={notesData}
-              studyMaterials={studyMaterials}
+              studyMaterials={filteredStudyMaterials}
               isLoading={isResourcesLoading}
             />
           )}

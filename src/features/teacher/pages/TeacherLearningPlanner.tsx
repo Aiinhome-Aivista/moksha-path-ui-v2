@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import IconChat from "../../../assets/icon/chat2.svg";
+// import { useNavigate } from "react-router-dom";
+// import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
 import { Calendar, Upload, Save, FileText, FileSpreadsheet, Link, X, Loader2 } from "lucide-react";
 import SearchableSelect from "../../../components/common/SearchableSelect";
 import { useToast } from "../../../app/providers/ToastProvider";
 
-type Priority = "High" | "Medium" | "Low";
+// type Priority = "High" | "Medium" | "Low";
 
 interface ApiChapter {
   id: number;
@@ -437,7 +437,7 @@ const TeacherLearningPlanner: React.FC = () => {
       )}
 
       {/* Header Section */}
-      <header className="flex flex-wrap justify-between items-start gap-6 pb-6">
+     <header className="flex flex-wrap justify-between items-end gap-6 pb-6">
         <div className="flex gap-4 items-start">
           {/* Avatar */}
           <div className="w-[90px] h-[90px] rounded-full overflow-hidden flex-shrink-0 border-3 border-gray-200 flex items-center justify-center bg-gray-100">
@@ -519,10 +519,10 @@ const TeacherLearningPlanner: React.FC = () => {
         </div>
 
         {/* Stats Badges */}
-        <div className="flex justify-end items-end gap-20 relative top-20">
+    <div className="flex justify-end items-end gap-20">
           <button
             onClick={() => setIsMockModalOpen(true)}
-            className="w-full p-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors border-none cursor-pointer"
+            className="w-full p-2 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors border-none cursor-pointer"
           >
             Generate Overall Mock
           </button>

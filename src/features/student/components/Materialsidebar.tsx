@@ -1,5 +1,5 @@
 import React from "react";
-import { Check } from "lucide-react";
+// import { Check } from "lucide-react";
 
 interface Props {
   board: string;
@@ -13,54 +13,59 @@ interface Props {
   selectedTopics: number[];
   setSelectedTopics: (v: number[]) => void;
   sectionName: (string | { section_id: number; section_name: string })[];
+  subjects: string[];
+  setActiveSubject: (subject: string) => void;
 }
 
 const MaterialsSidebar: React.FC<Props> = ({
   board,
   className,
-  chapters,
-  coreTopics,
-  selectedChapters,
-  setSelectedChapters,
-  selectedTopics,
-  setSelectedTopics,
-  sectionName,
+  // chapters,
+  // coreTopics,
+  // selectedChapters,
+  // setSelectedChapters,
+  // selectedTopics,
+  // setSelectedTopics,
+  // sectionName,
+  subjects,
+  activeSubject,
+  setActiveSubject,
 }) => {
   // Handle chapter selection toggle
-  const toggleChapterSelection = (index: number) => {
-    if (selectedChapters.includes(index)) {
-      setSelectedChapters(selectedChapters.filter((i) => i !== index));
-    } else {
-      setSelectedChapters([...selectedChapters, index]);
-    }
-  };
+  // const toggleChapterSelection = (index: number) => {
+  //   if (selectedChapters.includes(index)) {
+  //     setSelectedChapters(selectedChapters.filter((i) => i !== index));
+  //   } else {
+  //     setSelectedChapters([...selectedChapters, index]);
+  //   }
+  // };
 
-  // Handle select all chapters
-  const toggleSelectAllChapters = () => {
-    if (selectedChapters.length === chapters.length) {
-      setSelectedChapters([]);
-    } else {
-      setSelectedChapters(chapters.map((_, index) => index));
-    }
-  };
+  // // Handle select all chapters
+  // const toggleSelectAllChapters = () => {
+  //   if (selectedChapters.length === chapters.length) {
+  //     setSelectedChapters([]);
+  //   } else {
+  //     setSelectedChapters(chapters.map((_, index) => index));
+  //   }
+  // };
 
   // Handle topic selection toggle
-  const toggleTopicSelection = (index: number) => {
-    if (selectedTopics.includes(index)) {
-      setSelectedTopics(selectedTopics.filter((i) => i !== index));
-    } else {
-      setSelectedTopics([...selectedTopics, index]);
-    }
-  };
+  // const toggleTopicSelection = (index: number) => {
+  //   if (selectedTopics.includes(index)) {
+  //     setSelectedTopics(selectedTopics.filter((i) => i !== index));
+  //   } else {
+  //     setSelectedTopics([...selectedTopics, index]);
+  //   }
+  // };
 
-  // Handle select all topics
-  const toggleSelectAllTopics = () => {
-    if (selectedTopics.length === coreTopics.length) {
-      setSelectedTopics([]);
-    } else {
-      setSelectedTopics(coreTopics.map((_, index) => index));
-    }
-  };
+  // // Handle select all topics
+  // const toggleSelectAllTopics = () => {
+  //   if (selectedTopics.length === coreTopics.length) {
+  //     setSelectedTopics([]);
+  //   } else {
+  //     setSelectedTopics(coreTopics.map((_, index) => index));
+  //   }
+  // };
 
   return (
     <div className="w-[280px] flex-shrink-0">
@@ -92,7 +97,7 @@ const MaterialsSidebar: React.FC<Props> = ({
           </div>
         </div>
         {/* Section */}
-        <div className="relative">
+        {/* <div className="relative">
           <p className="text-sm font-semibold text-gray-800 mb-1">Section</p>
           <div className="w-full flex items-center pb-2 border-b border-gray-300 text-sm font-medium">
             <span className="text-gray-700">
@@ -100,6 +105,23 @@ const MaterialsSidebar: React.FC<Props> = ({
                 ? sectionName.map((s) => (typeof s === "string" ? s : s.section_name)).join(", ")
                 : "N/A"}
             </span>
+          </div>
+        </div> */}
+        {/* Subject */}
+        <div className="relative">
+          <p className="text-sm font-semibold text-gray-800 mb-1">Subject</p>
+          <div className="w-full flex items-center pb-2 border-b border-gray-300 text-sm font-medium">
+            <select
+              value={activeSubject}
+              onChange={(e) => setActiveSubject(e.target.value)}
+              className="w-full bg-transparent border-none text-gray-700 focus:outline-none cursor-pointer"
+            >
+              {subjects.map((subject) => (
+                <option key={subject} value={subject}>
+                  {subject}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
