@@ -10,7 +10,6 @@ import {
   FileSpreadsheet,
   Link as LinkIcon,
   X,
-  Upload,
 } from "lucide-react";
 
 export interface NoteData {
@@ -363,26 +362,26 @@ const Notes: React.FC<NotesProps> = ({
   const [expandedNotes, setExpandedNotes] = useState<Set<number>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [previewItem, setPreviewItem] = useState<StudyMaterialItem | null>(null);
-  const [uploadedNotes, setUploadedNotes] = useState<StudyMaterialItem[]>([]);
+  const [uploadedNotes, ] = useState<StudyMaterialItem[]>([]);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const newNote: StudyMaterialItem = {
-        id: Date.now(),
-        title: file.name,
-        file_name: file.name,
-        file_type: "study_material",
-        file_url: URL.createObjectURL(file),
-        link_url: null,
-        resource: URL.createObjectURL(file),
-        section_id: 1,
-        uploaded_at: new Date().toISOString(),
-        uploaded_by: 0,
-      };
-      setUploadedNotes((prev) => [...prev, newNote]);
-    }
-  };
+  // const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = event.target.files?.[0];
+  //   if (file) {
+  //     const newNote: StudyMaterialItem = {
+  //       id: Date.now(),
+  //       title: file.name,
+  //       file_name: file.name,
+  //       file_type: "study_material",
+  //       file_url: URL.createObjectURL(file),
+  //       link_url: null,
+  //       resource: URL.createObjectURL(file),
+  //       section_id: 1,
+  //       uploaded_at: new Date().toISOString(),
+  //       uploaded_by: 0,
+  //     };
+  //     setUploadedNotes((prev) => [...prev, newNote]);
+  //   }
+  // };
 
   const toggleNote = (topicId: number) => {
     setExpandedNotes((prev) => {
@@ -462,7 +461,7 @@ const Notes: React.FC<NotesProps> = ({
             <span className="text-xs bg-orange-50 text-[#F27927] px-2 py-0.5 rounded-full font-medium">
               {allStudyMaterials.length} files
             </span>
-            <label className="px-4 py-2 rounded-full text-xs bg-[#A3C627] text-primary font-bold ml-auto flex items-center gap-2 cursor-pointer transition-colors shadow-sm hover:shadow-md">
+            {/* <label className="px-4 py-2 rounded-full text-xs bg-[#A3C627] text-primary font-bold ml-auto flex items-center gap-2 cursor-pointer transition-colors shadow-sm hover:shadow-md">
               <Upload size={14} />
               <span>Upload</span>
               <input
@@ -471,7 +470,7 @@ const Notes: React.FC<NotesProps> = ({
                 accept="application/pdf"
                 onChange={handleFileUpload}
               />
-            </label>
+            </label> */}
           </div>
 
           {/* Study Material */}

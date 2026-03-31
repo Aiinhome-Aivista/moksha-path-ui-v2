@@ -37,10 +37,12 @@ const TeacherMaterials = () => {
     selectedTopicIds?: number[];
   } | null;
 
+  const [board, setBoard] = useState(locationState?.boardName || "");
   const [className, setClassName] = useState(locationState?.className || "");
   const [section, setSection] = useState(locationState?.sectionName || "");
 
   // initial options (will be populated from API filters)
+  const [boardOptions, setBoardOptions] = useState<string[]>([]);
   const [classOptions, setClassOptions] = useState<string[]>([]);
   const [sectionOptions, setSectionOptions] = useState<string[]>([]);
 
@@ -121,15 +123,18 @@ const TeacherMaterials = () => {
           const filters = result.data.filters;
           if (filters) {
             // Set options
+            const boards = (filters.boards || []).map((b: any) => b.name);
             const classes = (filters.classes || []).map((c: any) => c.name);
             const subjects = (filters.subjects || []).map((s: any) => s.name);
             const sections = (filters.sections || []).map((s: any) => s.name);
 
+            setBoardOptions(boards);
             setClassOptions(classes);
             setSubjectOptions(subjects);
             setSectionOptions(sections);
 
             // Default selections if not from location state
+            if (!board && boards.length > 0) setBoard(boards[0]);
             if (!className && classes.length > 0) setClassName(classes[0]);
             if (!activeSubject && subjects.length > 0) setActiveSubject(subjects[0]);
             if (!section && sections.length > 0) setSection(sections[0]);
@@ -151,10 +156,15 @@ const TeacherMaterials = () => {
     let filtered = allMaterials;
 
     // Get IDs for selected names
+    const selectedBoardId = availableFilters.boards?.find((b: any) => b.name === board)?.id;
     const selectedClassId = availableFilters.classes?.find((c: any) => c.name === className)?.id;
     const selectedSubjectId = availableFilters.subjects?.find((s: any) => s.name === activeSubject)?.id;
     const selectedSectionId = availableFilters.sections?.find((s: any) => s.name === section)?.id;
 
+    if (selectedBoardId) {
+      // items don't have board_id in the provided JSON, but if they did:
+      // filtered = filtered.filter(m => m.board_id === selectedBoardId);
+    }
     if (selectedClassId) {
       filtered = filtered.filter(m => m.class_id === selectedClassId);
     }
@@ -522,11 +532,13 @@ const TeacherMaterials = () => {
     <div className="min-h-screen">
       <div className="flex gap-6">
         <MaterialsSidebar
-          board={locationState?.boardName || ""}
+          board={board}
           className={className}
           section={section}
+          boardOptions={boardOptions}
           classOptions={classOptions}
           sectionOptions={sectionOptions}
+          setBoard={setBoard}
           setClassName={setClassName}
           setSubject={setActiveSubject}
           setSection={setSection}

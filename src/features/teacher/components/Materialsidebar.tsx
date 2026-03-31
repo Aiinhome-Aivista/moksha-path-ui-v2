@@ -10,7 +10,7 @@ interface Props {
     classOptions?: string[];
     subjectOptions?: string[];
     sectionOptions?: string[];
-    
+
     setBoard?: (v: string) => void;
     setClassName?: (v: string) => void;
     setSubject?: (v: string) => void;
@@ -100,7 +100,7 @@ const MaterialsSidebar: React.FC<Props> = ({
                             <select
                                 value={board}
                                 onChange={(e) => setBoard(e.target.value)}
-                                className="text-sm bg-white"
+                                className="text-sm"
                             >
                                 {boardOptions.map((b) => (
                                     <option key={b} value={b}>
@@ -122,7 +122,7 @@ const MaterialsSidebar: React.FC<Props> = ({
                             <select
                                 value={className}
                                 onChange={(e) => setClassName(e.target.value)}
-                                className="text-sm bg-white"
+                                className="text-sm"
                             >
                                 {classOptions.map((c) => (
                                     <option key={c} value={c}>
