@@ -126,17 +126,17 @@ const Notes: React.FC<NotesProps> = ({ notes = [], isLoading = false }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [uploadedNotes, setUploadedNotes] = useState<NoteData[]>([]);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const newNote: NoteData = {
-        topic_id: Date.now(),
-        topic_title: file.name,
-        content: "File uploaded locally.",
-      };
-      setUploadedNotes((prev) => [...prev, newNote]);
-    }
-  };
+  // const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = event.target.files?.[0];
+  //   if (file) {
+  //     const newNote: NoteData = {
+  //       topic_id: Date.now(),
+  //       topic_title: file.name,
+  //       content: "File uploaded locally.",
+  //     };
+  //     setUploadedNotes((prev) => [...prev, newNote]);
+  //   }
+  // };
 
   const toggleNote = (topicId: number) => {
     setExpandedNotes((prev) => {
@@ -179,7 +179,7 @@ const Notes: React.FC<NotesProps> = ({ notes = [], isLoading = false }) => {
         <p className="text-xs mt-1">
           Select a chapter and topic from the sidebar to load notes
         </p>
-          <div className="mt-6">
+          {/* <div className="mt-6">
           <label className="flex items-center gap-2 cursor-pointer bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#A3C627] transition-colors">
             <span>Upload PDF</span>
             <input
@@ -189,7 +189,7 @@ const Notes: React.FC<NotesProps> = ({ notes = [], isLoading = false }) => {
               onChange={handleFileUpload}
             />
           </label>
-        </div>
+        </div> */}
       </div>
     );
   }

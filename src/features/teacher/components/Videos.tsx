@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Play, ExternalLink, Loader2, Upload } from "lucide-react";
+import { Play, ExternalLink, Loader2} from "lucide-react";
 
 export interface YouTubeLink {
   title: string;
@@ -16,20 +16,20 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
   youtubeLinks,
   isLoading = false,
 }) => {
-  const [uploadedVideos, setUploadedVideos] = useState<YouTubeLink[]>([]);
+  const [uploadedVideos] = useState<YouTubeLink[]>([]);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const videoUrl = URL.createObjectURL(file);
-      const newVideo: YouTubeLink = {
-        title: file.name,
-        url: videoUrl,
-        duration: "Local",
-      };
-      setUploadedVideos((prev) => [...prev, newVideo]);
-    }
-  };
+  // const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = event.target.files?.[0];
+  //   if (file) {
+  //     const videoUrl = URL.createObjectURL(file);
+  //     const newVideo: YouTubeLink = {
+  //       title: file.name,
+  //       url: videoUrl,
+  //       duration: "Local",
+  //     };
+  //     setUploadedVideos((prev) => [...prev, newVideo]);
+  //   }
+  // };
 
   const allVideos = [...youtubeLinks, ...uploadedVideos];
   if (isLoading) {
@@ -49,12 +49,12 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
         <p className="text-xs mt-1">
           Select a chapter and topic from the sidebar to load videos
         </p>
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <label className="flex items-center gap-2 cursor-pointer bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#A3C627] transition-colors">
             <span>Upload Video</span>
             <input type="file" className="hidden" accept="video/*" onChange={handleFileUpload} />
           </label>
-        </div>
+        </div> */}
       </div>
     );
   }
@@ -92,11 +92,11 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
         <span className="px-4 py-2 rounded-full text-xs  bg-[#464646] text-white font-bold hover:bg-[#555555]">
           {allVideos.length} videos
         </span>
-        <label className="px-4 py-2 rounded-full text-xs  bg-[#A3C627] text-primary font-bold ml-auto flex items-center gap-2 cursor-pointer transition-colors">
+        {/* <label className="px-4 py-2 rounded-full text-xs  bg-[#A3C627] text-primary font-bold ml-auto flex items-center gap-2 cursor-pointer transition-colors">
           <Upload size={14} />
           <span>Upload</span>
           <input type="file" className="hidden" accept="video/*" onChange={handleFileUpload} />
-        </label>
+        </label> */}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

@@ -26,7 +26,7 @@ const MaterialsSidebar: React.FC<Props> = ({
   // setSelectedChapters,
   // selectedTopics,
   // setSelectedTopics,
-  sectionName,
+  // sectionName,
   subjects,
   activeSubject,
   setActiveSubject,

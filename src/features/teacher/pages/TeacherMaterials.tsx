@@ -1,10 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import MaterialsSidebar from "../components/Materialsidebar";
 import MaterialsHeader from "../components/MaterialHeader";
-import ResourceMaterials, {
-  type YouTubeLink,
-} from "../components/Videos";
+import ResourceMaterials from "../components/Videos";
 import Tests from "../components/TeacherTests";
 import Notes, { type NoteData } from "../components/Notes";
 import ApiServices from "../../../services/ApiServices";
@@ -39,18 +37,14 @@ const TeacherMaterials = () => {
     selectedTopicIds?: number[];
   } | null;
 
-  // initialize current selection states (will drive dropdowns)
   const [board, setBoard] = useState(locationState?.boardName || "");
   const [className, setClassName] = useState(locationState?.className || "");
   const [section, setSection] = useState(locationState?.sectionName || "");
 
-  // option lists populated from API
+  // initial options (will be populated from API filters)
   const [boardOptions, setBoardOptions] = useState<string[]>([]);
   const [classOptions, setClassOptions] = useState<string[]>([]);
   const [sectionOptions, setSectionOptions] = useState<string[]>([]);
-
-  // raw hierarchy returned by API (boards -> classes -> sections -> subjects)
-  const [academicHierarchy, setAcademicHierarchy] = useState<any[]>([]);
 
 
   // const [activeSubject, setActiveSubject] = useState(
@@ -68,16 +62,16 @@ const TeacherMaterials = () => {
   const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
   const [chapters, setChapters] = useState<ChapterItem[]>([]);
   const [coreTopics, setCoreTopics] = useState<TopicItem[]>([]);
-  const [apiSubjectWisePlan, setApiSubjectWisePlan] = useState<any[] | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   // ── Resource data from API ──
-  const [youtubeLinks, setYoutubeLinks] = useState<YouTubeLink[]>([]);
-  const [notesData, setNotesData] = useState<NoteData[]>([]);
+  const [allMaterials, setAllMaterials] = useState<any[]>([]);
+  const [availableFilters, setAvailableFilters] = useState<any>(null);
+  const [subjectOptions, setSubjectOptions] = useState<string[]>([]);
   const [isResourcesLoading, setIsResourcesLoading] = useState(false);
 
   const resourceTypes = ["Videos", "Tests", "Notes"];
 
-  const effectiveSubjectWisePlan = locationState?.subjectWisePlan || apiSubjectWisePlan || null;
+  const effectiveSubjectWisePlan = locationState?.subjectWisePlan || null;
 
 
   useEffect(() => {
@@ -91,69 +85,21 @@ const TeacherMaterials = () => {
   }, [location.pathname]);
 
 
-  // whenever selected board or hierarchy changes, update class options
-  useEffect(() => {
-    if (!board) {
-      setClassOptions([]);
-      setClassName("");
-      return;
-    }
-    const classes = academicHierarchy
-      .filter((item: any) => item.board_name === board)
-      .map((item: any) => item.class_name)
-      .filter((v: any) => v);
-    const uniqClasses = Array.from(new Set(classes));
-    setClassOptions(uniqClasses);
-    // if the currently selected class is not part of new options, or none selected, choose first
-    if (!className || !uniqClasses.includes(className)) {
-      setClassName(uniqClasses[0] || "");
-    }
-    // any time board changes, clear sections as well
-    setSection("");
-    setSectionOptions([]);
-  }, [board, academicHierarchy]);
-
-  // whenever selected class changes, update section options from hierarchy
-  useEffect(() => {
-    if (!board || !className) {
-      setSectionOptions([]);
-      setSection("");
-      return;
-    }
-    const sections = academicHierarchy
-      .filter(
-        (item: any) =>
-          item.board_name === board && item.class_name === className,
-      )
-      .flatMap((item: any) => {
-        if (Array.isArray(item.sections)) {
-          return item.sections.map((s: any) => s.section_name || s.section);
-        }
-        return [];
-      });
-    const uniqSections = Array.from(new Set(sections)).filter(Boolean) as string[];
-    setSectionOptions(uniqSections);
-    // if current section not valid, or none selected, pick first
-    if (!section || !uniqSections.includes(section)) {
-      setSection(uniqSections[0] || "");
-    }
-  }, [board, className, academicHierarchy]);
-
-  // Derive subjects list: prefer explicit `subjects` from location, otherwise map from plan
-  const subjects =
-    locationState?.subjects ||
-    (effectiveSubjectWisePlan && Array.isArray(effectiveSubjectWisePlan)
-      ? effectiveSubjectWisePlan.map((p: any) => p.subject_name || p.subject)
-      : [
-        "Math",
-        "Science",
-        "History",
-        "Civics",
-        "Geography",
-        "English Literature",
-        "English Grammar",
-        "Hindi Sahitya",
-      ]);
+  // Derive subjects list: prefer explicit `subjects` from location, otherwise use API subjects
+  const subjects = useMemo(() => {
+    if (locationState?.subjects) return locationState.subjects;
+    if (availableFilters?.subjects) return availableFilters.subjects.map((s: any) => s.name);
+    return [
+      "Math",
+      "Science",
+      "History",
+      "Civics",
+      "Geography",
+      "English Literature",
+      "English Grammar",
+      "Hindi Sahitya",
+    ];
+  }, [locationState?.subjects, availableFilters?.subjects]);
 
   // When API plan loads and no activeSubject selected, pick first subject
   useEffect(() => {
@@ -163,42 +109,97 @@ const TeacherMaterials = () => {
     }
   }, [effectiveSubjectWisePlan, activeSubject]);
 
+  // Fetch Materials and Filters on Mount
   useEffect(() => {
-    const fetchHierarchy = async () => {
+    const fetchData = async () => {
+      setIsResourcesLoading(true);
       try {
-        const res = await ApiServices.getAcademicHierarchy();
-        const result = res.data;
-        if (result?.status === "success" && Array.isArray(result.data)) {
-          // store raw hierarchy for board/class/section dropdowns
-          setAcademicHierarchy(result.data);
-          const boards = Array.from(
-            new Set(result.data.map((item: any) => item.board_name)),
-          ).filter(Boolean) as string[];
-          setBoardOptions(boards);
+        const response = await ApiServices.getTeacherStudyMaterial();
+        const result = response.data;
+        if (result.status === "success") {
+          setAllMaterials(result.data.data || []);
+          setAvailableFilters(result.data.filters || null);
 
-          // also flatten subjects if plan wasn't already provided
-          if (!locationState?.subjectWisePlan) {
-            const flattenedSubjects = result.data.flatMap((item: any) =>
-              Array.isArray(item.subjects) ? item.subjects : [],
-            );
-            setApiSubjectWisePlan(flattenedSubjects);
+          const filters = result.data.filters;
+          if (filters) {
+            // Set options
+            const boards = (filters.boards || []).map((b: any) => b.name);
+            const classes = (filters.classes || []).map((c: any) => c.name);
+            const subjects = (filters.subjects || []).map((s: any) => s.name);
+            const sections = (filters.sections || []).map((s: any) => s.name);
+
+            setBoardOptions(boards);
+            setClassOptions(classes);
+            setSubjectOptions(subjects);
+            setSectionOptions(sections);
+
+            // Default selections if not from location state
+            if (!board && boards.length > 0) setBoard(boards[0]);
+            if (!className && classes.length > 0) setClassName(classes[0]);
+            if (!activeSubject && subjects.length > 0) setActiveSubject(subjects[0]);
+            if (!section && sections.length > 0) setSection(sections[0]);
           }
         }
-      } catch (err) {
-        // console.error("Failed to fetch academic hierarchy:", err);
+      } catch (error) {
+        // console.error("Failed to fetch study materials:", error);
+      } finally {
+        setIsResourcesLoading(false);
       }
     };
+    fetchData();
+  }, []);
 
-    // only bail out early for subject-wise plan; we still need hierarchy for dropdowns
-    fetchHierarchy();
-  }, [locationState?.subjectWisePlan]);
+  // Filter materials based on current selection
+  const filteredMaterialItems = useMemo(() => {
+    if (!availableFilters) return [];
 
-  // if options come in and no board is selected yet, choose the first
-  useEffect(() => {
-    if (!board && boardOptions.length > 0) {
-      setBoard(boardOptions[0]);
+    let filtered = allMaterials;
+
+    // Get IDs for selected names
+    const selectedBoardId = availableFilters.boards?.find((b: any) => b.name === board)?.id;
+    const selectedClassId = availableFilters.classes?.find((c: any) => c.name === className)?.id;
+    const selectedSubjectId = availableFilters.subjects?.find((s: any) => s.name === activeSubject)?.id;
+    const selectedSectionId = availableFilters.sections?.find((s: any) => s.name === section)?.id;
+
+    if (selectedBoardId) {
+      // items don't have board_id in the provided JSON, but if they did:
+      // filtered = filtered.filter(m => m.board_id === selectedBoardId);
     }
-  }, [boardOptions, board]);
+    if (selectedClassId) {
+      filtered = filtered.filter(m => m.class_id === selectedClassId);
+    }
+    if (selectedSubjectId) {
+      filtered = filtered.filter(m => m.subject_id === selectedSubjectId);
+    }
+    if (selectedSectionId) {
+      filtered = filtered.filter(m => m.section_id === selectedSectionId);
+    }
+
+    return filtered;
+  }, [allMaterials, availableFilters, className, activeSubject, section]);
+
+  // Derive youtubeLinks and studyMaterials from filtered items
+  const dynamicYoutubeLinks = useMemo(() => 
+    filteredMaterialItems
+      .filter((m: any) => m.file_type === "link")
+      .map((m: any) => ({
+        title: m.title,
+        url: m.resource
+      })),
+    [filteredMaterialItems]
+  );
+
+  const dynamicStudyMaterials = useMemo(() => 
+    filteredMaterialItems
+      .filter((m: any) => m.file_type === "study_material" || m.file_type === "practice_material")
+      .map((m: any) => ({
+        ...m,
+        file_url: m.resource // Ensure file_url is set for preview
+      })),
+    [filteredMaterialItems]
+  );
+
+  const [notesData, setNotesData] = useState<NoteData[]>([]);
 
   // ── Update chapters and topics dynamically based on active subject ──
   // useEffect(() => {
@@ -386,7 +387,6 @@ const TeacherMaterials = () => {
       // We need at least one selected chapter
       if (selectedChapters.length === 0) {
         // Clear resources when no chapters are selected
-        setYoutubeLinks([]);
         setNotesData([]);
         return;
       }
@@ -449,12 +449,8 @@ const TeacherMaterials = () => {
         const result = response.data;
 
         if (result.status === "success" && Array.isArray(result.data)) {
-          // Flatten all youtube_links or videos from all topics
-          const allLinks: YouTubeLink[] = result.data.flatMap(
-            (item: any) => item.youtube_links || item.videos || [],
-          );
-          setYoutubeLinks(allLinks);
-
+          // youtubeLinks are now handled dynamically from getTeacherStudyMaterial
+          
           // Parse notes for each topic
           const allNotes: NoteData[] = result.data
             .filter((item: any) => item.notes)
@@ -469,9 +465,6 @@ const TeacherMaterials = () => {
                   parsedContent = item.notes;
                 }
               }
-
-              // Normalize content structure if it's an object with a 'content' field
-              // but we want to be flexible as the API might return direct array or obj
 
               return {
                 topic_id: item.topic_id,
@@ -489,7 +482,6 @@ const TeacherMaterials = () => {
         }
       } catch (error) {
         // console.error("Failed to fetch resources:", error);
-        setYoutubeLinks([]);
         setNotesData([]);
       } finally {
         setIsResourcesLoading(false);
@@ -533,8 +525,7 @@ const TeacherMaterials = () => {
 
   const getClassId = () => {
     if (locationState?.stats?.class_id) return locationState.stats.class_id;
-    const boardItem = academicHierarchy.find((item: any) => item.board_name === board && item.class_name === className);
-    return boardItem?.class_id;
+    return availableFilters?.classes?.find((c: any) => c.name === className)?.id;
   };
 
   return (
@@ -549,8 +540,10 @@ const TeacherMaterials = () => {
           sectionOptions={sectionOptions}
           setBoard={setBoard}
           setClassName={setClassName}
+          setSubject={setActiveSubject}
           setSection={setSection}
           activeSubject={activeSubject}
+          subjectOptions={subjectOptions}
           chapters={chapters}
           coreTopics={coreTopics}
           selectedChapters={selectedChapters}
@@ -571,7 +564,7 @@ const TeacherMaterials = () => {
 
           {activeResourceType === "Videos" && (
             <ResourceMaterials
-              youtubeLinks={youtubeLinks}
+              youtubeLinks={dynamicYoutubeLinks}
               isLoading={isResourcesLoading}
             />
           )}
@@ -594,7 +587,11 @@ const TeacherMaterials = () => {
             />
           )}
           {activeResourceType === "Notes" && (
-            <Notes notes={notesData} isLoading={isResourcesLoading} />
+            <Notes 
+              notes={notesData} 
+              studyMaterials={dynamicStudyMaterials} 
+              isLoading={isResourcesLoading} 
+            />
           )}
         </div>
       </div>

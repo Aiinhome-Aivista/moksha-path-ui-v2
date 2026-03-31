@@ -703,6 +703,9 @@ class ApiServices {
   getStudyMaterial(params = {}) {
     return axiosInstance.get(GET_APIS.get_study_material, { params });
   }
+  getTeacherStudyMaterial(params = {}) {
+    return axiosInstance.get(GET_APIS.get_teacher_study_material_v4, { params });
+  }
 }
 
 export default new ApiServices();
