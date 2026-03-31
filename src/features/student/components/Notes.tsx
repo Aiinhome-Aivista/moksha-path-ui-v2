@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import * as pdfjsLib from "pdfjs-dist";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 import {
   // StickyNote,
   // ChevronDown,
@@ -212,6 +214,62 @@ const RenderNoteContent: React.FC<{ data: any; depth?: number }> = ({
   return <p className="text-sm text-gray-700">{String(data)}</p>;
 };
 
+// ── PDF.js Viewer Component ───────────────────────────────────────────────────
+const PdfViewer: React.FC<{ url: string }> = ({ url }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+
+    const renderPdf = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const loadingTask = pdfjsLib.getDocument(url);
+        const pdf = await loadingTask.promise;
+        const container = containerRef.current;
+
+        if (container) {
+          container.innerHTML = ""; // Clear previous content
+          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const viewport = page.getViewport({ scale: 1.5 });
+            const canvas = document.createElement("canvas");
+            canvas.className = "mb-4 shadow-md mx-auto";
+            const context = canvas.getContext("2d");
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            container.appendChild(canvas);
+
+            if (context) {
+              const renderContext = {
+                canvasContext: context,
+                canvas: canvas, // Add the canvas element here
+                viewport: viewport,
+              };
+              await page.render(renderContext).promise;
+            }
+          }
+        }
+      } catch (e: any) {
+        setError(e.message || "Failed to load PDF document.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    renderPdf();
+  }, [url]);
+
+  if (loading) return <div className="flex items-center justify-center h-full gap-2 text-gray-500"><Loader2 size={20} className="animate-spin" /><span>Loading PDF...</span></div>;
+  if (error) return <div className="p-8 text-center text-red-600"><strong>Error:</strong> {error}</div>;
+
+  // The onContextMenu on the parent div will catch all right-clicks on the rendered canvases
+  return <div ref={containerRef} onContextMenu={(e) => e.preventDefault()} />;
+};
+
 // ── Study Materials Card Component ──
 const StudyMaterialCard: React.FC<{
   item: StudyMaterialItem;
@@ -283,19 +341,28 @@ const DocumentPreviewModal: React.FC<{
   item: StudyMaterialItem | null;
   onClose: () => void;
 }> = ({ item, onClose }) => {
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Disable Ctrl+P (Print) and Ctrl+S (Save)
+      if ((event.ctrlKey || event.metaKey) && (event.key === 'p' || event.key === 's')) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup the event listener when the modal is closed
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
   if (!item) return null;
 
   let resourceUrl = getFullResourceUrl(item.resource);
   const isExcel =
     item.file_name?.endsWith(".xlsx") || item.file_name?.endsWith(".xls");
   const isPdf =
-    item.file_name?.toLowerCase().endsWith(".pdf") ||
-    item.resource?.toLowerCase().endsWith(".pdf");
-
-  // Disable PDF controls (download, print, etc.) using viewer parameters
-  if (isPdf) {
-    resourceUrl = `${resourceUrl}#toolbar=0&navpanes=0`;
-  }
+    item.file_name?.toLowerCase().endsWith(".pdf") || item.resource?.toLowerCase().endsWith(".pdf");
 
   return (
     <div
@@ -326,8 +393,10 @@ const DocumentPreviewModal: React.FC<{
       </div>
 
       {/* Modal Body */}
-      <div className="flex-1 overflow-hidden bg-gray-100 relative">
-        {isExcel ? (
+      <div className="flex-1 overflow-auto bg-gray-200 relative">
+        {isPdf ? (
+          <PdfViewer url={resourceUrl} />
+        ) : isExcel ? (
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <FileSpreadsheet size={48} className="text-green-600" />
             <p className="text-sm text-gray-600 font-medium">

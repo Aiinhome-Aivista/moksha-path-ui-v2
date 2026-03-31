@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 // import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices";
 import Chat from "../../auth/modal/chat";
@@ -846,6 +846,7 @@ const LearningPlanner: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { showToast } = useToast();
+  const navigate = useNavigate();
   const { refresh: refreshNotificationCount } = useNotification();
 
   const location = useLocation();
@@ -857,7 +858,7 @@ const LearningPlanner: React.FC = () => {
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [testDuration, setTestDuration] = useState(30);
 
-  const handleTestModalUpdate = async (assignmentId: number) => {
+  const handleTestModalUpdate = async (assignmentId: number): Promise<boolean> => {
     try {
       setIsLoading(true);
 
@@ -874,7 +875,8 @@ const LearningPlanner: React.FC = () => {
         if (startRes.data?.status === "success") {
           setAttemptId(startRes.data.data.attempt_id);
           setTestModalOpen(true);
-          showToast("Assessment started!", "success");
+          showToast("Assessment started!", "success"); // Fixed typo: assesment -> assessment
+          return true; // Indicate success
         } else {
           showToast(
             startRes.data?.message || "Failed to start assessment",
@@ -895,6 +897,7 @@ const LearningPlanner: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+    return false; // Indicate failure
   };
 
   const handleMockTestClick = async (
@@ -992,8 +995,12 @@ const LearningPlanner: React.FC = () => {
         await Promise.all([fetchLearningPlan(), fetchProfileImage()]);
 
         // Check if we came from notification with an assignmentId
-        if (assignmentIdFromState) {
-          await handleTestModalUpdate(assignmentIdFromState);
+        if (assignmentIdFromState) { // Only attempt to open if assignmentId is present in state
+          const success = await handleTestModalUpdate(assignmentIdFromState);
+          if (success) {
+            // Clear the assignmentId from location.state after it has been handled
+            navigate(location.pathname, { replace: true, state: {} });
+          }
         }
       } catch (err) {
         console.error("Initialization error:", err);
@@ -1001,9 +1008,8 @@ const LearningPlanner: React.FC = () => {
         setIsLoading(false);
       }
     };
-
-    init();
-  }, [assignmentIdFromState]);
+    init(); // Initial fetch on component mount
+  }, [assignmentIdFromState, navigate, location.pathname]); // Add navigate and location.pathname to dependencies
 
   const getInitial = () => student?.name?.charAt(0).toUpperCase();
 
