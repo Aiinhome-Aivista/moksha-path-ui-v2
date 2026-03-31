@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import MaterialsSidebar from "../components/Materialsidebar";
 import MaterialsHeader from "../components/MaterialHeader";
@@ -7,9 +7,8 @@ import ResourceMaterials, {
 } from "../components/ResourceMaterials";
 import Practice from "../components/Practice";
 import Tests from "../components/Tests";
-import Notes, { type NoteData, type StudyMaterialItem } from "../components/Notes";
+import Notes, { type StudyMaterialItem } from "../components/Notes";
 import ApiServices from "../../../services/ApiServices";
-// import IconChat from "../../../assets/icon/chat2.svg";
 import Chat from "../../auth/modal/chat";
 
 interface ChapterItem {
@@ -46,7 +45,7 @@ const StudentMaterials = () => {
     locationState?.selectedSubjectName || locationState?.subjects?.[0] || "",
   );
   const [activeResourceType, setActiveResourceType] = useState(
-    locationState?.activeResourceType || "",
+    locationState?.activeResourceType || "Videos",
   );
 
   const [selectedChapters, setSelectedChapters] = useState<number[]>([]);
@@ -61,11 +60,15 @@ const StudentMaterials = () => {
 
   // ── Resource data from API ──
   const [youtubeLinks, setYoutubeLinks] = useState<YouTubeLink[]>([]);
-  const [notesData, setNotesData] = useState<NoteData[]>([]);
   const [studyMaterials, setStudyMaterials] = useState<StudyMaterialItem[]>([]);
   const [isResourcesLoading, setIsResourcesLoading] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const handleRefresh = useCallback(() => {
+    setRefreshTrigger((prev) => prev + 1);
+  }, []);
 
   const resourceTypes = ["Videos", "Notes"];
   
@@ -79,10 +82,8 @@ const StudentMaterials = () => {
       : locationState?.subjectWisePlan || [];
   }, [subjectWisePlan, locationState?.subjectWisePlan]);
 
-  // Prioritize nav state over locally fetched state to ensure richest data is used
   const statsSource = locationState?.academic || locationState?.stats || stats;
   
-  // Ensure we extract a clean array of strings for the subjects
   const subjectsList = useMemo(() => {
     if (planSource.length > 0) {
       return planSource.map((s: any) => s.subject_name || s.name || "Unknown");
@@ -90,22 +91,13 @@ const StudentMaterials = () => {
     return locationState?.subjects || [];
   }, [planSource, locationState?.subjects]);
 
-  // ✅ FIX: GUARANTEE SECTION IS AN ARRAY
-  const safeSectionArray = useMemo(() => {
-    const rawSection = 
-      statsSource?.sections || 
-      statsSource?.sections_name || 
-      statsSource?.section_name || 
-      locationState?.sectionName;
-
-    if (!rawSection) return [];
+  const sectionName = useMemo(() => {
+    const rawSection =
+      statsSource?.section_name ||
+      statsSource?.section ||
+      locationState?.sectionName ||
+      "N/A";
     if (Array.isArray(rawSection)) return rawSection;
-    
-    // If it's a string with commas (e.g. "A, B"), split it. Otherwise, wrap the string in an array.
-    if (typeof rawSection === "string" && rawSection.includes(",")) {
-      return rawSection.split(",").map(s => s.trim());
-    }
-    
     return [rawSection];
   }, [statsSource, locationState?.sectionName]);
 
@@ -114,7 +106,6 @@ const StudentMaterials = () => {
     const loadInitData = async () => {
       setIsPageLoading(true);
       try {
-        // CASE 1: Location State exists
         if (locationState?.subjectWisePlan && locationState.subjectWisePlan.length > 0) {
           setSubjectWisePlan(locationState.subjectWisePlan);
           setStats(locationState.stats || locationState.academic);
@@ -128,15 +119,11 @@ const StudentMaterials = () => {
             );
           }
         } else {
-          // CASE 2: Fetch from API
           const res = await ApiServices.getStudentPlannerDashboard();
-          
-          // Handle variations in API response wrapping
           const resultData = res.data?.status === 'success' ? res.data.data : res.data;
 
           if (resultData) {
             const fetchedPlan = resultData.subject_wise_plan || resultData.subjects || [];
-            // Prioritize the 'academic' object as it's more complete
             const fetchedStats = resultData.academic || resultData.stats || null;
 
             setSubjectWisePlan(fetchedPlan);
@@ -153,7 +140,6 @@ const StudentMaterials = () => {
           }
         }
 
-        // Handle assignment ID if present, regardless of where plan came from
         if (locationState?.assignmentId) {
           const assessRes = await ApiServices.getStudentAssessments();
           if (assessRes.data?.status === "success") {
@@ -176,7 +162,7 @@ const StudentMaterials = () => {
     };
 
     loadInitData();
-  }, [location.state]); // Re-run when navigation state changes
+  }, [location.state]); // Removed refreshTrigger from here
 
   // 2. Transform Chapters and Topics based on Active Subject
   useEffect(() => {
@@ -200,7 +186,6 @@ const StudentMaterials = () => {
       return;
     }
 
-    // Step 1: Map Chapters
     const transformedChapters: ChapterItem[] = selectedSubjectPlan.chapters.map(
       (chapter: any) => ({
         name: chapter.chapter_name || chapter.name || chapter.chapter || "Unknown Chapter",
@@ -211,7 +196,6 @@ const StudentMaterials = () => {
 
     setChapters(transformedChapters);
 
-    // Step 2: Auto-select initial chapter
     let chapterIndex = -1;
     const targetChapterId = fetchedAssignmentContext?.chapterId || locationState?.selectedChapterId;
 
@@ -235,7 +219,6 @@ const StudentMaterials = () => {
       }
     }
 
-    // Step 3: Extract Core Topics
     let extractedTopics: TopicItem[] = [];
     if (chapterIndex !== -1 && selectedSubjectPlan.chapters[chapterIndex]) {
       const selectedChapter = selectedSubjectPlan.chapters[chapterIndex];
@@ -249,36 +232,21 @@ const StudentMaterials = () => {
 
     setCoreTopics(extractedTopics);
 
-    // Step 4: Auto-select topics
-    const targetTopicIds = fetchedAssignmentContext?.topicIds || locationState?.selectedTopicIds;
-
-    if (targetTopicIds && targetTopicIds.length > 0) {
-      const topicIndexes = extractedTopics
-        .map((topic, index) =>
-          topic.topic_id !== undefined && targetTopicIds.includes(topic.topic_id)
-            ? index
-            : -1,
-        )
-        .filter((index) => index !== -1);
-
+    if (fetchedAssignmentContext?.topicIds && fetchedAssignmentContext.topicIds.length > 0) {
+      const topicIndexes = fetchedAssignmentContext.topicIds
+        .map((id) => extractedTopics.findIndex((t) => t.topic_id === id))
+        .filter((idx) => idx !== -1);
       setSelectedTopics(topicIndexes);
     } else {
       setSelectedTopics([]);
     }
-  }, [
-    activeSubject,
-    planSource,
-    locationState?.selectedChapterId,
-    locationState?.selectedTopicIds,
-    fetchedAssignmentContext,
-  ]);
+  }, [activeSubject, planSource, fetchedAssignmentContext, locationState?.selectedChapterId]);
 
   // 3. Fetch Resources (Videos & Notes)
   useEffect(() => {
     const fetchResources = async () => {
       if (selectedChapters.length === 0) {
         setYoutubeLinks([]);
-        setNotesData([]);
         return;
       }
 
@@ -331,38 +299,11 @@ const StudentMaterials = () => {
             (item: any) => item.youtube_links || item.videos || [],
           );
           setYoutubeLinks(allLinks);
-
-          const allNotes: NoteData[] = result.data
-            .filter((item: any) => item.notes)
-            .map((item: any) => {
-              let parsedContent: any = item.notes;
-
-              if (typeof item.notes === "string") {
-                try {
-                  parsedContent = JSON.parse(item.notes);
-                } catch {
-                  parsedContent = item.notes;
-                }
-              }
-
-              return {
-                topic_id: item.topic_id || item.id,
-                topic_title:
-                  item.topic_title || item.topic_name || item.name ||
-                  (parsedContent && typeof parsedContent === "object" && !Array.isArray(parsedContent)
-                    ? parsedContent.title || parsedContent.topic
-                    : `Topic ${item.topic_id || item.id || ""}`),
-                content: parsedContent,
-              };
-            });
-          setNotesData(allNotes);
         } else {
             setYoutubeLinks([]);
-            setNotesData([]);
         }
       } catch (error) {
         setYoutubeLinks([]);
-        setNotesData([]);
       } finally {
         setIsResourcesLoading(false);
       }
@@ -376,25 +317,32 @@ const StudentMaterials = () => {
     statsSource,
     planSource,
     chapters,
-    coreTopics
+    coreTopics,
+    refreshTrigger
   ]);
 
   // 4. Fetch Global Study Materials
   useEffect(() => {
     const fetchStudyMaterials = async () => {
+      setIsResourcesLoading(true);
       try {
         const res = await ApiServices.getStudyMaterial();
         if (res.data?.status === "success" && Array.isArray(res.data?.data)) {
-          setStudyMaterials(res.data.data);
+          setStudyMaterials(res.data.data.map((m: any) => ({
+            ...m,
+            file_url: m.resource || m.file_url 
+          })));
         } else {
           setStudyMaterials([]);
         }
       } catch (err) {
         setStudyMaterials([]);
+      } finally {
+        setIsResourcesLoading(false);
       }
     };
     fetchStudyMaterials();
-  }, []);
+  }, [refreshTrigger]);
 
   // 5. Filter Global Study Materials by Active Subject
   const filteredStudyMaterials = useMemo(() => {
@@ -404,56 +352,17 @@ const StudentMaterials = () => {
     );
   }, [studyMaterials, activeSubject]);
 
-  // Update Core Topics when chapters change manually
-  useEffect(() => {
-    if (!planSource || !activeSubject || chapters.length === 0) return;
-
-    const selectedSubjectPlan = planSource.find(
-      (plan: any) => (plan.subject_name || plan.name) === activeSubject,
-    );
-
-    if (!selectedSubjectPlan?.chapters) return;
-
-    if (selectedChapters.length === 0) {
-      if (coreTopics.length !== 0) setCoreTopics([]);
-      return;
-    }
-
-    const selectedChapterIds = selectedChapters
-      .map((index) => chapters[index]?.chapter_id)
-      .filter((id) => id !== undefined);
-
-    const topics = selectedSubjectPlan.chapters
-      .filter((chapter: any) => selectedChapterIds.includes(chapter.chapter_id || chapter.id))
-      .flatMap(
-        (chapter: any) =>
-          chapter.topics?.map((topic: any) => ({
-            topic_id: topic.topic_id || topic.id,
-            name: topic.topic_name || topic.name,
-          })) || [],
-      );
-
-    const currentTopicIds = coreTopics.map((t) => t.topic_id).join(",");
-    const newTopicIds = topics.map((t: { topic_id: any }) => t.topic_id).join(",");
-
-    if (currentTopicIds !== newTopicIds) {
-      setCoreTopics(topics);
-    }
-  }, [selectedChapters, activeSubject, chapters, planSource]);
-
   // Route Type Mapping
   useEffect(() => {
     const path = location.pathname.toLowerCase();
-
     if (locationState?.activeResourceType) {
       setActiveResourceType(locationState.activeResourceType);
     } else if (path.includes("tests")) setActiveResourceType("Tests");
     else if (path.includes("notes")) setActiveResourceType("Notes");
     else if (path.includes("practice")) setActiveResourceType("Practice");
-    else setActiveResourceType("Videos"); 
+    else if (!activeResourceType) setActiveResourceType("Videos"); 
   }, [location.pathname, locationState?.activeResourceType]);
 
-  // Derived Values for Children Components
   const getSubjectId = () => {
     if (!planSource || !activeSubject) return undefined;
     const selectedSubjectPlan = planSource.find(
@@ -492,7 +401,7 @@ const StudentMaterials = () => {
   };
 
   return (
-    <div className="min-h-screen relative">
+    <div className="h-full relative p-6">
       {isPageLoading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl">
           <div className="flex flex-col items-center gap-3">
@@ -509,9 +418,8 @@ const StudentMaterials = () => {
           }`}
       >
         <MaterialsSidebar
-          board={statsSource?.board_name || statsSource?.board || locationState?.boardName || ""}
-          className={statsSource?.class_name || statsSource?.class || locationState?.className || ""}
-          sectionName={safeSectionArray} // ✅ GUARANTEED TO BE AN ARRAY
+          board={statsSource?.board_name || statsSource?.board || locationState?.boardName || "N/A"}
+          className={statsSource?.class_name || statsSource?.class || locationState?.className || "N/A"}
           subjects={subjectsList}
           activeSubject={activeSubject}
           setActiveSubject={setActiveSubject}
@@ -524,16 +432,19 @@ const StudentMaterials = () => {
           }}
           selectedTopics={selectedTopics}
           setSelectedTopics={setSelectedTopics}
+          sectionName={sectionName}
         />
 
         <div className="flex-1">
           <MaterialsHeader
-            subjects={subjectsList} // Using the cleanly mapped array
+            subjects={subjectsList}
             activeSubject={activeSubject}
             setActiveSubject={setActiveSubject}
             resourceTypes={resourceTypes}
             activeResourceType={activeResourceType}
             setActiveResourceType={setActiveResourceType}
+            onRefresh={handleRefresh}
+            isRefreshing={isResourcesLoading}
           />
 
           {activeResourceType === "Videos" && (
@@ -565,24 +476,15 @@ const StudentMaterials = () => {
           )}
           {activeResourceType === "Notes" && (
             <Notes
-              notes={notesData}
               studyMaterials={filteredStudyMaterials}
               isLoading={isResourcesLoading}
             />
           )}
         </div>
       </div>
-      {/* <div className="fixed right-[1%] top-[80%] -translate-y-1/2 z-[100]">
-        <button
-          onClick={() => setIsChatOpen(true)}
-          aria-label="Open chat"
-          className="p-0 bg-transparent border-0 cursor-pointer"
-        >
-          <img src={IconChat} alt="Chat" className="w-[95px]" />
-        </button>
-      </div> */}
       {isChatOpen && <Chat onClose={() => setIsChatOpen(false)} />}
     </div>
   );
 };
+
 export default StudentMaterials;

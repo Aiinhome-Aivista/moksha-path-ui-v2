@@ -5,7 +5,8 @@ import { type StudyMaterialItem } from "./Notes";
 export interface YouTubeLink {
   title: string;
   url: string;
-  duration?: string; // Optional duration field
+  duration?: string;
+  thumbnail?: string | null;
 }
 
 interface ResourceMaterialsProps {
@@ -52,13 +53,14 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
   //     return null;
   // };
   const getThumbnail = (url: string) => {
+    if (!url) return null;
     try {
-      const videoId = new URL(url).searchParams.get("v");
-
-      if (videoId) {
-        return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+      const regex =
+        /(?:v=|\/embed\/|youtu\.be\/|\/v\/|\/e\/|watch\?v=|\/watch\?feature=player_embedded&v=)([a-zA-Z0-9_-]{11})/;
+      const match = url.match(regex);
+      if (match) {
+        return `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg`;
       }
-
       return null;
     } catch {
       return null;
@@ -80,7 +82,7 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {youtubeLinks.map((link, index) => {
-          const thumbnail = getThumbnail(link.url);
+          const thumbnail = link.thumbnail || getThumbnail(link.url);
 
           return (
             <a
@@ -165,10 +167,20 @@ const ResourceMaterials: React.FC<ResourceMaterialsProps> = ({
                 className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg hover:border-blue-400/40 border border-gray-200 transition-all cursor-pointer group no-underline flex flex-col"
               >
                 {/* Visual Header / Box */}
-                <div className="flex-1 min-h-[144px] flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-blue-50 to-blue-100 border-b border-gray-100 p-5">
-                  <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <LinkIcon size={32} className="text-blue-500" />
-                  </div>
+                <div className="relative h-36 overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 border-b border-gray-100">
+                  {link.thumbnail ? (
+                    <img
+                      src={link.thumbnail}
+                      alt={link.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full gap-3">
+                      <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <LinkIcon size={32} className="text-blue-500" />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Card Content */}

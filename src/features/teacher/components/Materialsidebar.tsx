@@ -1,5 +1,4 @@
 import React from "react";
-import { Check } from "lucide-react";
 
 interface Props {
     board: string;
@@ -29,59 +28,59 @@ interface Props {
 const MaterialsSidebar: React.FC<Props> = ({
     board,
     className,
-    section,
+    //section,
     boardOptions,
     classOptions,
-    sectionOptions,
+    //sectionOptions,
     setBoard,
     setClassName,
-    setSection,
+    //setSection,
     activeSubject: subject, // Renamed for clarity in sidebar logic
     subjectOptions,
     setSubject,
-    chapters,
-    coreTopics,
-    selectedChapters,
-    setSelectedChapters,
-    selectedTopics,
-    setSelectedTopics,
+    // chapters,
+    // coreTopics,
+    // selectedChapters,
+    // setSelectedChapters,
+    // selectedTopics,
+    // setSelectedTopics,
 }) => {
 
     // Handle chapter selection toggle
-    const toggleChapterSelection = (index: number) => {
-        if (selectedChapters.includes(index)) {
-            setSelectedChapters(selectedChapters.filter((i) => i !== index));
-        } else {
-            setSelectedChapters([...selectedChapters, index]);
-        }
-    };
+    // const toggleChapterSelection = (index: number) => {
+    //     if (selectedChapters.includes(index)) {
+    //         setSelectedChapters(selectedChapters.filter((i) => i !== index));
+    //     } else {
+    //         setSelectedChapters([...selectedChapters, index]);
+    //     }
+    // };
 
     // Handle select all chapters
-    const toggleSelectAllChapters = () => {
-        if (selectedChapters.length === chapters.length) {
-            setSelectedChapters([]);
-        } else {
-            setSelectedChapters(chapters.map((_, index) => index));
-        }
-    };
+    // const toggleSelectAllChapters = () => {
+    //     if (selectedChapters.length === chapters.length) {
+    //         setSelectedChapters([]);
+    //     } else {
+    //         setSelectedChapters(chapters.map((_, index) => index));
+    //     }
+    // };
 
     // Handle topic selection toggle
-    const toggleTopicSelection = (index: number) => {
-        if (selectedTopics.includes(index)) {
-            setSelectedTopics(selectedTopics.filter((i) => i !== index));
-        } else {
-            setSelectedTopics([...selectedTopics, index]);
-        }
-    };
+    // const toggleTopicSelection = (index: number) => {
+    //     if (selectedTopics.includes(index)) {
+    //         setSelectedTopics(selectedTopics.filter((i) => i !== index));
+    //     } else {
+    //         setSelectedTopics([...selectedTopics, index]);
+    //     }
+    // };
 
     // Handle select all topics
-    const toggleSelectAllTopics = () => {
-        if (selectedTopics.length === coreTopics.length) {
-            setSelectedTopics([]);
-        } else {
-            setSelectedTopics(coreTopics.map((_, index) => index));
-        }
-    };
+    // const toggleSelectAllTopics = () => {
+    //     if (selectedTopics.length === coreTopics.length) {
+    //         setSelectedTopics([]);
+    //     } else {
+    //         setSelectedTopics(coreTopics.map((_, index) => index));
+    //     }
+    // };
 
     return (
         <div className="w-[280px] flex-shrink-0">

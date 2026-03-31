@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import * as pdfjsLib from "pdfjs-dist";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 import {
-  StickyNote,
-  ChevronDown,
-  ChevronUp,
+  // StickyNote,
+  // ChevronDown,
+  // ChevronUp,
   Loader2,
   ChevronLeft,
   ChevronRight,
@@ -12,15 +14,10 @@ import {
   X,
 } from "lucide-react";
 
-export interface NoteData {
-  topic_id: number;
-  topic_title: string;
-  content: any; // Can be string, array, or object
-}
-
 export interface StudyMaterialItem {
   id: number;
   title: string;
+  description: string | null;
   file_name: string | null;
   file_type: string; // "study_material" | "practice_material" | "link"
   file_url: string | null;
@@ -32,10 +29,10 @@ export interface StudyMaterialItem {
   subject_name?: string;
   uploaded_at: string;
   uploaded_by: number;
+  thumbnail?: string | null;
 }
 
 interface NotesProps {
-  notes?: NoteData[];
   studyMaterials?: StudyMaterialItem[];
   isLoading?: boolean;
 }
@@ -217,6 +214,62 @@ const RenderNoteContent: React.FC<{ data: any; depth?: number }> = ({
   return <p className="text-sm text-gray-700">{String(data)}</p>;
 };
 
+// ── PDF.js Viewer Component ───────────────────────────────────────────────────
+const PdfViewer: React.FC<{ url: string }> = ({ url }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+
+    const renderPdf = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const loadingTask = pdfjsLib.getDocument(url);
+        const pdf = await loadingTask.promise;
+        const container = containerRef.current;
+
+        if (container) {
+          container.innerHTML = ""; // Clear previous content
+          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const viewport = page.getViewport({ scale: 1.5 });
+            const canvas = document.createElement("canvas");
+            canvas.className = "mb-4 shadow-md mx-auto";
+            const context = canvas.getContext("2d");
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            container.appendChild(canvas);
+
+            if (context) {
+              const renderContext = {
+                canvasContext: context,
+                canvas: canvas, // Add the canvas element here
+                viewport: viewport,
+              };
+              await page.render(renderContext).promise;
+            }
+          }
+        }
+      } catch (e: any) {
+        setError(e.message || "Failed to load PDF document.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    renderPdf();
+  }, [url]);
+
+  if (loading) return <div className="flex items-center justify-center h-full gap-2 text-gray-500"><Loader2 size={20} className="animate-spin" /><span>Loading PDF...</span></div>;
+  if (error) return <div className="p-8 text-center text-red-600"><strong>Error:</strong> {error}</div>;
+
+  // The onContextMenu on the parent div will catch all right-clicks on the rendered canvases
+  return <div ref={containerRef} onContextMenu={(e) => e.preventDefault()} />;
+};
+
 // ── Study Materials Card Component ──
 const StudyMaterialCard: React.FC<{
   item: StudyMaterialItem;
@@ -241,6 +294,12 @@ const StudyMaterialCard: React.FC<{
           <h4 className="text-sm font-semibold text-gray-800 truncate m-0 mb-1">
             {item.title}
           </h4>
+
+          {item.description && (
+            <p className="text-[11px] text-gray-500 mb-2 line-clamp-2 m-0">
+              {item.description}
+            </p>
+          )}
 
           <div className="flex items-center gap-2 flex-wrap">
             {/* Type badge */}
@@ -282,19 +341,28 @@ const DocumentPreviewModal: React.FC<{
   item: StudyMaterialItem | null;
   onClose: () => void;
 }> = ({ item, onClose }) => {
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Disable Ctrl+P (Print) and Ctrl+S (Save)
+      if ((event.ctrlKey || event.metaKey) && (event.key === 'p' || event.key === 's')) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup the event listener when the modal is closed
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
   if (!item) return null;
 
   let resourceUrl = getFullResourceUrl(item.resource);
   const isExcel =
     item.file_name?.endsWith(".xlsx") || item.file_name?.endsWith(".xls");
   const isPdf =
-    item.file_name?.toLowerCase().endsWith(".pdf") ||
-    item.resource?.toLowerCase().endsWith(".pdf");
-
-  // Disable PDF controls (download, print, etc.) using viewer parameters
-  if (isPdf) {
-    resourceUrl = `${resourceUrl}#toolbar=0&navpanes=0`;
-  }
+    item.file_name?.toLowerCase().endsWith(".pdf") || item.resource?.toLowerCase().endsWith(".pdf");
 
   return (
     <div
@@ -325,8 +393,10 @@ const DocumentPreviewModal: React.FC<{
       </div>
 
       {/* Modal Body */}
-      <div className="flex-1 overflow-hidden bg-gray-100 relative">
-        {isExcel ? (
+      <div className="flex-1 overflow-auto bg-gray-200 relative">
+        {isPdf ? (
+          <PdfViewer url={resourceUrl} />
+        ) : isExcel ? (
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <FileSpreadsheet size={48} className="text-green-600" />
             <p className="text-sm text-gray-600 font-medium">
@@ -355,33 +425,17 @@ const DocumentPreviewModal: React.FC<{
 };
 
 const Notes: React.FC<NotesProps> = ({
-  notes = [],
   studyMaterials = [],
   isLoading = false,
 }) => {
-  const [expandedNotes, setExpandedNotes] = useState<Set<number>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [previewItem, setPreviewItem] = useState<StudyMaterialItem | null>(null);
+  const [activeTab, setActiveTab] = useState<"study" | "practice">("study");
 
-  const toggleNote = (topicId: number) => {
-    setExpandedNotes((prev) => {
-      const next = new Set(prev);
-      if (next.has(topicId)) next.delete(topicId);
-      else next.add(topicId);
-      return next;
-    });
-  };
-
-  // Pagination Logic
-  const totalPages = Math.ceil(notes.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentNotes = notes.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
+  // Reset page when switching tabs
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   // Separate study materials by type
   const studyMats = studyMaterials.filter(
@@ -391,8 +445,22 @@ const Notes: React.FC<NotesProps> = ({
     (m) => m.file_type === "practice_material",
   );
 
-  const hasStudyMaterials = studyMats.length > 0 || practiceMats.length > 0;
-  const hasNotes = notes.length > 0;
+  const currentItems = activeTab === "study" ? studyMats : practiceMats;
+
+  // Pagination Logic
+  const totalPages = Math.ceil(currentItems.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedItems = currentItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const hasStudyMaterials = studyMats.length > 0;
+  const hasPracticeMaterials = practiceMats.length > 0;
+ 
 
   if (isLoading) {
     return (
@@ -403,194 +471,133 @@ const Notes: React.FC<NotesProps> = ({
     );
   }
 
-  if (!hasNotes && !hasStudyMaterials) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-gray-400">
-        <StickyNote size={40} className="mb-3 opacity-50" />
-        <p className="text-sm font-medium">No notes available</p>
-        <p className="text-xs mt-1">
-          Select a chapter and topic from the sidebar to load notes
-        </p>
-      </div>
-    );
-  }
+  const tabs = [
+    { id: "study", label: "Study Materials", count: studyMats.length, icon: FileText },
+    { id: "practice", label: "Practice Material", count: practiceMats.length, icon: FileSpreadsheet },
+  ] as const;
 
   return (
-    <div>
-      {/* ── Study Materials Section (from get_study_material API) ── */}
-      {hasStudyMaterials && (
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <FileText size={20} className="text-[#F27927]" />
-            <h2 className="text-lg font-semibold text-gray-800">
-              Study Materials
-            </h2>
-            <span className="text-xs bg-orange-50 text-[#F27927] px-2 py-0.5 rounded-full font-medium">
-              {studyMaterials.length} files
-            </span>
-          </div>
+    <div className="space-y-6">
+      {/* ── Tabs Navigation ── */}
+      <div className="flex items-center gap-2 border-b border-gray-200">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-6 py-3 text-sm font-semibold transition-all relative border-none bg-transparent cursor-pointer ${
+                isActive
+                  ? "text-[#F27927]"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <Icon size={18} />
+              <span>{tab.label}</span>
+              {tab.count > 0 && (
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                    isActive ? "bg-orange-100 text-[#F27927]" : "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              )}
+              {isActive && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F27927] rounded-full" />
+              )}
+            </button>
+          );
+        })}
+      </div>
 
-          {/* Study Material */}
-          {studyMats.length > 0 && (
-            <div className="mb-4">
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                📚 Study Material
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {studyMats.map((item) => (
+      {/* ── Tab Content ── */}
+      <div className="min-h-[400px]">
+        {/* Study Materials Tab */}
+        {activeTab === "study" && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {hasStudyMaterials ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {paginatedItems.map((item) => (
                   <StudyMaterialCard key={item.id} item={item} onClick={setPreviewItem} />
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Practice Material */}
-          {practiceMats.length > 0 && (
-            <div className="mb-4">
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                📝 Practice Material
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {practiceMats.map((item) => (
-                  <StudyMaterialCard key={item.id} item={item} onClick={setPreviewItem} />
-                ))}
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+                <FileText size={48} className="mb-3 opacity-20" />
+                <p className="text-sm font-medium">No Study Materials available</p>
+                <p className="text-xs mt-1">Check back later for uploaded study files</p>
               </div>
-            </div>
-          )}
-
-          {/* Divider between study materials and notes */}
-          {hasNotes && (
-            <div className="border-t border-gray-200 mt-6 mb-6" />
-          )}
-        </div>
-      )}
-
-      {/* ── AI-Generated Notes Section (existing) ── */}
-      {hasNotes && (
-        <>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <StickyNote size={20} className="text-[#F27927]" />
-              <h2 className="text-lg font-semibold text-gray-800">Notes</h2>
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                {notes.length} notes
-              </span>
-            </div>
-
-            {/* Page indicator */}
-            {totalPages > 1 && (
-              <span className="text-xs text-gray-500">
-                Page {currentPage} of {totalPages}
-              </span>
             )}
           </div>
+        )}
 
-          <div className="space-y-4 min-h-[500px]">
-            {currentNotes.map((note) => {
-              const isExpanded = expandedNotes.has(note.topic_id);
-
-              return (
-                <div
-                  key={note.topic_id}
-                  className="bg-white rounded-lg border-l-4 border-l-[#F27927] border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
-                >
-                  {/* Header - clickable */}
-                  <button
-                    onClick={() => toggleNote(note.topic_id)}
-                    className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
-                        <StickyNote size={20} className="text-[#F27927]" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-bold text-base text-gray-800">
-                          {note.topic_title}
-                        </h3>
-                      </div>
-                    </div>
-                    {isExpanded ? (
-                      <ChevronUp
-                        size={20}
-                        className="text-[#F27927] flex-shrink-0"
-                      />
-                    ) : (
-                      <ChevronDown
-                        size={20}
-                        className="text-gray-400 flex-shrink-0"
-                      />
-                    )}
-                  </button>
-
-                  {/* Expandable content */}
-                  {isExpanded && (
-                    <div className="px-5 pb-5 border-t border-gray-200 bg-gray-50">
-                      <div className="pt-4">
-                        <RenderNoteContent data={note.content} />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-8 mb-4">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`p-2 rounded-lg border flex items-center justify-center transition-colors ${
-                  currentPage === 1
-                    ? "border-gray-100 text-gray-300 cursor-not-allowed"
-                    : "border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#F27927]"
-                }`}
-                title="Previous Page"
-              >
-                <ChevronLeft size={20} />
-              </button>
-
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`w-8 h-8 rounded-lg text-sm font-medium flex items-center justify-center transition-all ${
-                        currentPage === page
-                          ? "bg-[#F27927] text-white shadow-md shadow-orange-100"
-                          : "text-gray-600 hover:bg-gray-100"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ),
-                )}
+        {/* Practice Material Tab */}
+        {activeTab === "practice" && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {hasPracticeMaterials ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {paginatedItems.map((item) => (
+                  <StudyMaterialCard key={item.id} item={item} onClick={setPreviewItem} />
+                ))}
               </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+                <FileSpreadsheet size={48} className="mb-3 opacity-20" />
+                <p className="text-sm font-medium">No Practice Material available</p>
+                <p className="text-xs mt-1">Check back later for worksheets and files</p>
+              </div>
+            )}
+          </div>
+        )}
 
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className={`p-2 rounded-lg border flex items-center justify-center transition-colors ${
-                  currentPage === totalPages
-                    ? "border-gray-100 text-gray-300 cursor-not-allowed"
-                    : "border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#F27927]"
-                }`}
-                title="Next Page"
-              >
-                <ChevronRight size={20} />
-              </button>
+        {/* Tab Pagination controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-8">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={`p-2 rounded-lg border flex items-center justify-center transition-colors ${
+                currentPage === 1
+                  ? "border-gray-100 text-gray-300 cursor-not-allowed"
+                  : "border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#F27927]"
+              }`}
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`w-8 h-8 rounded-lg text-sm font-medium flex items-center justify-center transition-all ${
+                    currentPage === page
+                      ? "bg-[#F27927] text-white shadow-md"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
             </div>
-          )}
-        </>
-      )}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className={`p-2 rounded-lg border flex items-center justify-center transition-colors ${
+                currentPage === totalPages
+                  ? "border-gray-100 text-gray-300 cursor-not-allowed"
+                  : "border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#F27927]"
+              }`}
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Document Preview Modal */}
-      <DocumentPreviewModal
-        item={previewItem}
-        onClose={() => setPreviewItem(null)}
-      />
+      <DocumentPreviewModal item={previewItem} onClose={() => setPreviewItem(null)} />
     </div>
   );
 };

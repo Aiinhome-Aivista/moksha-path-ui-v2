@@ -124,7 +124,7 @@ const RenderNoteContent: React.FC<{ data: any; depth?: number }> = ({
 const Notes: React.FC<NotesProps> = ({ notes = [], isLoading = false }) => {
   const [expandedNotes, setExpandedNotes] = useState<Set<number>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
-  const [uploadedNotes, setUploadedNotes] = useState<NoteData[]>([]);
+  const [uploadedNotes] = useState<NoteData[]>([]);
 
   // const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
   //   const file = event.target.files?.[0];
