@@ -374,6 +374,8 @@ const TeacherLearningPlanner: React.FC = () => {
           section_name: data.dropdowns?.sections?.[0]?.name,
           section_id: data.dropdowns?.sections?.[0]?.id,
           subscription_id: data.subscription_id,
+          student_ids: data.student_ids || [],
+          test_config: data.test_config || {},
         });
 
         if (data.dropdowns) {
@@ -442,23 +444,46 @@ const TeacherLearningPlanner: React.FC = () => {
           })),
         );
 
-        // if (row.completed === true) {
-        //   try {
-        //     setIsGeneratingTest(true);
-        //     const genRes = await ApiServices.generateTestFromPlanner({
-        //       subscription_id: stats?.subscription_id
-        //     });
-        //     if (genRes.data?.status === "success") {
-        //       showToast("Test generated successfully", "success");
-        //     } else {
-        //       showToast(genRes.data?.message || "Test generation failed", "error");
-        //     }
-        //   } catch (err) {
-        //     showToast("Error while generating test", "error");
-        //   } finally {
-        //     setIsGeneratingTest(false);
-        //   }
-        // }
+        if (row.completed === true) {
+          try {
+            setIsGeneratingTest(true);
+
+            let due_date = null;
+            if (row.endDate_raw && stats?.test_config?.validity_date) {
+              const dateObj = new Date(row.endDate_raw);
+              dateObj.setDate(dateObj.getDate() + stats.test_config.validity_date);
+              due_date = dateObj.toISOString().split("T")[0];
+            } else if (row.endDate_raw) {
+              due_date = row.endDate_raw;
+            }
+
+            const currentSubjectId = subjects.find(s => s.subject_name === activeSubject)?.subject_id;
+
+            const genRes = await ApiServices.createAdaptiveSet({
+              set_name: `${row.chapter} - Adaptive Test`,
+              institute_id: stats?.institute_id,
+              board_id: stats?.board_id,
+              class_id: stats?.class_id,
+              subject_id: currentSubjectId,
+              total_marks: stats?.test_config?.total_marks || null,
+              duration_minutes: stats?.test_config?.duration_minutes || null,
+              number_of_questions: stats?.test_config?.number_of_questions || null,
+              max_attempt_count: stats?.test_config?.max_attempt_count || null,
+              chapters_array: [row.id],
+              topics_array: null,
+              student_ids: stats?.student_ids || [],
+              due_date: due_date
+            });
+            
+            if (genRes.data?.status !== "success") {
+              showToast(genRes.data?.message || "Failed to create adaptive set", "error");
+            }
+          } catch (err) {
+            showToast("Error while creating adaptive set", "error");
+          } finally {
+            setIsGeneratingTest(false);
+          }
+        }
       } else {
         showToast(res.data?.message || "Failed to update", "error");
       }

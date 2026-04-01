@@ -706,6 +706,10 @@ class ApiServices {
   getTeacherStudyMaterial(params = {}) {
     return axiosInstance.get(GET_APIS.get_teacher_study_material_v4, { params });
   }
+
+  createAdaptiveSet(payload) {
+    return axiosInstance.post(POST_APIS.create_adaptive_set, payload);
+  }
 }
 
 export default new ApiServices();
