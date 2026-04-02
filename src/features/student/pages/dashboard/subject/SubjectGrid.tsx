@@ -19,10 +19,10 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject }) => {
           const dashboardData = response.data.data?.dashboard || [];
 
           // Map raw dashboard data to SubjectCard format
-          const formattedData = dashboardData
+          let formattedData = dashboardData
             .filter((item: any) => item.subject_name === selectedSubject)
             .map((item: any) => {
-              const overall = item.overall_accuracy || 0;
+              const overall = Number(item.overall_accuracy) || 0;
 
               // Determine status and difficulty based on overall accuracy
               let difficulty = "Easy";
@@ -39,33 +39,49 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject }) => {
               }
 
               return {
-                title: item.chapters_name,
+                title: item.chapters_name || item.subject_name,
                 score: Math.round(overall),
-                level: `L${item.l3_accuracy !== null ? 3 : item.l2_accuracy !== null ? 2 : 1}`,
+                level: `L${item.l3_accuracy != null ? 3 : item.l2_accuracy != null ? 2 : 1}`,
                 difficulty: difficulty,
                 statusColor: statusColor,
                 levels: [
                   {
                     label: "L1",
-                    value: Math.round(item.l1_accuracy || 0),
-                    color: (item.l1_accuracy || 0) > 60 ? "#578E12" : "#FF7361",
-                    time: item.l1_avg_time ? `${Math.round(item.l1_avg_time)}s` : "0s"
+                    value: Math.round(Number(item.l1_accuracy) || 0),
+                    color: (Number(item.l1_accuracy) || 0) > 60 ? "#578E12" : "#FF7361",
+                    time: item.l1_avg_time ? `${Math.round(Number(item.l1_avg_time))}s` : "0s"
                   },
                   {
                     label: "L2",
-                    value: Math.round(item.l2_accuracy || 0),
-                    color: (item.l2_accuracy || 0) > 60 ? "#578E12" : "#EA9003",
-                    time: item.l2_avg_time ? `${Math.round(item.l2_avg_time)}s` : "0s"
+                    value: Math.round(Number(item.l2_accuracy) || 0),
+                    color: (Number(item.l2_accuracy) || 0) > 60 ? "#578E12" : "#EA9003",
+                    time: item.l2_avg_time ? `${Math.round(Number(item.l2_avg_time))}s` : "0s"
                   },
                   {
                     label: "L3",
-                    value: Math.round(item.l3_accuracy || 0),
-                    color: (item.l3_accuracy || 0) > 60 ? "#578E12" : "#EA9003",
-                    time: item.l3_avg_time ? `${Math.round(item.l3_avg_time)}s` : "0s"
+                    value: Math.round(Number(item.l3_accuracy) || 0),
+                    color: (Number(item.l3_accuracy) || 0) > 60 ? "#578E12" : "#EA9003",
+                    time: item.l3_avg_time ? `${Math.round(Number(item.l3_avg_time))}s` : "0s"
                   }
                 ]
               };
             });
+
+          // If no data found for selected subject, provide a default empty state card
+          if (formattedData.length === 0 && selectedSubject) {
+            formattedData = [{
+              title: selectedSubject,
+              score: 0,
+              level: "L1",
+              difficulty: "Easy",
+              statusColor: "#80975F",
+              levels: [
+                { label: "L1", value: 0, color: "#FF7361", time: "0s" },
+                { label: "L2", value: 0, color: "#EA9003", time: "0s" },
+                { label: "L3", value: 0, color: "#EA9003", time: "0s" }
+              ]
+            }];
+          }
 
           setData(formattedData);
         }

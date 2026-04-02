@@ -228,11 +228,9 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                     <span className="material-symbols-outlined ml-1">
                       keyboard_arrow_down
                     </span>
-                    {overallTestCount > 0 && (
-                      <span className="ml-1.5 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
-                        {overallTestCount}
-                      </span>
-                    )}
+                    <span className="ml-1.5 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
+                      {overallTestCount || 0}
+                    </span>
                   </button>
 
                   {showDropdown && (
@@ -257,12 +255,10 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                             >
                               <span>{sub.subject_name}</span>
                               <div className="flex items-center gap-2">
-                                {/* ✅ Number Badge */}
-                                {count && count > 0 && (
-                                  <span className="flex items-center justify-center bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full shadow-sm">
-                                    {count}
-                                  </span>
-                                )}
+                                {/* ✅ Number Badge - Always show even if 0 */}
+                                <span className="flex items-center justify-center bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full shadow-sm">
+                                  {count || 0}
+                                </span>
                               </div>
                             </div>
                           );
