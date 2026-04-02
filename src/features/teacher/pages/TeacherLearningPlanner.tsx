@@ -8,7 +8,7 @@ import {
   Upload,
   Save,
   FileText,
-  FileSpreadsheet,
+  // FileSpreadsheet,
   Link,
   X,
   Loader2,
@@ -739,7 +739,7 @@ const TeacherLearningPlanner: React.FC = () => {
                     </label>
                   </div>
                 </td>
-
+{/* 
                 <td className="py-3 px-2 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <button
@@ -807,6 +807,58 @@ const TeacherLearningPlanner: React.FC = () => {
                       </div>
                     )}
                   </div>
+                </td> */}
+                <td className="py-3 px-2 text-center">
+                  <div className="flex flex-col items-center justify-center">
+                    <button
+                      onClick={() =>
+                        setUploadForm({
+                          ...uploadForm,
+                          isOpen: true,
+                          chapterId: row.id,
+                          displayName: "",
+                          description: "",
+                        })
+                      }
+                      className="cursor-pointer flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-md transition-colors border-none"
+                    >
+                      <Upload size={12} />
+                      <span>Upload</span>
+                    </button>
+
+                    {row.testMaterial.length > 0 && (
+                      <div
+                        className="flex gap-2 cursor-pointer"
+                        title={row.testMaterial
+                          .map((m: any) => m.name)
+                          .join(",\n")}
+                      >
+                        <span className="text-[9px] font-bold text-primary">
+                          Study
+                        </span>
+                        <span className="text-xs text-blue-700 font-medium underline decoration-dotted">
+                          {row.testMaterial.length}{" "}
+                          {row.testMaterial.length === 1 ? "file" : "files"}
+                        </span>
+                      </div>
+                    )}
+                    {row.practiceMaterial.length > 0 && (
+                      <div
+                        className="flex gap-2 cursor-pointer"
+                        title={row.practiceMaterial
+                          .map((m: any) => m.name)
+                          .join(",\n")}
+                      >
+                        <span className="text-[9px] font-bold text-primary">
+                          Practice
+                        </span>
+                        <span className="text-xs text-green-700 font-medium underline decoration-dotted">
+                          {row.practiceMaterial.length}{" "}
+                          {row.practiceMaterial.length === 1 ? "file" : "files"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </td>
 
                 <td className="py-3 px-2 text-center">
@@ -822,7 +874,8 @@ const TeacherLearningPlanner: React.FC = () => {
                       !row.endDate_raw ||
                       (row.completed && row.isSaved === true)
                     }
-                    className={`w-4 h-4 rounded border-gray-300 text-[#b0cb1f] focus:ring-[#b0cb1f] ${row.completed && row.isSaved === true ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                   className="w-4 h-4 accent-secondary disabled:accent-[#AAA] cursor-pointer disabled:cursor-not-allowed opacity-100"
+
                   />
                 </td>
 
