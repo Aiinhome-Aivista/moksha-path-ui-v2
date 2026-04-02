@@ -104,13 +104,13 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
           // Build notifications map from dashboard data
           const counts: Record<string, number> = {};
           dashboardData.forEach((item: any) => {
-             counts[item.subject_name] = (counts[item.subject_name] || 0) + (item.subject_test_count || 0);
+            counts[item.subject_name] = (counts[item.subject_name] || 0) + (item.subject_test_count || 0);
           });
           setNotifications(counts);
 
           if (Array.isArray(fetchedSubjects) && fetchedSubjects.length > 0) {
             setSubjectsList(fetchedSubjects);
-            
+
             // Auto-select the first subject if none is selected currently
             if (!selectedSubject) {
               onSubjectSelect(fetchedSubjects[0].subject_name);
@@ -220,8 +220,8 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                       setShowExamDropdown(false);
                     }}
                     className={`px-6 py-1 flex items-center rounded-full text-lg font-bold ${activeTab === tab.key
-                        ? "bg-[#E59003] text-white"
-                        : "text-gray-600 hover:bg-gray-100"
+                      ? "bg-[#E59003] text-white"
+                      : "text-gray-600 hover:bg-gray-100"
                       }`}
                   >
                     {activeTab === "subject" && selectedSubject ? selectedSubject : tab.name}
@@ -229,7 +229,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                       keyboard_arrow_down
                     </span>
                     {overallTestCount > 0 && (
-                      <span className="ml-1.5 bg-red-500 text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-sm border border-white/10">
+                      <span className="ml-1.5 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
                         {overallTestCount}
                       </span>
                     )}
@@ -251,15 +251,15 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                                 setShowDropdown(false);
                               }}
                               className={`flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer font-medium transition-colors ${selectedSubject === sub.subject_name
-                                  ? "bg-lime-50 text-lime-800"
-                                  : "text-gray-700 hover:bg-gray-100"
+                                ? "bg-lime-50 text-lime-800"
+                                : "text-gray-700 hover:bg-gray-100"
                                 }`}
                             >
                               <span>{sub.subject_name}</span>
                               <div className="flex items-center gap-2">
                                 {/* ✅ Number Badge */}
                                 {count && count > 0 && (
-                                  <span className="flex items-center justify-center bg-red-500 text-white text-[9px] font-black w-4.5 h-4.5 rounded-full shadow-sm">
+                                  <span className="flex items-center justify-center bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full shadow-sm">
                                     {count}
                                   </span>
                                 )}
@@ -291,8 +291,8 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                       setShowDropdown(false);
                     }}
                     className={`px-6 py-1 flex items-center rounded-full text-lg font-bold whitespace-nowrap ${activeTab === tab.key
-                        ? "bg-[#E59003] text-white"
-                        : "text-gray-600 hover:bg-gray-100"
+                      ? "bg-[#E59003] text-white"
+                      : "text-gray-600 hover:bg-gray-100"
                       }`}
                   >
                     {activeTab === "exam" && selectedExam ? selectedExam : tab.name}
@@ -314,8 +314,8 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                             setShowExamDropdown(false);
                           }}
                           className={`flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer font-medium transition-colors ${selectedExam === exam
-                              ? "bg-lime-100 text-lime-800"
-                              : "text-gray-700 hover:bg-gray-100"
+                            ? "bg-lime-100 text-lime-800"
+                            : "text-gray-700 hover:bg-gray-100"
                             }`}
                         >
                           <span>{exam}</span>
@@ -340,8 +340,8 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                   setShowExamDropdown(false);
                 }}
                 className={`px-6 py-1 rounded-full text-lg font-bold whitespace-nowrap ${activeTab === tab.key
-                    ? "bg-[#E59003] text-white"
-                    : "text-gray-600 hover:bg-gray-100"
+                  ? "bg-[#E59003] text-white"
+                  : "text-gray-600 hover:bg-gray-100"
                   }`}
               >
                 {tab.name}
