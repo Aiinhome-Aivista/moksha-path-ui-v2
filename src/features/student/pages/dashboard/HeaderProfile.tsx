@@ -41,16 +41,12 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
   const [profileImage, setProfileImage] = useState<string>("");
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [subjectsList, setSubjectsList] = useState<Subject[]>([]);
-  
+
   const subjectDropdownRef = useRef<HTMLDivElement>(null);
   const examDropdownRef = useRef<HTMLDivElement>(null);
 
-  // ✅ Hardcoded map of subjects and their notification counts
-  const notifications: Record<string, number> = {
-    "Mathematics": 3,
-    "Science": 1,
-    "English": 5
-  };
+  const [notifications, setNotifications] = useState<Record<string, number>>({});
+  const [overallTestCount, setOverallTestCount] = useState<number>(0);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -72,7 +68,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
       try {
         const imageRes = await ApiServices.getUserProfileImage();
         let imgData = imageRes.data?.data?.image || imageRes.data?.data?.profile_image;
-        
+
         // ✅ Safely handle both Base64 strings and actual HTTP URLs
         if (imageRes.data?.status === "success" && imgData && imgData.trim() !== "") {
           if (!imgData.startsWith("http") && !imgData.startsWith("data:")) {
@@ -94,13 +90,23 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
     const fetchSubjects = async () => {
       try {
         const response = await ApiServices.getStudentSubjectsTabInfo();
-        
+
         if (response.data?.status === "success") {
           // Handle various possible API wrapping structures
-          const fetchedSubjects = 
-            response.data.data?.subjects || 
-            response.data.subjects || 
+          const fetchedSubjects =
+            response.data.data?.subjects ||
+            response.data.subjects ||
             (Array.isArray(response.data.data) ? response.data.data : []);
+
+          const dashboardData = response.data.data?.dashboard || [];
+          setOverallTestCount(response.data.data?.overall_test_count || 0);
+
+          // Build notifications map from dashboard data
+          const counts: Record<string, number> = {};
+          dashboardData.forEach((item: any) => {
+             counts[item.subject_name] = (counts[item.subject_name] || 0) + (item.subject_test_count || 0);
+          });
+          setNotifications(counts);
 
           if (Array.isArray(fetchedSubjects) && fetchedSubjects.length > 0) {
             setSubjectsList(fetchedSubjects);
@@ -158,7 +164,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
   return (
     <>
       <div className="grid grid-cols-1 mb-1 lg:grid-cols-3 xl:grid-cols-4 items-center relative -ml-6">
-        
+
         {/* ─── Profile Card ────────────────────────────────────────────── */}
         <div className="flex items-center gap-4 bg-[#212b36] text-white p-4 h-24 z-10 min-w-80 rounded-tr-full rounded-br-full shadow-md">
           <div className="relative flex-shrink-0">
@@ -167,7 +173,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                 src={profileImage}
                 className="w-20 h-20 rounded-full border-2 border-white object-cover shadow-sm bg-white"
                 alt="profile"
-                onError={() => setProfileImage("")} 
+                onError={() => setProfileImage("")}
               />
             ) : (
               <div className="w-20 h-20 rounded-full border-2 border-white bg-[#BADA55] flex items-center justify-center text-[#2b3a00] text-3xl font-black shadow-sm">
@@ -182,10 +188,10 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
 
           <div className="flex-1 min-w-0 pr-4">
             <h2 className="text-lg font-bold truncate">
-            {displayName}
+              {displayName}
             </h2>
             <p className="text-[11px] text-gray-300 leading-snug mt-0.5 truncate">
-              {displaySchool} <br/>
+              {displaySchool} <br />
               {displayBoard ? `(${displayBoard}) | ` : ""}{displayClass}
             </p>
             <span className="text-[10px] font-bold text-[#BADA55] uppercase tracking-widest mt-1 block">
@@ -213,16 +219,20 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                       setShowDropdown(!showDropdown);
                       setShowExamDropdown(false);
                     }}
-                    className={`px-6 py-1 flex items-center rounded-full text-lg font-bold ${
-                      activeTab === tab.key
+                    className={`px-6 py-1 flex items-center rounded-full text-lg font-bold ${activeTab === tab.key
                         ? "bg-[#E59003] text-white"
                         : "text-gray-600 hover:bg-gray-100"
-                    }`}
+                      }`}
                   >
                     {activeTab === "subject" && selectedSubject ? selectedSubject : tab.name}
                     <span className="material-symbols-outlined ml-1">
                       keyboard_arrow_down
                     </span>
+                    {overallTestCount > 0 && (
+                      <span className="ml-1.5 bg-red-500 text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-sm border border-white/10">
+                        {overallTestCount}
+                      </span>
+                    )}
                   </button>
 
                   {showDropdown && (
@@ -240,17 +250,16 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                                 onSubjectSelect(sub.subject_name);
                                 setShowDropdown(false);
                               }}
-                              className={`flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer font-medium transition-colors ${
-                                selectedSubject === sub.subject_name
+                              className={`flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer font-medium transition-colors ${selectedSubject === sub.subject_name
                                   ? "bg-lime-50 text-lime-800"
                                   : "text-gray-700 hover:bg-gray-100"
-                              }`}
+                                }`}
                             >
                               <span>{sub.subject_name}</span>
                               <div className="flex items-center gap-2">
                                 {/* ✅ Number Badge */}
                                 {count && count > 0 && (
-                                  <span className="flex items-center justify-center bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px]">
+                                  <span className="flex items-center justify-center bg-red-500 text-white text-[9px] font-black w-4.5 h-4.5 rounded-full shadow-sm">
                                     {count}
                                   </span>
                                 )}
@@ -281,11 +290,10 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                       setShowExamDropdown(!showExamDropdown);
                       setShowDropdown(false);
                     }}
-                    className={`px-6 py-1 flex items-center rounded-full text-lg font-bold whitespace-nowrap ${
-                      activeTab === tab.key
+                    className={`px-6 py-1 flex items-center rounded-full text-lg font-bold whitespace-nowrap ${activeTab === tab.key
                         ? "bg-[#E59003] text-white"
                         : "text-gray-600 hover:bg-gray-100"
-                    }`}
+                      }`}
                   >
                     {activeTab === "exam" && selectedExam ? selectedExam : tab.name}
                     <span className="material-symbols-outlined ml-1">
@@ -305,11 +313,10 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                             onExamSelect(exam);
                             setShowExamDropdown(false);
                           }}
-                          className={`flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer font-medium transition-colors ${
-                            selectedExam === exam
+                          className={`flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer font-medium transition-colors ${selectedExam === exam
                               ? "bg-lime-100 text-lime-800"
                               : "text-gray-700 hover:bg-gray-100"
-                          }`}
+                            }`}
                         >
                           <span>{exam}</span>
                           {selectedExam === exam && (
@@ -322,7 +329,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                 </div>
               );
             }
-            
+
             // Other tabs (normal)
             return (
               <button
@@ -332,11 +339,10 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                   setShowDropdown(false);
                   setShowExamDropdown(false);
                 }}
-                className={`px-6 py-1 rounded-full text-lg font-bold whitespace-nowrap ${
-                  activeTab === tab.key
+                className={`px-6 py-1 rounded-full text-lg font-bold whitespace-nowrap ${activeTab === tab.key
                     ? "bg-[#E59003] text-white"
                     : "text-gray-600 hover:bg-gray-100"
-                }`}
+                  }`}
               >
                 {tab.name}
               </button>

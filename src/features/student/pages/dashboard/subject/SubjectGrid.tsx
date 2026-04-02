@@ -17,13 +17,13 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject }) => {
         const response = await ApiServices.getStudentSubjectsTabInfo();
         if (response.data?.status === "success") {
           const dashboardData = response.data.data?.dashboard || [];
-          
+
           // Map raw dashboard data to SubjectCard format
           const formattedData = dashboardData
             .filter((item: any) => item.subject_name === selectedSubject)
             .map((item: any) => {
               const overall = item.overall_accuracy || 0;
-              
+
               // Determine status and difficulty based on overall accuracy
               let difficulty = "Easy";
               let statusColor = "#80975F";
@@ -45,28 +45,28 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject }) => {
                 difficulty: difficulty,
                 statusColor: statusColor,
                 levels: [
-                  { 
-                    label: "L1", 
-                    value: Math.round(item.l1_accuracy || 0), 
-                    color: (item.l1_accuracy || 0) > 60 ? "#578E12" : "#FF7361", 
-                    time: item.l1_avg_time ? `${Math.round(item.l1_avg_time)}s` : "0s" 
+                  {
+                    label: "L1",
+                    value: Math.round(item.l1_accuracy || 0),
+                    color: (item.l1_accuracy || 0) > 60 ? "#578E12" : "#FF7361",
+                    time: item.l1_avg_time ? `${Math.round(item.l1_avg_time)}s` : "0s"
                   },
-                  { 
-                    label: "L2", 
-                    value: Math.round(item.l2_accuracy || 0), 
-                    color: (item.l2_accuracy || 0) > 60 ? "#578E12" : "#EA9003", 
-                    time: item.l2_avg_time ? `${Math.round(item.l2_avg_time)}s` : "0s" 
+                  {
+                    label: "L2",
+                    value: Math.round(item.l2_accuracy || 0),
+                    color: (item.l2_accuracy || 0) > 60 ? "#578E12" : "#EA9003",
+                    time: item.l2_avg_time ? `${Math.round(item.l2_avg_time)}s` : "0s"
                   },
-                  { 
-                    label: "L3", 
-                    value: Math.round(item.l3_accuracy || 0), 
-                    color: (item.l3_accuracy || 0) > 60 ? "#578E12" : "#EA9003", 
-                    time: item.l3_avg_time ? `${Math.round(item.l3_avg_time)}s` : "0s" 
+                  {
+                    label: "L3",
+                    value: Math.round(item.l3_accuracy || 0),
+                    color: (item.l3_accuracy || 0) > 60 ? "#578E12" : "#EA9003",
+                    time: item.l3_avg_time ? `${Math.round(item.l3_avg_time)}s` : "0s"
                   }
                 ]
               };
             });
-          
+
           setData(formattedData);
         }
       } catch (error) {
@@ -92,7 +92,7 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject }) => {
     );
   }
 
-   return (
+  return (
     <>
       <div className="px-8 py-2 text-lg font-semibold text-gray-700">
         Selected Subject: {selectedSubject || "None"}
@@ -105,9 +105,9 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject }) => {
           ))
         ) : (
           <div className="col-span-full flex justify-center items-center min-h-[200px]">
-             <p className="text-gray-500 font-medium italic">
-                No performance data available for {selectedSubject}.
-             </p>
+            <p className="text-gray-500 font-medium italic">
+              No performance data available for {selectedSubject}.
+            </p>
           </div>
         )}
       </div>
