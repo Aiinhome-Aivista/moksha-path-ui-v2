@@ -92,7 +92,7 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject }) => {
     );
   }
 
-  return (
+   return (
     <>
       <div className="px-8 py-2 text-lg font-semibold text-gray-700">
         Selected Subject: {selectedSubject || "None"}

@@ -413,14 +413,13 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
       );
       const slNo = currentQuestion.sl_no || currentQuestionIndex + 1;
 
-      // Map answer text if it's MCQ
+      // Map answer label if it's MCQ (e.g., "b" instead of "15")
       let finalAnswer = "";
       if (isTextualQuestion) {
         finalAnswer = textualAnswers[currentQuestion.id] || "";
       } else {
         const selectedLabel = selectedAnswers[currentQuestion.id];
-        const selectedOption = currentQuestion.options.find(o => o.label === selectedLabel);
-        finalAnswer = selectedOption?.text || "";
+        finalAnswer = selectedLabel ? selectedLabel.toLowerCase() : "";
       }
 
       try {
@@ -491,7 +490,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
           attempt_id: attemptId,
           question_id: currentQuestion.id,
           sl_no: slNo,
-          answer: answer,
+          answer: isTextualQuestion ? answer : (answer ? answer.toLowerCase() : ""),
           time_taken: timeTaken,
         });
 
