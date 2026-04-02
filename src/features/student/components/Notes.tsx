@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 import {
@@ -364,7 +365,7 @@ const DocumentPreviewModal: React.FC<{
   const isPdf =
     item.file_name?.toLowerCase().endsWith(".pdf") || item.resource?.toLowerCase().endsWith(".pdf");
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[200] bg-white flex flex-col animate-in fade-in duration-200"
       onContextMenu={(e) => e.preventDefault()}
@@ -393,11 +394,13 @@ const DocumentPreviewModal: React.FC<{
       </div>
 
       {/* Modal Body */}
-      <div className="flex-1 overflow-auto bg-gray-200 relative">
+      <div className="flex-1 overflow-hidden bg-gray-200 flex flex-col relative h-full">
         {isPdf ? (
-          <PdfViewer url={resourceUrl} />
+          <div className="flex-1 overflow-auto">
+            <PdfViewer url={resourceUrl} />
+          </div>
         ) : isExcel ? (
-          <div className="flex flex-col items-center justify-center h-full gap-4">
+          <div className="flex flex-col items-center justify-center flex-1 gap-4">
             <FileSpreadsheet size={48} className="text-green-600" />
             <p className="text-sm text-gray-600 font-medium">
               Excel files cannot be previewed directly.
@@ -415,12 +418,13 @@ const DocumentPreviewModal: React.FC<{
           <iframe
             src={resourceUrl}
             title={item.title}
-            className="w-full h-full border-none bg-white"
+            className="w-full flex-1 border-none bg-white min-h-[0px]"
             onContextMenu={(e) => e.preventDefault()}
           />
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
