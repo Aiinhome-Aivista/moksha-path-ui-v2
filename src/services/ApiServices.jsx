@@ -326,9 +326,9 @@ class ApiServices {
   }
 
   // Retake assessment
-  retakeAssessment(payload) {
-    return axiosInstance.post(POST_APIS.retake_assessment, payload);
-  }
+  // retakeAssessment(payload) {
+  //   return axiosInstance.post(POST_APIS.retake_assessment, payload);
+  // }
   // ApiServices.ts
   uploadProfilePicture(formData) {
     return axiosInstance.post(POST_APIS.upload_profile_picture, formData);
@@ -705,6 +705,228 @@ class ApiServices {
   }
   getTeacherStudyMaterial(params = {}) {
     return axiosInstance.get(GET_APIS.get_teacher_study_material_v4, { params });
+  }
+
+  createAdaptiveSet(payload) {
+    return axiosInstance.post(POST_APIS.create_adaptive_set, payload);
+  }
+
+  // Adaptive Assessment APIs
+  adaptiveStartAssessment(payload) {
+    return axiosInstance.post(POST_APIS.adaptive_start, payload);
+  }
+
+  getNextAdaptiveQuestion(attemptId) {
+    return axiosInstance.get(GET_APIS.adaptive_next_question, {
+      params: { attempt_id: attemptId },
+    });
+  }
+  getTeacherPlannerData() {
+    return axiosInstance.get(GET_APIS.teacher_planner_data);
+  }
+
+  getParentProfile() {
+    return axiosInstance.get(GET_APIS.parent_profile);
+  }
+
+  getStudentSubjectsTabInfo() {
+    return axiosInstance.get(GET_APIS.get_student_subjects_tab_info);
+  }
+
+
+
+  // =======================
+  // BLOGS APIs
+  // =======================
+
+  blogAdminLogin(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_admin_login, data);
+  }
+
+  getBlogCategories() {
+    return publicAxiosInstance.get(GET_APIS.blog_categories);
+  }
+
+  insertUpdateBlogCategory(data) {
+    return publicAxiosInstance.post(
+      POST_APIS.blog_category_insert_update,
+      data,
+    );
+  }
+
+  deleteBlogCategory(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_category_delete, data);
+  }
+
+  getBlogsList() {
+    return publicAxiosInstance.get(GET_APIS.blogs_list);
+  }
+
+  insertUpdateBlog(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_insert_update, data);
+  }
+
+  deleteBlog(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_delete, data);
+  }
+
+  getBlogSeoSettings() {
+    return publicAxiosInstance.get(GET_APIS.blog_seo_settings);
+  }
+
+  insertUpdateBlogSeo(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_seo_insert_update, data);
+  }
+
+  deleteBlogSeo(data) {
+    return publicAxiosInstance.post(POST_APIS.blog_seo_delete, data);
+  }
+
+  getBlogAdminDashboard() {
+    return publicAxiosInstance.get(GET_APIS.blog_admin_dashboard);
+  }
+  getBlogCategoryDropdown() {
+    return publicAxiosInstance.get(GET_APIS.blog_category_dropdown);
+  }
+  getPublicBlogs() {
+    return publicAxiosInstance.get(GET_APIS.public_blogs);
+  }
+  getInstituteList() {
+    return axiosInstance.get(GET_APIS.get_institute_list);
+  }
+
+  allUserByPagination(payload) {
+    return axiosInstance.post(POST_APIS.all_user_by_pagination, payload);
+  }
+
+  // =======================
+  // USER PROFILE APIs
+  // =======================
+
+  // Get Profile Info
+  getProfileInfo() {
+    return axiosInstance.get(GET_APIS.profile_info);
+  }
+
+  // Update Profile
+  updateUserProfile(payload) {
+    return axiosInstance.post(POST_APIS.update_profile, payload);
+  }
+
+  // Get User Academic Info
+  getUserAcademicInfo() {
+    return axiosInstance.get(GET_APIS.user_academic_info);
+  }
+
+  searchUserForMapping(name) {
+    return axiosInstance.get(GET_APIS.search_user_for_mapping, {
+      params: { name },
+    });
+  }
+
+  addParentStudentMapping(payload) {
+    return axiosInstance.post(POST_APIS.add_mapping, payload);
+  }
+
+  getActiveUserConnections() {
+    return axiosInstance.get(GET_APIS.active_user_connections);
+  }
+  // =======================
+  // Parent Student notification APIs
+  // =======================
+
+  // Get pending mapping requests (Now using all summary)
+  getPendingMappingRequests() {
+    return axiosInstance.get(GET_APIS.get_invitation_all_summary);
+  }
+
+  // Accept / Delete mapping request
+  manageParentStudentMapping(payload) {
+    return axiosInstance.post(POST_APIS.manage_parent_student_mapping, payload);
+  }
+
+  // Get active parent/student connections
+  getActiveUserStudentParentList() {
+    return axiosInstance.get(GET_APIS.get_active_user_student_parent_list);
+  }
+
+  getBlogAuthorDropdown() {
+    return publicAxiosInstance.get(GET_APIS.blog_author_dropdown);
+  }
+  // =======================
+  // Institute Admin - Faculty Management APIs
+  // =======================
+
+  // Get list of currently assigned teachers (with class_ids, assigned_on, etc.)
+  getAssignedTeacherList() {
+    return axiosInstance.get(GET_APIS.get_assigned_teacher_list);
+  }
+
+  // Get list of available (unassigned) teachers
+  getAvailableTeachers() {
+    return axiosInstance.get(GET_APIS.get_available_teachers);
+  }
+
+  // Assign teacher to class(es)
+  assignTeacher(payload) {
+    // payload: { teacher_user_id: number, class_ids: number[] }
+    return axiosInstance.post(POST_APIS.assign_teacher, payload);
+  }
+
+  // Remove teacher from institute
+  removeTeacher(payload) {
+    // payload: { teacher_user_id: number }
+    return axiosInstance.post(POST_APIS.remove_teacher, payload);
+  }
+
+  // Get institute admin summary (class + subject list for assign dropdown)
+  getInstituteAdminSummary() {
+    return axiosInstance.get(GET_APIS.get_institute_admin_summary);
+  }
+  upsertTeacherPlanner(payload) {
+    return axiosInstance.post(POST_APIS.upsert_teacher_planner, payload);
+  }
+  getTeacherPlanner() {
+    return axiosInstance.get(GET_APIS.get_teacher_planner);
+  }
+  uploadStudyMaterial(payload) {
+    return axiosInstance.post(POST_APIS.upload_study_material, payload);
+  }
+  generateTestFromPlanner(payload) {
+    return axiosInstance.post(POST_APIS.generate_test_from_planner, payload);
+  }
+  getStudyMaterial(params = {}) {
+    return axiosInstance.get(GET_APIS.get_study_material, { params });
+  }
+  getTeacherStudyMaterial(params = {}) {
+    return axiosInstance.get(GET_APIS.get_teacher_study_material_v4, { params });
+  }
+
+  createAdaptiveSet(payload) {
+    return axiosInstance.post(POST_APIS.create_adaptive_set, payload);
+  }
+
+  // Adaptive Assessment APIs
+  adaptiveStartAssessment(payload) {
+    return axiosInstance.post(POST_APIS.adaptive_start, payload);
+  }
+
+  getNextAdaptiveQuestion(attemptId) {
+    return axiosInstance.get(GET_APIS.adaptive_next_question, {
+      params: { attempt_id: attemptId },
+    });
+  }
+
+  saveAdaptiveAnswer(payload) {
+    return axiosInstance.post(POST_APIS.save_adaptive_answer, payload);
+  }
+
+  finishAdaptiveAssessment(payload) {
+    return axiosInstance.post(POST_APIS.finish_adaptive, payload);
+  }
+
+  skipAssessmentQuestion(payload) {
+    return axiosInstance.post(POST_APIS.skip_assessment_question, payload);
   }
 }
 

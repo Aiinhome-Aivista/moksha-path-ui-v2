@@ -8,7 +8,7 @@ import {
   Upload,
   Save,
   FileText,
-  FileSpreadsheet,
+  // FileSpreadsheet,
   Link,
   X,
   Loader2,
@@ -374,6 +374,8 @@ const TeacherLearningPlanner: React.FC = () => {
           section_name: data.dropdowns?.sections?.[0]?.name,
           section_id: data.dropdowns?.sections?.[0]?.id,
           subscription_id: data.subscription_id,
+          student_ids: data.student_ids || [],
+          test_config: data.test_config || {},
         });
 
         if (data.dropdowns) {
@@ -445,19 +447,39 @@ const TeacherLearningPlanner: React.FC = () => {
         if (row.completed === true) {
           try {
             setIsGeneratingTest(true);
-            const genRes = await ApiServices.generateTestFromPlanner({
-              subscription_id: stats?.subscription_id,
+
+            let due_date = null;
+            if (row.endDate_raw && stats?.test_config?.validity_date) {
+              const dateObj = new Date(row.endDate_raw);
+              dateObj.setDate(dateObj.getDate() + stats.test_config.validity_date);
+              due_date = dateObj.toISOString().split("T")[0];
+            } else if (row.endDate_raw) {
+              due_date = row.endDate_raw;
+            }
+
+            const currentSubjectId = subjects.find(s => s.subject_name === activeSubject)?.subject_id;
+
+            const genRes = await ApiServices.createAdaptiveSet({
+              set_name: `${row.chapter} - Adaptive Test`,
+              institute_id: stats?.institute_id,
+              board_id: stats?.board_id,
+              class_id: stats?.class_id,
+              subject_id: currentSubjectId,
+              total_marks: stats?.test_config?.total_marks || null,
+              duration_minutes: stats?.test_config?.duration_minutes || null,
+              number_of_questions: stats?.test_config?.number_of_questions || null,
+              max_attempt_count: stats?.test_config?.max_attempt_count || null,
+              chapters_array: [row.id],
+              topics_array: null,
+              student_ids: stats?.student_ids || [],
+              due_date: due_date
             });
-            if (genRes.data?.status === "success") {
-              showToast("Test generated successfully", "success");
-            } else {
-              showToast(
-                genRes.data?.message || "Test generation failed",
-                "error",
-              );
+            
+            if (genRes.data?.status !== "success") {
+              showToast(genRes.data?.message || "Failed to create adaptive set", "error");
             }
           } catch (err) {
-            showToast("Error while generating test", "error");
+            showToast("Error while creating adaptive set", "error");
           } finally {
             setIsGeneratingTest(false);
           }
@@ -691,7 +713,7 @@ const TeacherLearningPlanner: React.FC = () => {
                     </label>
                   </div>
                 </td>
-
+{/* 
                 <td className="py-3 px-2 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <button
@@ -743,6 +765,58 @@ const TeacherLearningPlanner: React.FC = () => {
                       </div>
                     )}
                   </div>
+                </td> */}
+                <td className="py-3 px-2 text-center">
+                  <div className="flex flex-col items-center justify-center">
+                    <button
+                      onClick={() =>
+                        setUploadForm({
+                          ...uploadForm,
+                          isOpen: true,
+                          chapterId: row.id,
+                          displayName: "",
+                          description: "",
+                        })
+                      }
+                      className="cursor-pointer flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-md transition-colors border-none"
+                    >
+                      <Upload size={12} />
+                      <span>Upload</span>
+                    </button>
+
+                    {row.testMaterial.length > 0 && (
+                      <div
+                        className="flex gap-2 cursor-pointer"
+                        title={row.testMaterial
+                          .map((m: any) => m.name)
+                          .join(",\n")}
+                      >
+                        <span className="text-[9px] font-bold text-primary">
+                          Study
+                        </span>
+                        <span className="text-xs text-blue-700 font-medium underline decoration-dotted">
+                          {row.testMaterial.length}{" "}
+                          {row.testMaterial.length === 1 ? "file" : "files"}
+                        </span>
+                      </div>
+                    )}
+                    {row.practiceMaterial.length > 0 && (
+                      <div
+                        className="flex gap-2 cursor-pointer"
+                        title={row.practiceMaterial
+                          .map((m: any) => m.name)
+                          .join(",\n")}
+                      >
+                        <span className="text-[9px] font-bold text-primary">
+                          Practice
+                        </span>
+                        <span className="text-xs text-green-700 font-medium underline decoration-dotted">
+                          {row.practiceMaterial.length}{" "}
+                          {row.practiceMaterial.length === 1 ? "file" : "files"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </td>
 
                 <td className="py-3 px-2 text-center">
@@ -759,7 +833,8 @@ const TeacherLearningPlanner: React.FC = () => {
                       savingChapterId !== null ||
                       (row.completed && row.isSaved === true)
                     }
-                    className="w-4 h-4 accent-secondary disabled:accent-[#AAA] cursor-pointer disabled:cursor-not-allowed opacity-100"
+                   className="w-4 h-4 accent-secondary disabled:accent-[#AAA] cursor-pointer disabled:cursor-not-allowed opacity-100"
+
                   />
                 </td>
                 {/*  className={`w-4 h-4 cursor-pointer disabled:cursor-not-allowed transition-colors ${row.completed && row.isSaved === true ? "accent-red-400 text-red-400" : "accent-green-400 text-green-400"}`} */}
