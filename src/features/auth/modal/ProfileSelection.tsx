@@ -271,7 +271,7 @@ export const ProfileSelectionModal: React.FC = () => {
                 return (
                   <div
                     key={profileIdStr}
-                    className="flex flex-col items-center group cursor-pointer w-[80px] sm:w-[90px] relative"
+                    className="flex flex-col items-center group cursor-pointer w-[120px] sm:w-[140px] relative px-2"
                     onClick={() => !isLoading && handleProfileSelect(profile)}
                   >
                     <div className="relative">
@@ -288,13 +288,9 @@ export const ProfileSelectionModal: React.FC = () => {
                           ${hasError ? "ring-2 ring-red-500 ring-offset-2" : isSessionActive ? "ring-2 ring-green-500 ring-offset-2" : ""}
                         `}
                       >
-                        {isLoading ? (
-                          <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <div className="text-white font-bold text-3xl">
-                            {firstLetter}
-                          </div>
-                        )}
+                        <div className="text-white font-bold text-3xl select-none">
+                          {firstLetter}
+                        </div>
                       </div>
 
                       {hasError ? (
@@ -338,14 +334,14 @@ export const ProfileSelectionModal: React.FC = () => {
 
                     <div className="mt-3 text-center w-full">
                       <p
-                        className={`font-medium text-sm transition-colors truncate ${hasError ? "text-red-500" : isSessionActive ? "text-green-600" : "text-gray-800 group-hover:text-primary"}`}
+                        className={`font-medium text-sm transition-colors whitespace-nowrap ${hasError ? "text-red-500" : isSessionActive ? "text-green-600" : "text-gray-800 group-hover:text-primary"}`}
                       >
                         {profile.name}
                       </p>
-                      <p className="text-gray-500 text-xs truncate">
+                      <p className="text-gray-500 text-xs whitespace-nowrap">
                         @{profile.username}
                       </p>
-                      <p className="text-gray-500 text-xs truncate">
+                      <p className="text-gray-500 text-xs whitespace-nowrap">
                         {profile.role_name}
                       </p>
                     </div>
@@ -355,21 +351,21 @@ export const ProfileSelectionModal: React.FC = () => {
 
               {/* Add Profile Button */}
               {localStorage.getItem("profile_modal_mode") !== "switch" && (profilesList.length === 0 || profilesList.some(p => p.role_id === 2 || p.role_name?.toLowerCase() === 'parent')) && (
-              <div
-                className="flex flex-col items-center group cursor-pointer w-[80px] sm:w-[90px]"
-                onClick={handleAddProfile}
-              >
-                <div className="w-[75px] h-[75px] sm:w-[85px] sm:h-[85px] rounded-full bg-gray-50 flex items-center justify-center transition-all duration-300 ease-out group-hover:bg-gray-100 group-hover:scale-105 border-2 border-dashed border-gray-300 group-hover:border-gray-400 shadow-sm">
-                  <span className="text-gray-400 text-3xl font-light group-hover:text-gray-600 transition-colors">
-                    +
-                  </span>
+                <div
+                  className="flex flex-col items-center group cursor-pointer w-[80px] sm:w-[90px]"
+                  onClick={handleAddProfile}
+                >
+                  <div className="w-[75px] h-[75px] sm:w-[85px] sm:h-[85px] rounded-full bg-gray-50 flex items-center justify-center transition-all duration-300 ease-out group-hover:bg-gray-100 group-hover:scale-105 border-2 border-dashed border-gray-300 group-hover:border-gray-400 shadow-sm">
+                    <span className="text-gray-400 text-3xl font-light group-hover:text-gray-600 transition-colors">
+                      +
+                    </span>
+                  </div>
+                  <div className="mt-3 text-center w-full">
+                    <p className="text-gray-600 font-medium text-sm group-hover:text-gray-800 transition-colors">
+                      Add Profile
+                    </p>
+                  </div>
                 </div>
-                <div className="mt-3 text-center w-full">
-                  <p className="text-gray-600 font-medium text-sm group-hover:text-gray-800 transition-colors">
-                    Add Profile
-                  </p>
-                </div>
-              </div>
               )}
             </div>
           </div>
@@ -427,11 +423,10 @@ export const ProfileSelectionModal: React.FC = () => {
                     handleProfileSelect(forceLoginModal.profile, true)
                   }
                   disabled={!!loadingProfileId}
-                  className={`flex-1 px-4 py-3 rounded-xl font-semibold shadow-md transition-colors flex items-center justify-center gap-2 ${
-                    loadingProfileId
+                  className={`flex-1 px-4 py-3 rounded-xl font-semibold shadow-md transition-colors flex items-center justify-center gap-2 ${loadingProfileId
                       ? "bg-button-primary opacity-70 text-primary cursor-not-allowed" // Fixed here
                       : "bg-button-primary text-primary hover:opacity-90"
-                  }`}
+                    }`}
                 >
                   {loadingProfileId ? (
                     <>
