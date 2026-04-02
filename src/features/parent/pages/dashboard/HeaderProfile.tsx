@@ -45,6 +45,13 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
   const subjectDropdownRef = useRef<HTMLDivElement>(null);
   const examDropdownRef = useRef<HTMLDivElement>(null);
 
+  // ✅ Hardcoded map of subjects and their notification counts
+  const notifications: Record<string, number> = {
+    "Mathematics": 3,
+    "Science": 1,
+    "English": 5
+  };
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -181,12 +188,15 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
               {displaySchool} <br/>
               {displayBoard ? `(${displayBoard}) | ` : ""}{displayClass}
             </p>
+            <span className="text-[10px] font-bold text-[#BADA55] uppercase tracking-widest mt-1 block">
+              Top 10%
+            </span>
           </div>
         </div>
 
         {/* ─── Tabs ─────────────────────────────────────────────────────── */}
-        <div className="flex gap-1 justify-between py-1 bg-[#ECECED] h-12 rounded-tr-full rounded-br-full shadow lg:col-span-2 xl:col-span-3">
-          <h1 className="pt-2 pl-6 text-[#00bcd4] font-black text-lg tracking-tight whitespace-nowrap lg:hidden xl:block">
+        <div className="flex items-center gap-1 justify-between py-1 bg-[#ECECED] h-12 rounded-tr-full rounded-br-full shadow lg:col-span-2 xl:col-span-3">
+          <h1 className="pl-6 text-[#00bcd4] font-black text-lg tracking-tight whitespace-nowrap lg:hidden xl:block">
             My Dashboard
           </h1>
           {tabs.map((tab) => {
@@ -209,7 +219,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                         : "text-gray-600 hover:bg-gray-100"
                     }`}
                   >
-                    {tab.name}
+                    {activeTab === "subject" && selectedSubject ? selectedSubject : tab.name}
                     <span className="material-symbols-outlined ml-1">
                       keyboard_arrow_down
                     </span>
@@ -217,24 +227,40 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
 
                   {showDropdown && (
                     <div
-                      className="absolute top-12 left-0 bg-white shadow-lg rounded-lg w-44 z-50 overflow-hidden"
+                      className="absolute top-12 left-0 bg-white shadow-lg rounded-lg w-full z-50 overflow-hidden"
                       onClick={(e) => e.stopPropagation()}
                     >
                       {subjectsList.length > 0 ? (
-                        subjectsList.map((sub) => (
-                          <div
-                            key={sub.subject_id}
-                            onClick={() => {
-                              onSubjectSelect(sub.subject_name);
-                              setShowDropdown(false);
-                            }}
-                            className="px-4 py-2.5 text-sm hover:bg-gray-50 cursor-pointer font-medium text-gray-700 transition-colors"
-                          >
-                            {sub.subject_name}
-                          </div>
-                        ))
+                        subjectsList.map((sub) => {
+                          const count = notifications[sub.subject_name];
+                          
+                          return (
+                            <div
+                              key={sub.subject_id}
+                              onClick={() => {
+                                onSubjectSelect(sub.subject_name);
+                                setShowDropdown(false);
+                              }}
+                              className={`flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer font-medium transition-colors ${
+                                selectedSubject === sub.subject_name
+                                  ? "bg-lime-50 text-lime-800"
+                                  : "text-gray-700 hover:bg-gray-100"
+                              }`}
+                            >
+                              <span>{sub.subject_name}</span>
+                              <div className="flex items-center gap-2">
+                                {/* ✅ Number Badge */}
+                                {count && count > 0 && (
+                                  <span className="flex items-center justify-center bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px]">
+                                    {count}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
                       ) : (
-                        <div className="px-4 py-2.5 text-sm text-gray-400 italic">
+                        <div className="px-4 py-2.5 text-sm text-left text-gray-400 italic">
                           No subjects found
                         </div>
                       )}
@@ -262,7 +288,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                         : "text-gray-600 hover:bg-gray-100"
                     }`}
                   >
-                    {tab.name}
+                    {activeTab === "exam" && selectedExam ? selectedExam : tab.name}
                     <span className="material-symbols-outlined ml-1">
                       keyboard_arrow_down
                     </span>
@@ -270,7 +296,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
 
                   {showExamDropdown && (
                     <div
-                      className="absolute top-12 left-0 bg-white shadow-lg rounded-lg w-40 z-50 overflow-hidden"
+                      className="absolute top-12 left-0 bg-white shadow-lg rounded-lg w-full z-50 overflow-hidden"
                       onClick={(e) => e.stopPropagation()}
                     >
                       {examList.map((exam, i) => (
@@ -280,9 +306,16 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                             onExamSelect(exam);
                             setShowExamDropdown(false);
                           }}
-                          className="px-4 py-2.5 text-sm hover:bg-gray-50 cursor-pointer font-medium text-gray-700 transition-colors"
+                          className={`flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer font-medium transition-colors ${
+                            selectedExam === exam
+                              ? "bg-lime-100 text-lime-800"
+                              : "text-gray-700 hover:bg-gray-100"
+                          }`}
                         >
-                          {exam}
+                          <span>{exam}</span>
+                          {selectedExam === exam && (
+                            <span className="material-symbols-outlined text-lime-600 text-base">check</span>
+                          )}
                         </div>
                       ))}
                     </div>
