@@ -1,4 +1,5 @@
 import React from "react";
+import { Loader2 } from "lucide-react";
 
 interface Props {
     board: string;
@@ -16,13 +17,7 @@ interface Props {
     setSection?: (v: string) => void;
 
     activeSubject: string;
-    chapters: { name: string; topics?: { name: string; topic_id?: number }[] }[];
-    coreTopics: { name: string; topic_id?: number }[];
-
-    selectedChapters: number[];
-    setSelectedChapters: (v: number[]) => void;
-    selectedTopics: number[];
-    setSelectedTopics: (v: number[]) => void;
+    isLoading?: boolean;
 }
 
 const MaterialsSidebar: React.FC<Props> = ({
@@ -38,49 +33,10 @@ const MaterialsSidebar: React.FC<Props> = ({
     activeSubject: subject, // Renamed for clarity in sidebar logic
     subjectOptions,
     setSubject,
-    // chapters,
-    // coreTopics,
-    // selectedChapters,
-    // setSelectedChapters,
-    // selectedTopics,
-    // setSelectedTopics,
+    isLoading,
 }) => {
 
-    // Handle chapter selection toggle
-    // const toggleChapterSelection = (index: number) => {
-    //     if (selectedChapters.includes(index)) {
-    //         setSelectedChapters(selectedChapters.filter((i) => i !== index));
-    //     } else {
-    //         setSelectedChapters([...selectedChapters, index]);
-    //     }
-    // };
 
-    // Handle select all chapters
-    // const toggleSelectAllChapters = () => {
-    //     if (selectedChapters.length === chapters.length) {
-    //         setSelectedChapters([]);
-    //     } else {
-    //         setSelectedChapters(chapters.map((_, index) => index));
-    //     }
-    // };
-
-    // Handle topic selection toggle
-    // const toggleTopicSelection = (index: number) => {
-    //     if (selectedTopics.includes(index)) {
-    //         setSelectedTopics(selectedTopics.filter((i) => i !== index));
-    //     } else {
-    //         setSelectedTopics([...selectedTopics, index]);
-    //     }
-    // };
-
-    // Handle select all topics
-    // const toggleSelectAllTopics = () => {
-    //     if (selectedTopics.length === coreTopics.length) {
-    //         setSelectedTopics([]);
-    //     } else {
-    //         setSelectedTopics(coreTopics.map((_, index) => index));
-    //     }
-    // };
 
     return (
         <div className="w-[280px] flex-shrink-0">
@@ -137,6 +93,11 @@ const MaterialsSidebar: React.FC<Props> = ({
 
                 {/* Subject */}
                 <div className="relative">
+                    {isLoading && (
+                        <div className="absolute inset-0 z-1 flex items-center justify-center bg-white/60">
+                             <Loader2 size={24} className="animate-spin text-primary" />
+                        </div>
+                    )}
                     <p className="text-sm font-semibold text-gray-800 mb-1">Choose Subject</p>
                     <div className="w-full flex items-center pb-2 border-b border-gray-300 text-sm font-medium">
                         {setSubject && subjectOptions ? (
@@ -210,75 +171,10 @@ const MaterialsSidebar: React.FC<Props> = ({
                 </div> */}
             </div>
 
-            {/* Chapters */}
-            {/* <div className="mb-6 pt-2">
-                <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-semibold text-gray-800"> Chapters</h3>
-                    <button
-                        onClick={toggleSelectAllChapters}
-                        className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
-                            selectedChapters.length === chapters.length && chapters.length > 0
-                                ? "bg-button-primary text-white"
-                                : "text-gray-500 hover:bg-gray-100"
-                        }`}
-                    >
-                        <Check size={12} /> {selectedChapters.length === chapters.length && chapters.length > 0 ? "All Selected" : "Select All"}
-                    </button>
-                </div>
 
-                <div className="max-h-56 overflow-y-auto pr-2">
-                    <div className="flex flex-col gap-2">
-                        {chapters.map((chapter, index) => (
-                            <span
-                                key={index}
-                                onClick={() => toggleChapterSelection(index)}
-                                className={`w-fit text-xs px-4 py-2 rounded-full cursor-pointer transition-colors ${
-                                    selectedChapters.includes(index)
-                                        ? "bg-button-primary text-white"
-                                        : "bg-primary text-white hover:bg-secondary"
-                                }`}
-                            >
-                                {chapter.name}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-            </div> */}
 
-            {/* Core Topics */}
-            {/* <div>
-                <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-semibold text-gray-800">Core Topics</h3>
-                    <button
-                        onClick={toggleSelectAllTopics}
-                        className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
-                            selectedTopics.length === coreTopics.length && coreTopics.length > 0
-                                ? "bg-button-primary text-white"
-                                : "text-gray-500 hover:bg-gray-100"
-                        }`}
-                    >
-                        <Check size={12} /> {selectedTopics.length === coreTopics.length && coreTopics.length > 0 ? "All Selected" : "Select All"}
-                    </button>
-                </div>
 
-                <div className="max-h-56 overflow-y-auto pr-2">
-                    <div className="flex flex-col gap-2">
-                        {coreTopics.map((topic, index) => (
-                            <span
-                                key={index}
-                                onClick={() => toggleTopicSelection(index)}
-                                className={`w-fit text-xs px-4 py-2 rounded-full cursor-pointer transition-colors ${
-                                    selectedTopics.includes(index)
-                                        ? "bg-button-primary text-white"
-                                        : "bg-primary text-white hover:bg-secondary"
-                                }`}
-                            >
-                                {topic.name}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-            </div> */}
+
         </div>
     );
 };

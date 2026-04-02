@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 //import { Check } from "lucide-react";
 
 interface Props {
@@ -31,6 +31,48 @@ const MaterialsSidebar: React.FC<Props> = ({
   activeSubject,
   setActiveSubject,
 }) => {
+  const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
+  const subjectDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        subjectDropdownRef.current &&
+        !subjectDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsSubjectDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Prevent body scroll when dropdown is open
+  useEffect(() => {
+    if (isSubjectDropdownOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+      document.body.style.overflow = "hidden";
+    } else {
+      const scrollY = document.body.style.top;
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
+      window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
+    }
+    return () => {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
+    };
+  }, [isSubjectDropdownOpen]);
+
   // Handle chapter selection toggle
   // const toggleChapterSelection = (index: number) => {
   //   if (selectedChapters.includes(index)) {
@@ -68,7 +110,7 @@ const MaterialsSidebar: React.FC<Props> = ({
   // };
 
   return (
-    <div className="w-[280px] flex-shrink-0">
+    <div className="w-[280px] flex-shrink-0 overflow-visible">
       {/* Tutor Image */}
       <div className="flex justify-start mb-2">
         <img src="/Guy.svg" alt="Tutor" />
@@ -108,21 +150,40 @@ const MaterialsSidebar: React.FC<Props> = ({
           </div>
         </div> */}
         {/* Subject */}
-        <div className="relative">
+        <div className="relative" ref={subjectDropdownRef}>
           <p className="text-sm font-semibold text-gray-800 mb-1">Subject</p>
           <div className="w-full flex items-center pb-2 border-b border-gray-300 text-sm font-medium">
-            <select
-              value={activeSubject}
-              onChange={(e) => setActiveSubject(e.target.value)}
-              className="w-full bg-transparent border-none text-gray-700 focus:outline-none cursor-pointer"
+            <button
+              type="button"
+              onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
+              className="w-full bg-transparent border-none text-gray-700 focus:outline-none cursor-pointer flex justify-between items-center text-left"
             >
-              {subjects.map((subject) => (
-                <option key={subject} value={subject}>
-                  {subject}
-                </option>
-              ))}
-            </select>
+              <span className="truncate">{activeSubject || "Select a subject"}</span>
+              <span className={`material-symbols-outlined text-gray-500 transition-transform duration-200 ${isSubjectDropdownOpen ? 'rotate-180' : ''}`}>expand_more</span>
+            </button>
           </div>
+          {isSubjectDropdownOpen && (
+            <div className="absolute z-50 mt-1 w-full bg-white shadow-lg rounded-md max-h-60 overflow-y-auto border border-gray-100">
+              {subjects.length > 0 ? (
+                subjects.map((subject) => (
+                  <div
+                    key={subject}
+                    onClick={() => {
+                      setActiveSubject(subject);
+                      setIsSubjectDropdownOpen(false);
+                    }}
+                    className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                  >
+                    {subject}
+                  </div>
+                ))
+              ) : (
+                <div className="px-4 py-2 text-sm text-gray-400 italic">
+                  No subjects available
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Difficulty */}
