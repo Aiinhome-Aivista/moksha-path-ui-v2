@@ -212,7 +212,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                         : "text-gray-600 hover:bg-gray-100"
                     }`}
                   >
-                    {tab.name}
+                    {activeTab === "subject" && selectedSubject ? selectedSubject : tab.name}
                     <span className="material-symbols-outlined ml-1">
                       keyboard_arrow_down
                     </span>
@@ -265,7 +265,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                         : "text-gray-600 hover:bg-gray-100"
                     }`}
                   >
-                    {tab.name}
+                    {activeTab === "exam" && selectedExam ? selectedExam : tab.name}
                     <span className="material-symbols-outlined ml-1">
                       keyboard_arrow_down
                     </span>
@@ -314,21 +314,6 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
             );
           })}
         </div>
-        
-        {activeTab === "subject" && selectedSubject && (
-          <div className="relative left-[30rem] -top-9 px-4 mt-2">
-            <h2 className="text-2xl font-semibold text-primary">
-              {selectedSubject}
-            </h2>
-          </div>
-        )}
-        {activeTab === "exam" && selectedExam && (
-          <div className="relative left-[30rem] -top-9 px-4 mt-2">
-            <h2 className="text-2xl font-semibold text-primary">
-              {selectedExam}
-            </h2>
-          </div>
-        )}
       </div>
     </>
   );

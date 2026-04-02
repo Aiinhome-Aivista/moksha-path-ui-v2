@@ -42,6 +42,7 @@ interface Task {
   status?: string;
   assignment_id?: number | null;
   assignment_end_date?: string | null;
+  assignment_count?: number;
 }
 
 interface ChapterDay {
@@ -100,7 +101,9 @@ const progressBarColor = (p: number) =>
 
 const statusPill = (status?: string) => {
   switch (status?.toLowerCase()) {
-    case "completed": return "bg-green-100 text-green-700 border-green-200";
+    case "completed":
+    case "available":
+      return "bg-green-100 text-green-700 border-green-200";
     case "in_progress": return "bg-amber-100 text-amber-700 border-amber-200";
     default: return "bg-red-100 text-red-500 border-red-200";
   }
@@ -189,6 +192,7 @@ const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
           status: t.status,
           assignment_id: t.assignment_id,
           assignment_end_date: t.assignment_end_date,
+          assignment_count: t.assignment_count,
         };
 
         // If it naturally falls here or is carried forward, add it!
@@ -407,9 +411,7 @@ const TaskRow: React.FC<{ task: Task; onClick?: () => void }> = ({
   onClick,
 }) => (
   <div
-    className={`flex items-center gap-2 ${task.type === "mock_test" ? "cursor-pointer group/task" : ""
-      }`}
-    onClick={task.type === "mock_test" ? onClick : undefined}
+    className="flex items-center gap-2 cursor-default"
   >
     <span
       className={`w-6 h-6 rounded-lg flex items-center justify-center text-white transition-transform ${task.type === "mock_test"
@@ -423,8 +425,7 @@ const TaskRow: React.FC<{ task: Task; onClick?: () => void }> = ({
     </span>
 
     <span
-      className={`text-xs font-semibold text-gray-700 ${task.type === "mock_test" ? "group-hover/task:text-primary" : ""
-        }`}
+      className="text-xs font-semibold text-gray-700 cursor-default"
     >
       {task.type === "mock_test" ? "Mock Test" : "Tutorial"}
     </span>
@@ -435,7 +436,7 @@ const TaskRow: React.FC<{ task: Task; onClick?: () => void }> = ({
           task.status,
         )}`}
       >
-        {task.status.replace("_", " ")}
+        {task.status.replace("_", " ")}{task.type === "mock_test" && task.assignment_count ? ` - ${task.assignment_count}` : ""}
       </span>
     )}
 
@@ -446,9 +447,9 @@ const TaskRow: React.FC<{ task: Task; onClick?: () => void }> = ({
       let isDisabled = !(task.status === "assigned" || task.status === "completed");
 
       if (task.status === "completed") {
-        btnText = "Retake Test";
-        btnClasses = "bg-green-500 text-white hover:bg-green-600 hover:shadow-sm";
-        isDisabled = false;
+        btnText = "Attempted";
+        btnClasses = "bg-gray-200 text-gray-500 cursor-not-allowed";
+        isDisabled = true;
       } else if (task.assignment_end_date) {
         const todayD = new Date();
         todayD.setHours(0, 0, 0, 0);
@@ -862,32 +863,43 @@ const LearningPlanner: React.FC = () => {
     try {
       setIsLoading(true);
 
-      // 1. Get Assessment Details
-      const detailsRes = await ApiServices.getAssessmentDetails(assignmentId);
-      if (detailsRes.data?.status === "success") {
-        setAssessmentDetails(detailsRes.data.data);
-        setTestDuration(detailsRes.data.data.duration_minutes || 30);
+      // 1. Start Adaptive Assessment
+      const startRes = await ApiServices.adaptiveStartAssessment({
+        assignment_id: assignmentId,
+      });
 
-        // 2. Start Assessment Attempt
-        const startRes = await ApiServices.startAssessment({
-          assignment_id: assignmentId,
-        });
-        if (startRes.data?.status === "success") {
-          setAttemptId(startRes.data.data.attempt_id);
+      if (startRes.data?.status === "success") {
+        const attempt_id = startRes.data.data.attempt_id;
+        setAttemptId(attempt_id);
+
+        // 2. Get First Adaptive Question
+        const questionRes = await ApiServices.getNextAdaptiveQuestion(attempt_id);
+        
+        if (questionRes.data?.status === "success") {
+          const questionData = questionRes.data.data;
+          
+          if (questionData.is_complete) {
+            showToast("Assessment already completed.", "info");
+            return false;
+          }
+
+          setAssessmentDetails({
+            questions: [{
+              question_id: questionData.question_id,
+              question_text: questionData.question_text,
+              question_type: "MCQ",
+              options: questionData.options,
+              difficulty: questionData.difficulty,
+              marks: questionData.marks,
+              sl_no: questionData.sl_no
+            }]
+          });
+          
+          setTestDuration(startRes.data.data.duration_minutes);
           setTestModalOpen(true);
-          showToast("Assessment started!", "success"); // Fixed typo: assesment -> assessment
-          return true; // Indicate success
-        } else {
-          showToast(
-            startRes.data?.message || "Failed to start assessment",
-            "error",
-          );
+          showToast("Adaptive test started!", "success");
+          return true;
         }
-      } else {
-        showToast(
-          detailsRes.data?.message || "Failed to get assessment details",
-          "error",
-        );
       }
     } catch (error: any) {
       showToast(
@@ -897,7 +909,7 @@ const LearningPlanner: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-    return false; // Indicate failure
+    return false;
   };
 
   const handleMockTestClick = async (
@@ -915,28 +927,48 @@ const LearningPlanner: React.FC = () => {
     try {
       setIsLoading(true);
 
-      // 1. Get Assessment Details
-      const detailsRes = await ApiServices.getAssessmentDetails(assignmentId);
-      if (detailsRes.data?.status === "success") {
-        setAssessmentDetails(detailsRes.data.data);
-        setTestDuration(detailsRes.data.data.duration_minutes || 30);
+      // 1. Start Adaptive Assessment
+      const startRes = await ApiServices.adaptiveStartAssessment({
+        assignment_id: assignmentId,
+      });
 
-        // 2. Start Assessment Attempt
-        const startRes = await ApiServices.startAssessment({
-          assignment_id: assignmentId,
-        });
-        if (startRes.data?.status === "success") {
-          setAttemptId(startRes.data.data.attempt_id);
+      if (startRes.data?.status === "success") {
+        const attempt_id = startRes.data.data.attempt_id;
+        setAttemptId(attempt_id);
+
+        // 2. Get First Adaptive Question
+        const questionRes = await ApiServices.getNextAdaptiveQuestion(attempt_id);
+        
+        if (questionRes.data?.status === "success") {
+          const questionData = questionRes.data.data;
+          
+          if (questionData.is_complete) {
+            showToast("Assessment already completed.", "info");
+            return;
+          }
+
+          // Transform adaptive response into expected format for the modal
+          // The modal expects assessmentDetails.questions as an array
+          setAssessmentDetails({
+            questions: [{
+              question_id: questionData.question_id,
+              question_text: questionData.question_text,
+              options: questionData.options,
+              question_type: "MCQ", // Adaptive usually MCQ/TrueFalse, transformApiQuestion handles it
+              difficulty: questionData.difficulty,
+              marks: questionData.marks,
+              sl_no: questionData.sl_no
+            }]
+          });
+          
+          setTestDuration(startRes.data.data.duration_minutes);
           setTestModalOpen(true);
-          showToast("Mock test started!", "success");
+          showToast("Adaptive test started!", "success");
         } else {
-          showToast(startRes.data?.message || "Failed to start test", "error");
+          showToast(questionRes.data?.message || "Failed to fetch first question", "error");
         }
       } else {
-        showToast(
-          detailsRes.data?.message || "Failed to get test details",
-          "error",
-        );
+        showToast(startRes.data?.message || "Failed to start assessment", "error");
       }
     } catch (error: any) {
       showToast(
@@ -1124,6 +1156,7 @@ const LearningPlanner: React.FC = () => {
         testDurationMinutes={testDuration}
         assessmentDetails={assessmentDetails}
         attemptId={attemptId}
+        isAdaptive={true}
         onComplete={(result) => {
           console.log("Test completed:", result);
           // Refresh data to show progress

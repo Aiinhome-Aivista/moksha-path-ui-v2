@@ -31,12 +31,16 @@ interface ApiQuestion {
 const transformApiQuestion = (apiQuestion: ApiQuestion): Question => {
   let options: Option[] = [];
 
-  if (apiQuestion.question_type === "MCQ" && apiQuestion.options) {
+  // Determine type automatically if options are present
+  const baseType = apiQuestion.question_type || (apiQuestion.options ? "MCQ" : "TrueFalse");
+
+  if (baseType === "MCQ" && apiQuestion.options) {
     options = Object.entries(apiQuestion.options).map(([key, value]) => ({
       label: key.toUpperCase(),
-      text: value,
+      text: value as string,
     }));
-  } else if (apiQuestion.question_type === "TrueFalse") {
+  } else if (baseType === "TrueFalse" || (!apiQuestion.options && baseType === "MCQ")) {
+    // If it's True/False or marked as MCQ but has no options, default to True/False options
     options = [
       { label: "A", text: "True" },
       { label: "B", text: "False" },
@@ -60,6 +64,7 @@ interface TestModalProps {
   assessmentDetails?: any;
   attemptId?: number | null;
   assignmentId?: number;
+  isAdaptive?: boolean;
   onComplete?: (result: {
     totalQuestions: number;
     answered: number;
@@ -76,10 +81,11 @@ interface TestModalProps {
 const TestModalUpdated: React.FC<TestModalProps> = ({
   isOpen,
   onClose,
-  testDurationMinutes = 30,
+  testDurationMinutes,
   assessmentDetails,
   attemptId,
   assignmentId: _assignmentId,
+  isAdaptive = false,
   onComplete,
 }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -92,36 +98,56 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
   >({});
   const [savedQuestions, setSavedQuestions] = useState<Set<number>>(new Set());
   const [skippedSet, setSkippedSet] = useState<Set<number>>(new Set());
-  const [timeLeft, setTimeLeft] = useState(testDurationMinutes * 60);
+  const [timeLeft, setTimeLeft] = useState((testDurationMinutes ?? 0) * 60);
   const [testFinished, setTestFinished] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [isCompleteFromServer, setIsCompleteFromServer] = useState(false);
   const questionStartTimeRef = useRef<number>(Date.now());
   const { showToast } = useToast();
 
   // Transform API questions to internal format (memoized to prevent infinite re-renders)
-  const questions = useMemo(() => {
+  const initialQuestions = useMemo(() => {
     return assessmentDetails?.questions
       ? assessmentDetails.questions.map((q: ApiQuestion) =>
-          transformApiQuestion(q),
-        )
+        transformApiQuestion(q),
+      )
       : [];
   }, [assessmentDetails]);
 
-  // Reset on open
+  const [localQuestions, setLocalQuestions] = useState<Question[]>(initialQuestions);
+
+  // Sync localQuestions when initialQuestions change (e.g., when modal first opens)
+  useEffect(() => {
+    if (initialQuestions.length > 0) {
+      // In adaptive mode, only sync if localQuestions is empty (initial load)
+      if (!isAdaptive || localQuestions.length === 0) {
+        setLocalQuestions(initialQuestions);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuestions, isAdaptive]);
+
+  const questions = localQuestions;
+
+  // Reset on open (only when isOpen changes from false to true)
   useEffect(() => {
     if (isOpen) {
       setCurrentQuestionIndex(0);
-      setQuestionOrder(questions.map((q: Question) => q.id));
+      if (initialQuestions.length > 0) {
+        setLocalQuestions(initialQuestions);
+        setQuestionOrder(initialQuestions.map((q: Question) => q.id));
+      }
       setSelectedAnswers({});
       setTextualAnswers({});
       setSavedQuestions(new Set());
       setSkippedSet(new Set());
-      setTimeLeft(testDurationMinutes * 60);
+      setTimeLeft((testDurationMinutes ?? 0) * 60);
       setTestFinished(false);
+      setIsCompleteFromServer(false);
       questionStartTimeRef.current = Date.now();
     }
-  }, [isOpen, testDurationMinutes, questions]);
+  }, [isOpen, initialQuestions, testDurationMinutes]);
 
   // Track question start time when question changes
   useEffect(() => {
@@ -180,27 +206,37 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
     setTestFinished(true);
 
     try {
-      const response = await ApiServices.finishAssessment({
-        attempt_id: attemptId,
-      });
+      let response;
+      if (isAdaptive) {
+        // Use adaptive specific finish API
+        response = await ApiServices.finishAdaptiveAssessment({
+          attempt_id: attemptId,
+          subscription_id: localStorage.getItem("subscription_token"), // Assuming this is where it is
+        });
+      } else {
+        // Original finish API
+        response = await ApiServices.finishAssessment({
+          attempt_id: attemptId,
+        });
+      }
 
-      if (response.data?.status === "success") {
+      if (response.data?.status === "success" || response.data?.status === true) {
         const resultData = response.data.data;
-        const elapsed = testDurationMinutes * 60 - timeLeft;
+        const elapsed = (testDurationMinutes ?? 0) * 60 - timeLeft;
         const mins = Math.floor(elapsed / 60);
         const secs = elapsed % 60;
         const timeTaken = `${mins}m ${secs}s`;
 
         const result = {
-          totalQuestions: resultData.total_questions,
-          answered: resultData.attempted_count,
+          totalQuestions: resultData.total_questions || 0,
+          answered: resultData.attempted_count || 0,
           correct: resultData.correct_answers || 0,
           incorrect: resultData.incorrect_answers || 0,
           skipped: resultData.skipped_answers || 0,
-          score: resultData.score_obtained,
-          maxScore: resultData.total_marks,
+          score: resultData.score_obtained || 0,
+          maxScore: resultData.total_marks || 0,
           timeTaken,
-          percentage: resultData.percentage,
+          percentage: resultData.percentage || 0,
         };
 
         showToast(response.data.message || "Assessment completed!", "success");
@@ -214,6 +250,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
         error.response?.data?.message || "Failed to submit assessment",
         "error",
       );
+      setTestFinished(false); // Reset to allow retry
     }
   }, [
     attemptId,
@@ -223,6 +260,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
     onComplete,
     testFinished,
     showToast,
+    isAdaptive,
   ]);
 
   // Auto-submit when time runs out
@@ -242,10 +280,14 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
   // Fallback while useEffect synchronizes questionOrder
   if (!currentQuestion) return null;
 
-  const isTextualQuestion = currentQuestion.options.length === 0;
-  const totalQuestions = questionOrder.length;
-  const answeredCount = savedQuestions.size;
-  const completedPercent = Math.round((answeredCount / totalQuestions) * 100);
+  const isTextualQuestion = !currentQuestion.options || currentQuestion.options.length === 0;
+
+  // Progress Calculation: 
+  // In adaptive mode, we increment 1 by 1. So if current is 2, total is 2 (2/2).
+  const currentSlNo = currentQuestion.sl_no || (currentQuestionIndex + 1);
+  const totalQuestions = isAdaptive ? currentSlNo : questionOrder.length;
+  const answeredCount = isAdaptive ? currentSlNo : savedQuestions.size;
+  const completedPercent = isCompleteFromServer ? 100 : Math.round((answeredCount / totalQuestions) * 100);
 
   const handleSelectOption = (optionLabel: string) => {
     setSelectedAnswers((prev) => ({
@@ -253,9 +295,9 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
       [currentQuestion.id]: optionLabel,
     }));
     setSkippedSet(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(currentQuestion.id);
-        return newSet;
+      const newSet = new Set(prev);
+      newSet.delete(currentQuestion.id);
+      return newSet;
     });
   };
 
@@ -265,9 +307,9 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
       [currentQuestion.id]: text,
     }));
     setSkippedSet(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(currentQuestion.id);
-        return newSet;
+      const newSet = new Set(prev);
+      newSet.delete(currentQuestion.id);
+      return newSet;
     });
   };
 
@@ -283,10 +325,68 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
     }
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    if (isAdaptive) {
+      if (isSubmitting || !attemptId) return;
+      setIsSubmitting(true);
+
+      const timeTaken = Math.floor((Date.now() - questionStartTimeRef.current) / 1000);
+      const slNo = currentQuestion.sl_no || currentQuestionIndex + 1;
+
+      try {
+        // 1. Skip Adaptive Question
+        const skipRes = await ApiServices.skipAssessmentQuestion({
+          attempt_id: attemptId,
+          question_id: currentQuestion.id,
+          sl_no: slNo,
+          time_taken: timeTaken,
+        });
+
+        if (skipRes.data?.status === "success" || skipRes.data?.status === true) {
+          // 2. Load Next Question
+          const nextRes = await ApiServices.getNextAdaptiveQuestion(attemptId);
+          if (nextRes.data?.status === "success" || nextRes.data?.status === true) {
+            const nextData = nextRes.data.data;
+            if (nextData.is_complete) {
+              setIsCompleteFromServer(true);
+              setIsSubmitting(false); // Enable manual finish
+            } else {
+              const apiNext = {
+                question_id: nextData.question_id,
+                question_text: nextData.question_text,
+                question_type: (nextData.question_type || "MCQ") as "MCQ" | "TrueFalse" | "Textual",
+                options: nextData.options,
+                difficulty: nextData.difficulty,
+                marks: nextData.marks,
+                sl_no: nextData.sl_no
+              };
+              const transformed = transformApiQuestion(apiNext);
+
+              setLocalQuestions(prev => [...prev, transformed]);
+              setQuestionOrder(prev => [...prev, transformed.id]);
+              setSkippedSet(prev => new Set(prev).add(currentQuestion.id)); // Add previous question to skipped set
+              setCurrentQuestionIndex(prev => prev + 1);
+
+              showToast("Question skipped. Loading next...", "info");
+              setIsSubmitting(false);
+            }
+          } else {
+            showToast(nextRes.data?.message || "Failed to fetch next question", "error");
+            setIsSubmitting(false);
+          }
+        } else {
+          showToast(skipRes.data?.message || "Failed to skip question", "error");
+          setIsSubmitting(false);
+        }
+      } catch (err) {
+        showToast("Error processing skip", "error");
+        setIsSubmitting(false);
+      }
+      return;
+    }
     setSkippedSet((prev) => new Set(prev).add(currentQuestion.id));
     if (currentQuestionIndex < totalQuestions - 1) {
-        setCurrentQuestionIndex((prev) => prev + 1);
+      setCurrentQuestionIndex((prev) => prev + 1);
     }
   };
 
@@ -297,14 +397,85 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
       ? textualAnswers[currentQuestion.id]
       : selectedAnswers[currentQuestion.id];
 
-    // On the last question, allow submitting without an answer. For all other questions, an answer is required to save.
-    if (!answer && currentQuestionIndex < totalQuestions - 1) {
+    // On the last question, allow submitting without an answer. 
+    // In adaptive mode, we also allow empty answer (which counts as a skip).
+    if (!answer && !isAdaptive && currentQuestionIndex < totalQuestions - 1) {
       showToast("Please select or enter an answer to save and continue.", "error");
       return;
     }
 
     setIsSubmitting(true);
 
+    // After attempting to save, decide the next step.
+    if (isAdaptive) {
+      const timeTaken = Math.floor(
+        (Date.now() - questionStartTimeRef.current) / 1000,
+      );
+      const slNo = currentQuestion.sl_no || currentQuestionIndex + 1;
+
+      // Map answer text if it's MCQ
+      let finalAnswer = "";
+      if (isTextualQuestion) {
+        finalAnswer = textualAnswers[currentQuestion.id] || "";
+      } else {
+        const selectedLabel = selectedAnswers[currentQuestion.id];
+        const selectedOption = currentQuestion.options.find(o => o.label === selectedLabel);
+        finalAnswer = selectedOption?.text || "";
+      }
+
+      try {
+        // 1. Save Adaptive Answer
+        const saveRes = await ApiServices.saveAdaptiveAnswer({
+          attempt_id: attemptId,
+          question_id: currentQuestion.id,
+          sl_no: slNo,
+          answer: finalAnswer,
+          time_taken: timeTaken,
+        });
+
+        if (saveRes.data?.status === "success" || saveRes.data?.status === true) {
+          // 2. Load Next Question
+          const nextRes = await ApiServices.getNextAdaptiveQuestion(attemptId);
+          if (nextRes.data?.status === "success" || nextRes.data?.status === true) {
+            const nextData = nextRes.data.data;
+            if (nextData.is_complete) {
+              setIsCompleteFromServer(true);
+              setIsSubmitting(false); // Enable manual finish
+            } else {
+              const apiNext = {
+                question_id: nextData.question_id,
+                question_text: nextData.question_text,
+                question_type: (nextData.question_type || "MCQ") as "MCQ" | "TrueFalse" | "Textual",
+                options: nextData.options,
+                difficulty: nextData.difficulty,
+                marks: nextData.marks,
+                sl_no: nextData.sl_no
+              };
+              const transformed = transformApiQuestion(apiNext);
+
+              setLocalQuestions(prev => [...prev, transformed]);
+              setQuestionOrder(prev => [...prev, transformed.id]);
+              setCurrentQuestionIndex(prev => prev + 1);
+
+              showToast("Next question loaded", "success");
+              setIsSubmitting(false);
+            }
+          } else {
+            showToast(nextRes.data?.message || "Failed to fetch next question", "error");
+            setIsSubmitting(false);
+          }
+        } else {
+          showToast(saveRes.data?.message || "Failed to save answer", "error");
+          setIsSubmitting(false);
+        }
+      } catch (err) {
+        showToast("Error processing next question", "error");
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    // ORIGINAL (NON-ADAPTIVE) LOGIC BELOW
     // If an answer was provided (for any question, including the last), save it.
     if (answer) {
       const timeTaken = Math.floor(
@@ -340,7 +511,6 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
       }
     }
 
-    // After attempting to save, decide the next step.
     if (currentQuestionIndex < totalQuestions - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
       setIsSubmitting(false);
@@ -376,42 +546,42 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
         {/* ─── Mobile Header: Timer + Progress (Hidden on Desktop) ─── */}
         <div className="md:hidden flex flex-col gap-3 p-4 sm:p-5 border-b border-gray-100 shrink-0">
           <div className="flex flex-row items-center gap-4">
-              <div className="px-4 py-2 max-h-[15px] rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center shrink-0">
-                  <span className="text-[#E91E7B] font-bold text-lg tracking-tight">
-                      {formatTime(timeLeft)}
-                  </span>
+            <div className="px-4 py-2 max-h-[15px] rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center shrink-0">
+              <span className="text-[#E91E7B] font-bold text-lg tracking-tight">
+                {formatTime(timeLeft)}
+              </span>
+            </div>
+            <div className="flex-1 pr-8">
+              <div className="flex justify-between items-end mb-1.5">
+                <p className="text-xs font-bold text-gray-800">Completed</p>
+                <p className="text-xs font-bold text-primary">{answeredCount} / {totalQuestions}</p>
               </div>
-              <div className="flex-1 pr-8">
-                  <div className="flex justify-between items-end mb-1.5">
-                      <p className="text-xs font-bold text-gray-800">Completed</p>
-                      <p className="text-xs font-bold text-primary">{answeredCount} / {totalQuestions}</p>
-                  </div>
-                  <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                          className="h-full bg-[#b0cb1f] transition-all duration-300"
-                          style={{ width: `${completedPercent}%` }}
-                      />
-                  </div>
+              <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#b0cb1f] transition-all duration-300"
+                  style={{ width: `${completedPercent}%` }}
+                />
               </div>
+            </div>
           </div>
           {/* Mobile Skipped Questions Palette */}
           {skippedSet.size > 0 && (
-              <div className="flex gap-2 overflow-x-auto pb-1 items-center">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Skipped:</span>
-                  {Array.from(skippedSet).map(id => {
-                      const qIndex = questionOrder.indexOf(id);
-                      const slNo = questions.find((q: Question) => q.id === id)?.sl_no || qIndex + 1;
-                      return (
-                          <button
-                              key={id}
-                              onClick={() => setCurrentQuestionIndex(qIndex)}
-                              className="w-6 h-6 shrink-0 rounded bg-amber-100 text-amber-700 font-bold text-[10px] flex items-center justify-center border border-amber-200"
-                          >
-                              {slNo}
-                          </button>
-                      );
-                  })}
-              </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 items-center">
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Skipped:</span>
+              {Array.from(skippedSet).map(id => {
+                const qIndex = questionOrder.indexOf(id);
+                const slNo = questions.find((q: Question) => q.id === id)?.sl_no || qIndex + 1;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setCurrentQuestionIndex(qIndex)}
+                    className="w-6 h-6 shrink-0 rounded bg-amber-100 text-amber-700 font-bold text-[10px] flex items-center justify-center border border-amber-200 hover:bg-amber-200 transition-colors"
+                  >
+                    {slNo}
+                  </button>
+                );
+              })}
+            </div>
           )}
         </div>
 
@@ -420,14 +590,14 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
           <div className="hidden md:flex w-[260px] bg-[#f2f2f2] flex-col items-center justify-between py-8 px-6 shrink-0 z-10 border-r border-gray-200">
             {/* Desktop Timer (No Circle) */}
             <div className="flex flex-col items-center mt-4 w-full shrink-0">
-                <div className="bg-white px-6 py-8 rounded-2xl border border-gray-100 shadow-sm w-full text-center">
-                    <span className="text-2xl font-bold text-[#E91E7B] tracking-wider font-mono block">
-                        {formatTime(timeLeft)}
-                    </span>
-                    <span className="text-[10px] text-gray-400 mt-2 uppercase tracking-widest font-bold block">
-                        Time Remaining
-                    </span>
-                </div>
+              <div className="bg-white px-6 py-8 rounded-2xl border border-gray-100 shadow-sm w-full text-center">
+                <span className="text-2xl font-bold text-[#E91E7B] tracking-wider font-mono block">
+                  {formatTime(timeLeft)}
+                </span>
+                <span className="text-[10px] text-gray-400 mt-2 uppercase tracking-widest font-bold block">
+                  Time Remaining
+                </span>
+              </div>
             </div>
 
             {/* Desktop Progress & Skipped Palette */}
@@ -444,7 +614,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                         <button
                           key={id}
                           onClick={() => setCurrentQuestionIndex(qIndex)}
-                          className="w-7 h-7 rounded bg-amber-50 text-amber-600 font-bold text-xs flex items-center justify-center border border-amber-200 hover:bg-amber-100 transition-colors"
+                          className="w-7 h-7 rounded bg-amber-50 text-amber-600 font-bold text-xs flex items-center justify-center border border-amber-200 hover:bg-amber-100 transition-colors cursor-pointer"
                         >
                           {slNo}
                         </button>
@@ -455,8 +625,8 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
               )}
 
               <div className="flex justify-between items-end mb-1.5">
-                  <p className="text-sm font-semibold text-gray-700">Progress</p>
-                  <p className="text-sm font-bold text-primary">{answeredCount} / {totalQuestions}</p>
+                <p className="text-sm font-semibold text-gray-700">Progress</p>
+                <p className="text-sm font-bold text-primary">{answeredCount} / {totalQuestions}</p>
               </div>
               <div className="w-full h-2 bg-gray-300 rounded-full overflow-hidden">
                 <div
@@ -491,7 +661,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 sm:gap-y-4 mb-auto shrink-0">
-                {currentQuestion.options.map((option: Option) => {
+                {currentQuestion.options && currentQuestion.options.map((option: Option) => {
                   const isSelected = selectedAnswers[currentQuestion.id] === option.label;
                   return (
                     <button
@@ -501,8 +671,8 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                     >
                       <div
                         className={`w-5 h-5 sm:w-6 sm:h-6 mt-0.5 sm:mt-0 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isSelected
-                            ? "bg-[#b0cb1f] border-[#b0cb1f]"
-                            : "border-gray-300 bg-white group-hover:border-[#b0cb1f]"
+                          ? "bg-[#b0cb1f] border-[#b0cb1f]"
+                          : "border-gray-300 bg-white group-hover:border-[#b0cb1f]"
                           }`}
                       >
                         {isSelected && (
@@ -522,7 +692,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
 
             {/* ─── Action Buttons ─── */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-3 mt-6 sm:mt-8 pt-4 border-t border-gray-100 sm:border-transparent shrink-0 w-full">
-              
+
               <button
                 onClick={handleQuit}
                 disabled={isSubmitting}
@@ -531,22 +701,24 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                 Quit
               </button>
 
-              <div className="order-2 md:order-2 flex gap-3 w-full md:w-auto justify-center">
+              {!isAdaptive && (
+                <div className="order-2 md:order-2 flex gap-3 w-full md:w-auto justify-center">
                   <button
-                      onClick={handlePrev}
-                      disabled={currentQuestionIndex === 0}
-                      className="flex items-center gap-1 w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-[#464646] text-white text-base md:text-sm font-medium hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    onClick={handlePrev}
+                    disabled={currentQuestionIndex === 0}
+                    className="flex items-center gap-1 w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-[#464646] text-white text-base md:text-sm font-medium hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                      <ChevronLeft size={16} /> Previous
+                    <ChevronLeft size={16} /> Previous
                   </button>
                   <button
-                      onClick={handleNext}
-                      disabled={currentQuestionIndex === totalQuestions - 1}
-                      className="flex items-center gap-1 w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-[#464646] text-white text-base md:text-sm font-medium hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    onClick={handleNext}
+                    disabled={currentQuestionIndex === totalQuestions - 1}
+                    className="flex items-center gap-1 w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-[#464646] text-white text-base md:text-sm font-medium hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                      Next <ChevronRight size={16} />
+                    Next <ChevronRight size={16} />
                   </button>
-              </div>
+                </div>
+              )}
 
               <div className="order-1 md:order-3 flex flex-col md:flex-row w-full md:w-auto gap-3">
                 <button
@@ -558,11 +730,21 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                 </button>
                 <button
                   onClick={handleSubmit}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isCompleteFromServer}
                   className="w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-[#b0cb1f] text-gray-900 text-base md:text-sm font-semibold hover:bg-[#c5de3a] transition-all sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:sm:hover:scale-100"
                 >
-                  {isSubmitting ? "Submitting..." : (currentQuestionIndex === totalQuestions - 1 ? "Final Submit" : "Save & continue")}
+                  {isSubmitting ? "Submitting..." : (isAdaptive ? "Save & continue" : (currentQuestionIndex === totalQuestions - 1 ? "Final Submit" : "Save & continue"))}
                 </button>
+                {/* Manual Final Submit Button for Adaptive - Triggered only on completion or manual quit logic */}
+                {isAdaptive && isCompleteFromServer && (
+                  <button
+                    onClick={finishAssessmentAndShowResult}
+                    disabled={isSubmitting || testFinished}
+                    className="w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-green-600 text-white text-base md:text-sm font-semibold shadow-lg scale-[1.05] transition-all sm:hover:scale-[1.1] disabled:opacity-50"
+                  >
+                    Final Submit
+                  </button>
+                )}
               </div>
             </div>
           </div>
