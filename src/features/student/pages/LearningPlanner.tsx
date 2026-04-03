@@ -229,8 +229,11 @@ const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
           return 0;
         });
 
-        // Compute needsAlert: past scheduled end date or viewing past date
-        const needsAlert = !isCompleted && (current < todayLocal || (chEnd !== null && current > chEnd));
+        // Compute needsAlert: A chapter is overdue if its scheduled end date is before today.
+        // The original logic `current < todayLocal` was confusing, as it would mark a chapter
+        // as overdue just for being on a past day, even if its own deadline hadn't been reached yet.
+        const isPastScheduledEndDate = chEnd !== null && chEnd < todayLocal;
+        const needsAlert = !isCompleted && isPastScheduledEndDate;
 
         let isOrange = false;
         let isRed = false;
