@@ -203,6 +203,7 @@ export const POST_APIS = {
   upload_study_material: `${BASE_URL}parent_teacher/upload_study_material`,
   generate_test_from_planner: `${BASE_URL}learning/generate_test_from_planner`,
   create_adaptive_set: `${BASE_URL}learning/assessment/create_adaptive_set`,
+  send_notification_to_assigned_students: `${BASE_URL}send-notification-to-assigned-students`,
 
   save_fcm_token: `${BASE_URL}save-token`,
 };

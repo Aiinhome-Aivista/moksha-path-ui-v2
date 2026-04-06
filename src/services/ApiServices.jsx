@@ -710,6 +710,11 @@ class ApiServices {
   createAdaptiveSet(payload) {
     return axiosInstance.post(POST_APIS.create_adaptive_set, payload);
   }
+
+  sendNotificationToAssignedStudents(payload) {
+    // payload: { class_id, subject_id, section }
+    return axiosInstance.post(POST_APIS.send_notification_to_assigned_students, payload);
+  }
 }
 
 export default new ApiServices();

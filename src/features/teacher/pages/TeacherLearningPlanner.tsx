@@ -127,11 +127,11 @@ const TeacherLearningPlanner: React.FC = () => {
         chapters: sub.chapters.map((ch: any) =>
           ch.id === id || ch.chapter_id === id
             ? {
-                ...ch,
-                completed: !ch.completed,
-                is_completed: !ch.completed,
-                isSaved: false,
-              }
+              ...ch,
+              completed: !ch.completed,
+              is_completed: !ch.completed,
+              isSaved: false,
+            }
             : ch,
         ),
       })),
@@ -176,7 +176,7 @@ const TeacherLearningPlanner: React.FC = () => {
           file.name.endsWith(".xlsx") ||
           file.type === "application/vnd.ms-excel" ||
           file.type ===
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           ? "excel"
           : "pdf"
         : "link";
@@ -205,8 +205,8 @@ const TeacherLearningPlanner: React.FC = () => {
       formData.append(
         "section_id",
         currentSectionObj?.id?.toString() ||
-          stats?.section_id?.toString() ||
-          "",
+        stats?.section_id?.toString() ||
+        "",
       );
 
       const currentSubject = subjects.find(
@@ -245,12 +245,12 @@ const TeacherLearningPlanner: React.FC = () => {
             chapters: sub.chapters.map((ch: any) =>
               ch.id === chapterId || ch.chapter_id === chapterId
                 ? {
-                    ...ch,
-                    [category]: [
-                      ...(ch[category] || []),
-                      { name: finalName, type },
-                    ],
-                  }
+                  ...ch,
+                  [category]: [
+                    ...(ch[category] || []),
+                    { name: finalName, type },
+                  ],
+                }
                 : ch,
             ),
           })),
@@ -289,11 +289,11 @@ const TeacherLearningPlanner: React.FC = () => {
         chapters: sub.chapters.map((ch: any) =>
           ch.id === id || ch.chapter_id === id
             ? {
-                ...ch,
-                [field]: formattedDate,
-                [`${field}_raw`]: value,
-                isSaved: false,
-              }
+              ...ch,
+              [field]: formattedDate,
+              [`${field}_raw`]: value,
+              isSaved: false,
+            }
             : ch,
         ),
       })),
@@ -336,17 +336,17 @@ const TeacherLearningPlanner: React.FC = () => {
                 chapter: ch.name || ch.chapter_name,
                 startDate: rawStart
                   ? new Date(rawStart).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
                   : "--",
                 endDate: rawEnd
                   ? new Date(rawEnd).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
                   : "--",
                 startDate_raw: rawStart,
                 endDate_raw: rawEnd,
@@ -474,9 +474,27 @@ const TeacherLearningPlanner: React.FC = () => {
               student_ids: stats?.student_ids || [],
               due_date: due_date
             });
-            
+
             if (genRes.data?.status !== "success") {
               showToast(genRes.data?.message || "Failed to create adaptive set", "error");
+            }
+
+            // Send notification to all assigned students for this class/subject/section
+            try {
+              const notifRes = await ApiServices.sendNotificationToAssignedStudents({
+                class_id: stats?.class_id,
+                subject_id: currentSubjectId,
+                section: stats?.section_id,
+              });
+              if (notifRes.data?.status === "success") {
+                const { total_notifications_sent, total_students } = notifRes.data?.data || {};
+                showToast(
+                  `Notification sent to ${total_notifications_sent ?? 0} of ${total_students ?? 0} student(s)`,
+                  "success"
+                );
+              }
+            } catch (_notifErr) {
+              // Notification failure is non-critical; swallow silently
             }
           } catch (err) {
             showToast("Error while creating adaptive set", "error");
@@ -510,6 +528,30 @@ const TeacherLearningPlanner: React.FC = () => {
       if (res.data?.status === "success") {
         showToast("Mock test generated successfully", "success");
         setIsMockModalOpen(false);
+
+        // Send notification to all assigned students for this class/subject/section
+        try {
+          const currentSubjectId = subjects.find(
+            (s) => s.subject_name === activeSubject
+          )?.subject_id;
+
+          const notifRes = await ApiServices.sendNotificationToAssignedStudents({
+            class_id: stats?.class_id,
+            subject_id: currentSubjectId,
+            section: stats?.section_id,
+          });
+
+          if (notifRes.data?.status === "success") {
+            const { total_notifications_sent, total_students } =
+              notifRes.data?.data || {};
+            showToast(
+              `Notification sent to ${total_notifications_sent ?? 0} of ${total_students ?? 0} student(s)`,
+              "success"
+            );
+          }
+        } catch (_notifErr) {
+          // Notification failure is non-critical; swallow silently
+        }
       } else {
         showToast(res.data?.message || "Generation failed", "error");
       }
@@ -590,12 +632,12 @@ const TeacherLearningPlanner: React.FC = () => {
                 Hi{" "}
                 {stats.teacher_name
                   ? stats.teacher_name
-                      ?.split(" ")
-                      .map(
-                        (word: string) =>
-                          word.charAt(0).toUpperCase() + word.slice(1),
-                      )
-                      .join(" ")
+                    ?.split(" ")
+                    .map(
+                      (word: string) =>
+                        word.charAt(0).toUpperCase() + word.slice(1),
+                    )
+                    .join(" ")
                   : ""}{" "}
                 !
               </h1>
@@ -890,11 +932,10 @@ const TeacherLearningPlanner: React.FC = () => {
                     onClick={() =>
                       setUploadForm({ ...uploadForm, category: "testMaterial" })
                     }
-                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer ${
-                      uploadForm.category === "testMaterial"
+                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer ${uploadForm.category === "testMaterial"
                         ? "bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-500/20"
                         : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
-                    }`}
+                      }`}
                   >
                     Study Material
                   </button>
@@ -905,11 +946,10 @@ const TeacherLearningPlanner: React.FC = () => {
                         category: "practiceMaterial",
                       })
                     }
-                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer ${
-                      uploadForm.category === "practiceMaterial"
+                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer ${uploadForm.category === "practiceMaterial"
                         ? "bg-green-50 border-green-500 text-green-700 ring-2 ring-green-500/20"
                         : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
-                    }`}
+                      }`}
                   >
                     Practice Material
                   </button>
@@ -926,11 +966,10 @@ const TeacherLearningPlanner: React.FC = () => {
                     onClick={() =>
                       setUploadForm({ ...uploadForm, sourceType: "file" })
                     }
-                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${
-                      uploadForm.sourceType === "file"
+                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${uploadForm.sourceType === "file"
                         ? "bg-[#F7FAE9] border-[#BADA55] text-gray-800 ring-2 ring-[#BADA55]/40"
                         : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
-                    }`}
+                      }`}
                   >
                     <FileText size={16} /> Local File
                   </button>
@@ -938,11 +977,10 @@ const TeacherLearningPlanner: React.FC = () => {
                     onClick={() =>
                       setUploadForm({ ...uploadForm, sourceType: "link" })
                     }
-                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${
-                      uploadForm.sourceType === "link"
+                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${uploadForm.sourceType === "link"
                         ? "bg-[#F7FAE9] border-[#BADA55] text-gray-800 ring-2 ring-[#BADA55]/40"
                         : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
-                    }`}
+                      }`}
                   >
                     <Link size={16} /> External Link
                   </button>
