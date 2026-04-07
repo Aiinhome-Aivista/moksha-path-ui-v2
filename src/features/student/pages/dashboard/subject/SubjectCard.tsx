@@ -34,17 +34,16 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
         </h2>
         <div className="w-full items-end">
           {/* <span className="text-xs font-medium text-primary pb-4">{level}-{difficulty}</span> */}
-<span
-  className={`text-xs font-semibold pb-4 ${
-    difficulty === "Hard"
-      ? "text-[#578E12]"
-      : difficulty === "Medium"
-      ? "text-[#EA9003]"
-      : "text-[#80975F]"
-  }`}
->
-  {level} - {difficulty}
-</span>
+          <span
+            className={`text-xs font-semibold pb-4 ${difficulty === "Hard"
+                ? "text-[#578E12]"
+                : difficulty === "Medium"
+                  ? "text-[#EA9003]"
+                  : "text-[#80975F]"
+              }`}
+          >
+            {level} - {difficulty}
+          </span>
           {/* Progress Bar */}
           <div className="w-full h-4 bg-gray-200 rounded-full my-2">
             <div

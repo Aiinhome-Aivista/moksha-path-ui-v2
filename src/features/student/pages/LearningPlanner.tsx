@@ -151,8 +151,13 @@ const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
         fallsOnDate = current >= start && current <= chEnd!;
       }
 
-      // Check if it's completely done
-      const isCompleted = ch.tasks.length > 0 && ch.tasks.every((t) => t.status === "completed");
+      // Check if it's completely done (all tasks OR at least one mock test)
+      const hasCompletedMockTest = ch.tasks.some(t => t.type.toLowerCase().includes("mock") && t.status === "completed");
+      const isCompleted = ch.tasks.length > 0 && (ch.tasks.every((t) => t.status === "completed") || hasCompletedMockTest);
+
+      if (current > todayLocal && isCompleted) {
+        fallsOnDate = false;
+      }
 
       // Find absolute max assignment deadline
       let maxAssignEnd: Date | null = null;
@@ -172,10 +177,8 @@ const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
         if (current.getTime() === todayLocal.getTime()) {
           // Always carry incomplete past-scheduled chapters onto today
           isCarriedForward = true;
-        } else if (current > todayLocal && maxAssignEnd !== null && current <= (maxAssignEnd as Date)) {
-          // Continue carrying onto forward dates up strictly to the assignment deadline
-          isCarriedForward = true;
         }
+        // Removed future carry-forward logic so tasks only appear on future dates when they actually become 'Today'
       }
 
       const tasksToAdd: Task[] = [];
@@ -216,28 +219,31 @@ const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
             if (s === "pending" || !s) return 3;
             return 2;
           };
-          
+
           const orderDiff = getOrder(a.status) - getOrder(b.status);
           if (orderDiff !== 0) return orderDiff;
-          
+
           if (a.type === "tutorial" && b.type === "mock_test") return -1;
           if (a.type === "mock_test" && b.type === "tutorial") return 1;
-          
+
           return 0;
         });
 
-        // Compute needsAlert: past scheduled end date or viewing past date
-        const needsAlert = !isCompleted && (current < todayLocal || (chEnd !== null && current > chEnd));
-        
+        // Compute needsAlert: A chapter is overdue if its scheduled end date is before today.
+        // The original logic `current < todayLocal` was confusing, as it would mark a chapter
+        // as overdue just for being on a past day, even if its own deadline hadn't been reached yet.
+        const isPastScheduledEndDate = chEnd !== null && chEnd < todayLocal;
+        const needsAlert = !isCompleted && isPastScheduledEndDate;
+
         let isOrange = false;
         let isRed = false;
 
         if (needsAlert) {
-           if (maxAssignEnd && todayLocal <= maxAssignEnd) {
-              isOrange = true;
-           } else {
-              isRed = true;
-           }
+          if (maxAssignEnd && todayLocal <= maxAssignEnd) {
+            isOrange = true;
+          } else {
+            isRed = true;
+          }
         }
 
         const chapterRecord: ChapterDay = {
@@ -259,7 +265,7 @@ const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
     });
 
     let dayChapters = [...normalDayChapters, ...overdueDayChapters];
-    
+
     // Sort logic ONLY for today's view (Latest end date top, response order desc fallback)
     if (isThisDayToday) {
       dayChapters.sort((a, b) => {
@@ -270,14 +276,37 @@ const generateWeeklyPlan = (subject: ApiSubjectPlan): WeeklyPlanDay[] => {
       });
     }
 
+    // const avgProgress =
+    //   dayChapters.length > 0
+    //     ? Math.round(
+    //       dayChapters.reduce(
+    //         (sum, ch) => sum + ch.tasks.reduce((s, t) => s + t.progress, 0) / (ch.tasks.length || 1),
+    //         0,
+    //       ) / dayChapters.length,
+    //     )
+    //     : 0;
+
+    // return {
+    //   date: dateStr,
+    //   day: DAY_NAMES[new Date(dateStr).getDay()],
+    //   progress: avgProgress,
+    //   status: avgProgress >= 100 ? "completed" : avgProgress > 0 ? "in_progress" : "pending",
+    //   chapters: dayChapters,
+    // };
+    const allDayTasks = dayChapters.flatMap((ch) => ch.tasks);
+
+    // Filter for mock tests that have an assignment_id, as these are "assigned".
+    const assignedMockTests = allDayTasks.filter(
+      (t) => t.type === "mock_test" && t.assignment_id,
+    );
+    const totalAssignedMockTests = assignedMockTests.length;
+    const completedMockTests = assignedMockTests.filter(
+      (t) => t.status === "completed",
+    ).length;
+
     const avgProgress =
-      dayChapters.length > 0
-        ? Math.round(
-          dayChapters.reduce(
-            (sum, ch) => sum + ch.tasks.reduce((s, t) => s + t.progress, 0) / (ch.tasks.length || 1),
-            0,
-          ) / dayChapters.length,
-        )
+      totalAssignedMockTests > 0
+        ? Math.round((completedMockTests / totalAssignedMockTests) * 100)
         : 0;
 
     return {
@@ -340,10 +369,10 @@ const DayCard: React.FC<{
         transition-all duration-200 select-none
         ${isSelected
           ? hasPending
-              ? "bg-red-50 border-red-300 shadow-lg shadow-red-500/20 scale-[1.04]"
-              : allDone
-                  ? "bg-green-50 border-green-300 shadow-lg shadow-green-500/20 scale-[1.04]"
-                  : "bg-gradient-to-b from-[#BADA55]/30 to-[#BADA55]/10 border-[#BADA55] shadow-lg shadow-[#BADA55]/20 scale-[1.04]"
+            ? "bg-red-50 border-red-300 shadow-lg shadow-red-500/20 scale-[1.04]"
+            : allDone
+              ? "bg-green-50 border-green-300 shadow-lg shadow-green-500/20 scale-[1.04]"
+              : "bg-gradient-to-b from-[#BADA55]/30 to-[#BADA55]/10 border-[#BADA55] shadow-lg shadow-[#BADA55]/20 scale-[1.04]"
           : isToday
             ? "bg-gradient-to-b from-white to-gray-50 border-primary shadow-md"
             : allDone
@@ -359,28 +388,26 @@ const DayCard: React.FC<{
           Today
         </span>
       )}
-      <p className={`text-[9px] font-black uppercase tracking-widest mt-1 ${
-        isSelected 
-          ? hasPending 
-              ? "text-red-500" 
-              : allDone 
-                  ? "text-green-600" 
-                  : "text-[#6a9000]"
-          : isToday 
-            ? "text-primary" 
+      <p className={`text-[9px] font-black uppercase tracking-widest mt-1 ${isSelected
+          ? hasPending
+            ? "text-red-500"
+            : allDone
+              ? "text-green-600"
+              : "text-[#6a9000]"
+          : isToday
+            ? "text-primary"
             : "text-gray-400"
         }`}>
         {day.day}
       </p>
-      <p className={`text-sm font-extrabold leading-none ${
-        isSelected 
+      <p className={`text-sm font-extrabold leading-none ${isSelected
           ? hasPending
-              ? "text-red-600"
-              : allDone
-                  ? "text-green-700"
-                  : "text-primary"
-          : isToday 
-            ? "text-primary" 
+            ? "text-red-600"
+            : allDone
+              ? "text-green-700"
+              : "text-primary"
+          : isToday
+            ? "text-primary"
             : "text-gray-700"
         }`}>
         {formatDate(day.date)}
@@ -388,10 +415,10 @@ const DayCard: React.FC<{
       {/* Status dot */}
       <span className={`w-2 h-2 rounded-full mt-1 ${isSelected
         ? hasPending
-            ? "bg-red-500"
-            : allDone
-                ? "bg-green-500"
-                : "bg-[#BADA55]"
+          ? "bg-red-500"
+          : allDone
+            ? "bg-green-500"
+            : "bg-[#BADA55]"
         : allDone
           ? "bg-green-500"
           : hasPending
@@ -500,10 +527,10 @@ const ChapterAccordion: React.FC<{
   onMockTestClick?: (chapterId: number, chapterName: string, assignmentId: number | null | undefined) => void;
 }> = ({ chapter, index, onMockTestClick }) => {
   const [open, setOpen] = useState(false);
-  const allDone = chapter.tasks.every((t) => t.progress >= 100);
+  const allDone = chapter.tasks.some(t => t.type === 'mock_test' && t.status === 'completed') || (chapter.tasks.length > 0 && chapter.tasks.every((t) => t.progress >= 100));
 
   return (
-    <div className={`rounded-2xl overflow-hidden border transition-all duration-200 shadow-sm hover:shadow-md ${allDone ? "border-green-200 bg-green-50/40" : chapter.is_overdue ? "border-red-200 bg-red-50" : chapter.is_orange ? "border-orange-200 bg-orange-50/50" : "border-gray-100 bg-white"}`}>
+    <div className={`rounded-2xl overflow-hidden border-[3px] transition-all duration-200 shadow-sm hover:shadow-md ${allDone ? "border-green-500 bg-green-50/60" : chapter.is_overdue ? "border-red-500 bg-red-50" : chapter.is_orange ? "border-orange-400 bg-orange-50/50" : "border-gray-100 bg-white"}`}>
       <button
         onClick={() => setOpen((p) => !p)}
         className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50/80 transition-colors"
@@ -517,11 +544,6 @@ const ChapterAccordion: React.FC<{
             {chapter.is_overdue && <span className="text-[10px] text-red-500 font-bold ml-1 uppercase">(Expired)</span>}
             {chapter.is_orange && <span className="text-[10px] text-orange-500 font-bold ml-1 uppercase">(Pending)</span>}
           </span>
-          {allDone && (
-            <span className="material-symbols-outlined text-green-500" style={{ fontSize: 16, fontVariationSettings: "'FILL' 1" }}>
-              check_circle
-            </span>
-          )}
         </span>
         <span className={`material-symbols-outlined text-lg text-gray-400 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`}>
           expand_more
@@ -874,10 +896,10 @@ const LearningPlanner: React.FC = () => {
 
         // 2. Get First Adaptive Question
         const questionRes = await ApiServices.getNextAdaptiveQuestion(attempt_id);
-        
+
         if (questionRes.data?.status === "success") {
           const questionData = questionRes.data.data;
-          
+
           if (questionData.is_complete) {
             showToast("Assessment already completed.", "info");
             return false;
@@ -894,7 +916,7 @@ const LearningPlanner: React.FC = () => {
               sl_no: questionData.sl_no
             }]
           });
-          
+
           setTestDuration(startRes.data.data.duration_minutes);
           setTestModalOpen(true);
           showToast("Adaptive test started!", "success");
@@ -938,10 +960,10 @@ const LearningPlanner: React.FC = () => {
 
         // 2. Get First Adaptive Question
         const questionRes = await ApiServices.getNextAdaptiveQuestion(attempt_id);
-        
+
         if (questionRes.data?.status === "success") {
           const questionData = questionRes.data.data;
-          
+
           if (questionData.is_complete) {
             showToast("Assessment already completed.", "info");
             return;
@@ -960,7 +982,7 @@ const LearningPlanner: React.FC = () => {
               sl_no: questionData.sl_no
             }]
           });
-          
+
           setTestDuration(startRes.data.data.duration_minutes);
           setTestModalOpen(true);
           showToast("Adaptive test started!", "success");
