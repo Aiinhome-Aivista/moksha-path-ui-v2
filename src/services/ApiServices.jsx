@@ -928,6 +928,16 @@ class ApiServices {
   skipAssessmentQuestion(payload) {
     return axiosInstance.post(POST_APIS.skip_assessment_question, payload);
   }
+
+  bulkUploadUsers(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    return axiosInstance.post(POST_APIS.bulk_upload_users, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  }
 }
 
 export default new ApiServices();

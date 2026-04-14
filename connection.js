@@ -208,4 +208,5 @@ export const POST_APIS = {
   save_adaptive_answer: `${BASE_URL}learning/assessment/save_adaptive_answer`,
   finish_adaptive: `${BASE_URL}learning/assessment/finish_adaptive`,
   skip_assessment_question: `${BASE_URL}learning/assessment/skip_assessment_question`,
+  bulk_upload_users: `${BASE_URL}institute_admin/bulk_upload_users`,
 };
