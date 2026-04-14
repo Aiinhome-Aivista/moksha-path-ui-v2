@@ -711,6 +711,10 @@ class ApiServices {
     return axiosInstance.post(POST_APIS.create_adaptive_set, payload);
   }
 
+  createSubjectWiseAdaptiveSet(payload) {
+    return axiosInstance.post(POST_APIS.create_subject_wise_adaptive_set, payload);
+  }
+
   // Adaptive Assessment APIs
   adaptiveStartAssessment(payload) {
     return axiosInstance.post(POST_APIS.adaptive_start, payload);
