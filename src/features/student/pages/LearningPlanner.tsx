@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 // import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices";
@@ -596,12 +596,14 @@ const SubjectSection: React.FC<{
   const defaultDay = todayEntry ?? weeklyPlan[0] ?? null;
 
   const [selectedDate, setSelectedDate] = useState<string>(defaultDay?.date ?? "");
-  const [selectedDayData, setSelectedDayData] = useState<WeeklyPlanDay | null>(defaultDay);
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+  const selectedDayData = useMemo(() => {
+    return weeklyPlan.find((d) => d.date === selectedDate) || defaultDay;
+  }, [weeklyPlan, selectedDate, defaultDay]);
 
   const handleDayClick = (day: WeeklyPlanDay) => {
     setSelectedDate(day.date);
-    setSelectedDayData(day);
   };
 
   // ── Derived: Overall Mock Test progress
@@ -880,6 +882,7 @@ const LearningPlanner: React.FC = () => {
   const [assessmentDetails, setAssessmentDetails] = useState<any>(null);
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [testDuration, setTestDuration] = useState(30);
+  const [totalMarks, setTotalMarks] = useState(0);
 
   const handleTestModalUpdate = async (assignmentId: number): Promise<boolean> => {
     try {
@@ -918,6 +921,7 @@ const LearningPlanner: React.FC = () => {
           });
 
           setTestDuration(startRes.data.data.duration_minutes);
+          setTotalMarks(startRes.data.data.total_marks);
           setTestModalOpen(true);
           showToast("Adaptive test started!", "success");
           return true;
@@ -984,6 +988,7 @@ const LearningPlanner: React.FC = () => {
           });
 
           setTestDuration(startRes.data.data.duration_minutes);
+          setTotalMarks(startRes.data.data.total_marks);
           setTestModalOpen(true);
           showToast("Adaptive test started!", "success");
         } else {
@@ -1174,9 +1179,13 @@ const LearningPlanner: React.FC = () => {
 
       <TestModalUpdated
         isOpen={testModalOpen}
-        onClose={() => setTestModalOpen(false)}
+        onClose={() => {
+          setTestModalOpen(false);
+          fetchLearningPlan();
+        }}
         testDurationMinutes={testDuration}
         assessmentDetails={assessmentDetails}
+        totalMarks={totalMarks}
         attemptId={attemptId}
         isAdaptive={true}
         onComplete={(result) => {
@@ -1197,7 +1206,10 @@ const LearningPlanner: React.FC = () => {
             <h3 className="text-xl font-bold text-primary mb-2">Assessment Submitted!</h3>
             <p className="text-gray-500 text-sm mb-6">Your result is being processed and will be available soon in the <strong>Dashboard</strong></p>
             <button
-              onClick={() => setShowResultComingSoon(false)}
+              onClick={() => {
+                setShowResultComingSoon(false);
+                fetchLearningPlan();
+              }}
               className="w-full px-6 py-3 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors"
             >
               OK
