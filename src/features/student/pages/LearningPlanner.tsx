@@ -364,8 +364,8 @@ const DayCard: React.FC<{
     <div
       onClick={onClick}
       className={`
-        relative flex-1 min-w-[60px] cursor-pointer rounded-2xl py-3 px-2 border-2
-        flex flex-col items-center gap-1.5
+        relative flex-1 max-w-20 cursor-pointer rounded-2xl py-3 px-2 border-2
+        flex flex-col items-center gap-1
         transition-all duration-200 select-none
         ${isSelected
           ? hasPending
