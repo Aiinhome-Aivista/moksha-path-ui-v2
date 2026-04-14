@@ -20,6 +20,8 @@ import {
   Receipt,
   ChevronLeft,
   ChevronRight,
+  Download,
+  FileSpreadsheet,
 } from "lucide-react";
 import { useModal } from "../../../features/auth/context/AuthContext";
 import Subscription from "../../student/pages/Subscription";
@@ -225,10 +227,10 @@ const TransactionTab: React.FC<{ className?: string }> = ({ className }) => {
                 <td className="px-6 py-4 text-xs font-black text-gray-900">₹ {txn.total_amount}</td>
                 <td className="px-6 py-4">
                   <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${txn.payment_status?.toLowerCase() === 'success'
-                      ? 'bg-green-100 text-green-700'
-                      : txn.payment_status?.toLowerCase() === 'pending'
-                        ? 'bg-yellow-100 text-yellow-700'
-                        : 'bg-red-100 text-red-700'
+                    ? 'bg-green-100 text-green-700'
+                    : txn.payment_status?.toLowerCase() === 'pending'
+                      ? 'bg-yellow-100 text-yellow-700'
+                      : 'bg-red-100 text-red-700'
                     }`}>
                     {txn.payment_status || "Unknown"}
                   </span>
@@ -245,6 +247,209 @@ const TransactionTab: React.FC<{ className?: string }> = ({ className }) => {
           onPageChange={setCurrentPage}
         />
       )}
+    </div>
+  );
+};
+
+const BulkUploadTab: React.FC<{ className?: string }> = ({ className }) => {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setUploadMessage(null);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+
+    try {
+      setIsUploading(true);
+      setUploadMessage(null);
+      const response = await ApiServices.bulkUploadUsers(selectedFile);
+
+      if (response.data?.status === "success") {
+        setIsSuccess(true);
+        setUploadMessage("Users uploaded successfully!");
+        setSelectedFile(null);
+        if (uploadInputRef.current) uploadInputRef.current.value = "";
+      } else {
+        setIsSuccess(false);
+        setUploadMessage(response.data?.message || "Failed to upload users.");
+      }
+    } catch (error: any) {
+      setIsSuccess(false);
+      setUploadMessage(
+        error.response?.data?.message || "An error occurred during upload."
+      );
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDownloadTemplate = () => {
+    const headers = [
+      "full_name",
+      "email",
+      "phone",
+      "username",
+      "role_id",
+      "institute_id",
+      "subscription_id",
+      "board_id",
+      "academic_year",
+      "class_id",
+      "section_ids",
+      "subject_ids"
+    ];
+
+    const rows = [
+      [
+        "Milon Mondal",
+        "milon123@gmail.com",
+        "9000000000",
+        "milonmondal",
+        "3",
+        "1",
+        "20262027_CBSE_09_INS_1_202603270724527",
+        "1",
+        "2026-2027",
+        "9",
+        "1,3",
+        "1,2"
+      ]
+    ];
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(e => e.map(item => `"${item}"`).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "bulk_upload_users_template.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-8 ${className || ""}`}>
+      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
+        {/* Download Section */}
+        <div className="space-y-6 text-center border-r border-gray-50 pr-0 md:pr-12">
+          <div className="w-16 h-16 bg-lime-50 rounded-2xl flex items-center justify-center mx-auto border border-lime-100">
+            <FileSpreadsheet className="text-[#b0cb1f]" size={32} />
+          </div>
+
+          <div>
+            <h3 className="text-xl font-black text-primary mb-2">1. Download Template</h3>
+            <p className="text-sm text-gray-500 font-medium h-12">
+              Download our standardized CSV template to prepare your student and faculty data.
+            </p>
+          </div>
+
+          <button
+            onClick={handleDownloadTemplate}
+            className="w-full flex items-center justify-center gap-2 py-4 bg-gray-50 hover:bg-gray-100 text-primary font-black rounded-2xl border border-gray-200 transition-all group"
+          >
+            <Download size={18} className="group-hover:translate-y-0.5 transition-transform" />
+            Download CSV Template
+          </button>
+
+          <div className="pt-4 grid grid-cols-2 gap-3">
+            <div className="p-3 bg-gray-50/50 rounded-xl border border-gray-100 text-left">
+              <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Total Columns</p>
+              <p className="text-sm font-black text-primary">12 Headers</p>
+            </div>
+            <div className="p-3 bg-gray-50/50 rounded-xl border border-gray-100 text-left">
+              <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Format</p>
+              <p className="text-sm font-black text-primary">CSV (UTF-8)</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Upload Section */}
+        <div className="space-y-6 text-center">
+          <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto border border-indigo-100">
+            <PlusCircle className="text-indigo-500" size={32} />
+          </div>
+
+          <div>
+            <h3 className="text-xl font-black text-primary mb-2">2. Upload & Process</h3>
+            <p className="text-sm text-gray-500 font-medium h-12">
+              Select your completed CSV file and upload it to bulk create users.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <input
+              type="file"
+              ref={uploadInputRef}
+              onChange={handleFileChange}
+              accept=".csv"
+              className="hidden"
+            />
+
+            <div
+              onClick={() => uploadInputRef.current?.click()}
+              className={`cursor-pointer w-full py-4 border-2 border-dashed rounded-2xl transition-all ${selectedFile
+                  ? "border-[#b0cb1f] bg-lime-50/30"
+                  : "border-gray-200 hover:border-gray-300 bg-gray-50"
+                }`}
+            >
+              {selectedFile ? (
+                <div className="flex flex-col items-center gap-1">
+                  <p className="text-xs font-bold text-[#6b7a0e] truncate max-w-[200px]">
+                    {selectedFile.name}
+                  </p>
+                  <p className="text-[10px] text-gray-400">
+                    {(selectedFile.size / 1024).toFixed(1)} KB
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                  Select CSV File
+                </p>
+              )}
+            </div>
+
+            <button
+              onClick={handleUpload}
+              disabled={!selectedFile || isUploading}
+              className={`w-full flex items-center justify-center gap-2 py-4 font-black rounded-2xl shadow-lg transition-all ${!selectedFile || isUploading
+                  ? "bg-gray-100 text-gray-400 shadow-none"
+                  : "bg-[#b0cb1f] text-white shadow-[#b0cb1f]/20 hover:bg-[#a0ba1c]"
+                }`}
+            >
+              {isUploading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  <PlusCircle size={18} />
+                  Upload and Process
+                </>
+              )}
+            </button>
+          </div>
+
+          {uploadMessage && (
+            <div className={`p-3 rounded-xl text-xs font-bold animate-in fade-in slide-in-from-top-2 ${isSuccess ? "bg-green-50 text-green-600 border border-green-100" : "bg-red-50 text-red-600 border border-red-100"
+              }`}>
+              {uploadMessage}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -281,10 +486,10 @@ const InstituteAdminProfile: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<"faculty" | "subscriptions" | "transactions">(() => {
+  const [activeTab, setActiveTab] = useState<"faculty" | "subscriptions" | "transactions" | "bulk_upload">(() => {
     const hash = location.hash.replace("#", "");
-    if (["faculty", "subscriptions", "transactions"].includes(hash)) {
-      return hash as "faculty" | "subscriptions" | "transactions";
+    if (["faculty", "subscriptions", "transactions", "bulk_upload"].includes(hash)) {
+      return hash as "faculty" | "subscriptions" | "transactions" | "bulk_upload";
     }
     return "faculty";
   });
@@ -355,7 +560,7 @@ const InstituteAdminProfile: React.FC = () => {
         });
 
         localStorage.setItem("active_profile", JSON.stringify(profile));
-        
+
         let profileRoute = "/profile";
         if (activeRole.toLowerCase().includes("institute")) {
           profileRoute = "/institute-admin/profile";
@@ -605,13 +810,12 @@ const InstituteAdminProfile: React.FC = () => {
                   className="flex flex-col items-center gap-2 group cursor-pointer shrink-0 transition-transform active:scale-95"
                   onClick={() => handleProfileSwitch(p)}
                 >
-                  <div className={`relative w-14 h-14 rounded-full flex items-center justify-center text-lg font-black transition-all border-4 ${
-                    isActive 
-                      ? "bg-gradient-to-tr from-[#b0cb1f] to-lime-400 text-white border-lime-100 shadow-lg shadow-lime-200" 
+                  <div className={`relative w-14 h-14 rounded-full flex items-center justify-center text-lg font-black transition-all border-4 ${isActive
+                      ? "bg-gradient-to-tr from-[#b0cb1f] to-lime-400 text-white border-lime-100 shadow-lg shadow-lime-200"
                       : "bg-gray-50 text-gray-400 border-white hover:border-gray-100 hover:bg-gray-100"
-                  }`}>
+                    }`}>
                     {p.name?.charAt(0).toUpperCase() || "U"}
-                    
+
                     {isActive && (
                       <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
                         <CheckCircle2 size={10} className="text-white" />
@@ -790,7 +994,7 @@ const InstituteAdminProfile: React.FC = () => {
                 onChange={formik.handleChange}
                 isEditing={false}
               />
-               <ReadOnlyField
+              <ReadOnlyField
                 label="Email Address"
                 value={profileInfo?.email || ""}
                 icon={<Mail size={12} className="text-primary" />}
@@ -823,16 +1027,16 @@ const InstituteAdminProfile: React.FC = () => {
             { id: "faculty", label: "Faculty Information", icon: <Users size={14} /> },
             { id: "subscriptions", label: "My Subscriptions", icon: <CreditCard size={14} /> },
             { id: "transactions", label: "Transaction History", icon: <Receipt size={14} /> },
+            { id: "bulk_upload", label: "Batch Subscriptions", icon: <FileSpreadsheet size={14} /> },
           ].map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
-                activeTab === tab.id
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${activeTab === tab.id
                   ? "bg-[#b0cb1f] text-white shadow-md shadow-[#b0cb1f]/20"
                   : "text-gray-500 hover:bg-gray-50"
-              }`}
+                }`}
             >
               {tab.icon}
               {tab.label}
@@ -856,11 +1060,10 @@ const InstituteAdminProfile: React.FC = () => {
                       key={tab}
                       type="button"
                       onClick={() => setFacultyTab(tab)}
-                      className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition-all duration-200 capitalize ${
-                        facultyTab === tab
+                      className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition-all duration-200 capitalize ${facultyTab === tab
                           ? "bg-button-primary text-white shadow-sm border border-gray-100"
                           : "text-gray-500 hover:text-gray-700"
-                      }`}
+                        }`}
                     >
                       {tab === "assigned" ? `Assigned Faculty (${assignedTeachers.length})` : `Available Teachers (${availableTeachers.length})`}
                     </button>
@@ -922,18 +1125,19 @@ const InstituteAdminProfile: React.FC = () => {
             </SectionCard>
           )}
 
-          {activeTab === "subscriptions" && 
-          (
-                    <>
-                      <SubscriptionTab className="rounded-t-none border-t-0" />
-                      {/* ── Subscription Purchase Flow (Bottom) ── */}
-                      <div className="mt-8 pt-8 border-t border-gray-100 shadow-sm bg-white rounded-2xl">
-                        <h2 className="text-xl font-black text-primary mb-6 px-4">Add New Subscription</h2>
-                        <Subscription />
-                      </div>
-                    </>
-                  )}
+          {activeTab === "subscriptions" &&
+            (
+              <>
+                <SubscriptionTab className="rounded-t-none border-t-0" />
+                {/* ── Subscription Purchase Flow (Bottom) ── */}
+                <div className="mt-8 pt-8 border-t border-gray-100 shadow-sm bg-white rounded-2xl">
+                  <h2 className="text-xl font-black text-primary mb-6 px-4">Add New Subscription</h2>
+                  <Subscription />
+                </div>
+              </>
+            )}
           {activeTab === "transactions" && <TransactionTab className="rounded-t-none border-t-0" />}
+          {activeTab === "bulk_upload" && <BulkUploadTab className="rounded-t-none border-t-0" />}
         </div>
       </div>
 
