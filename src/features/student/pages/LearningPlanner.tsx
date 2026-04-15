@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 // import IconChat from "../../../assets/icon/chat2.svg";
 import ApiServices from "../../../services/ApiServices";
@@ -82,6 +82,24 @@ interface ApiSubjectPlan {
   subject_name: string;
   chapters: ApiChapter[];
   weekly_plan?: WeeklyPlanDay[];
+}
+
+interface MultiChapterTest {
+  assignment_id: number;
+  attempt_id: number | null;
+  chapters: { chapter_id: number; chapter_name: string }[];
+  due_date: string;
+  duration_minutes: number;
+  marks_obtained: number | null;
+  score: number | null;
+  set_id: number;
+  set_name: string;
+  status: string;
+  subject_id: number;
+  subject_name: string;
+  assigned_by_name?: string;
+  total_marks: number;
+  total_questions: number;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -587,7 +605,9 @@ const SubjectSection: React.FC<{
     chapterName: string,
     assignmentId: number | null | undefined,
   ) => void;
-}> = ({ subject, accentColor, defaultExpanded, onMockTestClick }) => {
+  multiChapterTests: MultiChapterTest[];
+}> = ({ subject, accentColor, defaultExpanded, onMockTestClick, multiChapterTests }) => {
+  const navigate = useNavigate();
   const today = getTodayDate();
   const weeklyPlan = subject.weekly_plan ?? [];
   const prevWeekStatus = getPrevWeekStatus(weeklyPlan, today);
@@ -607,17 +627,24 @@ const SubjectSection: React.FC<{
   };
 
   // ── Derived: Overall Mock Test progress
-  const overallMockTestProgress =
-    subject.chapters.length > 0
-      ? Math.round(
-        subject.chapters.reduce((sum, ch) => {
-          const mockTask = ch.tasks.find(t => t.type.toLowerCase().includes("mock"));
-          const mockProgress = mockTask?.status === "completed" ? 100 : 0;
-          return sum + mockProgress;
-        }, 0) / subject.chapters.length
-      )
-      : 0;
-  const mockTestStatus = overallMockTestProgress >= 100 ? "Completed" : "Pending";
+  const { overallMockTestProgress, mockTestStatus } = useMemo(() => {
+    const subjectTests = multiChapterTests.filter(t => t.subject_id === subject.subject_id);
+    
+    if (subjectTests.length > 0) {
+      const completed = subjectTests.filter(t => t.status?.toLowerCase() === "completed").length;
+      const progress = Math.round((completed / subjectTests.length) * 100);
+      return {
+        overallMockTestProgress: progress,
+        mockTestStatus: progress >= 100 ? "Completed" : "Pending"
+      };
+    }
+
+    // Fallback if no multi-chapter tests exist
+    return {
+      overallMockTestProgress: 0,
+      mockTestStatus: "Pending"
+    };
+  }, [multiChapterTests, subject.subject_id]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -682,25 +709,17 @@ const SubjectSection: React.FC<{
               </div>
             </div>
 
-            {/* ✅ NEW BUTTON */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                // OPTIONAL: you can trigger first chapter mock test
-                if (subject.chapters?.length > 0) {
-                  const firstChapter = subject.chapters[0];
-                  const mockTask = firstChapter.tasks.find(t => t.type.toLowerCase().includes("mock"));
-                  onMockTestClick?.(
-                    subject.subject_id,
-                    subject.subject_name,
-                    firstChapter.chapter_id,
-                    firstChapter.chapter_name,
-                    mockTask?.assignment_id
-                  );
-                }
+                navigate("/overall-tests");
               }}
-              disabled // Disabled for now
-              className="ml-auto text-[10px] px-2 py-1 bg-gray-200 text-gray-400 font-semibold rounded-md cursor-not-allowed"
+              disabled={!multiChapterTests.some(t => t.subject_id === subject.subject_id)}
+              className={`ml-auto text-[10px] px-2 py-1 font-semibold rounded-md transition-all ${
+                multiChapterTests.some(t => t.subject_id === subject.subject_id)
+                  ? "bg-[#BADA55] text-[#2b3a00] hover:bg-lime-400 cursor-pointer shadow-sm"
+                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
             >
               Take Overall Test
             </button>
@@ -865,6 +884,8 @@ const SUBJECT_COLORS = [
 
 const LearningPlanner: React.FC = () => {
   const [subjects, setSubjects] = useState<ApiSubjectPlan[]>([]);
+  const hasHandledAssignmentRef = useRef<number | null>(null);
+  const [multiChapterTests, setMultiChapterTests] = useState<MultiChapterTest[]>([]);
   const [academic, setAcademic] = useState<AcademicDetails | null>(null);
   const [student, setStudent] = useState<StudentDetails | null>(null);
   const [profileImage, setProfileImage] = useState<string>(" ");
@@ -1007,8 +1028,18 @@ const LearningPlanner: React.FC = () => {
     }
   };
 
+  const fetchMultiChapterTests = async () => {
+    try {
+      const res = await ApiServices.getMultiChapterTests();
+      if (res.data?.status === "success") {
+        setMultiChapterTests(res.data.data || []);
+      }
+    } catch { /* silent */ }
+  };
+
   const fetchLearningPlan = async () => {
     try {
+      fetchMultiChapterTests();
       const getResponse = await ApiServices.getStudentPlannerDashboard();
       const result = getResponse.data;
 
@@ -1054,7 +1085,8 @@ const LearningPlanner: React.FC = () => {
         await Promise.all([fetchLearningPlan(), fetchProfileImage()]);
 
         // Check if we came from notification with an assignmentId
-        if (assignmentIdFromState) { // Only attempt to open if assignmentId is present in state
+        if (assignmentIdFromState && hasHandledAssignmentRef.current !== assignmentIdFromState) { 
+          hasHandledAssignmentRef.current = assignmentIdFromState;
           const success = await handleTestModalUpdate(assignmentIdFromState);
           if (success) {
             // Clear the assignmentId from location.state after it has been handled
@@ -1156,6 +1188,7 @@ const LearningPlanner: React.FC = () => {
               accentColor={SUBJECT_COLORS[idx % SUBJECT_COLORS.length]}
               defaultExpanded={subjects.length <= 2}
               onMockTestClick={handleMockTestClick}
+              multiChapterTests={multiChapterTests}
             />
           ))}
         </div>

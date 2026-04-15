@@ -230,6 +230,10 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.student_planner_dashboard);
   }
 
+  getMultiChapterTests() {
+    return axiosInstance.get(GET_APIS.get_multi_chapter_tests);
+  }
+
   // Update Topic Status
   updateTopicStatus(payload) {
     return axiosInstance.post(POST_APIS.update_topic_status, payload);
