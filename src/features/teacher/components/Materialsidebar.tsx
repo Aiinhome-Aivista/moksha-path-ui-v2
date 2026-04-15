@@ -48,8 +48,19 @@ const MaterialsSidebar: React.FC<Props> = ({
             if (!subjectRef.current?.contains(e.target as Node)) setIsSubjectOpen(false);
         };
 
+        const handleScroll = () => {
+            setIsBoardOpen(false);
+            setIsClassOpen(false);
+            setIsSubjectOpen(false);
+        };
+
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        window.addEventListener("scroll", handleScroll);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            window.removeEventListener("scroll", handleScroll);
+        };
     }, []);
 
     return (
