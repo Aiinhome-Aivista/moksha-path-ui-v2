@@ -52,13 +52,13 @@ export const AdminLayout: React.FC = () => {
 
             {/* Main Content Wrapper */}
             <div
-                className={`flex-1 flex flex-col min-h-screen ml-0 md:ml-[88px] transition-all duration-300 ease-in-out`}
+                className={`flex-1 flex flex-col min-h-screen ml-0 md:ml-[88px] transition-all duration-300 ease-in-out min-w-0`}
             >
                 {/* Header (Reused, but can be customized later if needed) */}
                 <Header isSidebarOpen={isSidebarOpen} />
 
                 {/* Content Area */}
-                <main className="flex-1 overflow-y-auto p-6">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden p-6">
                     <Outlet />
                 </main>
 

@@ -68,13 +68,13 @@ export const AppLayout: React.FC = () => {
 
       {/* Main Content Wrapper - Fixed margin, Sidebar floats over when expanded */}
       <div
-        className={`flex-1 flex flex-col min-h-screen ml-0 ${isAuthenticated ? "md:ml-[88px]" : ""} transition-all duration-300 ease-in-out`}
+        className={`flex-1 flex flex-col min-h-screen ml-0 ${isAuthenticated ? "md:ml-[88px]" : ""} transition-all duration-300 ease-in-out min-w-0`}
       >
         {/* Header - Sticky at the top of the content area */}
         <Header isSidebarOpen={isSidebarOpen} />
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-6">
           <Outlet />
         </main>
 
