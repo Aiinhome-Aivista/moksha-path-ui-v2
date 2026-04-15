@@ -352,13 +352,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
             </h2>
           </div>
         )}
-        {activeTab === "exam" && selectedExam && (
-          <div className="relative left-[30rem] -top-9 px-4 mt-2">
-            <h2 className="text-2xl font-semibold text-primary">
-              {selectedExam}
-            </h2>
-          </div>
-        )}
+        
       </div>
     </>
   );
