@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import * as pdfjsLib from "pdfjs-dist";
-import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 import {
   // StickyNote,
   // ChevronDown,
@@ -15,10 +13,15 @@ import {
   X,
 } from "lucide-react";
 
+export interface NoteData {
+  topic_id: number;
+  topic_title: string;
+  content: any; // Can be string, array, or object
+}
+
 export interface StudyMaterialItem {
   id: number;
   title: string;
-  description: string | null;
   file_name: string | null;
   file_type: string; // "study_material" | "practice_material" | "link"
   file_url: string | null;
@@ -30,7 +33,6 @@ export interface StudyMaterialItem {
   subject_name?: string;
   uploaded_at: string;
   uploaded_by: number;
-  thumbnail?: string | null;
 }
 
 interface NotesProps {
@@ -215,62 +217,6 @@ const RenderNoteContent: React.FC<{ data: any; depth?: number }> = ({
   return <p className="text-sm text-gray-700">{String(data)}</p>;
 };
 
-// ── PDF.js Viewer Component ───────────────────────────────────────────────────
-const PdfViewer: React.FC<{ url: string }> = ({ url }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
-
-    const renderPdf = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const loadingTask = pdfjsLib.getDocument(url);
-        const pdf = await loadingTask.promise;
-        const container = containerRef.current;
-
-        if (container) {
-          container.innerHTML = ""; // Clear previous content
-          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-            const page = await pdf.getPage(pageNum);
-            const viewport = page.getViewport({ scale: 1.5 });
-            const canvas = document.createElement("canvas");
-            canvas.className = "mb-4 shadow-md mx-auto";
-            const context = canvas.getContext("2d");
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-            container.appendChild(canvas);
-
-            if (context) {
-              const renderContext = {
-                canvasContext: context,
-                canvas: canvas, // Add the canvas element here
-                viewport: viewport,
-              };
-              await page.render(renderContext).promise;
-            }
-          }
-        }
-      } catch (e: any) {
-        setError(e.message || "Failed to load PDF document.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    renderPdf();
-  }, [url]);
-
-  if (loading) return <div className="flex items-center justify-center h-full gap-2 text-gray-500"><Loader2 size={20} className="animate-spin" /><span>Loading PDF...</span></div>;
-  if (error) return <div className="p-8 text-center text-red-600"><strong>Error:</strong> {error}</div>;
-
-  // The onContextMenu on the parent div will catch all right-clicks on the rendered canvases
-  return <div ref={containerRef} onContextMenu={(e) => e.preventDefault()} />;
-};
-
 // ── Study Materials Card Component ──
 const StudyMaterialCard: React.FC<{
   item: StudyMaterialItem;
@@ -295,12 +241,6 @@ const StudyMaterialCard: React.FC<{
           <h4 className="text-sm font-semibold text-gray-800 truncate m-0 mb-1">
             {item.title}
           </h4>
-
-          {item.description && (
-            <p className="text-[11px] text-gray-500 mb-2 line-clamp-2 m-0">
-              {item.description}
-            </p>
-          )}
 
           <div className="flex items-center gap-2 flex-wrap">
             {/* Type badge */}
@@ -343,31 +283,31 @@ const DocumentPreviewModal: React.FC<{
   onClose: () => void;
 }> = ({ item, onClose }) => {
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Disable Ctrl+P (Print) and Ctrl+S (Save)
-      if ((event.ctrlKey || event.metaKey) && (event.key === 'p' || event.key === 's')) {
-        event.preventDefault();
-      }
-    };
+    if (item) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "unset";
+      };
+    }
+  }, [item]);
 
-    window.addEventListener('keydown', handleKeyDown);
-
-    // Cleanup the event listener when the modal is closed
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
   if (!item) return null;
 
   let resourceUrl = getFullResourceUrl(item.resource);
   const isExcel =
     item.file_name?.endsWith(".xlsx") || item.file_name?.endsWith(".xls");
   const isPdf =
-    item.file_name?.toLowerCase().endsWith(".pdf") || item.resource?.toLowerCase().endsWith(".pdf");
+    item.file_name?.toLowerCase().endsWith(".pdf") ||
+    item.resource?.toLowerCase().endsWith(".pdf");
+
+  // Disable PDF controls (download, print, etc.) using viewer parameters
+  if (isPdf) {
+    resourceUrl = `${resourceUrl}#toolbar=0&navpanes=0&view=FitH`;
+  }
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200] bg-white flex flex-col animate-in fade-in duration-200"
+      className="fixed inset-0 z-[9999] bg-white flex flex-col animate-in fade-in duration-200"
       onContextMenu={(e) => e.preventDefault()}
     >
       {/* Modal Header */}
@@ -394,13 +334,9 @@ const DocumentPreviewModal: React.FC<{
       </div>
 
       {/* Modal Body */}
-      <div className="flex-1 overflow-hidden bg-gray-200 flex flex-col relative h-full">
-        {isPdf ? (
-          <div className="flex-1 overflow-auto">
-            <PdfViewer url={resourceUrl} />
-          </div>
-        ) : isExcel ? (
-          <div className="flex flex-col items-center justify-center flex-1 gap-4">
+      <div className="flex-1 overflow-hidden bg-gray-100 relative">
+        {isExcel ? (
+          <div className="flex flex-col items-center justify-center h-full gap-4">
             <FileSpreadsheet size={48} className="text-green-600" />
             <p className="text-sm text-gray-600 font-medium">
               Excel files cannot be previewed directly.
@@ -418,8 +354,9 @@ const DocumentPreviewModal: React.FC<{
           <iframe
             src={resourceUrl}
             title={item.title}
-            className="w-full flex-1 border-none bg-white min-h-[0px]"
+            className="w-full h-full border-none bg-white"
             onContextMenu={(e) => e.preventDefault()}
+            allowFullScreen
           />
         )}
       </div>
@@ -434,6 +371,7 @@ const Notes: React.FC<NotesProps> = ({
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [previewItem, setPreviewItem] = useState<StudyMaterialItem | null>(null);
+  const [uploadedNotes] = useState<StudyMaterialItem[]>([]);
   const [activeTab, setActiveTab] = useState<"study" | "practice">("study");
 
   // Reset page when switching tabs
@@ -441,11 +379,13 @@ const Notes: React.FC<NotesProps> = ({
     setCurrentPage(1);
   }, [activeTab]);
 
+  const allStudyMaterials = [...studyMaterials, ...uploadedNotes];
+
   // Separate study materials by type
-  const studyMats = studyMaterials.filter(
+  const studyMats = allStudyMaterials.filter(
     (m) => m.file_type === "study_material",
   );
-  const practiceMats = studyMaterials.filter(
+  const practiceMats = allStudyMaterials.filter(
     (m) => m.file_type === "practice_material",
   );
 
@@ -464,7 +404,6 @@ const Notes: React.FC<NotesProps> = ({
 
   const hasStudyMaterials = studyMats.length > 0;
   const hasPracticeMaterials = practiceMats.length > 0;
- 
 
   if (isLoading) {
     return (
@@ -531,7 +470,7 @@ const Notes: React.FC<NotesProps> = ({
               <div className="flex flex-col items-center justify-center py-20 text-gray-400">
                 <FileText size={48} className="mb-3 opacity-20" />
                 <p className="text-sm font-medium">No Study Materials available</p>
-                <p className="text-xs mt-1">Check back later for uploaded study files</p>
+                <p className="text-xs mt-1">Uploaded study files will appear here</p>
               </div>
             )}
           </div>
@@ -550,7 +489,7 @@ const Notes: React.FC<NotesProps> = ({
               <div className="flex flex-col items-center justify-center py-20 text-gray-400">
                 <FileSpreadsheet size={48} className="mb-3 opacity-20" />
                 <p className="text-sm font-medium">No Practice Material available</p>
-                <p className="text-xs mt-1">Check back later for worksheets and files</p>
+                <p className="text-xs mt-1">Uploaded practice files/sheets will appear here</p>
               </div>
             )}
           </div>
