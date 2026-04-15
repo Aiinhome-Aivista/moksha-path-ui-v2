@@ -827,51 +827,35 @@ const TeacherLearningPlanner: React.FC = () => {
                     </button>
 
                     {row.testMaterial.length > 0 && (
-                      <div className="flex flex-col mt-1 gap-1">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase">
+                      <div
+                        className="flex gap-2 cursor-pointer"
+                        title={row.testMaterial
+                          .map((m: any) => m.name)
+                          .join(",\n")}
+                      >
+                        <span className="text-[9px] font-bold text-primary uppercase">
                           Study
                         </span>
-                        {row.testMaterial.map((mat, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-1 text-[10px] text-gray-500 max-w-[120px]"
-                            title={mat.name}
-                          >
-                            {mat.type === "pdf" && <FileText size={10} />}
-                            {mat.type === "excel" && (
-                              <FileSpreadsheet
-                                size={10}
-                                className="text-green-600"
-                              />
-                            )}
-                            {mat.type === "link" && <Link size={10} />}
-                            <span className="truncate">{mat.name}</span>
-                          </div>
-                        ))}
+                        <span className="text-xs text-blue-700 font-medium underline decoration-dotted">
+                          {row.testMaterial.length}{" "}
+                          {row.testMaterial.length === 1 ? "file" : "files"}
+                        </span>
                       </div>
                     )}
                     {row.practiceMaterial.length > 0 && (
-                      <div className="flex flex-col mt-2 gap-1 border-t border-gray-100 pt-1">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase">
+                      <div
+                        className="flex gap-2 cursor-pointer"
+                        title={row.practiceMaterial
+                          .map((m: any) => m.name)
+                          .join(",\n")}
+                      >
+                        <span className="text-[9px] font-bold text-primary uppercase">
                           Practice
                         </span>
-                        {row.practiceMaterial.map((mat, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-1 text-[10px] text-gray-500 max-w-[120px]"
-                            title={mat.name}
-                          >
-                            {mat.type === "pdf" && <FileText size={10} />}
-                            {mat.type === "excel" && (
-                              <FileSpreadsheet
-                                size={10}
-                                className="text-green-600"
-                              />
-                            )}
-                            {mat.type === "link" && <Link size={10} />}
-                            <span className="truncate">{mat.name}</span>
-                          </div>
-                        ))}
+                        <span className="text-xs text-green-700 font-medium underline decoration-dotted">
+                          {row.practiceMaterial.length}{" "}
+                          {row.practiceMaterial.length === 1 ? "file" : "files"}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -940,12 +924,14 @@ const TeacherLearningPlanner: React.FC = () => {
                     disabled={
                       !row.startDate_raw ||
                       !row.endDate_raw ||
+                      savingChapterId !== null ||
                       (row.completed && row.isSaved === true)
                     }
                    className="w-4 h-4 accent-secondary disabled:accent-[#AAA] cursor-pointer disabled:cursor-not-allowed opacity-100"
 
                   />
                 </td>
+                {/*  className={`w-4 h-4 cursor-pointer disabled:cursor-not-allowed transition-colors ${row.completed && row.isSaved === true ? "accent-red-400 text-red-400" : "accent-green-400 text-green-400"}`} */}
 
                 <td className="py-3 px-2 text-center">
                   <button
@@ -1240,24 +1226,15 @@ const TeacherLearningPlanner: React.FC = () => {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setIsMockModalOpen(false)}
-                disabled={isGeneratingTest}
-                className="px-6 py-2 rounded-lg font-bold text-gray-500 hover:bg-gray-100 transition-colors border-none cursor-pointer bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 rounded-lg font-bold text-gray-500 hover:bg-gray-100 transition-colors border-none cursor-pointer bg-transparent"
               >
                 Cancel
               </button>
               <button
-                onClick={handleGenerateMockTest}
-                disabled={isGeneratingTest}
-                className="px-8 py-3 bg-[#BADA55] text-gray-900 rounded-lg font-bold hover:bg-opacity-90 transition-all shadow-md hover:shadow-lg border-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+                onClick={() => setIsMockModalOpen(false)}
+                className="px-8 py-3 bg-[#BADA55] text-gray-900 rounded-lg font-bold hover:bg-opacity-90 transition-all shadow-md hover:shadow-lg border-none cursor-pointer"
               >
-                {isGeneratingTest ? (
-                  <>
-                    <Loader2 size={18} className="animate-spin" />
-                    <span>Submitting...</span>
-                  </>
-                ) : (
-                  "Submit"
-                )}
+                Submit
               </button>
             </div>
           </div>
