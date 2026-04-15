@@ -198,8 +198,8 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
   return (
     <>
       <header className="sticky top-0 z-40 h-14 bg-gray-100 dark:bg-secondary-900 border-secondary-200 dark:border-secondary-700 shadow-sm">
-        <div className="h-full px-4 lg:px-6 flex items-center justify-between">
-          <div className="flex items-center gap-4 pl-10 lg:pl-0 transition-all duration-300">
+        <div className="h-full px-4 xl:px-6 flex items-center justify-between">
+          <div className="flex items-center gap-4 pl-10 xl:pl-0 transition-all duration-300">
             {/* <button onClick={handleLogoClick} className="flex items-center animate-fade-in cursor-pointer">
               <img src="/Logo.svg" alt="App Logo" className="h-[90%] w-[80%]" />
             </button> */}
@@ -216,7 +216,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
             </div>
           </div>
           {/* Middle Menu Section - HIDDEN ON MOBILE */}
-          <div className="hidden lg:flex flex-1 justify-center relative h-full">
+          <div className="hidden xl:flex flex-1 justify-center relative h-full">
             <div className="flex items-center absolute left-1/2 -translate-x-full z-10 bg-yellow-500 rounded-b-full pl-10 pr-12 gap-3">
               <button className="text-sm font-semibold text-black hover:opacity-80 transition-opacity">
                 Request a Demo
@@ -257,7 +257,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
           </div>
 
           {/* Right Section: Auth & Profile */}
-          <div className="flex items-center gap-2 lg:gap-3">
+          <div className="flex items-center gap-2 xl:gap-3">
             {isAuthenticated && user?.role !== 'admin' && (
               <div className="relative flex items-center justify-center">
                 <button
@@ -280,7 +280,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-200 transition-colors"
+              className="xl:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-200 transition-colors"
               aria-label="Toggle menu"
             >
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -290,7 +290,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
 
         {/* Mobile Navigation Drawer */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden absolute top-full left-0 w-full bg-white dark:bg-secondary-800 shadow-xl z-30 animate-in slide-in-from-top-2 duration-200">
+          <div className="xl:hidden absolute top-full left-0 w-full bg-white dark:bg-secondary-800 shadow-xl z-30 animate-in slide-in-from-top-2 duration-200">
             <div className="p-4 space-y-4">
               {/* Top yellow bar links */}
               <div className="grid grid-cols-2 gap-3 pb-4 border-b border-gray-200 dark:border-secondary-700">
