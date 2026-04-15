@@ -152,9 +152,8 @@ const RenderNoteContent: React.FC<{ data: any; depth?: number }> = ({
         {data.map((item, i) => (
           <li
             key={i}
-            className={`text-gray-700 leading-relaxed ${
-              depth === 0 ? "text-sm font-medium" : "text-sm"
-            }`}
+            className={`text-gray-700 leading-relaxed ${depth === 0 ? "text-sm font-medium" : "text-sm"
+              }`}
           >
             {typeof item === "string" ? (
               <>
@@ -192,11 +191,10 @@ const RenderNoteContent: React.FC<{ data: any; depth?: number }> = ({
           return (
             <div key={key} className={isMainSection ? "mb-4" : "mb-3"}>
               <h4
-                className={`font-bold mb-2 tracking-widest ${
-                  isMainSection
+                className={`font-bold mb-2 tracking-widest ${isMainSection
                     ? "text-xs text-gray-900 uppercase border-b-2 border-[#F27927] pb-2"
                     : "text-xs text-gray-800 uppercase"
-                }`}
+                  }`}
               >
                 {label}
               </h4>
@@ -284,9 +282,20 @@ const DocumentPreviewModal: React.FC<{
 }> = ({ item, onClose }) => {
   useEffect(() => {
     if (item) {
+      const originalBodyOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
+
+      const mainEl = document.querySelector("main");
+      const originalMainOverflow = mainEl ? mainEl.style.overflow : "";
+      if (mainEl) {
+        mainEl.style.overflow = "hidden";
+      }
+
       return () => {
-        document.body.style.overflow = "unset";
+        document.body.style.overflow = originalBodyOverflow;
+        if (mainEl) {
+          mainEl.style.overflow = originalMainOverflow;
+        }
       };
     }
   }, [item]);
@@ -430,19 +439,17 @@ const Notes: React.FC<NotesProps> = ({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-3 text-sm font-semibold transition-all relative border-none bg-transparent cursor-pointer ${
-                isActive
+              className={`flex items-center gap-2 px-6 py-3 text-sm font-semibold transition-all relative border-none bg-transparent cursor-pointer ${isActive
                   ? "text-[#F27927]"
                   : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              }`}
+                }`}
             >
               <Icon size={18} />
               <span>{tab.label}</span>
               {tab.count > 0 && (
                 <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                    isActive ? "bg-orange-100 text-[#F27927]" : "bg-gray-100 text-gray-600"
-                  }`}
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? "bg-orange-100 text-[#F27927]" : "bg-gray-100 text-gray-600"
+                    }`}
                 >
                   {tab.count}
                 </span>
@@ -501,11 +508,10 @@ const Notes: React.FC<NotesProps> = ({
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className={`p-2 rounded-lg border flex items-center justify-center transition-colors ${
-                currentPage === 1
+              className={`p-2 rounded-lg border flex items-center justify-center transition-colors ${currentPage === 1
                   ? "border-gray-100 text-gray-300 cursor-not-allowed"
                   : "border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#F27927]"
-              }`}
+                }`}
             >
               <ChevronLeft size={20} />
             </button>
@@ -514,11 +520,10 @@ const Notes: React.FC<NotesProps> = ({
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
-                  className={`w-8 h-8 rounded-lg text-sm font-medium flex items-center justify-center transition-all ${
-                    currentPage === page
+                  className={`w-8 h-8 rounded-lg text-sm font-medium flex items-center justify-center transition-all ${currentPage === page
                       ? "bg-[#F27927] text-white shadow-md"
                       : "text-gray-600 hover:bg-gray-100"
-                  }`}
+                    }`}
                 >
                   {page}
                 </button>
@@ -527,11 +532,10 @@ const Notes: React.FC<NotesProps> = ({
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className={`p-2 rounded-lg border flex items-center justify-center transition-colors ${
-                currentPage === totalPages
+              className={`p-2 rounded-lg border flex items-center justify-center transition-colors ${currentPage === totalPages
                   ? "border-gray-100 text-gray-300 cursor-not-allowed"
                   : "border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#F27927]"
-              }`}
+                }`}
             >
               <ChevronRight size={20} />
             </button>
