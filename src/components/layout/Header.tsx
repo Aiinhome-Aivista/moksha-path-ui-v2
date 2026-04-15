@@ -226,7 +226,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
                 Help Center
               </button>
             </div>
-            <div className="flex items-center relative top-0 bg-[#E9E9E9] rounded-b-full w-[38rem] pt-5 pb-4 pl-7 pr-6 gap-4 lg:gap-6">
+            <div className="flex items-center relative top-0 bg-[#E9E9E9] rounded-b-full w-[42rem] pt-5 pb-4 pl-7 pr-6 gap-4 lg:gap-6">
               <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
                 About us
               </button>
