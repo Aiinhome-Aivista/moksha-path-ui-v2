@@ -46,7 +46,7 @@ export const PerformanceCards = () => {
 
   return (
     <>
-      <div className="flex justify-end gap-1 2xl:gap-12 xl:relative xl:-top-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 justify-end gap-1 2xl:gap-12 xl:relative xl:-top-6">
         {stats.map((item, i) => (
           <div key={i} className="w-56 2xl:w-60 p-1 ">
             <div className="grid grid-cols-3">
@@ -220,7 +220,7 @@ export const PerformanceCards = () => {
               />
             </div>
             <div className="col-span-2 flex flex-col justify-between">
-              <ul className="space-y-1 pt-12">
+              <ul className="space-y-1 pt-8">
                 <li className="w-full flex gap-4">
                   <span className="material-symbols-outlined text-[#b0cb1f] text-5xl font-extrabold">
                     check

@@ -166,7 +166,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
       <div className="grid grid-cols-1 mb-1 lg:grid-cols-3 xl:grid-cols-4 items-center relative -ml-6">
 
         {/* ─── Profile Card ────────────────────────────────────────────── */}
-        <div className="flex items-center gap-4 bg-[#212b36] text-white p-4 h-24 z-10 min-w-80 rounded-tr-full rounded-br-full shadow-md">
+        <div className="flex items-center gap-4 bg-[#212b36] text-white p-4 h-24 z-10 min-w-72 rounded-tr-full rounded-br-full shadow-md">
           <div className="relative flex-shrink-0">
             {profileImage ? (
               <img
@@ -201,8 +201,8 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
         </div>
 
         {/* ─── Tabs ─────────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-1 justify-between py-1 bg-[#ECECED] h-12 rounded-tr-full rounded-br-full shadow lg:col-span-2 xl:col-span-3">
-          <h1 className="pl-6 text-[#00bcd4] font-black text-lg tracking-tight whitespace-nowrap lg:hidden xl:block">
+        <div className="flex items-center justify-around py-1 bg-[#ECECED] h-12 rounded-tr-full rounded-br-full shadow lg:col-span-2 xl:col-span-3">
+          <h1 className="text-[#00bcd4] font-black text-lg tracking-tight whitespace-nowrap hidden lg:hidden xl:block">
             My Dashboard
           </h1>
           {tabs.map((tab) => {
@@ -219,8 +219,8 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                       setShowDropdown(!showDropdown);
                       setShowExamDropdown(false);
                     }}
-                    className={`px-6 py-1 flex items-center rounded-full text-lg font-bold ${activeTab === tab.key
-                      ? "bg-[#E59003] text-white"
+                    className={`px-2 py-1 flex items-center rounded-full text-lg font-bold ${activeTab === tab.key
+                      ? "bg-[#E59003] text-white px-6"
                       : "text-gray-600 hover:bg-gray-100"
                       }`}
                   >
@@ -228,7 +228,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                     <span className="material-symbols-outlined ml-1">
                       keyboard_arrow_down
                     </span>
-                    <span className="ml-1.5 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
+                    <span className="bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm lg:hidden xl:flex  ">
                       {overallTestCount || 0}
                     </span>
                   </button>
@@ -286,8 +286,8 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                       setShowExamDropdown(!showExamDropdown);
                       setShowDropdown(false);
                     }}
-                    className={`px-6 py-1 flex items-center rounded-full text-lg font-bold whitespace-nowrap ${activeTab === tab.key
-                      ? "bg-[#E59003] text-white"
+                    className={`px-2 py-1 flex items-center rounded-full text-lg font-bold whitespace-nowrap ${activeTab === tab.key
+                      ? "bg-[#E59003] text-white px-6"
                       : "text-gray-600 hover:bg-gray-100"
                       }`}
                   >
@@ -335,8 +335,8 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                   setShowDropdown(false);
                   setShowExamDropdown(false);
                 }}
-                className={`px-6 py-1 rounded-full text-lg font-bold whitespace-nowrap ${activeTab === tab.key
-                  ? "bg-[#E59003] text-white"
+                className={`px-2 py-1 rounded-full text-lg font-bold whitespace-nowrap ${activeTab === tab.key
+                  ? "bg-[#E59003] text-white px-6"
                   : "text-gray-600 hover:bg-gray-100"
                   }`}
               >

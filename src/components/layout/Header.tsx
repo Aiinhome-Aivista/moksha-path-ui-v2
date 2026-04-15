@@ -210,7 +210,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
             </div>
           </div>
           <div className="flex-1 flex justify-center">
-            <div className="flex items-center absolute left-1/2 -translate-x-full z-10 bg-yellow-500 rounded-b-full pl-10 pr-12 gap-3">
+            <div className="flex items-center absolute left-1/2 -translate-x-[75%] xl:-translate-x-full z-10 bg-yellow-500 rounded-b-full pl-10 pr-12 pt-1 gap-3">
               <button className="text-sm font-semibold text-black">
                 Request a Demo
               </button>
@@ -219,7 +219,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
                 Help Center
               </button>
             </div>
-            <div className="flex items-center relative top-0 bg-[#E9E9E9] rounded-b-full pt-5 pb-4 pl-72 pr-6 gap-6">
+            <div className="flex items-center relative top-0 bg-[#E9E9E9] rounded-b-full w-[38rem] pt-5 pb-4 pl-7 pr-6 gap-4 lg:gap-6">
               <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
                 About us
               </button>
