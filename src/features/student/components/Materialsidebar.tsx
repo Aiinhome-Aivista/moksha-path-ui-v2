@@ -51,27 +51,32 @@ const MaterialsSidebar: React.FC<Props> = ({
 
   // Prevent body scroll when dropdown is open
   useEffect(() => {
-    if (isSubjectDropdownOpen) {
-      const scrollY = window.scrollY;
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = "100%";
-      document.body.style.overflow = "hidden";
-    } else {
-      const scrollY = document.body.style.top;
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
-      document.body.style.overflow = "";
-      window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
-    }
-    return () => {
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
-      document.body.style.overflow = "";
-    };
-  }, [isSubjectDropdownOpen]);
+    const handleScroll = () => setIsSubjectDropdownOpen(false);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+  // useEffect(() => {
+  //   if (isSubjectDropdownOpen) {
+  //     const scrollY = window.scrollY;
+  //     document.body.style.position = "fixed";
+  //     document.body.style.top = `-${scrollY}px`;
+  //     document.body.style.width = "100%";
+  //     document.body.style.overflow = "hidden";
+  //   } else {
+  //     const scrollY = document.body.style.top;
+  //     document.body.style.position = "";
+  //     document.body.style.top = "";
+  //     document.body.style.width = "";
+  //     document.body.style.overflow = "";
+  //     window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
+  //   }
+  //   return () => {
+  //     document.body.style.position = "";
+  //     document.body.style.top = "";
+  //     document.body.style.width = "";
+  //     document.body.style.overflow = "";
+  //   };
+  // }, [isSubjectDropdownOpen]);
 
   // Handle chapter selection toggle
   // const toggleChapterSelection = (index: number) => {
@@ -110,7 +115,7 @@ const MaterialsSidebar: React.FC<Props> = ({
   // };
 
   return (
-    <div className="w-[280px] flex-shrink-0 overflow-visible">
+    <div className="w-[280px] flex-shrink-0 overflow-visible relative z-[100]">
       {/* Tutor Image */}
       <div className="flex justify-start mb-2">
         <img src="/Guy.svg" alt="Tutor" />
@@ -156,32 +161,41 @@ const MaterialsSidebar: React.FC<Props> = ({
             <button
               type="button"
               onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
-              className="w-full bg-transparent border-none text-gray-700 focus:outline-none cursor-pointer flex justify-between items-center text-left"
+              className="w-full bg-transparent border-none text-gray-700 focus:outline-none cursor-pointer flex justify-between items-center text-left pl-0 pr-4"
             >
               <span className="truncate">{activeSubject || "Select a subject"}</span>
               <span className={`material-symbols-outlined text-gray-500 transition-transform duration-200 ${isSubjectDropdownOpen ? 'rotate-180' : ''}`}>expand_more</span>
             </button>
           </div>
-          {isSubjectDropdownOpen && (
-            <div className="absolute z-50 mt-1 w-full bg-white shadow-lg rounded-md max-h-60 overflow-y-auto border border-gray-100">
-              {subjects.length > 0 ? (
-                subjects.map((subject) => (
-                  <div
-                    key={subject}
-                    onClick={() => {
-                      setActiveSubject(subject);
-                      setIsSubjectDropdownOpen(false);
-                    }}
-                    className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                  >
-                    {subject}
-                  </div>
-                ))
-              ) : (
-                <div className="px-4 py-2 text-sm text-gray-400 italic">
-                  No subjects available
+          {isSubjectDropdownOpen && subjectDropdownRef.current && (
+            <div
+              className="fixed z-[9999] bg-white shadow-lg rounded-md overflow-y-auto border border-gray-100"
+              style={{
+                top:
+                  subjectDropdownRef.current.getBoundingClientRect().bottom + 4,
+                left:
+                  subjectDropdownRef.current.getBoundingClientRect().left,
+                width: subjectDropdownRef.current.offsetWidth,
+                maxHeight: "250px",
+              }}
+            >              {subjects.length > 0 ? (
+              subjects.map((subject) => (
+                <div
+                  key={subject}
+                  onClick={() => {
+                    setActiveSubject(subject);
+                    setIsSubjectDropdownOpen(false);
+                  }}
+                  className="pl-3 pr-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                >
+                  {subject}
                 </div>
-              )}
+              ))
+            ) : (
+              <div className="px-4 py-2 text-sm text-gray-400 italic">
+                No subjects available
+              </div>
+            )}
             </div>
           )}
         </div>
