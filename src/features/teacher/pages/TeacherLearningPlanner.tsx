@@ -163,6 +163,29 @@ const TeacherLearningPlanner: React.FC = () => {
       showToast("Please enter a display name.", "error");
       return;
     }
+
+    const currentSubjectValidate = subjects.find((s) => s.subject_name === activeSubject);
+    const allExistingMaterials: any[] = [...backendMaterials];
+    currentSubjectValidate?.chapters.forEach((ch: any) => {
+      allExistingMaterials.push(...(ch.testMaterial || []));
+      allExistingMaterials.push(...(ch.practiceMaterial || []));
+      allExistingMaterials.push(...((ch as any).study_material || []));
+      allExistingMaterials.push(...((ch as any).practice_material || []));
+      allExistingMaterials.push(...((ch as any).study_materials || []));
+      allExistingMaterials.push(...((ch as any).practice_materials || []));
+    });
+    
+    const newNameClean = displayName.trim().toLowerCase();
+    const isDuplicateNameSubmit = allExistingMaterials.some((mat: any) => {
+      const matchName = String(mat.name || mat.title || mat.display_name || mat.file_name || "").trim().toLowerCase();
+      if (!matchName) return false;
+      return matchName === newNameClean || matchName.replace(/\.[^/.]+$/, "") === newNameClean.replace(/\.[^/.]+$/, "");
+    });
+    
+    if (isDuplicateNameSubmit) {
+      showToast("This display name already exists.", "error");
+      return;
+    }
     if (!description.trim()) {
       showToast("Please enter a description.", "error");
       return;
@@ -237,6 +260,7 @@ const TeacherLearningPlanner: React.FC = () => {
 
       if (res.data?.status === "success") {
         showToast("Material uploaded successfully", "success");
+        fetchBackendMaterials();
 
         // Optimistically update the local state
         setSubjects((prev) =>
@@ -304,6 +328,7 @@ const TeacherLearningPlanner: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [backendMaterials, setBackendMaterials] = useState<any[]>([]);
 
   const fetchLearningPlan = async () => {
     try {
@@ -405,9 +430,19 @@ const TeacherLearningPlanner: React.FC = () => {
     }
   };
 
+  const fetchBackendMaterials = async () => {
+    try {
+      const response = await ApiServices.getTeacherStudyMaterial();
+      if (response.data?.status === "success") {
+        setBackendMaterials(response.data?.data?.data || []);
+      }
+    } catch (error) {}
+  };
+
   useEffect(() => {
     fetchLearningPlan();
     fetchProfileImage();
+    fetchBackendMaterials();
   }, []);
 
   useEffect(() => {
@@ -547,6 +582,28 @@ const TeacherLearningPlanner: React.FC = () => {
       ""
     );
   };
+
+  const isDuplicateDisplayName = (() => {
+    if (!uploadForm.displayName.trim()) return false;
+    
+    const currentSubjectValidate = subjects.find((s) => s.subject_name === activeSubject);
+    const allExistingMaterials: any[] = [...backendMaterials];
+    currentSubjectValidate?.chapters.forEach((ch: any) => {
+      allExistingMaterials.push(...(ch.testMaterial || []));
+      allExistingMaterials.push(...(ch.practiceMaterial || []));
+      allExistingMaterials.push(...((ch as any).study_material || []));
+      allExistingMaterials.push(...((ch as any).practice_material || []));
+      allExistingMaterials.push(...((ch as any).study_materials || []));
+      allExistingMaterials.push(...((ch as any).practice_materials || []));
+    });
+
+    const newNameClean = uploadForm.displayName.trim().toLowerCase();
+    return allExistingMaterials.some((mat: any) => {
+      const matchName = String(mat.name || mat.title || mat.display_name || mat.file_name || "").trim().toLowerCase();
+      if (!matchName) return false;
+      return matchName === newNameClean || matchName.replace(/\.[^/.]+$/, "") === newNameClean.replace(/\.[^/.]+$/, "");
+    });
+  })();
 
   return (
     <div className="min-h-screen p-6 relative">
@@ -1014,8 +1071,15 @@ const TeacherLearningPlanner: React.FC = () => {
                     })
                   }
                   placeholder="Enter a name for this material..."
-                  className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#BADA55]/60 transition-all bg-white text-sm"
+                  className={`w-full px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 transition-all bg-white text-sm ${
+                    isDuplicateDisplayName
+                      ? "border-red-500 focus:ring-red-500/60"
+                      : "border-gray-200 focus:ring-[#BADA55]/60"
+                  }`}
                 />
+                {isDuplicateDisplayName && (
+                  <p className="text-red-500 text-xs mt-1">This display name already exists.</p>
+                )}
               </div>
 
               {/* Description (Mandatory) */}
