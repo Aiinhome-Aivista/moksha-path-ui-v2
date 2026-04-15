@@ -401,7 +401,7 @@ const StudentMaterials = () => {
   };
 
   return (
-    <div className="h-full relative p-6">
+    <div className="h-full relative p-6 overflow-visible">
       {isPageLoading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl">
           <div className="flex flex-col items-center gap-3">
@@ -414,7 +414,7 @@ const StudentMaterials = () => {
       )}
 
       <div
-        className={`flex gap-6 transition-opacity duration-300 ${isPageLoading ? "opacity-0" : "opacity-100"
+        className={`flex gap-6 overflow-visible transition-opacity duration-300 ${isPageLoading ? "opacity-0" : "opacity-100"
           }`}
       >
         <MaterialsSidebar
