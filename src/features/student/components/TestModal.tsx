@@ -438,8 +438,8 @@ const TestModal: React.FC<TestModalProps> = ({
                     >
                       <div
                         className={`w-5 h-5 sm:w-6 sm:h-6 mt-0.5 sm:mt-0 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isSelected
-                            ? "bg-[#b0cb1f] border-[#b0cb1f]"
-                            : "border-gray-300 bg-white group-hover:border-[#b0cb1f]"
+                          ? "bg-[#b0cb1f] border-[#b0cb1f]"
+                          : "border-gray-300 bg-white group-hover:border-[#b0cb1f]"
                           }`}
                       >
                         {isSelected && (

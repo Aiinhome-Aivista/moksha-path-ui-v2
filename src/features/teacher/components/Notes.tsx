@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   // StickyNote,
   // ChevronDown,
@@ -281,6 +282,15 @@ const DocumentPreviewModal: React.FC<{
   item: StudyMaterialItem | null;
   onClose: () => void;
 }> = ({ item, onClose }) => {
+  useEffect(() => {
+    if (item) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "unset";
+      };
+    }
+  }, [item]);
+
   if (!item) return null;
 
   let resourceUrl = getFullResourceUrl(item.resource);
@@ -292,12 +302,12 @@ const DocumentPreviewModal: React.FC<{
 
   // Disable PDF controls (download, print, etc.) using viewer parameters
   if (isPdf) {
-    resourceUrl = `${resourceUrl}#toolbar=0&navpanes=0`;
+    resourceUrl = `${resourceUrl}#toolbar=0&navpanes=0&view=FitH`;
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[200] bg-white flex flex-col animate-in fade-in duration-200"
+      className="fixed inset-0 z-[9999] bg-white flex flex-col animate-in fade-in duration-200"
       onContextMenu={(e) => e.preventDefault()}
     >
       {/* Modal Header */}
@@ -346,10 +356,12 @@ const DocumentPreviewModal: React.FC<{
             title={item.title}
             className="w-full h-full border-none bg-white"
             onContextMenu={(e) => e.preventDefault()}
+            allowFullScreen
           />
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
