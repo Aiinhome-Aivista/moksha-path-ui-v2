@@ -1142,21 +1142,17 @@ export default function LandingPage() {
           />
 
           {/* Demo Button & Search Bar Row */}
-          <div className="absolute -bottom-4 w-full flex flex-col md:flex-row items-center justify-center gap-4 px-4 mb-1">
-            {/* <button className="bg-[#BADA55] hover:bg-lime-500 text-gray-800 px-8 py-3 rounded-full text-base lg:text-lg font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap">
-            Try a Demo
-          </button> */}
-
-            <div className="relative w-full md:w-1/2  h-12 lg:h-14">
+          <div className="absolute -bottom-4 md:-bottom-6 w-full flex flex-col md:flex-row items-center justify-center gap-4 px-4 mb-1">
+            <div className="relative w-full md:w-1/2 lg:w-[600px] h-11 md:h-12 lg:h-14">
               <img
                 src={IcoMenu}
                 alt="Menu"
-                className="absolute left-6 top-1/2 -translate-y-1/2 w-[18px] cursor-pointer opacity-60 z-20"
+                className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 w-[16px] md:w-[18px] cursor-pointer opacity-60 z-20"
               />
               <input
                 type="text"
                 placeholder="Search by Learning Videos, Tests, Study Notes, Assessments, etc ..."
-                className="w-full h-full pr-[60px] pl-[55px] rounded-full border-none shadow-[0_4px_25px_rgba(0,0,0,0.08)] outline-none text-sm text-gray-700 focus:ring-2 focus:ring-[#BADA55]/40 transition-all bg-white"
+                className="w-full h-full pr-[50px] md:pr-[60px] pl-[45px] md:pl-[55px] rounded-full border-none shadow-[0_4px_25px_rgba(0,0,0,0.08)] outline-none text-[12px] md:text-sm text-gray-700 focus:ring-2 focus:ring-[#BADA55]/40 transition-all bg-white"
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 border-gray-100 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors bg-white shadow-sm rounded-full">
                 <img
@@ -1172,16 +1168,13 @@ export default function LandingPage() {
 
       {/* 2. DEMO BUTTON, SEARCH BAR & FEATURES GRID CONTAINER */}
       {/* mb-20 scroll-mt-24 z-20 -mt-[60px] md:-mt-[140px] lg:-mt-[260px] xl:-mt-[340px] flex flex-col items-center */}
-      <section id="section2" className="relative ">
-        {/* Features Area Wrapper to contain the background line properly */}
-        <div className="w-full max-w-[1400px] mx-auto px-6 lg:px-20">
-          <div className="relative top-20">
-            {/* Dashed Line Background for Features Grid (positioned relative to the grid now) */}
+      <section id="section2" className="relative mt-12 md:mt-20">
+        <div className="w-full max-w-[1400px] mx-auto px-4 md:px-6 lg:px-20">
+          <div className="relative">
+            {/* Dashed Line Background for Features Grid */}
             <div className="absolute top-[35px] left-[8.33%] right-[8.33%] border-t-2 border-dashed border-[#d1d5db] z-0 hidden lg:block" />
 
-            {/* Features Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-10 lg:gap-4 relative z-10 w-full">
-
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-8 md:gap-y-10 lg:gap-4 relative z-10 w-full">
               {features.map((f) => (
                 <FeatureCard key={f.id} {...f} />
               ))}
@@ -1194,36 +1187,36 @@ export default function LandingPage() {
 
       <section
         id="section3"
-        className="w-full bg-gray-100 py-20 mt-10 2xl:mt-20"
+        className="w-full bg-gray-100 py-12 md:py-20 mt-8 md:mt-10 2xl:mt-20 overflow-hidden"
       >
-        <div className="max-w-7xl mx-auto grid px-1 grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+        <div className="max-w-7xl mx-auto grid px-4 grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-center">
           {/* LEFT IMAGE */}
-          <div className="flex justify-center lg:justify-end items-end w-full ml-4">
+          <div className="flex justify-center items-center w-full">
             <img
               src={Layer_school}
               alt="School Illustration"
-              className="w-[30rem] xl:w-96"
+              className="w-[20rem] md:w-[30rem] lg:w-96"
             />
           </div>
 
           {/* RIGHT CONTENT */}
-          <div className="relative col-span-2 ml-2 px-40 lg:p-0">
-            <div className="">
+          <div className="relative col-span-2 lg:p-0">
+            <div className="flex flex-col items-center lg:items-start">
               {/* LEFT QUOTE */}
               <div className="flex relative">
                 <img
                   src={Start_comma}
                   alt="Start Quote"
-                  className="absolute -left-32 -top-6 w-32 h-auto inline-block"
+                  className="absolute -left-12 sm:-left-20 lg:-left-32 -top-6 w-16 sm:w-24 lg:w-32 h-auto opacity-30 lg:opacity-100"
                 />
 
                 {/* TITLE */}
-                <span className="text-center text-4xl md:text-5xl lg:text-[60px] font-bold text-gray-700 leading-tight">
+                <span className="text-center lg:text-left text-3xl md:text-5xl lg:text-[60px] font-bold text-gray-700 leading-tight">
                   Why MokshPath
                 </span>
               </div>
-              <div className="flex relative">
-                <span className="text-center text-4xl md:text-5xl lg:text-[60px] font-bold text-gray-700 leading-tight">
+              <div className="flex relative mt-1 lg:mt-0">
+                <span className="text-center lg:text-left text-3xl md:text-5xl lg:text-[60px] font-bold text-gray-700 leading-tight">
                   for Your School?
                 </span>
 
@@ -1231,19 +1224,19 @@ export default function LandingPage() {
                 <img
                   src={Close_comma}
                   alt="end Quote"
-                  className="absolute right-0 lg:right-8 xl:right-40 -top-4 w-28 h-auto inline-block"
+                  className="absolute -right-4 lg:right-8 xl:right-40 -top-4 w-14 sm:w-20 lg:w-28 h-auto opacity-30 lg:opacity-100"
                 />
               </div>
             </div>
 
             {/* DESCRIPTION */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mt-6 text-gray-600">
-              <p className="font-bold col-span-2 leading-7 tracking-widest track">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mt-6 md:mt-10 text-gray-600 text-center lg:text-left">
+              <p className="font-bold col-span-1 md:col-span-2 leading-relaxed md:leading-7 tracking-wider">
                 Educational excellence is not just about grades, it’s about
                 understanding how students think.
               </p>
 
-              <p className="text-sm col-span-2 leading-relaxed">
+              <p className="text-sm col-span-1 md:col-span-2 leading-relaxed">
                 This platform enables personalised evaluation, structured
                 feedback, and supports future-ready subsidiary programmes as
                 schools grow.
@@ -1251,8 +1244,8 @@ export default function LandingPage() {
             </div>
 
             {/* FEATURES GRID */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mt-10 px-1 text-sm">
-              <div className="w-80 lg:w-44 xl:w-[96%]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6 sm:gap-4 mt-12 px-1 text-sm">
+              <div className="w-full">
                 <h4 className="font-semibold text-gray-700 tracking-widest">
                   Eliminate Malpractice
                 </h4>
@@ -1262,7 +1255,7 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="w-80 lg:w-44 xl:w-[100%]">
+              <div className="w-full">
                 <h4 className="font-semibold text-gray-700">
                   Identify “Hidden” Gaps
                 </h4>
@@ -1309,34 +1302,34 @@ export default function LandingPage() {
 
       <section
         id="section4"
-        className="flex flex-col lg:flex-row items-center justify-center w-full pb-12 gap-10 mt-12 scroll-mt-24"
+        className="flex flex-col lg:flex-row items-center justify-center w-full pb-12 gap-10 mt-12 scroll-mt-24 overflow-hidden"
       >
-        <div className="min-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-center">
           {/* Left Content */}
-          <div className="flex-1 text-center lg:text-left pt-2 ml-24">
-            <div className="relative flex">
+          <div className="flex-1 text-center lg:text-left pt-2">
+            <div className="relative flex justify-center lg:justify-start">
               {/* Opening Quote */}
-              <h4 className="flex gap-5 font-['Montserrat'] font-bold text-3xl leading-10 tracking-tight text-primary ml-12">
+              <h4 className="flex gap-5 font-['Montserrat'] font-bold text-2xl md:text-3xl leading-10 tracking-tight text-primary">
                 Built around your
               </h4>
               <img
                 src={start_comma_gray}
                 alt="Start Quote"
-                className="absolute -left-24 -top-6 w-36 h-auto inline-block"
+                className="absolute -left-12 sm:-left-20 lg:-left-24 -top-6 w-24 sm:w-36 h-auto opacity-30 lg:opacity-100"
               />
             </div>
-            <h2 className=" gap-5 font-['Montserrat'] font-bold text-5xl tracking-tight text-primary ml-12">
+            <h2 className="flex flex-col items-center lg:items-start font-['Montserrat'] font-bold text-4xl md:text-5xl tracking-tight text-primary mt-2">
               <span className="block">school</span>
-              <div className="flex gap-4">
+              <div className="flex gap-4 items-center">
                 <span className="block">curriculum </span>
                 <img
                   src={end_comma_gray}
                   alt="End Quote"
-                  className=" w-24 h-auto inline-block"
+                  className="w-16 md:w-24 h-auto"
                 />
               </div>
             </h2>
-            <p className="font-['Montserrat'] font-normal text-normal leading-relaxed tracking-wider text-primary w-96 lg:w-52 xl:w-80 mx-auto lg:ml-12">
+            <p className="font-['Montserrat'] font-normal text-sm md:text-base leading-relaxed tracking-wider text-primary max-w-md mx-auto lg:ml-0 mt-6">
               Our learning plans are intelligently mapped to official academic
               calendars, ensuring the right pace and structure for each
               education board; an exact fit for ICSE, CBSE and all the Indian
@@ -1349,11 +1342,11 @@ export default function LandingPage() {
             <img
               src={IconBoard}
               alt="Board Bubbles"
-              className="relative left-6 bottom-12 w-96 max-w-full h-auto "
+              className="relative w-full max-w-sm h-auto lg:bottom-12"
             />
 
             {/* BOTTOM TEXT */}
-            <p className="flex flex-col justify-center text-left mb-20 xl:mb-48 font-['Montserrat'] font-bold text-xl leading-8 tracking-[0.14em] text-primary">
+            <p className="flex flex-col justify-center text-center lg:text-left mb-10 lg:mb-20 xl:mb-48 font-['Montserrat'] font-bold text-lg md:text-xl leading-8 tracking-[0.14em] text-primary mt-8 lg:mt-0">
               <span className="block">Different boards.</span>
               <span className="block">Different timelines.</span>
               <span className="block">One intelligent system.</span>
@@ -1361,11 +1354,11 @@ export default function LandingPage() {
           </div>
 
           {/* Right: Guy with Orange Background */}
-          <div className="flex-1 flex lg:mt-0 px-2">
+          <div className="flex-1 flex justify-center lg:justify-end px-2">
             <img
               src={GuyImg}
               alt="Student"
-              className="relative  max-w-full h-auto"
+              className="max-w-xs md:max-w-full h-auto"
             />
           </div>
         </div>
@@ -1374,101 +1367,101 @@ export default function LandingPage() {
       {/* 5. Technical Reliability & Safety */}
       <section
         id="section5"
-        className="flex flex-col lg:flex-row items-center justify-center w-full pb-12 gap-10 mt-12 scroll-mt-24"
+        className="flex flex-col items-center justify-center w-full py-12 gap-10 mt-12 scroll-mt-24 overflow-hidden"
       >
-        <div className="min-w-7xl mx-auto px-6 grid lg:grid-cols-3 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
           {/* LEFT IMAGE */}
-          <div className="flex justify-center ml-40">
-            <img src={Safety} alt="Security" className="max-w-[30rem] w-fit" />
+          <div className="flex justify-center">
+            <img src={Safety} alt="Security" className="w-[20rem] md:w-[30rem]" />
           </div>
 
           {/* RIGHT CONTENT */}
-          <div className="col-span-2 ml-28">
+          <div className="lg:col-span-2">
             {/* TITLE */}
-            <div className="relative mb-10">
-              <div className="flex">
+            <div className="relative mb-10 text-center lg:text-left">
+              <div className="flex justify-center lg:justify-start">
                 <img
                   src={Start_comma}
                   alt="Start Quote"
-                  className="absolute -left-36 -top-6 w-32 h-auto inline-block"
+                  className="absolute -left-12 sm:-left-20 lg:-left-36 -top-6 w-20 sm:w-32 h-auto opacity-30 lg:opacity-100"
                 />
-                <h2 className="text-5xl font-bold text-primary leading-tight">
+                <h2 className="text-3xl md:text-5xl font-bold text-primary leading-tight">
                   Technical
                 </h2>
               </div>
-              <div className="flex gap-4">
-                <span className="text-5xl font-bold text-primary leading-tight">
+              <div className="flex flex-col sm:flex-row items-center lg:items-start gap-2 sm:gap-4 justify-center lg:justify-start">
+                <span className="text-3xl md:text-5xl font-bold text-primary leading-tight">
                   Reliability & Safety
                 </span>
                 <img
                   src={Close_comma}
                   alt="End Quote"
-                  className="w-20 h-auto inline-block"
+                  className="w-16 md:w-20 h-auto"
                 />
               </div>
             </div>
 
             {/* FEATURES */}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-8">
-              <div className="flex justify-start items-start gap-4 w-64">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-8">
+              <div className="flex justify-start items-start gap-4">
                 <img
                   src={Safety_light}
                   alt="Safety Light"
-                  className="w-12 h-auto"
+                  className="w-10 md:w-12 h-auto shrink-0"
                 />
                 <div>
                   <h4 className="font-semibold text-primary">Lightning Fast</h4>
-                  <p className="text-sm text-primary  leading-tighter tracking-wider">
+                  <p className="text-sm text-primary leading-relaxed tracking-wider">
                     The adaptive engine serves the next question in under 1.5
                     seconds, even on low bandwidth.
                   </p>
                 </div>
               </div>
 
-              <div className="flex justify-start items-start gap-4 w-64">
+              <div className="flex justify-start items-start gap-4">
                 <img
                   src={Safety_arrow}
                   alt="Scalability"
-                  className="w-12 h-auto"
+                  className="w-10 md:w-12 h-auto shrink-0"
                 />
                 <div>
                   <h4 className="font-semibold text-primary">
                     High Scalability
                   </h4>
-                  <p className="text-sm text-primary  leading-tighter tracking-wider">
+                  <p className="text-sm text-primary leading-relaxed tracking-wider">
                     Supports concurrent usage spikes for large-scale National
                     Olympiads.
                   </p>
                 </div>
               </div>
 
-              <div className="flex justify-start items-start gap-4 w-64">
+              <div className="flex justify-start items-start gap-4">
                 <img
                   src={Safety_privacy}
                   alt="Privacy"
-                  className="w-12 h-auto"
+                  className="w-10 md:w-12 h-auto shrink-0"
                 />
                 <div>
                   <h4 className="font-semibold text-primary">Privacy First</h4>
-                  <p className="text-sm text-primary  leading-tighter tracking-wider">
+                  <p className="text-sm text-primary leading-relaxed tracking-wider">
                     Fully compliant with GDPR and COPPA; student data for
                     regulatory bodies is strictly anonymised.
                   </p>
                 </div>
               </div>
 
-              <div className="flex justify-start items-start gap-4 w-64">
+              <div className="flex justify-start items-start gap-4">
                 <img
                   src={Safety_meet}
                   alt="Reliability"
-                  className="w-12 h-auto"
+                  className="w-10 md:w-12 h-auto shrink-0"
                 />
 
                 <div>
                   <h4 className="font-semibold text-primary">
                     Inclusive Design
                   </h4>
-                  <p className="text-sm text-primary leading-tighter tracking-wider">
+                  <p className="text-sm text-primary leading-relaxed tracking-wider">
                     Platform meets WCAG 2.1 AA standards to ensure accessibility
                     for all learners.
                   </p>
@@ -1482,81 +1475,81 @@ export default function LandingPage() {
       {/* 6. Subscription Model */}
       <section
         id="section6"
-        className="flex flex-col lg:flex-row items-center justify-center w-full pb-12 gap-10 mt-12 scroll-mt-24"
+        className="flex flex-col items-center justify-center w-full py-12 gap-10 mt-12 scroll-mt-24 overflow-hidden"
       >
-        <div className="min-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
           {/* LEFT CONTENT */}
-          <div className="lg:col-span-2 ml-20">
-            <div className="grid grid-cols-2 gap-16 lg:gap-24 mb-10">
+          <div className="lg:col-span-2">
+            <div className="flex flex-col sm:flex-row gap-8 lg:gap-24 mb-10 items-center lg:items-start text-center lg:text-left">
               {/* TITLE */}
               <div className="relative mb-1">
                 <img
                   src={Start_comma}
                   alt="Start Quote"
-                  className="absolute -left-24 -top-6 w-24 h-auto inline-block"
+                  className="absolute -left-12 sm:-left-20 lg:-left-24 -top-6 w-16 sm:w-24 h-auto opacity-30 lg:opacity-100"
                 />
-                <h2 className="text-5xl font-bold text-primary">
-                  Subscription <br /> Model
+                <h2 className="text-3xl md:text-5xl font-bold text-primary">
+                  Subscription <br className="hidden sm:block" /> Model
                 </h2>
                 <img
                   src={Close_comma}
                   alt="End Quote"
-                  className="absolute left-40 top-14 w-16 h-auto inline-block"
+                  className="absolute left-32 sm:left-40 top-12 sm:top-14 w-12 sm:w-16 h-auto opacity-30 lg:opacity-100"
                 />
               </div>
 
               {/* DESCRIPTION */}
-              <p className="text-gray-600 max-w-72 mb-1 leading-relaxed tracking-tight">
+              <p className="text-gray-600 max-w-md mb-1 leading-relaxed tracking-tight text-sm md:text-base">
                 We offer tiered pricing designed to scale with your
                 institution's size and customization needs.
               </p>
             </div>
             {/* TABLE */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left border-collapse">
+            <div className="overflow-x-auto w-full pb-4 scrollbar-hide">
+              <table className="w-full text-sm text-left border-collapse min-w-[600px]">
                 <thead>
-                  <tr className="text-primary font-semibold text-lg border-b">
-                    <th className="py-3">Feature</th>
-                    <th className="py-3">Silver Tier</th>
-                    <th className="py-3">Gold Tier</th>
-                    <th className="py-3">Enterprise</th>
+                  <tr className="text-primary font-semibold text-base md:text-lg border-b">
+                    <th className="py-3 px-2">Feature</th>
+                    <th className="py-3 px-2">Silver Tier</th>
+                    <th className="py-3 px-2">Gold Tier</th>
+                    <th className="py-3 px-2">Enterprise</th>
                   </tr>
                 </thead>
 
                 <tbody className="text-gray-600">
                   <tr className="border-b">
-                    <td className="py-3 font-semibold">Best For</td>
-                    <td>Standard Board Prep</td>
-                    <td>Custom School Needs</td>
-                    <td>Large School Networks</td>
+                    <td className="py-3 px-2 font-semibold">Best For</td>
+                    <td className="px-2">Standard Board Prep</td>
+                    <td className="px-2">Custom School Needs</td>
+                    <td className="px-2">Large School Networks</td>
                   </tr>
 
                   <tr className="border-b">
-                    <td className="py-3 font-semibold">Content Generation</td>
-                    <td>General Boards (CBSE/ICSE)</td>
-                    <td>Custom AI Fine-Tuning</td>
-                    <td>Bespoke Syllabus Integration</td>
+                    <td className="py-3 px-2 font-semibold">Content Generation</td>
+                    <td className="px-2">General Boards (CBSE/ICSE)</td>
+                    <td className="px-2">Custom AI Fine-Tuning</td>
+                    <td className="px-2">Bespoke Syllabus Integration</td>
                   </tr>
 
                   <tr className="border-b">
-                    <td className="py-3 font-semibold">Style Sync</td>
-                    <td>Standard Templates</td>
-                    <td>Learns School Teaching Style</td>
-                    <td>Full Brand White Labelling</td>
+                    <td className="py-3 px-2 font-semibold">Style Sync</td>
+                    <td className="px-2">Standard Templates</td>
+                    <td className="px-2">Learns School Teaching Style</td>
+                    <td className="px-2">Full Brand White Labelling</td>
                   </tr>
 
                   <tr className="border-b">
-                    <td className="py-3 font-semibold">Analytics</td>
-                    <td>Standard Reporting</td>
-                    <td>Deep Pattern Analysis</td>
-                    <td>Regulatory Reporting</td>
+                    <td className="py-3 px-2 font-semibold">Analytics</td>
+                    <td className="px-2">Standard Reporting</td>
+                    <td className="px-2">Deep Pattern Analysis</td>
+                    <td className="px-2">Regulatory Reporting</td>
                   </tr>
 
                   <tr>
-                    <td className="py-3 font-semibold">Pricing</td>
-                    <td>Monthly Flat Fee</td>
-                    <td>Custom Based on Volume</td>
-                    <td>Contract-Based</td>
+                    <td className="py-3 px-2 font-semibold">Pricing</td>
+                    <td className="px-2">Monthly Flat Fee</td>
+                    <td className="px-2">Custom Based on Volume</td>
+                    <td className="px-2">Contract-Based</td>
                   </tr>
                 </tbody>
               </table>
@@ -1564,14 +1557,14 @@ export default function LandingPage() {
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="flex flex-col items-center mr-6">
+          <div className="flex flex-col items-center">
             <img
               src={subscription_model}
               alt="Subscription"
-              className="max-w-sm w-ful mb-6"
+              className="max-w-xs md:max-w-sm w-full mb-6"
             />
 
-            <button className="bg-[#B0CB1F] hover:bg-[#c6df35] text-gray-900 font-semibold px-3 py-2 rounded-full shadow-md">
+            <button className="bg-[#B0CB1F] hover:bg-[#c6df35] text-gray-900 font-semibold px-6 py-2 rounded-full shadow-md transition-all">
               Single Subscription
             </button>
           </div>
@@ -1581,69 +1574,69 @@ export default function LandingPage() {
       {/* 7. Who We Are */}
       <section
         id="section7"
-        className="flex flex-col lg:flex-row items-center justify-center w-full pb-12 gap-10 mt-12 scroll-mt-24"
+        className="flex flex-col items-center justify-center w-full py-12 gap-10 mt-12 scroll-mt-24 overflow-hidden"
       >
-        <div className="min-w-7xl mx-auto px-6 grid lg:grid-cols-3 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-24 items-center">
           {/* LEFT IMAGE + QUOTE */}
-          <div className="relative ml-6">
+          <div className="relative flex justify-center">
             <img
               src={Start_comma}
               alt="Start Quote"
-              className="absolute -left-10 top-0 w-40 lg:w-28 xl:w-40 h-auto"
+              className="absolute -left-4 sm:-left-8 lg:-left-12 top-0 w-24 sm:w-28 lg:w-40 h-auto opacity-30 lg:opacity-100"
             />
 
             <img
               src={who_landing}
               alt="Teacher Student"
-              className=" w-96 xl:h-96 rounded-full object-cover"
+              className="w-64 sm:w-80 lg:w-96 aspect-square rounded-full object-cover"
             />
 
-            <div className="absolute top-0 -right-16 max-w-96">
-              <h2 className="text-4xl font-bold text-[#464646]">
-                Who <br /> it’s for <span className="text-5xl">?</span>
+            <div className="absolute top-0 -right-8 sm:-right-12 lg:-right-16 max-w-xs md:max-w-sm">
+              <h2 className="text-3xl md:text-4xl font-bold text-[#464646] whitespace-nowrap">
+                Who it’s for <span className="text-4xl md:text-5xl">?</span>
               </h2>
               <img
                 src={Close_comma}
                 alt="End Quote"
-                className="absolute -right-20 bottom-4 w-16 h-auto "
+                className="absolute -right-8 sm:-right-12 lg:-right-20 bottom-4 w-12 md:w-16 h-auto opacity-30 lg:opacity-100"
               />
             </div>
 
-            <div className="absolute mt-12 bottom-10 -right-12 text-xl font-semibold text-gray-700">
+            <div className="absolute bottom-10 -right-4 sm:-right-8 lg:-right-12 text-lg md:text-xl font-semibold text-gray-700">
               . . . for all.
             </div>
           </div>
 
           {/* RIGHT CONTENT */}
-          <div className="col-span-2 ml-4 lg:ml-12">
+          <div className="lg:col-span-2">
             {/* USERS GRID */}
-            <div className="grid grid-cols-2 xl:grid-cols-4 gap-2">
-              <div className=" w-32">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4 text-center lg:text-left">
+              <div>
                 <h4 className="font-semibold text-primary mb-2">Students</h4>
-                <p className="text-sm text-primary">
+                <p className="text-sm text-primary leading-relaxed">
                   Clear plans, daily guidance, and stress-free completion.
                 </p>
               </div>
 
-              <div className=" w-32">
+              <div>
                 <h4 className="font-semibold text-primary mb-2">Parents</h4>
-                <p className="text-sm text-primary">
+                <p className="text-sm text-primary leading-relaxed">
                   Visibility into progress and early alerts for risks.
                 </p>
               </div>
 
-              <div className=" w-32">
+              <div>
                 <h4 className="font-semibold text-primary mb-2">Teachers</h4>
-                <p className="text-sm text-primary">
+                <p className="text-sm text-primary leading-relaxed">
                   Insight into student performance and learning gaps.
                 </p>
               </div>
 
-              <div className=" w-32">
+              <div>
                 <h4 className="font-semibold text-primary mb-2">
                   Institutions
                 </h4>
-                <p className="text-sm text-primary">
+                <p className="text-sm text-primary leading-relaxed">
                   Standard-wise oversight and academic tracking.
                 </p>
               </div>
@@ -1655,36 +1648,36 @@ export default function LandingPage() {
       {/* 8. At a Glance */}
       <section
         id="section8"
-        className="flex flex-col lg:flex-row items-center justify-center w-full pb-12 gap-10 mt-12 scroll-mt-24"
+        className="flex flex-col items-center justify-center w-full py-12 gap-10 mt-12 scroll-mt-24 overflow-hidden"
       >
-        <div className="min-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* LEFT TEXT */}
-          <div className="relative flex flex-col ml-40">
+          <div className="relative flex flex-col items-center lg:items-start text-center lg:text-left">
             {/* Quotes */}
-            <div>
+            <div className="relative">
               <img
                 src={Start_comma}
                 alt="Start Quote"
-                className="absolute -left-40 -top-16 w-40 h-auto"
+                className="absolute -left-12 sm:-left-24 lg:-left-40 -top-8 sm:-top-12 lg:-top-16 w-24 sm:w-32 lg:w-40 h-auto opacity-30 lg:opacity-100"
               />
 
-              <h2 className="text-5xl font-bold text-[#464646] mb-4">
+              <h2 className="text-3xl md:text-5xl font-bold text-[#464646] mb-4">
                 At a Glance
               </h2>
             </div>
-            <div className="flex gap-12">
-              <span className="text-lg font-semibold text-[#464646]">
-                Everything You Need <br />
+            <div className="flex flex-col sm:flex-row items-center gap-4 lg:gap-12 mt-2">
+              <span className="text-base md:text-lg font-semibold text-[#464646]">
+                Everything You Need <br className="hidden sm:block" />
                 to Stay on Track.
               </span>
 
               <img
                 src={Close_comma}
                 alt="End Quote"
-                className=" w-24 h-auto "
+                className="w-16 md:w-24 h-auto opacity-30 lg:opacity-100"
               />
             </div>
-            <p className="text-[#464646] max-w-md mt-4 tracking-widest">
+            <p className="text-[#464646] max-w-md mt-6 tracking-wider leading-relaxed text-sm md:text-base">
               The dashboard brings together your learning plan, progress,
               pending tasks, and insights helping you make the right study
               decisions every day.
@@ -1692,57 +1685,58 @@ export default function LandingPage() {
           </div>
 
           {/* RIGHT Image */}
-          {/* Robot Image */}
-          <img
-            src={Glance_landing}
-            alt="Glance Dashboard"
-            className="w-[35rem] relative z-10"
-          />
+          <div className="flex justify-center">
+            <img
+              src={Glance_landing}
+              alt="Glance Dashboard"
+              className="w-full max-w-lg lg:max-w-[35rem] relative z-10"
+            />
+          </div>
         </div>
       </section>
 
       {/* 9. Vidya Kosh or the Knowledge Hub */}
       <section
         id="section9"
-        className="flex flex-col lg:flex-row items-center justify-center w-full pb-12 gap-10 mt-12 scroll-mt-24"
+        className="flex flex-col items-center justify-center w-full py-12 gap-10 mt-12 scroll-mt-24 overflow-hidden"
       >
-        <div className="min-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* LEFT IMAGE */}
           <div className="flex justify-center">
             <img
               src={knowledgehub_landing}
               alt="Security"
-              className="max-w-[30rem] w-fit"
+              className="w-[20rem] md:w-[30rem]"
             />
           </div>
 
           {/* RIGHT CONTENT */}
-          <div className="mx-10 lg:mx-1 xl:mx-10">
+          <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
             {/* TITLE */}
             <div className="relative mb-10">
               <img
                 src={Start_comma}
                 alt="Start Quote"
-                className="absolute left-3 lg:-left-9 xl:-left-2 -top-6 w-32 h-auto inline-block"
+                className="absolute -left-12 sm:-left-20 lg:-left-16 -top-8 sm:-top-10 w-24 sm:w-32 h-auto opacity-30 lg:opacity-100"
               />
-              <h2 className="text-5xl text-center font-bold text-[#464646] leading-tight">
+              <h2 className="text-3xl md:text-5xl font-bold text-[#464646] leading-tight">
                 Vidya Kosh{" "}
               </h2>
-              <h4 className="text-2xl text-center font-bold text-[#464646] ">
+              <h4 className="text-xl md:text-2xl font-bold text-[#464646] mt-2">
                 or the Knowledge Hub
               </h4>
 
               <img
                 src={Close_comma}
                 alt="End Quote"
-                className="absolute right-12 lg:-right-4 xl:right-6 bottom-5 w-24 h-auto inline-block"
+                className="absolute -right-8 sm:-right-12 lg:-right-16 bottom-2 w-16 sm:w-24 h-auto opacity-30 lg:opacity-100"
               />
             </div>
 
             {/* FEATURES */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex gap-4 w-60">
-                <p className="text-sm text-[#464646] font-bold leading-relaxed tracking-widest">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+              <div className="max-w-xs mx-auto lg:ml-0">
+                <p className="text-sm text-[#464646] font-bold leading-relaxed tracking-wider">
                   Learn through <span className="text-[#57A7B3]">Videos</span>,
                   <span className="text-[#57A7B3]"> Notes</span>, and
                   <span className="text-[#57A7B3]"> Structured Resources</span>
@@ -1763,38 +1757,39 @@ export default function LandingPage() {
       {/* 10. TESTIMONIALS */}
       <section
         id="section10"
-        className="flex flex-col items-center justify-center w-full pb-[50px] bg-white gap-1 mt-[50px] scroll-mt-24"
+        className="flex flex-col items-center justify-center w-full py-12 md:py-20 bg-white gap-8 mt-12 scroll-mt-24 overflow-hidden"
       >
         {/* TITLE */}
-        <div className="relative text-center gap-4 mt-20 mx-auto">
+        <div className="relative text-center mx-auto px-4">
           <img
             src={Start_comma}
             alt="Start Quote"
-            className="absolute -left-52 bottom-2 w-48 h-auto"
+            className="absolute -left-12 sm:-left-24 md:-left-40 lg:-left-52 top-0 md:bottom-2 w-24 sm:w-32 md:w-48 h-auto opacity-30 lg:opacity-100"
           />
 
-          <h2 className="text-6xl font-bold text-gray-800">Testimonials</h2>
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-gray-800">Testimonials</h2>
 
           <img
             src={Close_comma}
             alt="End Quote"
-            className="absolute -right-36 top-2 w-32 h-auto"
+            className="absolute -right-8 sm:-right-16 md:-right-24 lg:-right-36 top-2 w-16 md:w-24 lg:w-32 h-auto opacity-30 lg:opacity-100"
           />
         </div>
 
         {/* CONTENT */}
-        <div className="min-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12 items-center justify-center">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center justify-center">
           {/* LEFT SIDE IMAGE DESIGN */}
-          <div className="lg:col-span-2">
+          <div className="flex justify-center">
             <img
               src={Testimonials_landing}
-              className="p-2 max-w-4xl lg:max-w-2xl xl:max-w-4xl"
+              className="p-2 w-full max-w-lg lg:max-w-xl xl:max-w-2xl"
+              alt="Testimonials"
             />
           </div>
 
           {/* RIGHT SIDE TEXT */}
-          <div className="w-full lg:max-w-md md:max-w-md justify-center text-start flex flex-col">
-            <p className="text-gray-600 leading-relaxed w-96">
+          <div className="w-full flex flex-col items-center lg:items-start text-center lg:text-left">
+            <p className="text-gray-600 leading-relaxed max-w-sm md:max-w-md text-sm md:text-base">
               Clear plans, daily guidance, and stress-free completion the reason
               I got through my exams was because of MokshaPath. You don’t have
               to think about where to start with, just get your enrolment done.
@@ -1809,17 +1804,17 @@ export default function LandingPage() {
       </section>
 
       {/* 11. Data-Lab & Education Partners carousel */}
-      <section id="section11" className="overflow-hidden bg-white py-10">
-        <h1 className="text-4xl text-center font-semibold my-4">
+      <section id="section11" className="overflow-hidden bg-white py-12 md:py-20">
+        <h1 className="text-2xl md:text-4xl text-center font-bold px-4 mb-10 md:mb-16">
           Data-Lab & Education Partners
         </h1>
-        <div className="p-8 mx-auto flex gap-12 animate-carousel">
+        <div className="px-8 flex gap-8 md:gap-16 animate-carousel">
           {[...carouselLogos, ...carouselLogos].map((logo, index) => (
             <img
               key={index}
               src={logo}
               alt="logo"
-              className="h-40 w-auto object-contain"
+              className="h-20 sm:h-32 md:h-40 w-auto object-contain shrink-0"
             />
           ))}
         </div>
