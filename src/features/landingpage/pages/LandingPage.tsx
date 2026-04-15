@@ -977,22 +977,22 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
 }) => {
   return (
     <div
-      className={`flex flex-col items-center text-center px-0 py-0${
+      className={`flex flex-col items-center text-center px-1 py-4 ${
         working ? "" : "opacity-50 grayscale"
       }`}
     >
       {/* Icon Container with specific spacing */}
-      <div className="mb-1 flex justify-center">
+      <div className="mb-2 flex justify-center">
         <img
           src={icon}
           alt={title}
-          className="w-16 h-auto object-contain mx-auto"
+          className="w-12 h-12 lg:w-16 lg:h-16 object-contain mx-auto"
         />
       </div>
-      <h4 className="font-['Montserrat'] font-bold text-[18px] leading-[20px] tracking-[.02em] text-center max-w-[160px] min-h-[56px] text-primary mb-1 mx-auto flex items-center justify-center">
+      <h4 className="font-['Montserrat'] font-bold text-[14px] lg:text-[18px] leading-tight lg:leading-[20px] tracking-[.02em] text-center max-w-[140px] lg:max-w-[160px] min-h-[40px] lg:min-h-[56px] text-primary mb-2 mx-auto flex items-center justify-center">
         {title}
       </h4>
-      <p className="font-['Montserrat'] font-normal text-base leading-[20px] tracking-[.02em] text-center max-w-[200px] text-primary mx-auto">
+      <p className="font-['Montserrat'] font-normal text-[12px] lg:text-base leading-snug lg:leading-[20px] tracking-[.02em] text-center max-w-[180px] lg:max-w-[200px] text-primary mx-auto">
         {desc}
       </p>
     </div>
@@ -1180,7 +1180,8 @@ export default function LandingPage() {
             <div className="absolute top-[35px] left-[8.33%] right-[8.33%] border-t-2 border-dashed border-[#d1d5db] z-0 hidden lg:block" />
 
             {/* Features Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-2 lg:gap-4 relative z-10">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-10 lg:gap-4 relative z-10 w-full">
+
               {features.map((f) => (
                 <FeatureCard key={f.id} {...f} />
               ))}
