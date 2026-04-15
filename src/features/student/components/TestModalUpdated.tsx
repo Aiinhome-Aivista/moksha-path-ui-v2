@@ -14,6 +14,7 @@ interface Question {
   options: Option[];
   correctAnswer: string;
   sl_no?: number;
+  type?: string;
 }
 
 // API Question format
@@ -54,6 +55,7 @@ const transformApiQuestion = (apiQuestion: ApiQuestion): Question => {
     options,
     correctAnswer: "", // Will be validated server-side
     sl_no: apiQuestion.sl_no,
+    type: baseType
   };
 };
 
@@ -62,6 +64,7 @@ interface TestModalProps {
   onClose: () => void;
   testDurationMinutes?: number;
   assessmentDetails?: any;
+  totalMarks?: number;
   attemptId?: number | null;
   assignmentId?: number;
   isAdaptive?: boolean;
@@ -83,6 +86,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
   onClose,
   testDurationMinutes,
   assessmentDetails,
+  totalMarks,
   attemptId,
   assignmentId: _assignmentId,
   isAdaptive = false,
@@ -285,7 +289,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
   // Progress Calculation: 
   // In adaptive mode, we increment 1 by 1. So if current is 2, total is 2 (2/2).
   const currentSlNo = currentQuestion.sl_no || (currentQuestionIndex + 1);
-  const totalQuestions = isAdaptive ? currentSlNo : questionOrder.length;
+  const totalQuestions = (isAdaptive && totalMarks) ? totalMarks : (isAdaptive ? currentSlNo : questionOrder.length);
   const answeredCount = isAdaptive ? currentSlNo : savedQuestions.size;
   const completedPercent = isCompleteFromServer ? 100 : Math.round((answeredCount / totalQuestions) * 100);
 
@@ -314,7 +318,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
   };
 
   const handleNext = () => {
-    if (currentQuestionIndex < totalQuestions - 1) {
+    if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     }
   };
@@ -419,7 +423,12 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
         finalAnswer = textualAnswers[currentQuestion.id] || "";
       } else {
         const selectedLabel = selectedAnswers[currentQuestion.id];
-        finalAnswer = selectedLabel ? selectedLabel.toLowerCase() : "";
+        if (currentQuestion.type === "TrueFalse") {
+          const opt = currentQuestion.options.find(o => o.label === selectedLabel);
+          finalAnswer = opt ? opt.text.toLowerCase() : "";
+        } else {
+          finalAnswer = selectedLabel ? selectedLabel.toLowerCase() : "";
+        }
       }
 
       try {
@@ -490,7 +499,11 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
           attempt_id: attemptId,
           question_id: currentQuestion.id,
           sl_no: slNo,
-          answer: isTextualQuestion ? answer : (answer ? answer.toLowerCase() : ""),
+          answer: isTextualQuestion
+            ? answer
+            : (currentQuestion.type === "TrueFalse"
+              ? (currentQuestion.options.find(o => o.label === answer)?.text.toLowerCase() || "")
+              : (answer ? answer.toLowerCase() : "")),
           time_taken: timeTaken,
         });
 
@@ -691,7 +704,6 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
 
             {/* ─── Action Buttons ─── */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-3 mt-6 sm:mt-8 pt-4 border-t border-gray-100 sm:border-transparent shrink-0 w-full">
-
               <button
                 onClick={handleQuit}
                 disabled={isSubmitting}
@@ -700,24 +712,22 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                 Quit
               </button>
 
-              {!isAdaptive && (
-                <div className="order-2 md:order-2 flex gap-3 w-full md:w-auto justify-center">
-                  <button
-                    onClick={handlePrev}
-                    disabled={currentQuestionIndex === 0}
-                    className="flex items-center gap-1 w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-[#464646] text-white text-base md:text-sm font-medium hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft size={16} /> Previous
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    disabled={currentQuestionIndex === totalQuestions - 1}
-                    className="flex items-center gap-1 w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-[#464646] text-white text-base md:text-sm font-medium hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    Next <ChevronRight size={16} />
-                  </button>
-                </div>
-              )}
+              <div className="order-2 md:order-2 flex gap-3 w-full md:w-auto justify-center">
+                <button
+                  onClick={handlePrev}
+                  disabled={currentQuestionIndex === 0 || isSubmitting}
+                  className="flex items-center gap-1 w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-[#464646] text-white text-base md:text-sm font-medium hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft size={16} /> Previous
+                </button>
+                <button
+                  onClick={handleNext}
+                  disabled={currentQuestionIndex === questions.length - 1 || isSubmitting}
+                  className="flex items-center gap-1 w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-[#464646] text-white text-base md:text-sm font-medium hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Next <ChevronRight size={16} />
+                </button>
+              </div>
 
               <div className="order-1 md:order-3 flex flex-col md:flex-row w-full md:w-auto gap-3">
                 <button

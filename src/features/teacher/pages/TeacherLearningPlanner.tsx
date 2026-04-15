@@ -494,6 +494,43 @@ const TeacherLearningPlanner: React.FC = () => {
     }
   };
 
+  const handleGenerateMockTest = async () => {
+    if (selectedMockChapterIds.length === 0) {
+      showToast("Please select at least one chapter", "error");
+      return;
+    }
+
+    try {
+      setIsGeneratingTest(true);
+
+      const currentSubjectId = subjects.find(
+        (s) => s.subject_name === activeSubject,
+      )?.subject_id;
+
+      const payload = {
+        subject_id: currentSubjectId,
+        chapters_array: selectedMockChapterIds,
+        student_ids: stats?.student_ids || [],
+        total_questions: stats?.test_config?.number_of_questions,
+        total_marks: stats?.test_config?.total_marks,
+        duration: stats?.test_config?.duration_minutes,
+      };
+
+      const res = await ApiServices.createSubjectWiseAdaptiveSet(payload);
+
+      if (res.data?.status === "success") {
+        showToast("Overall Mock test created successfully", "success");
+        setIsMockModalOpen(false);
+      } else {
+        showToast(res.data?.message || "Generation failed", "error");
+      }
+    } catch (err) {
+      showToast("Error while generating mock test", "error");
+    } finally {
+      setIsGeneratingTest(false);
+    }
+  };
+
   useEffect(() => {
     if (stats) {
       if (!selectedClass && stats.class_name)

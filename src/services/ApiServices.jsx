@@ -711,6 +711,10 @@ class ApiServices {
     return axiosInstance.post(POST_APIS.create_adaptive_set, payload);
   }
 
+  createSubjectWiseAdaptiveSet(payload) {
+    return axiosInstance.post(POST_APIS.create_subject_wise_adaptive_set, payload);
+  }
+
   // Adaptive Assessment APIs
   adaptiveStartAssessment(payload) {
     return axiosInstance.post(POST_APIS.adaptive_start, payload);
@@ -927,6 +931,16 @@ class ApiServices {
 
   skipAssessmentQuestion(payload) {
     return axiosInstance.post(POST_APIS.skip_assessment_question, payload);
+  }
+
+  bulkUploadUsers(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    return axiosInstance.post(POST_APIS.bulk_upload_users, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
   }
 }
 

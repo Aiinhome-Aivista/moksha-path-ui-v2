@@ -204,8 +204,10 @@ export const POST_APIS = {
   upload_study_material: `${BASE_URL}parent_teacher/upload_study_material`,
   generate_test_from_planner: `${BASE_URL}learning/generate_test_from_planner`,
   create_adaptive_set: `${BASE_URL}learning/assessment/create_adaptive_set`,
+  create_subject_wise_adaptive_set: `${BASE_URL}learning/assessment/create_subject_wise_adaptive_set`,
   adaptive_start: `${BASE_URL}learning/assessment/addaptive_start`,
   save_adaptive_answer: `${BASE_URL}learning/assessment/save_adaptive_answer`,
   finish_adaptive: `${BASE_URL}learning/assessment/finish_adaptive`,
   skip_assessment_question: `${BASE_URL}learning/assessment/skip_assessment_question`,
+  bulk_upload_users: `${BASE_URL}institute_admin/bulk_upload_users`,
 };
