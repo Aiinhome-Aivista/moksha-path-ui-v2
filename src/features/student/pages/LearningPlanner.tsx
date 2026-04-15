@@ -912,7 +912,7 @@ const LearningPlanner: React.FC = () => {
             questions: [{
               question_id: questionData.question_id,
               question_text: questionData.question_text,
-              question_type: "MCQ",
+              question_type: questionData.question_type,
               options: questionData.options,
               difficulty: questionData.difficulty,
               marks: questionData.marks,
@@ -980,7 +980,7 @@ const LearningPlanner: React.FC = () => {
               question_id: questionData.question_id,
               question_text: questionData.question_text,
               options: questionData.options,
-              question_type: "MCQ", // Adaptive usually MCQ/TrueFalse, transformApiQuestion handles it
+              question_type: questionData.question_type || "MCQ",
               difficulty: questionData.difficulty,
               marks: questionData.marks,
               sl_no: questionData.sl_no
