@@ -467,17 +467,7 @@ const TeacherLearningPlanner: React.FC = () => {
 
       if (res.data?.status === "success") {
         showToast("Chapter planner updated successfully", "success");
-
-        setSubjects((prev) =>
-          prev.map((sub) => ({
-            ...sub,
-            chapters: sub.chapters.map((ch: any) =>
-              ch.id === row.id || ch.chapter_id === row.id
-                ? { ...ch, isSaved: true }
-                : ch,
-            ),
-          })),
-        );
+        fetchLearningPlan();
 
         if (row.completed === true) {
           try {
@@ -530,8 +520,8 @@ const TeacherLearningPlanner: React.FC = () => {
   };
 
   const handleGenerateMockTest = async () => {
-    if (selectedMockChapterIds.length === 0) {
-      showToast("Please select at least one chapter", "error");
+    if (selectedMockChapterIds.length <= 1) {
+      showToast("Please select more than 1 completed chapter to generate the mock test.", "error");
       return;
     }
 
@@ -719,7 +709,10 @@ const TeacherLearningPlanner: React.FC = () => {
         <div className="flex justify-end items-end gap-20">
           <button
             onClick={() => setIsMockModalOpen(true)}
-            className="w-full p-2 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors border-none cursor-pointer"
+            disabled={
+              demoChapters.filter((ch) => ch.completed && ch.isSaved).length < 2
+            }
+            className="w-full p-2 bg-button-primary text-primary rounded-lg font-bold hover:bg-opacity-90 transition-colors border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Generate Overall Mock
           </button>
@@ -1201,7 +1194,7 @@ const TeacherLearningPlanner: React.FC = () => {
                         <input
                           type="checkbox"
                           checked={selectedMockChapterIds.includes(ch.id)}
-                          disabled={!ch.completed}
+                          disabled={!ch.completed || !ch.isSaved}
                           onChange={() => {
                             setSelectedMockChapterIds((prev) =>
                               prev.includes(ch.id)
@@ -1209,13 +1202,18 @@ const TeacherLearningPlanner: React.FC = () => {
                                 : [...prev, ch.id],
                             );
                           }}
-                          className={`w-4 h-4 accent-[#BADA55] ${!ch.completed ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                          className={`w-4 h-4 accent-[#BADA55] ${!ch.completed || !ch.isSaved ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                         />
                       </td>
                       <td
-                        className={`py-3 px-4 text-sm font-medium ${!ch.completed ? "text-gray-400 italic" : "text-gray-700"}`}
+                        className={`py-3 px-4 text-sm font-medium ${!ch.completed || !ch.isSaved ? "text-gray-400 italic" : "text-gray-700"}`}
                       >
-                        {ch.chapter} {!ch.completed && "(Incomplete)"}
+                        {ch.chapter}{" "}
+                        {!ch.completed
+                          ? "(Incomplete)"
+                          : !ch.isSaved
+                            ? "(Not Saved)"
+                            : ""}
                       </td>
                     </tr>
                   ))}
