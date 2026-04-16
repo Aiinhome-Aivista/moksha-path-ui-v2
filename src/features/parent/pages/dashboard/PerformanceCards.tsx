@@ -51,7 +51,7 @@ export const PerformanceCards = () => {
           <div key={i} className="w-56 2xl:w-60 p-1 ">
             <div className="grid grid-cols-3">
               <h3 className="text-4xl font-normal">{item.value}</h3>
-              <p className="text-sm text-primary col-span-2 mb-1 flex flex-col justify-end">
+              <p className="text-sm text-primary col-span-2 mb-1 flex flex-col justify-end w-full md:w-20 lg:w-full">
                 {item.icon === "up" && (
                   <span className="material-symbols-outlined text-3xl leading-3">
                     keyboard_arrow_up
@@ -60,7 +60,7 @@ export const PerformanceCards = () => {
                 <span>{item.title}</span>
               </p>
             </div>
-            <p className="text-sm font-bold text-primary">{item.label}</p>
+            <p className="text-sm font-bold text-primary w-full md:w-28 lg:w-full">{item.label}</p>
           </div>
         ))}
       </div>
