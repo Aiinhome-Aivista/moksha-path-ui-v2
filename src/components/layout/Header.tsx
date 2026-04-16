@@ -227,9 +227,11 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
               </button>
             </div>
              <div
-              className={`flex items-center relative top-0 bg-[#E9E9E9] rounded-b-full w-[55rem] ${
-                isAuthenticated ? "pl-64" : "pl-48"
+              className={`flex items-center relative top-0 bg-[#E9E9E9] rounded-b-full ${
+                isAuthenticated ? "w-[55rem] pl-64" : "w-[59rem] pl-72"
               } pt-5 pb-4 pl-7 pr-6 gap-4 lg:gap-6`}
+
+              
             >
               <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
                 About us
