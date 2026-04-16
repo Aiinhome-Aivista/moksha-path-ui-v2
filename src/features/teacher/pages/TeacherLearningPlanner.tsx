@@ -530,8 +530,8 @@ const TeacherLearningPlanner: React.FC = () => {
   };
 
   const handleGenerateMockTest = async () => {
-    if (selectedMockChapterIds.length === 0) {
-      showToast("Please select at least one chapter", "error");
+    if (selectedMockChapterIds.length <= 1) {
+      showToast("Please select more than 1 completed chapter to generate the mock test.", "error");
       return;
     }
 
