@@ -318,7 +318,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
                 </button>
                 <button
                   onClick={() => navigate("/blogs")}
-                  className="text-sm font-semibold text-gray-700 dark:text-gray-200 text-left p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-secondary-700"
+                  className="text-sm font-semibold text-gray-700 text-left p-2 rounded-lg"
                 >
                   Blogs
                 </button>
