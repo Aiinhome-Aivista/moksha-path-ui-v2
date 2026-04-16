@@ -128,6 +128,7 @@
 //     </>
 //   );
 
+
 // export default Header;
 
 import React, { useState, useEffect } from "react";
@@ -144,7 +145,7 @@ interface HeaderProps {
   isSidebarOpen: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({}) => {
+export const Header: React.FC<HeaderProps> = ({ }) => {
   const { openSignIn, clearMenu } = useModal();
   const { isAuthenticated, logout, user } = useAuth();
   const navigate = useNavigate();
@@ -202,10 +203,7 @@ export const Header: React.FC<HeaderProps> = ({}) => {
             {/* <button onClick={handleLogoClick} className="flex items-center animate-fade-in cursor-pointer">
               <img src="/Logo.svg" alt="App Logo" className="h-[90%] w-[80%]" />
             </button> */}
-            <div
-              className="flex items-center gap-2 font-bold text-lg cursor-pointer"
-              onClick={handleLogoClick}
-            >
+            <div className="flex items-center gap-2 font-bold text-lg cursor-pointer" onClick={handleLogoClick}>
               <img src="/logogod.svg" alt="logo" className="w-10 h-10" />
               <div>
                 <h3>
@@ -223,40 +221,28 @@ export const Header: React.FC<HeaderProps> = ({}) => {
               <button className="text-sm font-semibold text-black hover:opacity-80 transition-opacity">
                 Request a Demo
               </button>
-              <button className="text-sm font-semibold text-black hover:opacity-80 transition-opacity">
-                FAQs
-              </button>
+              <button className="text-sm font-semibold text-black hover:opacity-80 transition-opacity">FAQs</button>
               <button className="text-sm font-semibold text-black hover:opacity-80 transition-opacity">
                 Help Center
               </button>
             </div>
-            <div
+             <div
               className={`flex items-center relative top-0 bg-[#E9E9E9] rounded-b-full ${
                 isAuthenticated ? "w-[55rem] pl-64" : "w-[59rem] pl-72"
               } pt-5 pb-4 pl-7 pr-6 gap-4 lg:gap-6`}
+
+              
             >
-              <button
-                disabled
-                className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
                 About us
               </button>
-              <button
-                disabled
-                className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
                 Vidya Kosh
               </button>
-              <button
-                disabled
-                className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
                 Success Stories
               </button>
-              <button
-                disabled
-                className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
                 Institutional Access
               </button>
               <button
@@ -265,7 +251,7 @@ export const Header: React.FC<HeaderProps> = ({}) => {
               >
                 Blogs
               </button>
-              {!isAuthenticated && !location.pathname.startsWith("/admin") && (
+              {!isAuthenticated && !location.pathname.startsWith('/admin') && (
                 <button
                   onClick={openSignIn}
                   className="text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
@@ -274,37 +260,37 @@ export const Header: React.FC<HeaderProps> = ({}) => {
                 </button>
               )}
             </div>
+          </div>
 
-            {/* Right Section: Auth & Profile */}
-            <div className="flex items-center gap-2 xl:gap-3">
-              {isAuthenticated && user?.role !== "admin" && (
-                <div className="relative flex items-center justify-center">
-                  <button
-                    onClick={() =>
-                      setIsProfileDropdownOpen(!isProfileDropdownOpen)
-                    }
-                    className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
-                    title="Profile Menu"
-                  >
-                    <UserCircle size={28} className="text-gray-700" />
-                  </button>
+          {/* Right Section: Auth & Profile */}
+          <div className="flex items-center gap-2 xl:gap-3">
+            {isAuthenticated && user?.role !== 'admin' && (
+              <div className="relative flex items-center justify-center 2xl:-left-28">
+                <button
+                  onClick={() =>
+                    setIsProfileDropdownOpen(!isProfileDropdownOpen)
+                  }
+                  className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                  title="Profile Menu"
+                >
+                  <UserCircle size={28} className="text-gray-700" />
+                </button>
 
-                  <ProfileDropdown
-                    isOpen={isProfileDropdownOpen}
-                    onClose={() => setIsProfileDropdownOpen(false)}
-                  />
-                </div>
-              )}
+                <ProfileDropdown
+                  isOpen={isProfileDropdownOpen}
+                  onClose={() => setIsProfileDropdownOpen(false)}
+                />
+              </div>
+            )}
 
-              {/* Mobile Menu Toggle */}
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="xl:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-200 transition-colors"
-                aria-label="Toggle menu"
-              >
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
-            </div>
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="xl:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-200 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </div>
 
@@ -317,37 +303,23 @@ export const Header: React.FC<HeaderProps> = ({}) => {
                 <button className="text-sm font-semibold text-gray-700 dark:text-gray-200 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-secondary-700">
                   Request a Demo
                 </button>
-                <button className="text-sm font-semibold text-gray-700 dark:text-gray-200 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-secondary-700">
-                  FAQs
-                </button>
+                <button className="text-sm font-semibold text-gray-700 dark:text-gray-200 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-secondary-700">FAQs</button>
                 <button className="text-sm font-semibold text-gray-700 dark:text-gray-200 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-secondary-700">
                   Help Center
                 </button>
               </div>
               {/* Main nav links */}
               <nav className="flex flex-col space-y-2">
-                <button
-                  disabled
-                  className="text-sm font-semibold text-gray-500 text-left p-2 rounded-lg"
-                >
+                <button disabled className="text-sm font-semibold text-gray-500 text-left p-2 rounded-lg">
                   About us
                 </button>
-                <button
-                  disabled
-                  className="text-sm font-semibold text-gray-500 text-left p-2 rounded-lg"
-                >
+                <button disabled className="text-sm font-semibold text-gray-500 text-left p-2 rounded-lg">
                   Vidya Kosh
                 </button>
-                <button
-                  disabled
-                  className="text-sm font-semibold text-gray-500 text-left p-2 rounded-lg"
-                >
+                <button disabled className="text-sm font-semibold text-gray-500 text-left p-2 rounded-lg">
                   Success Stories
                 </button>
-                <button
-                  disabled
-                  className="text-sm font-semibold text-gray-500 text-left p-2 rounded-lg"
-                >
+                <button disabled className="text-sm font-semibold text-gray-500 text-left p-2 rounded-lg">
                   Institutional Access
                 </button>
                 <button
@@ -357,7 +329,7 @@ export const Header: React.FC<HeaderProps> = ({}) => {
                   Blogs
                 </button>
               </nav>
-              {!isAuthenticated && !location.pathname.startsWith("/admin") && (
+              {!isAuthenticated && !location.pathname.startsWith('/admin') && (
                 <div className="pt-4 border-t border-gray-200 dark:border-secondary-700">
                   <button
                     onClick={openSignIn}
