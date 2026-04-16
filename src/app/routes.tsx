@@ -21,6 +21,7 @@ import ParentLearningPlanner from "../features/parent/pages/ParentLearningPlanne
 import TeacherLearningPlanner from "../features/teacher/pages/TeacherLearningPlanner";
 import Blogs from "../features/blog/blogpage";
 import BlogDetail from "../features/blog/blogdetail";
+import OverallTests from "../features/student/pages/OverallTests";
 
 // Admin Imports
 import AdminLayout from "../components/layout/AdminLayout";
@@ -74,6 +75,7 @@ const routes: RouteObject[] = [
       { path: "transaction-history", element: <TransactionHistory /> },
       { path: "payment", element: <PaymentGateway /> },
       { path: "learning-planner", element: <LearningPlanner /> },
+      { path: "overall-tests", element: <OverallTests /> },
       { path: "student-materials", element: <StudentMaterials /> },
       { path: "tests", element: <StudentMaterials /> },
       { path: "videos", element: <StudentMaterials /> },
