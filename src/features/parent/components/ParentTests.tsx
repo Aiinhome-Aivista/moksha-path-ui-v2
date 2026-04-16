@@ -255,7 +255,7 @@ const Tests: React.FC<TestsProps> = ({
   };
 
   return (
-    <div className="p-6">
+    <div className="p-2 w-[90%]">
       <div>
         {/* Stats Row */}
         <div className="grid grid-cols-3 gap-4 mb-8">
@@ -304,8 +304,8 @@ const Tests: React.FC<TestsProps> = ({
           </div>
         ) : (
           <div>
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
-              <div className="relative w-full md:w-[400px]">
+            <div className="flex flex-col xl:flex-row justify-between items-center gap-4 mb-4">
+              <div className="relative w-full lg:w-[400px]">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <svg
                     className="h-5 w-5 text-gray-400"

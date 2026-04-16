@@ -560,7 +560,7 @@ const ParentMaterials = () => {
           setSelectedTopics={setSelectedTopics}
         />
 
-        <div className="flex-1">
+        <div className="flex-1 w-96">
           <MaterialsHeader
             subjects={subjects}
             activeSubject={activeSubject}
