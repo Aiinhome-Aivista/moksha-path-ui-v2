@@ -1207,7 +1207,7 @@ export default function LandingPage() {
                 <img
                   src={Start_comma}
                   alt="Start Quote"
-                  className="absolute -left-12 sm:-left-20 lg:-left-32 -top-6 w-16 sm:w-24 lg:w-32 h-auto opacity-30 lg:opacity-100"
+                  className="absolute -left-12 sm:-left-20 md:-left-24 lg:-left-32 -top-6 w-16 sm:w-24 lg:w-32 h-auto opacity-30 lg:opacity-100"
                 />
 
                 {/* TITLE */}
@@ -1224,7 +1224,7 @@ export default function LandingPage() {
                 <img
                   src={Close_comma}
                   alt="end Quote"
-                  className="absolute -right-4 lg:right-8 xl:right-40 -top-4 w-14 sm:w-20 lg:w-28 h-auto opacity-30 lg:opacity-100"
+                  className="absolute -right-4 sm:-right-8 xl:-right-28 md:-right-16 lg:-right-12 top-5 w-14 sm:w-20 lg:w-28 h-auto opacity-30 lg:opacity-100"
                 />
               </div>
             </div>
