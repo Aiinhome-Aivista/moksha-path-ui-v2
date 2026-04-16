@@ -217,7 +217,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
           </div>
           {/* Middle Menu Section - HIDDEN ON MOBILE */}
           <div className="hidden xl:flex flex-1 justify-center relative h-full">
-            <div className="flex items-center absolute left-1/2 -translate-x-full z-10 bg-yellow-500 rounded-b-full pl-10 pr-12 gap-3">
+            <div className="flex items-center absolute left-1/2 -translate-x-[140%] z-10 bg-yellow-500 rounded-b-full pl-10 pr-12 gap-3">
               <button className="text-sm font-semibold text-black hover:opacity-80 transition-opacity">
                 Request a Demo
               </button>
@@ -226,7 +226,11 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
                 Help Center
               </button>
             </div>
-            <div className="flex items-center relative top-0 bg-[#E9E9E9] rounded-b-full w-[42rem] pt-5 pb-4 pl-7 pr-6 gap-4 lg:gap-6">
+             <div
+              className={`flex items-center relative top-0 bg-[#E9E9E9] rounded-b-full w-[55rem] ${
+                isAuthenticated ? "pl-64" : "pl-48"
+              } pt-5 pb-4 pl-7 pr-6 gap-4 lg:gap-6`}
+            >
               <button disabled className="text-sm font-semibold text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
                 About us
               </button>
@@ -259,7 +263,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
           {/* Right Section: Auth & Profile */}
           <div className="flex items-center gap-2 xl:gap-3">
             {isAuthenticated && user?.role !== 'admin' && (
-              <div className="relative flex items-center justify-center">
+              <div className="relative flex items-center justify-center -left-64">
                 <button
                   onClick={() =>
                     setIsProfileDropdownOpen(!isProfileDropdownOpen)
