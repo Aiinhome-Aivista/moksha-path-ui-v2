@@ -25,7 +25,13 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClos
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      
+      if (
+        dropdownRef.current && 
+        !dropdownRef.current.contains(target) &&
+        (dropdownRef.current.offsetWidth > 0 || dropdownRef.current.offsetHeight > 0)
+      ) {
         onClose();
       }
     };

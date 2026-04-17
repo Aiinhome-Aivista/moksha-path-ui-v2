@@ -260,16 +260,37 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
                 </button>
               )}
             </div>
+
+            {isAuthenticated && user?.role !== 'admin' && (
+              <div className="relative flex items-center justify-center left-6">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsProfileDropdownOpen(!isProfileDropdownOpen);
+                  }}
+                  className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                  title="Profile Menu"
+                >
+                  <UserCircle size={28} className="text-gray-700" />
+                </button>
+
+                <ProfileDropdown
+                  isOpen={isProfileDropdownOpen}
+                  onClose={() => setIsProfileDropdownOpen(false)}
+                />
+              </div>
+            )}
           </div>
 
           {/* Right Section: Auth & Profile */}
           <div className="flex items-center gap-2 xl:gap-3">
             {isAuthenticated && user?.role !== 'admin' && (
-              <div className="relative flex items-center justify-center 2xl:-left-28">
+              <div className="relative flex items-center justify-center xl:hidden 2xl:-left-28">
                 <button
-                  onClick={() =>
-                    setIsProfileDropdownOpen(!isProfileDropdownOpen)
-                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsProfileDropdownOpen(!isProfileDropdownOpen);
+                  }}
                   className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
                   title="Profile Menu"
                 >
