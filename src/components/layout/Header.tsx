@@ -264,9 +264,10 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
             {isAuthenticated && user?.role !== 'admin' && (
               <div className="relative flex items-center justify-center left-6">
                 <button
-                  onClick={() =>
-                    setIsProfileDropdownOpen(!isProfileDropdownOpen)
-                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsProfileDropdownOpen(!isProfileDropdownOpen);
+                  }}
                   className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
                   title="Profile Menu"
                 >
@@ -284,11 +285,12 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
           {/* Right Section: Auth & Profile */}
           <div className="flex items-center gap-2 xl:gap-3">
             {isAuthenticated && user?.role !== 'admin' && (
-              <div className="relative flex items-center justify-center xl:hidden">
+              <div className="relative flex items-center justify-center xl:hidden 2xl:-left-28">
                 <button
-                  onClick={() =>
-                    setIsProfileDropdownOpen(!isProfileDropdownOpen)
-                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsProfileDropdownOpen(!isProfileDropdownOpen);
+                  }}
                   className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
                   title="Profile Menu"
                 >
