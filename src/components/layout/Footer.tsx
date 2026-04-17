@@ -20,15 +20,15 @@ export default function Footer() {
   return (
     <footer className="w-full">
       <div className="bg-[#FCEA0A] text-neutral-900 px-4 py-2 pl-10 pr-10">
-        <div className="max-w-8xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-12 pb-2">
+        <div className="max-w-8xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-2 pb-2">
           <div className="space-y-4">
-            <div className="flex items-center gap-2 font-bold text-lg">
+            <div className="flex items-center gap-1 font-bold text-lg">
               <img src="/logogod.svg" alt="logo" className="w-10 h-10" />
               <div>
                 <h3>
-                  Moksh<span className="text-xl text-[#E7842E]">Path</span>
+                  Moksh<span className="text-base text-[#E7842E]">Path</span>
                 </h3>
-                <p className="text-xs leading-none">
+                <p className="text-xs leading-none w-20 lg:w-full">
                   Guided Path to True Learning
                 </p>
               </div>
@@ -41,24 +41,24 @@ export default function Footer() {
             </p>
           </div>
           <div className="text-sm space-y-2 justify-center flex flex-col gap-5">
-            <div className="flex gap-2">
+            <div className="flex gap-1">
               <img src={whatsapp} alt="whatsapp" className="w-8 h-8" />
               <div>
                 <p className="text-sm font-medium">For any support and assitance:</p>
-                <p className="text-sm">(033)-66666660 / 49494949</p>
+                <p className="text-sm">(033)- 66666660 / 49494949</p>
               </div>
             </div>
-             <div className="flex gap-2">
+             <div className="flex gap-1">
               <img src={Location} alt="whatsapp" className="w-8 h-8" />
               <div>
                 <p className="text-sm font-medium">Your Location</p>
                 <p className="text-sm">Kolkata 700056</p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-1">
               <img src={email} alt="email" className="w-8 h-8" />
               <div>
-                <p className="text-sm font-medium">Write to us:</p>
+                <p className="text-sm font-medium">Write to us :</p>
                 <p className="text-sm">mokshpath.org.com</p>
               </div>
             </div>

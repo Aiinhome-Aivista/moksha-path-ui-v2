@@ -195,7 +195,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
         </div>
 
         {/* ─── Tabs ─────────────────────────────────────────────────────── */}
-        <div className="flex items-center justify-around py-1 bg-[#ECECED] h-12 rounded-tr-full rounded-br-full shadow lg:col-span-2 xl:col-span-3">
+        <div className="flex items-center justify-around py-1 bg-[#ECECED] rounded-tr-full rounded-br-full shadow lg:col-span-2 xl:col-span-3">
           <h1 className="pl-6 text-[#00bcd4] font-black text-lg tracking-tight whitespace-nowrap hidden lg:hidden xl:block">
             My Dashboard
           </h1>
@@ -282,7 +282,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                       setShowExamDropdown(!showExamDropdown);
                       setShowDropdown(false);
                     }}
-                    className={`px-2 py-1 flex items-center rounded-full text-lg font-bold whitespace-nowrap ${
+                    className={`px-2 py-1 flex items-center rounded-full text-lg font-bold ${
                       activeTab === tab.key
                         ? "bg-[#E59003] text-white px-6"
                         : "text-gray-600 hover:bg-gray-100"
@@ -333,7 +333,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                   setShowDropdown(false);
                   setShowExamDropdown(false);
                 }}
-                className={`px-2 py-1 rounded-full text-lg font-bold whitespace-nowrap ${
+                className={`px-2 py-1 rounded-full text-lg font-bold ${
                   activeTab === tab.key
                     ? "bg-[#E59003] text-white px-6"
                     : "text-gray-600 hover:bg-gray-100"

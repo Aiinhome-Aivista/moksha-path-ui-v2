@@ -229,7 +229,7 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
              <div
               className={`flex items-center relative top-0 bg-[#E9E9E9] rounded-b-full ${
                 isAuthenticated ? "w-[55rem] pl-64" : "w-[59rem] pl-72"
-              } pt-5 pb-4 pl-7 pr-6 gap-4 lg:gap-6`}
+              } pt-5 pb-4 pr-6 gap-4 lg:gap-6`}
 
               
             >

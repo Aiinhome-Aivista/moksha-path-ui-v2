@@ -21,7 +21,7 @@ const MaterialsHeader: React.FC<Props> = ({
 
 
     return (
-        <div className="mb-6">
+        <div className="mb-6 w-[90%]">
             <div className="flex justify-between items-start mb-4">
                 <div>
                      <h1 className="text-2xl font-bold text-gray-800 mb-1">
@@ -37,7 +37,7 @@ const MaterialsHeader: React.FC<Props> = ({
             </div>
 
             {/* Subjects */}
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-4 mb-4">
                 {subjects.map((subject) => (
                     <button
                         key={subject}
