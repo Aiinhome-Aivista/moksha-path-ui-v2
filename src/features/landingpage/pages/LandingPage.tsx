@@ -1,4 +1,4 @@
-// // 
+// //
 // import React, { useEffect, useState } from "react";
 // import "./Landing.css";
 // // import HeroImg from "../../../assets/icon/herosection.svg";
@@ -924,7 +924,6 @@
 //   );
 // }
 
-
 //
 import React, { useEffect, useState } from "react";
 import "./Landing.css";
@@ -1207,16 +1206,16 @@ export default function LandingPage() {
                 <img
                   src={Start_comma}
                   alt="Start Quote"
-                  className="absolute -left-12 sm:-left-20 md:-left-24 lg:-left-32 -top-6 w-16 sm:w-24 lg:w-32 h-auto opacity-30 lg:opacity-100"
+                  className="absolute -left-16 sm:-left-24 lg:-left-32 -top-6 w-16 sm:w-24 lg:w-32 h-auto"
                 />
 
                 {/* TITLE */}
-                <span className="text-center lg:text-left text-3xl md:text-5xl lg:text-[60px] font-bold text-gray-700 leading-tight">
+                <span className="text-center lg:text-left text-3xl md:text-5xl lg:text-6xl font-bold text-gray-700 leading-tight">
                   Why MokshPath
                 </span>
               </div>
               <div className="flex relative mt-1 lg:mt-0">
-                <span className="text-center lg:text-left text-3xl md:text-5xl lg:text-[60px] font-bold text-gray-700 leading-tight">
+                <span className="text-center lg:text-left text-3xl md:text-5xl lg:text-6xl font-bold text-gray-700 leading-tight">
                   for Your School?
                 </span>
 
@@ -1224,7 +1223,7 @@ export default function LandingPage() {
                 <img
                   src={Close_comma}
                   alt="end Quote"
-                  className="absolute -right-4 sm:-right-8 xl:-right-28 md:-right-16 lg:-right-12 top-5 w-14 sm:w-20 lg:w-28 h-auto opacity-30 lg:opacity-100"
+                  className="w-14 sm:w-20 lg:w-28 h-auto  lg:opacity-100"
                 />
               </div>
             </div>
@@ -1304,19 +1303,19 @@ export default function LandingPage() {
         id="section4"
         className="flex flex-col lg:flex-row items-center justify-center w-full pb-12 gap-10 mt-12 scroll-mt-24 overflow-hidden"
       >
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
           {/* Left Content */}
           <div className="flex-1 text-center lg:text-left pt-2">
             <div className="relative flex justify-center lg:justify-start">
               {/* Opening Quote */}
-              <h4 className="flex gap-5 font-['Montserrat'] font-bold text-2xl md:text-3xl leading-10 tracking-tight text-primary">
-                Built around your
-              </h4>
               <img
                 src={start_comma_gray}
                 alt="Start Quote"
-                className="absolute -left-12 sm:-left-20 lg:-left-24 -top-6 w-24 sm:w-36 h-auto opacity-30 lg:opacity-100"
+                className="absolute -left-4 sm:-left-12 md:-left-4 lg:-left-24 xl:-left-40 -top-2 xl:-top-6 w-24 sm:w-36 h-auto opacity-30 lg:opacity-100"
               />
+              <h4 className="flex gap-5 font-['Montserrat'] font-bold text-2xl md:text-3xl leading-10 tracking-tight text-primary">
+                Built around your
+              </h4>
             </div>
             <h2 className="flex flex-col items-center lg:items-start font-['Montserrat'] font-bold text-4xl md:text-5xl tracking-tight text-primary mt-2">
               <span className="block">school</span>
@@ -1354,7 +1353,7 @@ export default function LandingPage() {
           </div>
 
           {/* Right: Guy with Orange Background */}
-          <div className="flex-1 flex justify-center lg:justify-end px-2">
+          <div className="flex-1 flex justify-center lg:justify-end">
             <img
               src={GuyImg}
               alt="Student"
@@ -1372,24 +1371,28 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
           {/* LEFT IMAGE */}
           <div className="flex justify-center">
-            <img src={Safety} alt="Security" className="w-[20rem] md:w-[30rem]" />
+            <img
+              src={Safety}
+              alt="Security"
+              className="w-[20rem] md:w-[30rem]"
+            />
           </div>
 
           {/* RIGHT CONTENT */}
           <div className="lg:col-span-2">
             {/* TITLE */}
             <div className="relative mb-10 text-center lg:text-left">
-              <div className="flex justify-center lg:justify-start">
+              <div className="flex justify-start items-end">
                 <img
                   src={Start_comma}
                   alt="Start Quote"
-                  className="absolute -left-12 sm:-left-20 lg:-left-36 -top-6 w-20 sm:w-32 h-auto opacity-30 lg:opacity-100"
+                  className="lg:absolute left-28 sm:left-20 lg:-left-36 -top-10 w-20 sm:w-32 h-auto"
                 />
                 <h2 className="text-3xl md:text-5xl font-bold text-primary leading-tight">
                   Technical
                 </h2>
               </div>
-              <div className="flex flex-col sm:flex-row items-center lg:items-start gap-2 sm:gap-4 justify-center lg:justify-start">
+              <div className="flex items-center lg:items-start gap-2 sm:gap-4 justify-center lg:justify-start">
                 <span className="text-3xl md:text-5xl font-bold text-primary leading-tight">
                   Reliability & Safety
                 </span>
@@ -1477,36 +1480,43 @@ export default function LandingPage() {
         id="section6"
         className="flex flex-col items-center justify-center w-full py-12 gap-10 mt-12 scroll-mt-24 overflow-hidden"
       >
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-10 items-center">
           {/* LEFT CONTENT */}
           <div className="lg:col-span-2">
-            <div className="flex flex-col sm:flex-row gap-8 lg:gap-24 mb-10 items-center lg:items-start text-center lg:text-left">
+            <div className="flex flex-col sm:flex-row gap-8 xl:gap-24 mb-10 justify-center items-center lg:items-start lg:text-left">
               {/* TITLE */}
-              <div className="relative mb-1">
-                <img
-                  src={Start_comma}
-                  alt="Start Quote"
-                  className="absolute -left-12 sm:-left-20 lg:-left-24 -top-6 w-16 sm:w-24 h-auto opacity-30 lg:opacity-100"
-                />
+              <div className="relative mb-1 sm:ml-28">
+                <div>
+                  <img
+                    src={Start_comma}
+                    alt="Start Quote"
+                    className="absolute -left-16 sm:-left-24 lg:-left-28 -top-6 w-16 sm:w-24 h-auto opacity-30 lg:opacity-100"
+                  />
+                  <h2 className="text-3xl md:text-5xl font-bold text-primary">
+                    Subscription
+                  </h2>
+                </div>
+                <div>
                 <h2 className="text-3xl md:text-5xl font-bold text-primary">
-                  Subscription <br className="hidden sm:block" /> Model
+                  Model
                 </h2>
                 <img
                   src={Close_comma}
                   alt="End Quote"
-                  className="absolute left-32 sm:left-40 top-12 sm:top-14 w-12 sm:w-16 h-auto opacity-30 lg:opacity-100"
+                  className="absolute left-28 sm:left-32 md:left-44 top-12 sm:top-14 w-12 sm:w-16 h-auto opacity-30 lg:opacity-100"
                 />
+                </div>
               </div>
 
               {/* DESCRIPTION */}
-              <p className="text-gray-600 max-w-md mb-1 leading-relaxed tracking-tight text-sm md:text-base">
+              <p className="text-gray-600 max-w-sm mb-1 leading-relaxed tracking-tight text-sm md:text-base"> 
                 We offer tiered pricing designed to scale with your
                 institution's size and customization needs.
               </p>
             </div>
             {/* TABLE */}
             <div className="overflow-x-auto w-full pb-4 scrollbar-hide">
-              <table className="w-full text-sm text-left border-collapse min-w-[600px]">
+              <table className="w-full text-sm text-left border-collapse">
                 <thead>
                   <tr className="text-primary font-semibold text-base md:text-lg border-b">
                     <th className="py-3 px-2">Feature</th>
@@ -1525,7 +1535,9 @@ export default function LandingPage() {
                   </tr>
 
                   <tr className="border-b">
-                    <td className="py-3 px-2 font-semibold">Content Generation</td>
+                    <td className="py-3 px-2 font-semibold">
+                      Content Generation
+                    </td>
                     <td className="px-2">General Boards (CBSE/ICSE)</td>
                     <td className="px-2">Custom AI Fine-Tuning</td>
                     <td className="px-2">Bespoke Syllabus Integration</td>
@@ -1557,7 +1569,7 @@ export default function LandingPage() {
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center pr-4">
             <img
               src={subscription_model}
               alt="Subscription"
@@ -1610,29 +1622,29 @@ export default function LandingPage() {
           {/* RIGHT CONTENT */}
           <div className="lg:col-span-2">
             {/* USERS GRID */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4 text-center lg:text-left">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8 lg:gap-4 text-center lg:text-left">
+              <div className="w-60 xl:w-full">
                 <h4 className="font-semibold text-primary mb-2">Students</h4>
                 <p className="text-sm text-primary leading-relaxed">
                   Clear plans, daily guidance, and stress-free completion.
                 </p>
               </div>
 
-              <div>
+              <div className="w-60 xl:w-full">
                 <h4 className="font-semibold text-primary mb-2">Parents</h4>
                 <p className="text-sm text-primary leading-relaxed">
                   Visibility into progress and early alerts for risks.
                 </p>
               </div>
 
-              <div>
+              <div className="w-60 xl:w-full">
                 <h4 className="font-semibold text-primary mb-2">Teachers</h4>
                 <p className="text-sm text-primary leading-relaxed">
                   Insight into student performance and learning gaps.
                 </p>
               </div>
 
-              <div>
+              <div className="w-60 xl:w-full">
                 <h4 className="font-semibold text-primary mb-2">
                   Institutions
                 </h4>
@@ -1652,29 +1664,29 @@ export default function LandingPage() {
       >
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* LEFT TEXT */}
-          <div className="relative flex flex-col items-center lg:items-start text-center lg:text-left">
+          <div className="lg:ml-40 relative flex flex-col items-center lg:items-start text-center lg:text-left">
             {/* Quotes */}
             <div className="relative">
               <img
                 src={Start_comma}
                 alt="Start Quote"
-                className="absolute -left-12 sm:-left-24 lg:-left-40 -top-8 sm:-top-12 lg:-top-16 w-24 sm:w-32 lg:w-40 h-auto opacity-30 lg:opacity-100"
+                className="absolute -left-24 sm:-left-32 lg:-left-40 -top-8 sm:-top-12 lg:-top-16 w-24 sm:w-32 lg:w-40 h-auto"
               />
 
               <h2 className="text-3xl md:text-5xl font-bold text-[#464646] mb-4">
                 At a Glance
               </h2>
             </div>
-            <div className="flex flex-col sm:flex-row items-center gap-4 lg:gap-12 mt-2">
+            <div className="flex items-center gap-4 lg:gap-12 mt-2">
               <span className="text-base md:text-lg font-semibold text-[#464646]">
-                Everything You Need <br className="hidden sm:block" />
+                Everything You Need <br className="sm:block" />
                 to Stay on Track.
               </span>
 
               <img
                 src={Close_comma}
                 alt="End Quote"
-                className="w-16 md:w-24 h-auto opacity-30 lg:opacity-100"
+                className="w-16 md:w-24 h-auto"
               />
             </div>
             <p className="text-[#464646] max-w-md mt-6 tracking-wider leading-relaxed text-sm md:text-base">
@@ -1689,7 +1701,7 @@ export default function LandingPage() {
             <img
               src={Glance_landing}
               alt="Glance Dashboard"
-              className="w-full max-w-lg lg:max-w-[35rem] relative z-10"
+              className="w-full max-w-lg xl:max-w-[35rem] relative z-10"
             />
           </div>
         </div>
@@ -1714,23 +1726,26 @@ export default function LandingPage() {
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
             {/* TITLE */}
             <div className="relative mb-10">
-              <img
-                src={Start_comma}
-                alt="Start Quote"
-                className="absolute -left-12 sm:-left-20 lg:-left-16 -top-8 sm:-top-10 w-24 sm:w-32 h-auto opacity-30 lg:opacity-100"
-              />
-              <h2 className="text-3xl md:text-5xl font-bold text-[#464646] leading-tight">
-                Vidya Kosh{" "}
-              </h2>
-              <h4 className="text-xl md:text-2xl font-bold text-[#464646] mt-2">
-                or the Knowledge Hub
-              </h4>
-
-              <img
-                src={Close_comma}
-                alt="End Quote"
-                className="absolute -right-8 sm:-right-12 lg:-right-16 bottom-2 w-16 sm:w-24 h-auto opacity-30 lg:opacity-100"
-              />
+              <div className="flex items-end">
+                <img
+                  src={Start_comma}
+                  alt="Start Quote"
+                  className="w-24 sm:w-32 h-auto"
+                />
+                <h2 className="text-3xl md:text-5xl font-bold text-[#464646] leading-tight">
+                  Vidya Kosh{" "}
+                </h2>
+              </div>
+              <div className="flex items-start">
+                <h4 className="text-xl md:text-2xl font-bold text-[#464646] mt-2 ml-36">
+                  or the Knowledge Hub
+                </h4>
+                <img
+                  src={Close_comma}
+                  alt="End Quote"
+                  className=" w-16 sm:w-24 h-auto"
+                />
+              </div>
             </div>
 
             {/* FEATURES */}
@@ -1743,7 +1758,7 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="flex gap-4 w-72">
+              <div className="flex gap-4 w-72 lg:w-52 xl:w-72">
                 <p className="text-sm text-[#464646] leading-relaxed tracking-widest">
                   Access high-quality video lessons, learning materials, and
                   notes—organized by subject, chapter, and difficulty level.
@@ -1764,20 +1779,22 @@ export default function LandingPage() {
           <img
             src={Start_comma}
             alt="Start Quote"
-            className="absolute -left-12 sm:-left-24 md:-left-40 lg:-left-52 top-0 md:bottom-2 w-24 sm:w-32 md:w-48 h-auto opacity-30 lg:opacity-100"
+            className="absolute -left-20 sm:-left-28 md:-left-48 lg:-left-52 -top-10 md:bottom-2 w-24 sm:w-32 md:w-48 h-auto"
           />
 
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-gray-800">Testimonials</h2>
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-gray-800">
+            Testimonials
+          </h2>
 
           <img
             src={Close_comma}
             alt="End Quote"
-            className="absolute -right-8 sm:-right-16 md:-right-24 lg:-right-36 top-2 w-16 md:w-24 lg:w-32 h-auto opacity-30 lg:opacity-100"
+            className="absolute -right-12 sm:-right-16 md:-right-24 lg:-right-36 top-2 w-16 md:w-24 lg:w-32 h-auto"
           />
         </div>
 
         {/* CONTENT */}
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center justify-center">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center justify-center">
           {/* LEFT SIDE IMAGE DESIGN */}
           <div className="flex justify-center">
             <img
@@ -1804,7 +1821,10 @@ export default function LandingPage() {
       </section>
 
       {/* 11. Data-Lab & Education Partners carousel */}
-      <section id="section11" className="overflow-hidden bg-white py-12 md:py-20">
+      <section
+        id="section11"
+        className="overflow-hidden bg-white py-12 md:py-20"
+      >
         <h1 className="text-2xl md:text-4xl text-center font-bold px-4 mb-10 md:mb-16">
           Data-Lab & Education Partners
         </h1>
