@@ -15,6 +15,8 @@ interface Question {
   correctAnswer: string;
   sl_no?: number;
   type?: string;
+  adaptive_level_code?: string;
+  mapped_bucket?: string;
 }
 
 // API Question format
@@ -26,6 +28,8 @@ interface ApiQuestion {
   difficulty: string;
   marks: number;
   sl_no: number;
+  adaptive_level_code?: string;
+  mapped_bucket?: string;
 }
 
 // Transform API question to internal format
@@ -55,7 +59,9 @@ const transformApiQuestion = (apiQuestion: ApiQuestion): Question => {
     options,
     correctAnswer: "", // Will be validated server-side
     sl_no: apiQuestion.sl_no,
-    type: baseType
+    type: baseType,
+    adaptive_level_code: apiQuestion.adaptive_level_code,
+    mapped_bucket: apiQuestion.mapped_bucket,
   };
 };
 
@@ -362,7 +368,9 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                 options: nextData.options,
                 difficulty: nextData.difficulty,
                 marks: nextData.marks,
-                sl_no: nextData.sl_no
+                sl_no: nextData.sl_no,
+                adaptive_level_code: nextData.adaptive_level_code,
+                mapped_bucket: nextData.mapped_bucket,
               };
               const transformed = transformApiQuestion(apiNext);
 
@@ -457,7 +465,9 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                 options: nextData.options,
                 difficulty: nextData.difficulty,
                 marks: nextData.marks,
-                sl_no: nextData.sl_no
+                sl_no: nextData.sl_no,
+                adaptive_level_code: nextData.adaptive_level_code,
+                mapped_bucket: nextData.mapped_bucket,
               };
               const transformed = transformApiQuestion(apiNext);
 
@@ -610,6 +620,19 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                   Time Remaining
                 </span>
               </div>
+              {/* Adaptive Level and Bucket */}
+              {currentQuestion.adaptive_level_code && (
+                <div className="bg-white px-4 py-4 rounded-2xl border border-gray-100 shadow-sm w-full text-center mt-4">
+                  <div className="text-sm font-semibold text-gray-700 mb-2">Adaptive Level</div>
+                  <span className="text-lg font-bold text-[#b0cb1f]">{currentQuestion.adaptive_level_code}</span>
+                </div>
+              )}
+              {currentQuestion.mapped_bucket && (
+                <div className="bg-white px-4 py-4 rounded-2xl border border-gray-100 shadow-sm w-full text-center mt-4">
+                  <div className="text-sm font-semibold text-gray-700 mb-2">Mapped Bucket</div>
+                  <span className="text-lg font-bold text-[#E91E7B]">{currentQuestion.mapped_bucket}</span>
+                </div>
+              )}
             </div>
 
             {/* Desktop Progress & Skipped Palette */}
