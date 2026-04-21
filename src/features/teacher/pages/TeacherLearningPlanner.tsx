@@ -544,10 +544,11 @@ const TeacherLearningPlanner: React.FC = () => {
       const res = await ApiServices.createSubjectWiseAdaptiveSet(payload);
 
       if (res.data?.status === "success") {
-        showToast("Overall Mock test created successfully", "success");
+        showToast(res.data?.message || "Overall Mock test created successfully", "success");
         setIsMockModalOpen(false);
       } else {
         showToast(res.data?.message || "Generation failed", "error");
+          setIsMockModalOpen(false);
       }
     } catch (err) {
       showToast("Error while generating mock test", "error");
