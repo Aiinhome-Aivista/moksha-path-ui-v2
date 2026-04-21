@@ -1202,7 +1202,7 @@ export default function LandingPage() {
           <div className="relative col-span-2 lg:p-0">
             <div className="flex flex-col items-center lg:items-start">
               {/* LEFT QUOTE */}
-              <div className="flex relative">
+              <div className="flex relative ml-10 sm:ml-0">
                 <img
                   src={Start_comma}
                   alt="Start Quote"
@@ -1306,12 +1306,12 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
           {/* Left Content */}
           <div className="flex-1 text-center lg:text-left pt-2">
-            <div className="relative flex justify-center lg:justify-start">
+            <div className="relative flex justify-center lg:justify-start ml-14 sm:ml-0">
               {/* Opening Quote */}
               <img
                 src={start_comma_gray}
                 alt="Start Quote"
-                className="absolute -left-4 sm:-left-12 md:-left-4 lg:-left-24 xl:-left-40 -top-2 xl:-top-6 w-24 sm:w-36 h-auto opacity-30 lg:opacity-100"
+                className="absolute -left-16 sm:-left-12 md:-left-4 lg:-left-24 xl:-left-40 -top-2 xl:-top-6 w-24 sm:w-36 h-auto opacity-30 lg:opacity-100"
               />
               <h4 className="flex gap-5 font-['Montserrat'] font-bold text-2xl md:text-3xl leading-10 tracking-tight text-primary">
                 Built around your
@@ -1490,7 +1490,7 @@ export default function LandingPage() {
                   <img
                     src={Start_comma}
                     alt="Start Quote"
-                    className="absolute -left-16 sm:-left-24 lg:-left-28 -top-6 w-16 sm:w-24 h-auto opacity-30 lg:opacity-100"
+                    className="absolute -left-16 sm:-left-24 lg:-left-28 -top-6 w-16 sm:w-24 h-auto"
                   />
                   <h2 className="text-3xl md:text-5xl font-bold text-primary">
                     Subscription
@@ -1503,7 +1503,7 @@ export default function LandingPage() {
                 <img
                   src={Close_comma}
                   alt="End Quote"
-                  className="absolute left-28 sm:left-32 md:left-44 top-12 sm:top-14 w-12 sm:w-16 h-auto opacity-30 lg:opacity-100"
+                  className="absolute left-28 sm:left-32 md:left-44 top-12 sm:top-14 w-12 sm:w-16 h-auto"
                 />
                 </div>
               </div>
@@ -1666,7 +1666,7 @@ export default function LandingPage() {
           {/* LEFT TEXT */}
           <div className="lg:ml-40 relative flex flex-col items-center lg:items-start text-center lg:text-left">
             {/* Quotes */}
-            <div className="relative">
+            <div className="relative ml-10 sm:ml-0">
               <img
                 src={Start_comma}
                 alt="Start Quote"
@@ -1775,7 +1775,7 @@ export default function LandingPage() {
         className="flex flex-col items-center justify-center w-full py-12 md:py-20 bg-white gap-8 mt-12 scroll-mt-24 overflow-hidden"
       >
         {/* TITLE */}
-        <div className="relative text-center mx-auto px-4">
+        <div className="relative text-center ml-20 sm:ml-auto mx-auto px-4">
           <img
             src={Start_comma}
             alt="Start Quote"
