@@ -187,4 +187,7 @@ function NotFoundPage() {
 }
 
 export const router = createBrowserRouter(routes);
-export default router;
+// export const router = createBrowserRouter(routes, {
+//   basename: "/academia",
+// });
+ export default router;
