@@ -320,12 +320,12 @@ export const Header: React.FC<HeaderProps> = ({ }) => {
           <div className="xl:hidden absolute top-full left-0 w-full bg-white dark:bg-secondary-800 shadow-xl z-30 animate-in slide-in-from-top-2 duration-200">
             <div className="p-4 space-y-4">
               {/* Top yellow bar links */}
-              <div className="grid grid-cols-2 gap-3 pb-4 border-b border-gray-200 dark:border-secondary-700">
-                <button className="text-sm font-semibold text-gray-700 dark:text-gray-200 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-secondary-700">
+              <div className="grid grid-cols-1 gap-2 pb-4 border-b border-gray-200 dark:border-secondary-700">
+                <button className="text-sm sm:text-left font-semibold text-gray-700 dark:text-gray-400 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-secondary-700">
                   Request a Demo
                 </button>
-                <button className="text-sm font-semibold text-gray-700 dark:text-gray-200 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-secondary-700">FAQs</button>
-                <button className="text-sm font-semibold text-gray-700 dark:text-gray-200 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-secondary-700">
+                <button className="text-sm sm:text-left font-semibold text-gray-700 dark:text-gray-400 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-secondary-700">FAQs</button>
+                <button className="text-sm sm:text-left font-semibold text-gray-700 dark:text-gray-400 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-secondary-700">
                   Help Center
                 </button>
               </div>
