@@ -357,7 +357,7 @@ const Tests: React.FC<TestsProps> = ({
 
     try {
       // Step 1: Call retake API
-      const retakeResponse = await ApiServices.retakeAssessment({
+      const retakeResponse = await (ApiServices as any).retakeAssessment({
         assignment_id: retakeAssessment.assignment_id,
       });
 
