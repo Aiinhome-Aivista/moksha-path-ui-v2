@@ -11,15 +11,15 @@ const PaymentGateway: React.FC = () => {
   const { showToast } = useToast();
   const { fetchMenu } = useModal();
   const [isProcessing, setIsProcessing] = React.useState(false);
-  const [localUser, setLocalUser] = React.useState<any>({});
+  // const [localUser, setLocalUser] = React.useState<any>({});
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   React.useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("active_profile") || "{}");
-    setLocalUser(user);
+    // const user = JSON.parse(localStorage.getItem("active_profile") || "{}");
+    // setLocalUser(user);
   }, []);
 
   // Retrieve data passed from Subscription page

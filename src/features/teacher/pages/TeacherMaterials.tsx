@@ -33,7 +33,7 @@ const TeacherMaterials = () => {
   // 2. Sidebar Options
   const [boardOptions, setBoardOptions] = useState<string[]>([]);
   const [classOptions, setClassOptions] = useState<string[]>([]);
-  const [sectionOptions, setSectionOptions] = useState<string[]>([]);
+  // const [sectionOptions, setSectionOptions] = useState<string[]>([]);
   const [subjectOptions, setSubjectOptions] = useState<string[]>([]);
 
   // 3. Status States
@@ -77,7 +77,7 @@ const TeacherMaterials = () => {
 
             setClassOptions(classes);
             setSubjectOptions(subjects);
-            setSectionOptions(sections);
+            // setSectionOptions(sections);
 
             // Default selections (if not already set)
             if (!className && classes.length > 0) setClassName(classes[0]);
@@ -180,14 +180,11 @@ const TeacherMaterials = () => {
         <MaterialsSidebar
           board={board}
           className={className}
-          section={section}
           boardOptions={boardOptions}
           classOptions={classOptions}
-          sectionOptions={sectionOptions}
           setBoard={setBoard}
           setClassName={setClassName}
           setSubject={setActiveSubject}
-          setSection={setSection}
           activeSubject={activeSubject}
           subjectOptions={subjectOptions}
           isLoading={isSidebarLoading} // Only shows during sidebar options fetch
