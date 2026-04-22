@@ -525,7 +525,11 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.teacher_profile);
   }
 
-    getStudentProfile() {
+  getTeacherDashboard() {
+    return axiosInstance.get(GET_APIS.teacher_dashboard_vw);
+  }
+
+  getStudentProfile() {
     return axiosInstance.get(GET_APIS.student_profile);
   }
   getParentStrengthWeakness(student_id) {

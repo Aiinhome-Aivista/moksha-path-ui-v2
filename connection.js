@@ -75,6 +75,7 @@ export const GET_APIS = {
   teacher_top_bottom_students: `${BASE_URL}parent_teacher/dashboard/top-bottom-students`,
 
   teacher_profile: `${BASE_URL}parent_teacher/dashboard/teacher-profile`,
+  teacher_dashboard_vw: `${BASE_URL}learning/teacher_dashboard_vw`,
   student_profile: `${BASE_URL}parent_teacher/dashboard/teacher-profile`,
 
   // Learning Planner for teacher and parent

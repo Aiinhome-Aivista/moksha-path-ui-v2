@@ -14,17 +14,11 @@ const tabs: { name: TabName }[] = [
   { name: 'Remediation' },
 ];
 
-const tabComponents: Record<TabName, React.ReactElement> = {
-  Overview: <OverviewTab />,
-  Syllabus: <SyllabusTab />,
-  'Mock Exams': <MockExamsTab />,
-  Remediation: <RemediationTab />,
-};
-
 const TeacherDashboard = () => {
   const [activeTab, setActiveTab] = useState<TabName>('Overview');
   const [profileData, setProfileData] = useState<any>(null);
   const [profileImage, setProfileImage] = useState<string>('');
+  const [dashboardData, setDashboardData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -56,6 +50,17 @@ const TeacherDashboard = () => {
         }
       } catch (error) {
         console.error('Failed to fetch teacher profile image', error);
+      }
+
+      // Fetch dashboard data
+      try {
+        const dashboardRes = await ApiServices.getTeacherDashboard();
+        console.log("Teacher Dashboard Response:", dashboardRes.data);
+        if (dashboardRes.data?.status === 'success' && dashboardRes.data?.data) {
+          setDashboardData(dashboardRes.data.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch teacher dashboard data', error);
       } finally {
         setIsLoading(false);
       }
@@ -131,7 +136,10 @@ const TeacherDashboard = () => {
 
       {/* 2. DYNAMIC CONTENT AREA */}
       <main className="px-2 w-full animate-in fade-in duration-500">
-        {tabComponents[activeTab]}
+        {activeTab === 'Overview' && <OverviewTab data={dashboardData?.overview_dashboard} />}
+        {activeTab === 'Syllabus' && <SyllabusTab data={dashboardData?.overview_dashboard} />}
+        {activeTab === 'Mock Exams' && <MockExamsTab data={dashboardData?.mock_exam_dashboard} />}
+        {activeTab === 'Remediation' && <RemediationTab data={dashboardData?.remediation_dashboard} />}
       </main>
       
     </div>

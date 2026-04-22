@@ -11,29 +11,29 @@ export const dashboardData = {
   // Image 1: Overview
   overview: {
     mathematics: [
-      { section: 'Class 8-A', students: 28, avg: 78, benchmark: 85, status: 'On Track' },
-      { section: 'Class 8-B', students: 26, avg: 71, benchmark: 79, status: 'Watch' },
-      { section: 'Class 10-A', students: 32, avg: 74, benchmark: 81, status: 'On Track' },
-      { section: 'Class 10-B', students: 29, avg: 63, benchmark: 71, status: 'Action' },
+      // { section: 'Class 8-A', students: 28, avg: 78, benchmark: 85, status: 'On Track' },
+      // { section: 'Class 8-B', students: 26, avg: 71, benchmark: 79, status: 'Watch' },
+      // { section: 'Class 10-A', students: 32, avg: 74, benchmark: 81, status: 'On Track' },
+      // { section: 'Class 10-B', students: 29, avg: 63, benchmark: 71, status: 'Action' },
     ],
     science: [
-      { section: 'Class 8-A', students: 28, avg: 78, benchmark: 85, status: 'On Track' },
-      { section: 'Class 8-B', students: 26, avg: 71, benchmark: 79, status: 'Watch' },
-      { section: 'Class 9-A', students: 32, avg: 74, benchmark: 81, status: 'On Track' },
-      { section: 'Class 9-B', students: 29, avg: 63, benchmark: 71, status: 'Action' },
+      // { section: 'Class 8-A', students: 28, avg: 78, benchmark: 85, status: 'On Track' },
+      // { section: 'Class 8-B', students: 26, avg: 71, benchmark: 79, status: 'Watch' },
+      // { section: 'Class 9-A', students: 32, avg: 74, benchmark: 81, status: 'On Track' },
+      // { section: 'Class 9-B', students: 29, avg: 63, benchmark: 71, status: 'Action' },
     ],
     // ADD THIS NEW EVS DATA HERE:
     evs: [
-      { 
-        section: 'Class 8-A', 
-        students: 28, 
-        avg: 80, 
-        benchmark: 86, 
-        status: 'Watch',
-        syllabus: 95,
-        mock: 88,
-        recommendation: 'Strong coverage - extension mock recommended for Class 8-A'
-      }
+      // { 
+      //   section: 'Class 8-A', 
+      //   students: 28, 
+      //   avg: 80, 
+      //   benchmark: 86, 
+      //   status: 'Watch',
+      //   syllabus: 95,
+      //   mock: 88,
+      //   recommendation: 'Strong coverage - extension mock recommended for Class 8-A'
+      // }
     ]
   },
 
@@ -52,10 +52,10 @@ export const dashboardData = {
 
   // Image 3: Mock Exams
   mockExams: [
-    { class: 'Class 10-A', score: 82, trend: '+1%', bench: 81, color: 'text-green-600', points: [58, 66, 72, 78, 82] },
-    { class: 'Class 10-B', score: 72, trend: '-3%', bench: 71, color: 'text-orange-400', points: [50, 56, 60, 64, 68] },
-    { class: 'Class 8-A', score: 79, trend: '+3%', bench: 76, color: 'text-green-600', points: [58, 66, 72, 78, 79] },
-    { class: 'Class 8-B', score: 72, trend: '-4%', bench: 76, color: 'text-orange-400', points: [58, 64, 72, 78, 72] },
+    // { class: 'Class 10-A', score: 82, trend: '+1%', bench: 81, color: 'text-green-600', points: [58, 66, 72, 78, 82] },
+    // { class: 'Class 10-B', score: 72, trend: '-3%', bench: 71, color: 'text-orange-400', points: [50, 56, 60, 64, 68] },
+    // { class: 'Class 8-A', score: 79, trend: '+3%', bench: 76, color: 'text-green-600', points: [58, 66, 72, 78, 79] },
+    // { class: 'Class 8-B', score: 72, trend: '-4%', bench: 76, color: 'text-orange-400', points: [58, 64, 72, 78, 72] },
   ],
   chapterAccuracy: [
     { name: 'Trigonometry', scores: [{ label: '10-A', val: 44 }, { label: '10-B', val: 38 }] },
@@ -76,14 +76,14 @@ export const dashboardData = {
     { label: 'Critical', value: 8, sub: '> 25% below', color: 'bg-red-500' },
   ],
   remediationMatrix: [
-    { class: '10-A', subject: 'Maths', chapter: 'Trigonometry (Ext.)', accuracy: 44, bench: 73, gap: -31, risk: 12, action: 'Assign Now' },
-    { class: '10-A', subject: 'Maths', chapter: 'Circle Theorems', accuracy: 58, bench: 74, gap: -20, risk: 8, action: 'Schedule' },
-    { class: '10-B', subject: 'Maths', chapter: 'Trigonometry (Ext.)', accuracy: 38, bench: 80, gap: -37, risk: 7, action: 'Assign Now' },
-    { class: '9-A', subject: 'Science', chapter: 'Structure of Atom', accuracy: 68, bench: 72, gap: -8, risk: 6, action: 'Schedule' },
+    // { class: '10-A', subject: 'Maths', chapter: 'Trigonometry (Ext.)', accuracy: 44, bench: 73, gap: -31, risk: 12, action: 'Assign Now' },
+    // { class: '10-A', subject: 'Maths', chapter: 'Circle Theorems', accuracy: 58, bench: 74, gap: -20, risk: 8, action: 'Schedule' },
+    // { class: '10-B', subject: 'Maths', chapter: 'Trigonometry (Ext.)', accuracy: 38, bench: 80, gap: -37, risk: 7, action: 'Assign Now' },
+    // { class: '9-A', subject: 'Science', chapter: 'Structure of Atom', accuracy: 68, bench: 72, gap: -8, risk: 6, action: 'Schedule' },
   ],
   recommendedPlans: [
-    { id: 1, title: 'Trigonometry — Class 10-A & 10-B', desc: 'Assign L1 drill: Sin/Cos/Tan basics. Target 70% before L2.', color: 'bg-lime-500' },
-    { id: 2, title: 'Atoms & Molecules — Class 9-B', desc: 'Conceptual clarity on atomic structure. 2 x 40-min sessions.', color: 'bg-lime-500' },
+    // { id: 1, title: 'Trigonometry — Class 10-A & 10-B', desc: 'Assign L1 drill: Sin/Cos/Tan basics. Target 70% before L2.', color: 'bg-lime-500' },
+    // { id: 2, title: 'Atoms & Molecules — Class 9-B', desc: 'Conceptual clarity on atomic structure. 2 x 40-min sessions.', color: 'bg-lime-500' },
   ]
 
 
