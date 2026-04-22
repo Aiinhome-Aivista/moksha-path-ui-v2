@@ -89,27 +89,21 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const response = await ApiServices.getStudentSubjectsTabInfo();
+        const response = await ApiServices.getStudentSubjectDashboard();
 
         if (response.data?.status === "success") {
-          // Handle various possible API wrapping structures
-          const fetchedSubjects =
-            response.data.data?.subjects ||
-            response.data.subjects ||
-            (Array.isArray(response.data.data) ? response.data.data : []);
-
-          const dashboardData = response.data.data?.dashboard || [];
-          setOverallTestCount(response.data.data?.overall_test_count || 0);
-
-          // Build notifications map from dashboard data
-          const counts: Record<string, number> = {};
-          dashboardData.forEach((item: any) => {
-            counts[item.subject_name] = (counts[item.subject_name] || 0) + (item.subject_test_count || 0);
-          });
-          setNotifications(counts);
-
+          const fetchedSubjects = response.data.data?.subjects || [];
+          
           if (Array.isArray(fetchedSubjects) && fetchedSubjects.length > 0) {
             setSubjectsList(fetchedSubjects);
+
+            // Build notifications map/counts if useful from top_stats or other fields
+            // For now, setting a simple count if available
+            const counts: Record<string, number> = {};
+            fetchedSubjects.forEach((sub: any) => {
+               counts[sub.subject_name] = sub.total_attempts || 0;
+            });
+            setNotifications(counts);
 
             // Auto-select the first subject if none is selected currently
             if (!selectedSubject) {
@@ -228,8 +222,8 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                     <span className="material-symbols-outlined ml-1">
                       keyboard_arrow_down
                     </span>
-                    <span className="bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm lg:hidden xl:flex  ">
-                      {overallTestCount || 0}
+                    <span className="ml-1.5 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
+                      {Object.values(notifications).reduce((acc, curr) => acc + curr, 0)}
                     </span>
                   </button>
 

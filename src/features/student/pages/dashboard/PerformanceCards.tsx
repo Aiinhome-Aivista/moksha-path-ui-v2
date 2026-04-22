@@ -3,42 +3,118 @@ import {
   performanceDataTimeDistribution,
 } from "./NewStudent";
 
-export const PerformanceCards = () => {
+export const PerformanceCards = ({ performanceData }: { performanceData?: any }) => {
+  const performance = Array.isArray(performanceData?.performance) ? performanceData.performance : [];
+  const time_distribution = Array.isArray(performanceData?.time_distribution) ? performanceData.time_distribution : [];
+  const top_stats = performanceData?.top_stats || {};
+
+  const latestRecord = performance.length > 0 ? performance[performance.length - 1] : null;
+
   const stats = [
     {
       label: "Overall Score",
-      value: "74%",
-      icon: "up",
-      title: "5% this month",
+      value: top_stats.avg_accuracy ? `${top_stats.avg_accuracy}%` : "0%",
+      icon: latestRecord?.score_trend > 0 ? "up" : latestRecord?.score_trend < 0 ? "down" : "",
+      title: latestRecord ? `${latestRecord.score_trend}% this month` : "No data",
     },
     {
       label: "Module Test Completed",
-      value: "6/8",
+      value: `${top_stats.completed_module_tests || 0}/${top_stats.total_module_tests || 0}`,
       icon: "",
-      title: "2 pending",
+      title: `${(top_stats.total_module_tests || 0) - (top_stats.completed_module_tests || 0)} pending`,
     },
     {
       label: "Mock Tests Attempted",
-      value: "3/5",
+      value: `${top_stats.completed_mock_tests || top_stats.total_attempts || 0}/${top_stats.total_mock_tests || 5}`,
       icon: "",
-      title: "2 pending",
+      title: `${(top_stats.total_mock_tests || 5) - (top_stats.completed_mock_tests || top_stats.total_attempts || 0)} pending`,
     },
     {
       label: "Avg Difficulty",
-      value: "L3",
+      value: top_stats.difficulty_level || "N/A",
       icon: "",
-      title: "Hard out of 4 level",
+      title: `${top_stats.difficulty_bucket || "Unknown"} difficulty scale`,
     },
   ];
-  const chartData = [10, 30, 25, 45, 50, 80];
-  const labels = ["12 Jan", "26 Jan", "12 Feb", "26 Feb", "12 Mar", "12 Mar"];
+
+  const dynamicPerformanceStatsData = latestRecord ? [
+    {
+      value: latestRecord.accuracy,
+      suffix: "%",
+      valueColor: "#505050",
+      title: "Difficulty Adapt Rate",
+      titleColor: "#474747",
+      icon: parseFloat(latestRecord.score_trend) > 0 ? "up" : parseFloat(latestRecord.score_trend) < 0 ? "down" : "",
+      subText: `${latestRecord.score_trend}% vs prev`,
+      subTextColor: "#3B8263",
+      borderColor: "#7BA6B3",
+    },
+    {
+      value: latestRecord.attempt_rate,
+      suffix: "%",
+      valueColor: "#D3A251",
+      title: "On-time Completion",
+      titleColor: "#474747",
+      icon: "",
+      subText: "Target 20 mins max",
+      subTextColor: "#D3A251",
+      borderColor: "#7BA6B3",
+    },
+    {
+      value: latestRecord.score_pct,
+      suffix: "%",
+      valueColor: "#B7C356",
+      title: "Accuracy After Adapt",
+      titleColor: "#474747",
+      icon: "",
+      subText: `Avg time: ${latestRecord.avg_time}m`,
+      subTextColor: "#3B8263",
+      borderColor: "#7BA6B3",
+    },
+    {
+      value: latestRecord.unattempted,
+      suffix: "",
+      valueColor: "#B7C356",
+      title: "Question Skip Rate",
+      titleColor: "#474747",
+      icon: latestRecord.unattempted > 0 ? "up" : "down",
+      subText: latestRecord.unattempted > 0 ? "Needs improvement" : "Well managed",
+      subTextColor: "#3B8263",
+      borderColor: "#7BA6B3",
+    },
+  ] : performanceStatsData;
+
+  const chartData = performance.length > 0 
+    ? performance.map((item: any) => parseFloat(item.score_pct))
+    : [10, 30, 25, 45, 50, 80];
+
+  const labels = performance.length > 0
+    ? performance.map((item: any) => `Set ${item.set_id}`)
+    : ["12 Jan", "26 Jan", "12 Feb", "26 Feb", "12 Mar", "12 Mar"];
 
   const max = 100;
 
-  // Convert data to SVG points
+  // Map levels to UI colors and labels (matching difficulty_level from SQL)
+  const levelMapping: Record<string, { color: string, label: string }> = {
+    'L1': { color: '#b0cb1f', label: 'Easy (L1-2)' },
+    'L2': { color: '#8e44ad', label: 'Expert (L6+)' },
+    'L3': { color: '#ea4335', label: 'Hard (L5)' },
+    'L4': { color: '#EB8E02', label: 'Medium (L3-4)' }
+  };
+
+  const dynamicTimeDistribution = time_distribution.length > 0 
+    ? time_distribution.map((item: any) => ({
+        label: levelMapping[item.level]?.label || item.level,
+        value: (item.avg_time / 30) * 100, // Normalize to percentage for bar width
+        color: levelMapping[item.level]?.color || '#999',
+        avg: `${item.avg_time.toFixed(2)}m avg`
+      }))
+    : performanceDataTimeDistribution;
+
+  // Convert chart data to SVG points
   const points = chartData
-    .map((value, i) => {
-      const x = (i / (chartData.length - 1)) * 100;
+    .map((value: number, i: number) => {
+      const x = chartData.length > 1 ? (i / (chartData.length - 1)) * 100 : 50;
       const y = 100 - (value / max) * 100;
       return `${x},${y}`;
     })
@@ -67,7 +143,7 @@ export const PerformanceCards = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 m-1 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
         <div className="grid grid-cols-1 gap-2">
           <div className="grid grid-cols-2 gap-4 row-span-2">
-            {performanceStatsData.map((item, i) => (
+            {dynamicPerformanceStatsData.map((item, i) => (
               <div
                 key={i}
                 className="px-4 border-b-4 h-36"
@@ -115,7 +191,7 @@ export const PerformanceCards = () => {
             {/* Title */}
             <h2 className="text-3xl font-bold">Mock Score Trend</h2>
             <p className="text-sm text-gray-400 mb-4">
-              5 exams • +20 pts improvement
+              {performance.length} exams • {parseFloat(latestRecord?.score_trend || 0) >= 0 ? "+" : ""}{latestRecord?.score_trend || 0} pts improvement
             </p>
 
             <div className="flex">
@@ -158,8 +234,8 @@ export const PerformanceCards = () => {
                     />
 
                     {/* Dots */}
-                    {chartData.map((value, i) => {
-                      const x = (i / (chartData.length - 1)) * 100;
+                    {chartData.map((value: number, i: number) => {
+                      const x = chartData.length > 1 ? (i / (chartData.length - 1)) * 100 : 50;
                       const y = 100 - (value / max) * 100;
                       return (
                         <circle key={i} cx={x} cy={y} r="1.5" fill="#facc15" />
@@ -170,7 +246,7 @@ export const PerformanceCards = () => {
 
                 {/* X-axis Labels */}
                 <div className="flex justify-between text-xs text-gray-400 mt-2">
-                  {labels.map((label, i) => (
+                  {labels.map((label: string, i: number) => (
                     <span key={i}>{label}</span>
                   ))}
                 </div>
@@ -185,7 +261,7 @@ export const PerformanceCards = () => {
               Time Distribution by Question Difficulty
             </h3>
 
-            {performanceDataTimeDistribution.map((item, i) => (
+            {dynamicTimeDistribution.map((item: any, i: number) => (
               <div key={i} className="mb-4 grid grid-cols-8 gap-2 items-center">
                 <p className="text-sm col-span-2 font-semibold text-primary">
                   {item.label}
@@ -194,7 +270,7 @@ export const PerformanceCards = () => {
                   <div
                     className={`h-3 rounded-full`}
                     style={{
-                      width: `${item.value}%`,
+                      width: `${item.attempted || item.value}%`, // Fallback for width
                       backgroundColor: `${item.color}`,
                     }}
                   />
@@ -225,24 +301,26 @@ export const PerformanceCards = () => {
                   <span className="material-symbols-outlined text-[#b0cb1f] text-5xl font-extrabold">
                     check
                   </span>
-                  <p className="text-xl text-primary  font-bold ">
-                    You constantly clear L1 & L2 questions but lose accuracy at
-                    L3.
+                  <p className="text-xl text-primary font-bold">
+                    {parseFloat(latestRecord?.last_minute_error || 0) > 20 
+                      ? `Last minute pressure detected (${latestRecord.last_minute_error}% error rate). Focus on steady pacing.`
+                      : "Your pacing is steady, minimizing errors in the final minutes."}
                   </p>
                 </li>
                 <li className="w-full flex gap-4">
                   <span className="material-symbols-outlined text-[#b0cb1f] text-5xl font-extrabold">
                     check
                   </span>{" "}
-                  <p className="text-xl text-primary  font-bold ">
-                    The engine is routine towards L3 more frequently - this is
-                    where your biggest score gains lie.
+                  <p className="text-xl text-primary font-bold">
+                    {parseFloat(latestRecord?.guessing_index || 0) > 0.1 
+                      ? `Guessing index is ${latestRecord.guessing_index}. Work on conceptual clarity to reduce guesswork.`
+                      : "Strong conceptual accuracy with minimal guessing detected."}
                   </p>
                 </li>
               </ul>
               <div className="mb-8">
                 <p className="mt-2 text-xs text-primary font-semibold">
-                  If you crack 13 consistently you'll reach
+                  {latestRecord?.score_pct >= 80 ? "You are performing at an elite level." : "Consistently clearing L3 will help you reach"}
                 </p>
                 <h2 className="mt-2 text-primary">
                   <span className="text-4xl font-extrabold"> Top 8%</span>
