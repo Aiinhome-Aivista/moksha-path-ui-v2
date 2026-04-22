@@ -789,15 +789,18 @@ import { MockExamDashboard } from "./MockExamDashboard";
 import SubjectGrid from "./subject/SubjectGrid";
 import Remediation from "./remediation/Remediation";
 import ApiServices from "../../../../services/ApiServices";
+import Loader from "../../../../components/common/Loader";
 
 export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("performance");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedExam, setSelectedExam] = useState("");
   const [performanceData, setPerformanceData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchPerformance = async () => {
+      setIsLoading(true);
       try {
         const response = await ApiServices.getStudentPerformance();
         if (response.data?.status === "success") {
@@ -805,6 +808,8 @@ export const Dashboard = () => {
         }
       } catch (error) {
         console.error("Error fetching performance:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchPerformance();
@@ -827,7 +832,17 @@ export const Dashboard = () => {
         selectedExam={selectedExam}
         onExamSelect={setSelectedExam}
       />
-      {tabComponents[activeTab]}
+      <main className="min-h-[400px] flex flex-col">
+        {isLoading ? (
+          <div className="flex-1 flex flex-col items-center justify-center py-24">
+            <Loader size="xl" text="Fetching student performance..." />
+          </div>
+        ) : (
+          <div className="animate-in fade-in duration-500">
+            {tabComponents[activeTab]}
+          </div>
+        )}
+      </main>
     </div>
   );
 };

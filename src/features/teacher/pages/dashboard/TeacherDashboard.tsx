@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ApiServices from '../../../../services/ApiServices';
 import OverviewTab from './overviewTab';
 import SyllabusTab from './syllabusTab';
 import MockExamsTab from './mockExamsTab';
 import RemediationTab from './remediationTab';
+import Loader from '../../../../components/common/Loader';
 
 type TabName = 'Overview' | 'Syllabus' | 'Mock Exams' | 'Remediation';
 
@@ -135,11 +136,19 @@ const TeacherDashboard = () => {
       </div>
 
       {/* 2. DYNAMIC CONTENT AREA */}
-      <main className="px-2 w-full animate-in fade-in duration-500">
-        {activeTab === 'Overview' && <OverviewTab data={dashboardData?.overview_dashboard} />}
-        {activeTab === 'Syllabus' && <SyllabusTab data={dashboardData?.overview_dashboard} />}
-        {activeTab === 'Mock Exams' && <MockExamsTab data={dashboardData?.mock_exam_dashboard} />}
-        {activeTab === 'Remediation' && <RemediationTab data={dashboardData?.remediation_dashboard} />}
+      <main className="px-2 w-full animate-in fade-in duration-500 min-h-[500px] flex flex-col items-center">
+        {isLoading ? (
+          <div className="flex-1 flex flex-col items-center justify-center py-20">
+            <Loader size="xl" text="Fetching dashboard data..." />
+          </div>
+        ) : (
+          <div className="w-full">
+            {activeTab === 'Overview' && <OverviewTab data={dashboardData?.overview_dashboard} />}
+            {activeTab === 'Syllabus' && <SyllabusTab data={dashboardData?.overview_dashboard} />}
+            {activeTab === 'Mock Exams' && <MockExamsTab data={dashboardData?.mock_exam_dashboard} />}
+            {activeTab === 'Remediation' && <RemediationTab data={dashboardData?.remediation_dashboard} />}
+          </div>
+        )}
       </main>
       
     </div>
