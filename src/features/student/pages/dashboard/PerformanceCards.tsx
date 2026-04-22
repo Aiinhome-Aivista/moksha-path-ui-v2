@@ -96,17 +96,21 @@ export const PerformanceCards = ({ performanceData }: { performanceData?: any })
 
   // Map levels to UI colors and labels (matching difficulty_level from SQL)
   const levelMapping: Record<string, { color: string, label: string }> = {
-    'L1': { color: '#b0cb1f', label: 'Easy (L1-2)' },
-    'L2': { color: '#8e44ad', label: 'Expert (L6+)' },
-    'L3': { color: '#ea4335', label: 'Hard (L5)' },
-    'L4': { color: '#EB8E02', label: 'Medium (L3-4)' }
+    // 'L1': { color: '#EB8E02', label: 'Easy (L1-2)' },
+    // 'L2': { color: '#b0cb1f', label: 'Expert (L6+)' },
+    // 'L3': { color: '#ea4335', label: 'Medium (L3-4)' },
+    // 'L4': { color: '#6366f1', label: 'Hard (L5)' },
+    'Easy': { color: '#b0cb1f', label: 'Easy (L1-2)' },
+    'Medium': { color: '#EB8E02', label: 'Medium (L3-4)' },
+    'Hard': { color: '#ed6c61', label: 'Hard (L5)' },
+    'Expert': { color: '#ea4335', label: 'Expert (L6+)' }
   };
 
   const dynamicTimeDistribution = time_distribution.length > 0 
     ? time_distribution.map((item: any) => ({
         label: levelMapping[item.level]?.label || item.level,
         value: (item.avg_time / 30) * 100, // Normalize to percentage for bar width
-        color: levelMapping[item.level]?.color || '#999',
+        color: levelMapping[item.level]?.color,
         avg: `${item.avg_time.toFixed(2)}m avg`
       }))
     : performanceDataTimeDistribution;
