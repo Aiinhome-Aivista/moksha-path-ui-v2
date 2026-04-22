@@ -35,7 +35,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
         {/* Subject Header */}
         <div className="mb-6 border-b-4 border-gray-200 pb-3">
           <h3 className="text-2xl font-black text-gray-800 tracking-tight">
-            {subjectData.subject_name} <span className="text-gray-400 font-medium ml-1"> | {subjectData.class_name}</span>
+            {subjectData.subject_name} <span className="text-gray-primary font-medium ml-1"> | {subjectData.class_name}-{subjectData.section_name}</span>
           </h3>
           <div className="flex items-center gap-4 mt-1 text-[12px] font-bold tracking-tight text-gray-700 ">
             <span>Syllabus: <span className="text-gray-500 font-medium">{subjectData.overall_completion_pct || 0}% complete</span></span>
