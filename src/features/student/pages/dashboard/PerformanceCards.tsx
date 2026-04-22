@@ -100,10 +100,10 @@ export const PerformanceCards = ({ performanceData }: { performanceData?: any })
     // 'L2': { color: '#b0cb1f', label: 'Expert (L6+)' },
     // 'L3': { color: '#ea4335', label: 'Medium (L3-4)' },
     // 'L4': { color: '#6366f1', label: 'Hard (L5)' },
-    'Easy': { color: '#b0cb1f', label: 'Easy (L1-2)' },
-    'Medium': { color: '#EB8E02', label: 'Medium (L3-4)' },
-    'Hard': { color: '#ed6c61', label: 'Hard (L5)' },
-    'Expert': { color: '#ea4335', label: 'Expert (L6+)' }
+    'Easy': { color: '#b0cb1f', label: 'Easy (L1)' },
+    'Medium': { color: '#EB8E02', label: 'Medium (L2)' },
+    'Hard': { color: '#ed6c61', label: 'Hard (L3)' },
+    'Expert': { color: '#ea4335', label: 'Expert (L4)' }
   };
 
   const dynamicTimeDistribution = time_distribution.length > 0 
