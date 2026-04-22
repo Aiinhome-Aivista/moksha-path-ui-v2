@@ -426,6 +426,14 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.analytics_strength_weakness);
   }
 
+  getStudentPerformance() {
+    return axiosInstance.get(GET_APIS.student_performance_vw);
+  }
+
+  getStudentSubjectDashboard() {
+    return axiosInstance.get(GET_APIS.student_subject_dashboard_vw);
+  }
+
   // Teacher APIs
   getTeacherStudentStatusDashboard() {
     return axiosInstance.get(GET_APIS.teacher_student_status_dashboard);
