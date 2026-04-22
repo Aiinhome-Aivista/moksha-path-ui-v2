@@ -782,20 +782,36 @@
 
 // export default StudentDashboard;
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HeaderProfile } from "./HeaderProfile";
 import { PerformanceCards } from "./PerformanceCards";
 import { MockExamDashboard } from "./MockExamDashboard";
 import SubjectGrid from "./subject/SubjectGrid";
 import Remediation from "./remediation/Remediation";
+import ApiServices from "../../../../services/ApiServices";
 
 export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("performance");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedExam, setSelectedExam] = useState("");
+  const [performanceData, setPerformanceData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchPerformance = async () => {
+      try {
+        const response = await ApiServices.getStudentPerformance();
+        if (response.data?.status === "success") {
+          setPerformanceData(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching performance:", error);
+      }
+    };
+    fetchPerformance();
+  }, []);
 
   const tabComponents: Record<string, React.ReactElement> = {
-    performance: <PerformanceCards />,
+    performance: <PerformanceCards performanceData={performanceData} />,
     subject: <SubjectGrid selectedSubject={selectedSubject} />,
     exam: <MockExamDashboard selectedExam={selectedExam} />,
     remediation: <Remediation />,
