@@ -64,9 +64,9 @@ export const PerformanceCards = () => {
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 m-1 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+      <div className="grid grid-cols-1 xl:grid-cols-2 pt-6 m-1 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
         <div className="grid grid-cols-1 gap-2">
-          <div className="grid grid-cols-2 gap-4 row-span-2">
+          <div className="grid grid-cols-2 gap-4 h-80">
             {performanceStatsData.map((item, i) => (
               <div
                 key={i}
@@ -111,7 +111,7 @@ export const PerformanceCards = () => {
             ))}
           </div>
 
-          <div className="bg-primary text-white p-4 rounded-xl w-full lg:w-[107%] z-10">
+          <div className="bg-primary text-white p-4 rounded-xl w-full xl:w-[107%] z-10">
             {/* Title */}
             <h2 className="text-3xl font-bold">Mock Score Trend</h2>
             <p className="text-sm text-gray-400 mb-4">
@@ -179,7 +179,7 @@ export const PerformanceCards = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 grid-rows-3 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div className="p-4 col-span-2">
             <h3 className="font-extrabold mb-3 text-xl text-primary">
               Time Distribution by Question Difficulty
@@ -209,7 +209,7 @@ export const PerformanceCards = () => {
             ))}
           </div>
 
-          <div className=" grid grid-cols-3 gap-4 row-span-2 bg-[#e0dfdf] p-4 mr-4 rounded-xl shadow">
+          <div className="h-[26rem] grid grid-cols-3 gap-4 bg-[#e0dfdf] p-4 mr-4 rounded-xl shadow">
             <div className="max-w-52 h-80">
               <h3 className="font-semibold text-2xl text-primary text-center my-2">
                 Your Action
