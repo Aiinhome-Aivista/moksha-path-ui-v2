@@ -120,6 +120,18 @@ const TeacherLearningPlanner: React.FC = () => {
     }
   }, [isMockModalOpen, demoChapters]);
 
+  useEffect(() => {
+    if (uploadForm.isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [uploadForm.isOpen]);
+
   const toggleDemoChapter = (id: number) => {
     setSubjects((prev) =>
       prev.map((sub) => ({
