@@ -114,7 +114,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClos
         <div
           ref={dropdownRef}
           // The main card matches your exact height and width
-          className="absolute -top-2 right-0 xl:-left-24 2xl:-left-12 w-[273px] bg-white rounded-b-[24px] shadow-[0_10px_40px_rgba(0,0,0,0.15)] z-[9999] animate-in fade-in slide-in-from-top-5 duration-200 font-['Montserrat'] flex flex-col"
+          className="absolute -top-2 right-0 xl:-left-40 2xl:-left-24 w-[273px] bg-white rounded-b-[24px] shadow-[0_10px_40px_rgba(0,0,0,0.15)] z-[9999] animate-in fade-in slide-in-from-top-5 duration-200 font-['Montserrat'] flex flex-col"
         >
           {/* Light Gray Profile Header - EXACT 273x75 with 24px bottom radius */}
           <div className="w-full h-[75px] bg-[#f0f2f5] rounded-b-[24px] px-5 flex items-center gap-3 shrink-0">

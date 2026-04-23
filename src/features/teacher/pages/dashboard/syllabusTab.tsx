@@ -47,9 +47,9 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
         {/* Progress Bars List */}
         <div className="space-y-4">
           {chapters.map((chapter: any, i: number) => (
-            <div key={i} className="flex items-center gap-6 group py-1">
+            <div key={i} className="flex items-center gap-2 group py-1">
               {/* Chapter Name */}
-              <span className={`w-48 text-[13px] font-bold leading-tight ${chapter.completion_pct === 0 ? 'text-gray-300 italic' : 'text-gray-700'}`}>
+              <span className={`w-32 text-sm font-bold leading-tight ${chapter.completion_pct === 0 ? 'text-gray-300 italic' : 'text-gray-700'}`}>
                 {chapter.chapter_name}
               </span>
 
