@@ -937,7 +937,9 @@ const LearningPlanner: React.FC = () => {
               options: questionData.options,
               difficulty: questionData.difficulty,
               marks: questionData.marks,
-              sl_no: questionData.sl_no
+              sl_no: questionData.sl_no,
+              adaptive_level_code: questionData.adaptive_level_code,
+              mapped_bucket: questionData.mapped_bucket
             }]
           });
 
@@ -1001,10 +1003,12 @@ const LearningPlanner: React.FC = () => {
               question_id: questionData.question_id,
               question_text: questionData.question_text,
               options: questionData.options,
-              question_type: questionData.question_type || "MCQ",
+              question_type: questionData.question_type,
               difficulty: questionData.difficulty,
               marks: questionData.marks,
-              sl_no: questionData.sl_no
+              sl_no: questionData.sl_no,
+              adaptive_level_code: questionData.adaptive_level_code,
+              mapped_bucket: questionData.mapped_bucket
             }]
           });
 

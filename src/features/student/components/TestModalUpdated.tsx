@@ -23,7 +23,7 @@ interface Question {
 interface ApiQuestion {
   question_id: number;
   question_text: string;
-  question_type: "MCQ" | "TrueFalse" | "Textual";
+  question_type: "Single-Choice MCQ" | "Multi-Choice MCQ";
   options: Record<string, string> | null;
   difficulty: string;
   marks: number;
@@ -36,22 +36,12 @@ interface ApiQuestion {
 const transformApiQuestion = (apiQuestion: ApiQuestion): Question => {
   let options: Option[] = [];
 
-  // Determine type automatically if options are present
-  const baseType = apiQuestion.question_type || (apiQuestion.options ? "MCQ" : "TrueFalse");
-
-  if (baseType === "MCQ" && apiQuestion.options) {
+  if (apiQuestion.options) {
     options = Object.entries(apiQuestion.options).map(([key, value]) => ({
       label: key.toUpperCase(),
       text: value as string,
     }));
-  } else if (baseType === "TrueFalse" || (!apiQuestion.options && baseType === "MCQ")) {
-    // If it's True/False or marked as MCQ but has no options, default to True/False options
-    options = [
-      { label: "A", text: "True" },
-      { label: "B", text: "False" },
-    ];
   }
-  // Textual questions don't have options
 
   return {
     id: apiQuestion.question_id,
@@ -59,7 +49,7 @@ const transformApiQuestion = (apiQuestion: ApiQuestion): Question => {
     options,
     correctAnswer: "", // Will be validated server-side
     sl_no: apiQuestion.sl_no,
-    type: baseType,
+    type: apiQuestion.question_type,
     adaptive_level_code: apiQuestion.adaptive_level_code,
     mapped_bucket: apiQuestion.mapped_bucket,
   };
@@ -101,10 +91,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questionOrder, setQuestionOrder] = useState<number[]>([]);
   const [selectedAnswers, setSelectedAnswers] = useState<
-    Record<number, string>
-  >({});
-  const [textualAnswers, setTextualAnswers] = useState<
-    Record<number, string>
+    Record<number, string | string[]>
   >({});
   const [savedQuestions, setSavedQuestions] = useState<Set<number>>(new Set());
   const [skippedSet, setSkippedSet] = useState<Set<number>>(new Set());
@@ -149,7 +136,6 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
         setQuestionOrder(initialQuestions.map((q: Question) => q.id));
       }
       setSelectedAnswers({});
-      setTextualAnswers({});
       setSavedQuestions(new Set());
       setSkippedSet(new Set());
       setTimeLeft((testDurationMinutes ?? 0) * 60);
@@ -287,10 +273,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
     (q: Question) => q.id === currentQuestionId,
   );
 
-  // Fallback while useEffect synchronizes questionOrder
   if (!currentQuestion) return null;
-
-  const isTextualQuestion = !currentQuestion.options || currentQuestion.options.length === 0;
 
   // Progress Calculation: 
   // In adaptive mode, we increment 1 by 1. So if current is 2, total is 2 (2/2).
@@ -300,10 +283,20 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
   const completedPercent = isCompleteFromServer ? 100 : Math.round((answeredCount / totalQuestions) * 100);
 
   const handleSelectOption = (optionLabel: string) => {
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [currentQuestion.id]: optionLabel,
-    }));
+    if (!currentQuestion) return;
+
+    setSelectedAnswers((prev) => {
+      const qType = currentQuestion.type;
+      if (qType?.toLowerCase().includes("multi")) {
+        const currentSelection = (prev[currentQuestion.id] as string[]) || [];
+        const newSelection = currentSelection.includes(optionLabel)
+          ? currentSelection.filter((l) => l !== optionLabel)
+          : [...currentSelection, optionLabel];
+        return { ...prev, [currentQuestion.id]: newSelection };
+      } else {
+        return { ...prev, [currentQuestion.id]: optionLabel };
+      }
+    });
     setSkippedSet(prev => {
       const newSet = new Set(prev);
       newSet.delete(currentQuestion.id);
@@ -311,17 +304,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
     });
   };
 
-  const handleTextualAnswer = (text: string) => {
-    setTextualAnswers((prev) => ({
-      ...prev,
-      [currentQuestion.id]: text,
-    }));
-    setSkippedSet(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(currentQuestion.id);
-      return newSet;
-    });
-  };
+
 
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
@@ -364,7 +347,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
               const apiNext = {
                 question_id: nextData.question_id,
                 question_text: nextData.question_text,
-                question_type: (nextData.question_type || "MCQ") as "MCQ" | "TrueFalse" | "Textual",
+                question_type: nextData.question_type as "Single-Choice MCQ" | "Multi-Choice MCQ",
                 options: nextData.options,
                 difficulty: nextData.difficulty,
                 marks: nextData.marks,
@@ -405,9 +388,15 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
   const handleSubmit = async () => {
     if (isSubmitting || !attemptId) return;
 
-    const answer = isTextualQuestion
-      ? textualAnswers[currentQuestion.id]
-      : selectedAnswers[currentQuestion.id];
+    const currentSelection = selectedAnswers[currentQuestion.id];
+    let answer = "";
+
+    if (Array.isArray(currentSelection)) {
+      const labels = currentSelection.map(l => l.toLowerCase()).sort().join(",");
+      answer = `{${labels}}`;
+    } else {
+      answer = currentSelection ? `{${currentSelection.toLowerCase()}}` : "";
+    }
 
     // On the last question, allow submitting without an answer. 
     // In adaptive mode, we also allow empty answer (which counts as a skip).
@@ -425,19 +414,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
       );
       const slNo = currentQuestion.sl_no || currentQuestionIndex + 1;
 
-      // Map answer label if it's MCQ (e.g., "b" instead of "15")
-      let finalAnswer = "";
-      if (isTextualQuestion) {
-        finalAnswer = textualAnswers[currentQuestion.id] || "";
-      } else {
-        const selectedLabel = selectedAnswers[currentQuestion.id];
-        if (currentQuestion.type === "TrueFalse") {
-          const opt = currentQuestion.options.find(o => o.label === selectedLabel);
-          finalAnswer = opt ? opt.text.toLowerCase() : "";
-        } else {
-          finalAnswer = selectedLabel ? selectedLabel.toLowerCase() : "";
-        }
-      }
+      const finalAnswer = answer;
 
       try {
         // 1. Save Adaptive Answer
@@ -461,7 +438,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
               const apiNext = {
                 question_id: nextData.question_id,
                 question_text: nextData.question_text,
-                question_type: (nextData.question_type || "MCQ") as "MCQ" | "TrueFalse" | "Textual",
+                question_type: nextData.question_type as "Single-Choice MCQ" | "Multi-Choice MCQ",
                 options: nextData.options,
                 difficulty: nextData.difficulty,
                 marks: nextData.marks,
@@ -509,11 +486,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
           attempt_id: attemptId,
           question_id: currentQuestion.id,
           sl_no: slNo,
-          answer: isTextualQuestion
-            ? answer
-            : (currentQuestion.type === "TrueFalse"
-              ? (currentQuestion.options.find(o => o.label === answer)?.text.toLowerCase() || "")
-              : (answer ? answer.toLowerCase() : "")),
+          answer: answer,
           time_taken: timeTaken,
         });
 
@@ -685,19 +658,13 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
               . {currentQuestion.question}
             </p>
 
-            {isTextualQuestion ? (
-              <div className="mb-auto shrink-0">
-                <textarea
-                  value={textualAnswers[currentQuestion.id] || ""}
-                  onChange={(e) => handleTextualAnswer(e.target.value)}
-                  placeholder="Enter your answer here..."
-                  className="w-full h-32 sm:h-40 px-4 py-3 border border-gray-300 rounded-xl text-base sm:text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#b0cb1f] focus:border-[#b0cb1f] transition-all"
-                />
-              </div>
-            ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 sm:gap-y-4 mb-auto shrink-0">
                 {currentQuestion.options && currentQuestion.options.map((option: Option) => {
-                  const isSelected = selectedAnswers[currentQuestion.id] === option.label;
+                  const isSelected = Array.isArray(selectedAnswers[currentQuestion.id])
+                    ? (selectedAnswers[currentQuestion.id] as string[]).includes(option.label)
+                    : selectedAnswers[currentQuestion.id] === option.label;
+                  const isMultiple = currentQuestion.type?.toLowerCase().includes("multi");
+
                   return (
                     <button
                       key={option.label}
@@ -705,7 +672,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                       className="flex items-start sm:items-center gap-3 text-left group p-2 sm:p-0 -mx-2 sm:mx-0 rounded-lg hover:bg-gray-50 sm:hover:bg-transparent transition-colors"
                     >
                       <div
-                        className={`w-5 h-5 sm:w-6 sm:h-6 mt-0.5 sm:mt-0 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isSelected
+                        className={`w-5 h-5 sm:w-6 sm:h-6 mt-0.5 sm:mt-0 flex items-center justify-center shrink-0 transition-all ${isMultiple ? "rounded-md" : "rounded-full"} border-2 ${isSelected
                           ? "bg-[#b0cb1f] border-[#b0cb1f]"
                           : "border-gray-300 bg-white group-hover:border-[#b0cb1f]"
                           }`}
@@ -723,7 +690,6 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                   );
                 })}
               </div>
-            )}
 
             {/* ─── Action Buttons ─── */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-3 mt-6 sm:mt-8 pt-4 border-t border-gray-100 sm:border-transparent shrink-0 w-full">

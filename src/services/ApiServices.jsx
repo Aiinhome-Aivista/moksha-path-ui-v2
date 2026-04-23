@@ -434,6 +434,10 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.student_subject_dashboard_vw);
   }
 
+  getStudentMockDashboard() {
+    return axiosInstance.get(GET_APIS.student_mock_dashboard_vw);
+  }
+
   // Teacher APIs
   getTeacherStudentStatusDashboard() {
     return axiosInstance.get(GET_APIS.teacher_student_status_dashboard);
