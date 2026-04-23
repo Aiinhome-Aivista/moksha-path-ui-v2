@@ -78,7 +78,9 @@ const TeacherDashboard = () => {
     <div className="flex flex-col">
       
       {/* 1. THE HEADER ROW */}
-<div className="flex items-center w-full relative pt-2 -ml-6">
+            <div className="grid grid-cols-1 mb-1 lg:grid-cols-3 xl:grid-cols-4 items-center relative -ml-6">
+
+{/* <div className="flex lg:flex-row flex-col items-center w-full relative pt-2 -ml-6"> */}
         
         {/* Left: Dark Profile Pill */}
         <div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-4 pl-6 pr-16 rounded-r-[10rem] shadow-md z-10 relative flex-shrink-0 min-w-[320px]">
@@ -112,19 +114,19 @@ const TeacherDashboard = () => {
           </div>
         </div>
 
-        <div className="flex flex-1 items-center justify-between px-6 py-2 bg-[#E9E9E9] h-14 rounded-tr-full rounded-br-full lg:col-span-2 xl:col-span-3">
-          <h1 className="text-[#00bcd4] font-black text-lg tracking-tight  whitespace-nowrap">
+        <div className="flex flex-1 items-center justify-between px-6 py-2 -ml-2 bg-[#E9E9E9] h-14 rounded-tr-full rounded-br-full lg:col-span-2 xl:col-span-3">
+          <h1 className="text-[#00bcd4] font-black text-lg tracking-tight  whitespace-nowrap hidden sm:block ml-1 xl:ml-6">
             My Dashboard
           </h1>
-          <div className="flex gap-3">
+          <div className="flex gap-2 xl:gap-4">
             {tabs.map((tab) => (
               <button
                 key={tab.name}
                 onClick={() => setActiveTab(tab.name)}
-                className={`px-10 py-2 rounded-full text-sm font-medium transition-colors ${
+                className={`py-2 rounded-full font-medium transition-colors whitespace-nowrap ${
                   activeTab === tab.name
-                    ? "bg-yellow-500  text-black"
-                    : "text-gray-600 hover:bg-gray-100"
+                    ? "bg-yellow-500  text-black px-4 xl:px-10 font-semibold"
+                    : "text-gray-600 hover:bg-gray-100 px-2 xl:px-6"
                 }`}
               >
                 {tab.name}
