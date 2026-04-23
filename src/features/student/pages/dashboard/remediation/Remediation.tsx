@@ -45,7 +45,7 @@ const Remediation = () => {
       { label: "L3", value: Math.round(item.levels.L3 || 0), color: "#ff9800" },
       { label: "L4", value: Math.round(item.levels.L4 || 0), color: "#ea4335" }
     ],
-    actions: item.recommendations.map((rec: string, index: number) => ({
+    actions: item.recommendations.map((rec: string) => ({
       title: rec,
       subtitle: "" // Subtitle is not provided by API
     }))
