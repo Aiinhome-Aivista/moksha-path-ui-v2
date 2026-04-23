@@ -60,7 +60,7 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
                   students
                 </span>
                 <span className="text-[10px] text-gray-400 font-medium">
-                  {Math.round((item.value / (summary.excellent || 1 + summary.watch_zone || 1 + summary.at_risk || 1 + summary.critical || 1)) * 100)}% of class
+                  {Math.round((item.value / (summary.excellent || 0 + summary.watch_zone || 0 + summary.at_risk || 0 + summary.critical || 0)) * 100)}% of class
                 </span>
               </div>
 
