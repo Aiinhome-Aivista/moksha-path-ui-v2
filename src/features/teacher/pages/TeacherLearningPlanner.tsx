@@ -127,11 +127,11 @@ const TeacherLearningPlanner: React.FC = () => {
         chapters: sub.chapters.map((ch: any) =>
           ch.id === id || ch.chapter_id === id
             ? {
-                ...ch,
-                completed: !ch.completed,
-                is_completed: !ch.completed,
-                isSaved: false,
-              }
+              ...ch,
+              completed: !ch.completed,
+              is_completed: !ch.completed,
+              isSaved: false,
+            }
             : ch,
         ),
       })),
@@ -174,14 +174,14 @@ const TeacherLearningPlanner: React.FC = () => {
       allExistingMaterials.push(...((ch as any).study_materials || []));
       allExistingMaterials.push(...((ch as any).practice_materials || []));
     });
-    
+
     const newNameClean = displayName.trim().toLowerCase();
     const isDuplicateNameSubmit = allExistingMaterials.some((mat: any) => {
       const matchName = String(mat.name || mat.title || mat.display_name || mat.file_name || "").trim().toLowerCase();
       if (!matchName) return false;
       return matchName === newNameClean || matchName.replace(/\.[^/.]+$/, "") === newNameClean.replace(/\.[^/.]+$/, "");
     });
-    
+
     if (isDuplicateNameSubmit) {
       showToast("This display name already exists.", "error");
       return;
@@ -199,7 +199,7 @@ const TeacherLearningPlanner: React.FC = () => {
           file.name.endsWith(".xlsx") ||
           file.type === "application/vnd.ms-excel" ||
           file.type ===
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           ? "excel"
           : "pdf"
         : "link";
@@ -228,8 +228,8 @@ const TeacherLearningPlanner: React.FC = () => {
       formData.append(
         "section_id",
         currentSectionObj?.id?.toString() ||
-          stats?.section_id?.toString() ||
-          "",
+        stats?.section_id?.toString() ||
+        "",
       );
 
       const currentSubject = subjects.find(
@@ -269,12 +269,12 @@ const TeacherLearningPlanner: React.FC = () => {
             chapters: sub.chapters.map((ch: any) =>
               ch.id === chapterId || ch.chapter_id === chapterId
                 ? {
-                    ...ch,
-                    [category]: [
-                      ...(ch[category] || []),
-                      { name: finalName, type },
-                    ],
-                  }
+                  ...ch,
+                  [category]: [
+                    ...(ch[category] || []),
+                    { name: finalName, type },
+                  ],
+                }
                 : ch,
             ),
           })),
@@ -313,11 +313,11 @@ const TeacherLearningPlanner: React.FC = () => {
         chapters: sub.chapters.map((ch: any) =>
           ch.id === id || ch.chapter_id === id
             ? {
-                ...ch,
-                [field]: formattedDate,
-                [`${field}_raw`]: value,
-                isSaved: false,
-              }
+              ...ch,
+              [field]: formattedDate,
+              [`${field}_raw`]: value,
+              isSaved: false,
+            }
             : ch,
         ),
       })),
@@ -361,17 +361,17 @@ const TeacherLearningPlanner: React.FC = () => {
                 chapter: ch.name || ch.chapter_name,
                 startDate: rawStart
                   ? new Date(rawStart).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
                   : "--",
                 endDate: rawEnd
                   ? new Date(rawEnd).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
                   : "--",
                 startDate_raw: rawStart,
                 endDate_raw: rawEnd,
@@ -436,7 +436,7 @@ const TeacherLearningPlanner: React.FC = () => {
       if (response.data?.status === "success") {
         setBackendMaterials(response.data?.data?.data || []);
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
   useEffect(() => {
@@ -499,7 +499,7 @@ const TeacherLearningPlanner: React.FC = () => {
               student_ids: stats?.student_ids || [],
               due_date: due_date
             });
-            
+
             if (genRes.data?.status !== "success") {
               showToast(genRes.data?.message || "Failed to create adaptive set", "error");
             }
@@ -548,7 +548,7 @@ const TeacherLearningPlanner: React.FC = () => {
         setIsMockModalOpen(false);
       } else {
         showToast(res.data?.message || "Generation failed", "error");
-          setIsMockModalOpen(false);
+        setIsMockModalOpen(false);
       }
     } catch (err) {
       showToast("Error while generating mock test", "error");
@@ -576,7 +576,7 @@ const TeacherLearningPlanner: React.FC = () => {
 
   const isDuplicateDisplayName = (() => {
     if (!uploadForm.displayName.trim()) return false;
-    
+
     const currentSubjectValidate = subjects.find((s) => s.subject_name === activeSubject);
     const allExistingMaterials: any[] = [...backendMaterials];
     currentSubjectValidate?.chapters.forEach((ch: any) => {
@@ -649,12 +649,12 @@ const TeacherLearningPlanner: React.FC = () => {
                 Hi{" "}
                 {stats.teacher_name
                   ? stats.teacher_name
-                      ?.split(" ")
-                      .map(
-                        (word: string) =>
-                          word.charAt(0).toUpperCase() + word.slice(1),
-                      )
-                      .join(" ")
+                    ?.split(" ")
+                    .map(
+                      (word: string) =>
+                        word.charAt(0).toUpperCase() + word.slice(1),
+                    )
+                    .join(" ")
                   : ""}{" "}
                 !
               </h1>
@@ -757,7 +757,11 @@ const TeacherLearningPlanner: React.FC = () => {
                 </td>
 
                 <td className="py-3 px-2 text-center">
-                  <div className="flex justify-end items-center gap-2">
+                  <div className={`flex justify-end items-center gap-2 
+                      ${row.completed && row.isSaved === true
+                      ? "opacity-50 cursor-not-allowed"
+                      : "cursor-pointer"
+                    }`}>
                     {row.startDate || "—"}
                     <label
                       className={`relative ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}
@@ -780,7 +784,11 @@ const TeacherLearningPlanner: React.FC = () => {
                 </td>
 
                 <td className="py-3 px-2 text-center">
-                  <div className="flex justify-end items-center gap-2">
+                  <div className={`flex justify-end items-center gap-2 
+  ${row.completed && row.isSaved === true
+                      ? "cursor-not-allowed"
+                      : "cursor-pointer"
+                    }`}>
                     {row.endDate || "—"}
                     <label
                       className={`relative ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}
@@ -801,7 +809,7 @@ const TeacherLearningPlanner: React.FC = () => {
                     </label>
                   </div>
                 </td>
-{/* 
+                {/* 
                 <td className="py-3 px-2 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <button
@@ -936,7 +944,7 @@ const TeacherLearningPlanner: React.FC = () => {
                       !row.endDate_raw ||
                       (row.completed && row.isSaved === true)
                     }
-                   className="w-4 h-4 accent-secondary disabled:accent-[#AAA] cursor-pointer disabled:cursor-not-allowed opacity-100"
+                    className="w-4 h-4 accent-secondary disabled:accent-[#AAA] cursor-pointer disabled:cursor-not-allowed opacity-100"
 
                   />
                 </td>
@@ -1005,11 +1013,10 @@ const TeacherLearningPlanner: React.FC = () => {
                     onClick={() =>
                       setUploadForm({ ...uploadForm, category: "testMaterial" })
                     }
-                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer ${
-                      uploadForm.category === "testMaterial"
-                        ? "bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-500/20"
-                        : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer ${uploadForm.category === "testMaterial"
+                      ? "bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-500/20"
+                      : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
+                      }`}
                   >
                     Study Material
                   </button>
@@ -1020,11 +1027,10 @@ const TeacherLearningPlanner: React.FC = () => {
                         category: "practiceMaterial",
                       })
                     }
-                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer ${
-                      uploadForm.category === "practiceMaterial"
-                        ? "bg-green-50 border-green-500 text-green-700 ring-2 ring-green-500/20"
-                        : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer ${uploadForm.category === "practiceMaterial"
+                      ? "bg-green-50 border-green-500 text-green-700 ring-2 ring-green-500/20"
+                      : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
+                      }`}
                   >
                     Practice Material
                   </button>
@@ -1041,11 +1047,10 @@ const TeacherLearningPlanner: React.FC = () => {
                     onClick={() =>
                       setUploadForm({ ...uploadForm, sourceType: "file" })
                     }
-                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${
-                      uploadForm.sourceType === "file"
-                        ? "bg-[#F7FAE9] border-[#BADA55] text-gray-800 ring-2 ring-[#BADA55]/40"
-                        : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${uploadForm.sourceType === "file"
+                      ? "bg-[#F7FAE9] border-[#BADA55] text-gray-800 ring-2 ring-[#BADA55]/40"
+                      : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
+                      }`}
                   >
                     <FileText size={16} /> Local File
                   </button>
@@ -1053,11 +1058,10 @@ const TeacherLearningPlanner: React.FC = () => {
                     onClick={() =>
                       setUploadForm({ ...uploadForm, sourceType: "link" })
                     }
-                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${
-                      uploadForm.sourceType === "link"
-                        ? "bg-[#F7FAE9] border-[#BADA55] text-gray-800 ring-2 ring-[#BADA55]/40"
-                        : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${uploadForm.sourceType === "link"
+                      ? "bg-[#F7FAE9] border-[#BADA55] text-gray-800 ring-2 ring-[#BADA55]/40"
+                      : "border-gray-200 text-gray-500 hover:bg-gray-50 bg-white"
+                      }`}
                   >
                     <Link size={16} /> External Link
                   </button>
@@ -1079,11 +1083,10 @@ const TeacherLearningPlanner: React.FC = () => {
                     })
                   }
                   placeholder="Enter a name for this material..."
-                  className={`w-full px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 transition-all bg-white text-sm ${
-                    isDuplicateDisplayName
-                      ? "border-red-500 focus:ring-red-500/60"
-                      : "border-gray-200 focus:ring-[#BADA55]/60"
-                  }`}
+                  className={`w-full px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 transition-all bg-white text-sm ${isDuplicateDisplayName
+                    ? "border-red-500 focus:ring-red-500/60"
+                    : "border-gray-200 focus:ring-[#BADA55]/60"
+                    }`}
                 />
                 {isDuplicateDisplayName && (
                   <p className="text-red-500 text-xs mt-1">This display name already exists.</p>
