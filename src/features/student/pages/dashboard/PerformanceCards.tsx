@@ -106,14 +106,22 @@ export const PerformanceCards = ({ performanceData }: { performanceData?: any })
     'Expert': { color: '#ea4335', label: 'Expert (L4)' }
   };
 
-  const dynamicTimeDistribution = time_distribution.length > 0 
-    ? time_distribution.map((item: any) => ({
-        label: levelMapping[item.level]?.label || item.level,
-        value: (item.avg_time / 30) * 100, // Normalize to percentage for bar width
-        color: levelMapping[item.level]?.color,
-        avg: `${item.avg_time.toFixed(2)}m avg`
-      }))
-    : performanceDataTimeDistribution;
+  const levelOrder = ['Easy', 'Medium', 'Hard', 'Expert'];
+  const dynamicTimeDistribution = (time_distribution.length > 0 
+    ? time_distribution
+        .map((item: any) => ({
+          label: levelMapping[item.level]?.label || item.level,
+          value: (item.avg_time / 30) * 100, // Normalize to percentage for bar width
+          color: levelMapping[item.level]?.color,
+          avg: `${item.avg_time.toFixed(2)}m avg`,
+          level: item.level // keep for sorting
+        }))
+    : performanceDataTimeDistribution)
+    .sort((a: any, b: any) => {
+      const orderA = levelOrder.indexOf(a.level || a.label.split(' ')[0]);
+      const orderB = levelOrder.indexOf(b.level || b.label.split(' ')[0]);
+      return orderA - orderB;
+    });
 
   // Convert chart data to SVG points
   const points = chartData
@@ -126,25 +134,30 @@ export const PerformanceCards = ({ performanceData }: { performanceData?: any })
 
   return (
     <>
-      <div className="xl:ml-80 grid grid-cols-2 md:grid-cols-4 xl:place-items-end gap-1 2xl:gap-12 xl:relative xl:-top-6">
-        {stats.map((item, i) => (
-          <div key={i} className="w-56 2xl:w-60 p-1 ">
-            <div className="grid grid-cols-3">
-              <h3 className="text-4xl font-normal">{item.value}</h3>
-              <p className="text-sm text-primary col-span-2 mb-1 flex flex-col justify-end w-full md:w-20 lg:w-full">
-                {item.icon === "up" && (
-                  <span className="material-symbols-outlined text-3xl leading-3">
-                    keyboard_arrow_up
-                  </span>
-                )}
-                <span>{item.title}</span>
-              </p>
+
+        <div className="xl:ml-80 grid grid-cols-2 md:grid-cols-4 xl:place-items-end gap-1 2xl:gap-12 xl:relative xl:-top-6">
+          {stats.map((item, i) => (
+            <div key={i} className="w-56 2xl:w-60 p-1 ">
+              <div className="grid grid-cols-3">
+                <h3 className="text-4xl font-normal">{item.value}</h3>
+                <p className="text-sm text-primary col-span-2 mb-1 flex flex-col justify-end w-full md:w-20 lg:w-full">
+                  {item.icon === "up" && (
+                    <span className="material-symbols-outlined text-3xl leading-3">
+                      keyboard_arrow_up
+                    </span>
+                  )}
+                  <span>{item.title}</span>
+                </p>
+              </div>
+              <p className="text-sm font-bold text-primary w-full md:w-28 lg:w-full">{item.label}</p>
             </div>
-            <p className="text-sm font-bold text-primary w-full md:w-28 lg:w-full">{item.label}</p>
-          </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-1 xl:grid-cols-2 pt-6 m-1 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          ))}
+        </div>
+     
+
+     
+           
+      <div className="grid grid-cols-1 xl:grid-cols-2 m-1 gap-2 max-h-[70vh] overflow-y-auto custom-scrollbar">
         <div className="grid grid-cols-1 gap-2">
           <div className="grid grid-cols-2 gap-4 h-80">
             {dynamicPerformanceStatsData.map((item, i) => (
@@ -260,17 +273,17 @@ export const PerformanceCards = ({ performanceData }: { performanceData?: any })
         </div>
 
         <div className="grid grid-cols-1 gap-4">
-          <div className="p-4 col-span-2">
+          <div className="p-2 col-span-2">
             <h3 className="font-extrabold mb-3 text-xl text-primary">
               Time Distribution by Question Difficulty
             </h3>
 
             {dynamicTimeDistribution.map((item: any, i: number) => (
-              <div key={i} className="mb-4 grid grid-cols-8 gap-2 items-center">
-                <p className="text-sm col-span-2 font-semibold text-primary">
+              <div key={i} className="grid grid-cols-12 gap-2 items-center">
+                <p className="text-sm col-span-3 font-semibold text-primary whitespace-nowrap">
                   {item.label}
                 </p>
-                <div className="w-full bg-gray-200 h-3 rounded-full col-span-5">
+                <div className="w-full bg-gray-200 h-3 rounded-full col-span-6">
                   <div
                     className={`h-3 rounded-full`}
                     style={{
@@ -280,7 +293,7 @@ export const PerformanceCards = ({ performanceData }: { performanceData?: any })
                   />
                 </div>
                 <p
-                  className={`text-base font-semibold`}
+                  className={`text-base font-semibold col-span-3 text-end whitespace-nowrap`}
                   style={{ color: `${item.color}` }}
                 >
                   {item.avg}
