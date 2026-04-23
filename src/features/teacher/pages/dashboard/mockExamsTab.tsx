@@ -147,7 +147,7 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
       </div>
 
       {/* 3. Middle: Chapter Accuracy Grid (REFINED) */}
-      <div className="bg-gray-100  rounded-3xl  border border-gray-100 pt-1">
+      <div className="bg-gray-100 rounded-3xl  border border-gray-100 pt-6">
         <div className="flex items-center gap-4 mb-3">
           <h3 className="text-xl font-black text-gray-800">Chapter Accuracy</h3>
           <span className="h-6 w-[2px] bg-gray-600" />

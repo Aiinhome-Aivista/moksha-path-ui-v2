@@ -106,7 +106,7 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       {/* 1. Page Sub-Header and Top Stats in one responsive row */}
-       <div className="bg-color-secondary rounded-3xl border border-gray-100 flex flex-col xl:flex-row justify-between items-center gap-8">
+       <div className="bg-color-secondary rounded-3xl border border-gray-100 flex flex-col xl:flex-row justify-between items-center gap-12">
         <div className="flex-shrink-0 pt-2 px-6 ">
           <h2 className="text-1xl font-black text-cyan-600 tracking-tight leading-none">Student & Subject Overview</h2>
           <div className="text-[10px] text-gray-400 font-bold tracking-tight mt-1">
@@ -115,7 +115,7 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-16 flex-1 w-full max-w-7xl pl-20">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 flex-1 w-full max-w-7xl pl-4">
           {topStats.map((stat: any, i: number) => (
             <div key={i} className="flex flex-col justify-center">
               {/* 1. Large Number (Value) with Dynamic Color */}
@@ -140,7 +140,7 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
       </div>
 
       {/* 2. Subject Tables Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 pl-6 pr-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 px-2">
         {subjectOverview.map((subject: any, idx: number) => (
           <div key={idx}>
             {renderTable(

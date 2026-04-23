@@ -31,22 +31,22 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
     <div className="space-y-2 animate-in fade-in duration-500 pr-6 pl-6">
       
       {/* 1. TOP SECTION: Title and Student Buckets */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-gray-100">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-b border-gray-100">
         
         {/* Left Side: Title & Subtitle */}
-        <div className="flex-shrink-0 pb-4">
+        <div className="flex-shrink-0 pt-4">
           <h2 className="text-1xl font-black text-cyan-600">
             Remediation Plan & Student Buckets
           </h2>
-          <p className="text-[10px] text-gray-400 font-bold tracking-tight">
+          <p className="text-xs text-gray-400 font-bold tracking-tight">
             Priority actions, at-risk matrix and improvement strategies
           </p>
         </div>
 
         {/* Right Side: 4 Student Bucket Stats */}
-        <div className="flex flex-1 items-start justify-around pb-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 items-start gap-8 pb-4">
           {summaryStats.map((item: any, i: number) => (
-            <div key={i} className="flex flex-col w-52">
+            <div key={i} className="flex flex-col w-44">
               <span className={`text-4xl font-medium leading-none tracking-tighter ${item.color}`}>
                 {item.value}
               </span>
@@ -56,11 +56,11 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
               </span>
               
               <div className="flex justify-between items-center w-full mt-1">
-                <span className="text-[10px] text-gray-500 font-medium">
+                <span className="text-xs text-gray-500 font-medium">
                   students
                 </span>
-                <span className="text-[10px] text-gray-400 font-medium">
-                  {Math.round((item.value / (summary.excellent || 0 + summary.watch_zone || 0 + summary.at_risk || 0 + summary.critical || 0)) * 100)}% of class
+                <span className="text-xs text-gray-400 font-medium">
+                  {Math.round((item.value / (summary.excellent || 1 + summary.watch_zone || 1 + summary.at_risk || 1 + summary.critical || 1)) * 100)}% of class
                 </span>
               </div>
 
@@ -104,7 +104,7 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
                   <td className="py-2 text-[13px] text-gray-700 font-bold text-center">{item.at_risk_students}</td>
                   <td className="py-2 pr-2 text-center">
                     {/* Action Buttons */}
-                    <button className={`w-[100px] py-1.5 rounded-full text-[10px] font-black tracking-wider transition-all ${getActionStyle(item.action)}`}>
+                    <button className={`w-[100px] py-1.5 rounded-full text-xs font-black tracking-wider transition-all ${getActionStyle(item.action)}`}>
                       {item.action}
                     </button>
                   </td>
@@ -118,7 +118,7 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
       {/* 3. RECOMMENDED PLANS (Green Cards at bottom) */}
       <div className="">
         <h3 className="text-[1.1rem] font-bold text-gray-800 mb-4 tracking-tight">Recommended Remediation Plans</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {recommendations.map((plan: any, idx: number) => (
             <div key={idx} className="bg-[#bada55] p-5 rounded-[1.2rem] flex gap-4 items-start shadow-sm border border-[#a8c64a]">
               <div className="bg-white text-[#8ba832] w-7 h-7 rounded-full flex items-center justify-center font-black flex-shrink-0 text-xs shadow-sm">
