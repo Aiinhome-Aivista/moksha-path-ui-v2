@@ -8,6 +8,7 @@ interface DifficultyLevel {
   skipped: number;
   skippedColor: string;
   percent: number;
+  meanTime?: number;
 }
 
 interface DifficultyMatrixProps {
@@ -32,7 +33,7 @@ export const DifficultyMatrix = ({ DifficultyData }: DifficultyMatrixProps) => {
               <h2 className="flex justify-between mb-1 font-semibold text-xl">{lvl.label}</h2>
 
             {/* Mean Time */}
-            <p className="text-xs text-primary mt-1">Mean Time: 5 sec</p>
+            <p className="text-xs text-primary mt-1">Mean Time: {lvl.meanTime || 0} sec</p>
           </div>
 
           <div className=" col-span-6 2xl:col-span-7">
@@ -67,7 +68,7 @@ export const DifficultyMatrix = ({ DifficultyData }: DifficultyMatrixProps) => {
               />
               <div
                 className={`h-2 rounded`}
-                style={{ width: `${(lvl.skipped / lvl.attempted) * 100}%` }}
+                style={{ width: `${(lvl.skipped / lvl.attempted) * 100}%`, backgroundColor: lvl.skippedColor }}
               />
             </div>
           </div>
