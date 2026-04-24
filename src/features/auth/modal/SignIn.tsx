@@ -1,760 +1,316 @@
 import React, { useState, useRef, useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useModal } from "../context/AuthContext";
 import { useToast } from "../../../app/providers/ToastProvider";
 import ApiServices from "../../../services/ApiServices";
 import { useAuth } from "../../../app/providers/AuthProvider";
-export const SignInModal: React.FC = () => {
-  const [formData, setFormData] = useState({
-    username: "",
-    emailOrMobile: "",
-  });
 
+const isValidIndianMobile = (mobile: string) => /^[6-9]\d{9}$/.test(mobile);
+const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+export const SignInModal: React.FC = () => {
+  const [method, setMethod] = useState<"email" | "phone">("email");
+  const [contactValue, setContactValue] = useState("");
   const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [otpError, setOtpError] = useState("");
-  const [isVerified, setIsVerified] = useState(false);
-
-  // Loading States
   const [isSendingOtp, setIsSendingOtp] = useState(false);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-
-  // Resend OTP State
+  const [isVerifying, setIsVerifying] = useState(false);
   const [resendTimer, setResendTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
 
-  // Recovery State
-  const [showRecovery, setShowRecovery] = useState(false);
-  const [recoveryStep, setRecoveryStep] = useState<"username" | "otp">(
-    "username",
-  );
-  const [recoveryIdentifier, setRecoveryIdentifier] = useState(""); // Username
-  const [recoveryMethod, setRecoveryMethod] = useState<
-    "email" | "mobile" | null
-  >(null);
-  // const [recoveryDetails, setRecoveryDetails] = useState<{
-  //   email: string | null;
-  //   mobile: string | null;
-  // } | null>(null);
-  const [recoveryOtp, setRecoveryOtp] = useState(["", "", "", "", "", ""]);
-  const [isRecoveryLoading, setIsRecoveryLoading] = useState(false);
-  const [recoveryError, setRecoveryError] = useState("");
-  const [recoverySuccess, setRecoverySuccess] = useState(false);
-  const [recoveredUsernames, setRecoveredUsernames] = useState<string[]>([]);
-  const recoveryOtpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const { fetchMenu, handleSignInSuccess } = useModal();
 
   useEffect(() => {
-    let timer: ReturnType<typeof setInterval> | undefined;
+    let timer: any;
     if (showOtp && resendTimer > 0) {
-      timer = setInterval(() => {
-        setResendTimer((prev) => prev - 1);
-      }, 1000);
+      timer = setInterval(() => setResendTimer((prev) => prev - 1), 1000);
     } else if (resendTimer === 0) {
       setCanResend(true);
     }
-    return () => {
-      if (timer) {
-        clearInterval(timer);
-      }
-    };
+    return () => clearInterval(timer);
   }, [showOtp, resendTimer]);
 
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
-  // const navigate = useNavigate();
-  const { showToast } = useToast();
-
-  const {
-    isSignInOpen,
-    closeSignIn,
-    openLogin,
-    openSelectRole,
-    setInitialAuthIdentifier,
-    setIsNewUser,
-    // decodeUserToken,
-    fetchMenu,
-    openProfileSelection,
-    setProfilesList,
-  } = useModal();
-  const { login } = useAuth();
-  // Prevent background scroll when modal is open
-  useEffect(() => {
-    if (isSignInOpen) {
-      const scrollY = window.scrollY;
-      document.body.style.setProperty("position", "fixed", "important");
-      document.body.style.setProperty("top", `-${scrollY}px`, "important");
-      document.body.style.setProperty("width", "100%", "important");
-      document.body.style.setProperty("overflow", "hidden", "important");
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!contactValue) {
+      showToast("Please enter contact details", "error");
+      return;
     }
-
-    return () => {
-      if (isSignInOpen) {
-        const scrollY = document.body.style.top;
-        document.body.style.removeProperty("position");
-        document.body.style.removeProperty("top");
-        document.body.style.removeProperty("width");
-        document.body.style.removeProperty("overflow");
-        window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
-      }
-    };
-  }, [isSignInOpen]);
-
-  // Reset state when modal closes
-  useEffect(() => {
-    if (!isSignInOpen) {
-      setFormData({ username: "", emailOrMobile: "" });
-
-      setShowOtp(false);
-      setOtp(["", "", "", "", "", ""]);
-      setOtpError("");
-      setIsVerified(false);
-      setIsSendingOtp(false);
-
-      setIsLoggingIn(false);
-      setResendTimer(60);
-      setCanResend(false);
-
-      // Recovery State Reset
-      setShowRecovery(false);
-      setRecoveryStep("username");
-      setRecoveryIdentifier("");
-      setRecoveryMethod(null);
-      // setRecoveryDetails(null);
-      setRecoveryOtp(["", "", "", "", "", ""]);
-      setIsRecoveryLoading(false);
-      setRecoveryError("");
-      setRecoverySuccess(false);
-      setRecoveredUsernames([]);
+    if (method === "email" && !isValidEmail(contactValue)) {
+      showToast("Invalid email address", "error");
+      return;
     }
-  }, [isSignInOpen]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-    if (otpError) {
-      setOtpError("");
-    }
-    if (showOtp || isVerified) {
-      setShowOtp(false);
-      setIsVerified(false);
-      setOtp(["", "", "", "", "", ""]);
-      setResendTimer(60);
-      setCanResend(false);
-    }
-  };
-
-  const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
-
-    const newOtp = [...otp];
-    newOtp[index] = value.slice(-1);
-    setOtp(newOtp);
-
-    // Auto focus next input
-    if (value && index < 5) {
-      otpRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleOtpKeyDown = (
-    index: number,
-    e: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const isValidEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-
-  const isValidMobile = (mobile: string) => {
-    return /^\d{10}$/.test(mobile);
-  };
-
-  // Static OTP sending
-  const handleSendOtp = async () => {
-    if (
-      !isValidEmail(formData.emailOrMobile) &&
-      !isValidMobile(formData.emailOrMobile)
-    ) {
-      setOtpError(
-        "Please enter a valid email address or 10-digit mobile number",
-      );
-      showToast(
-        "Please enter a valid email address or 10-digit mobile number",
-        "error",
-      );
+    if (method === "phone" && !isValidIndianMobile(contactValue.replace(/\s/g, ""))) {
+      showToast("Invalid mobile number", "error");
       return;
     }
 
     try {
       setIsSendingOtp(true);
-      setOtpError("");
-
       const res = await ApiServices.sendOtpV4({
-        auth_identifier: formData.emailOrMobile,
+        auth_identifier: contactValue,
+        [method === "email" ? "email" : "mobile"]: contactValue,
       });
 
       if (res.data?.status === "success") {
-        if (res.data.data?.new_user === true) {
-          setInitialAuthIdentifier(formData.emailOrMobile);
-          setIsNewUser(true);
-          closeSignIn();
-          openLogin();
-          return;
-        }
+        showToast("OTP sent successfully", "success");
         setShowOtp(true);
         setResendTimer(60);
         setCanResend(false);
-        showToast("OTP sent successfully", "success");
       } else {
-        setOtpError(res.data?.message || "Failed to send OTP");
+        showToast(res.data?.message || "Failed to send code", "error");
       }
-    } catch (error: any) {
-      setOtpError(error.response?.data?.message || "Something went wrong.");
+    } catch (err) {
+      showToast("Failed to send code", "error");
     } finally {
       setIsSendingOtp(false);
     }
   };
 
-  const handleResendOtp = () => {
-    setOtp(["", "", "", "", "", ""]);
-    setOtpError("");
-    setResendTimer(60);
-    setCanResend(false);
-    setTimeout(() => {
-      otpRefs.current[0]?.focus();
-    }, 0);
-    handleSendOtp();
-  };
-
-  // Static Recovery Flow
-  const handleRecoveryNext = () => {
-    if (!recoveryIdentifier) {
-      setRecoveryError("Please enter your details");
-      showToast("Please enter your details", "error");
-      return;
-    }
-
-    setRecoveryError("");
-    if (isValidEmail(recoveryIdentifier)) {
-      setRecoveryMethod("email");
-      // setRecoveryDetails({ email: recoveryIdentifier, mobile: null });
-    } else if (isValidMobile(recoveryIdentifier)) {
-      setRecoveryMethod("mobile");
-      // setRecoveryDetails({ email: null, mobile: recoveryIdentifier });
-    } else {
-      setRecoveryMethod("email");
-      // setRecoveryDetails({ email: "static_user@example.com", mobile: null });
-    }
-
-    setRecoveryStep("otp");
-    showToast("Recovery OTP sent (Static Mode)", "success");
-  };
-
-  const handleVerifyRecoveryOtp = () => {
-    const otpValue = recoveryOtp.join("");
-    if (otpValue.length !== 6) {
-      setRecoveryError("Please enter complete 6-digit OTP");
-      showToast("Please enter complete 6-digit OTP", "error");
-      return;
-    }
-
-    setRecoveryError("");
-    setRecoveredUsernames(["static_user_1", "static_user_2"]);
-    setRecoverySuccess(true);
-    showToast("Account verified successfully (Static Mode)", "success");
-  };
-
-  const handleRecoveryOtpChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
-    const newOtp = [...recoveryOtp];
-    newOtp[index] = value.slice(-1);
-    setRecoveryOtp(newOtp);
-    if (value && index < 5) recoveryOtpRefs.current[index + 1]?.focus();
-  };
-
-  const handleRecoveryOtpKeyDown = (
-    index: number,
-    e: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
-    if (e.key === "Backspace" && !recoveryOtp[index] && index > 0) {
-      recoveryOtpRefs.current[index - 1]?.focus();
-    }
-  };
-
-  // Static Login
-  const handleSignIn = async () => {
-    if (!showOtp) {
-      setOtpError("Please verify OTP first");
-      showToast("Please verify OTP first", "error");
-      return;
-    }
-
+  const handleVerifyOtp = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     const otpValue = otp.join("");
     if (otpValue.length !== 6) {
-      setOtpError("Please enter complete 6-digit OTP");
-      showToast("Please enter complete 6-digit OTP", "error");
+      setOtpError("Enter 6-digit code");
       return;
     }
 
     try {
-      setIsLoggingIn(true);
-      const res = await ApiServices.verifyAccountV4({
-        auth_identifier: formData.emailOrMobile,
+      setIsVerifying(true);
+      setOtpError("");
+      const verifyRes = await ApiServices.verifyAccountV4({
+        auth_identifier: contactValue,
         otp: otpValue,
       });
 
-      if (res.data?.status === "success") {
-        const { auth_token, refresh_token,subscription_token } = res.data.data;
-
+      if (verifyRes.data?.status === "success") {
+        const { auth_token, refresh_token, subscription_token } = verifyRes.data.data;
         if (auth_token) localStorage.setItem("auth_token", auth_token);
         if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
-        if (subscription_token)
-          localStorage.setItem("subscription_token", subscription_token);
-        setOtpError("");
-        // closeSignIn();
-        showToast("Signed in successfully", "success");
+        if (subscription_token) localStorage.setItem("subscription_token", subscription_token);
 
-        // // Refresh context data
-        // await decodeUserToken();
-        // // Always fetch menu - will handle gracefully if empty
-        // await fetchMenu();
-        // const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
-        // const activeRole = userData?.roles?.[0]?.role_name;
-        // login({
-        //   id: userData.user_id || "1",
-        //   name: userData.name || "User",
-        //   email: formData.emailOrMobile,
-        //   role: activeRole
-        // });
+        showToast("Welcome back!", "success");
 
-        // closeSignIn();
-
-        // const subscriptionId = res.data?.data?.subscription_id;
-
-        // if (!subscriptionId) {
-        //   navigate("/subscription", { replace: true });
-        // } else {
-        //   const role = activeRole?.toLowerCase();
-        //   if (role === "teacher") {
-        //     navigate("/teacher/dashboard", { replace: true });
-        //   } else if (role === "parent") {
-        //     navigate("/parent/dashboard", { replace: true });
-        //   } else {
-        //     navigate("/dashboard", { replace: true });
-        //   }
-        // }
-        // await decodeUserToken();
-        await fetchMenu();
-
-        const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
-        const activeRole = userData?.roles?.[0]?.role_name;
-
-        login({
-          id: userData.user_id || "1",
-          name: userData.name || "User",
-          email: formData.emailOrMobile,
-          role: activeRole,
-        });
-
-        // 🔹 CHECK PROFILES FIRST
         const profileRes = await ApiServices.getUsersByTokenContact();
-
-        // if (
-        //   profileRes.data?.status === "success" &&
-        //   profileRes.data?.data?.length > 0
-        // ) {
-        //   // Profiles exist
-        //   openProfileSelection();
-        // } else {
-        //   // No profiles
-        //   openSelectRole();
-        // }
         const profiles = profileRes?.data?.data ?? [];
 
-        // valid profiles only (profile created)
-        const validProfiles = profiles.filter(
-          (p: any) => p.username !== null && p.role_id !== null,
-        );
-
-        if (validProfiles.length > 0) {
-          // Profiles exist → show selection
-          localStorage.setItem("profile_modal_mode", "manage");
-          setProfilesList(validProfiles);
-          closeSignIn();
-          openProfileSelection();
+        if (profiles.length > 0) {
+          await fetchMenu();
+          const primary = profiles[0];
+          login({
+            id: primary.sub,
+            name: primary.username || "User",
+            email: contactValue,
+            role: primary.role_name?.toLowerCase(),
+          });
+          handleSignInSuccess();
+          navigate("/dashboard");
         } else {
-          // No profile created → complete profile
-          closeSignIn();
-          openSelectRole();
+          navigate("/register");
         }
-        // closeSignIn();
-        // // Check if profile setup is incomplete (no user data AND no subscription)
-        // if (res.data?.data?.subscription_id === null && !res.data?.data?.user) {
-        //   openSelectRole();
-        // } else if (res.data?.data?.subscription_id === null) {
-        //   // User has profile but no subscription
-        //   navigate("/subscription", { replace: true });
-        // } else {
-        //   // User has complete profile with active subscription
-        //   navigate("/dashboard", { replace: true });
-        // }
       } else {
-        setOtpError(res.data?.message || "Invalid OTP");
+        setOtpError(verifyRes.data?.message || "Invalid OTP");
       }
-    } catch (error: any) {
-      setOtpError(error.response?.data?.message || "OTP verification failed.");
+    } catch (err) {
+      setOtpError("Verification failed");
     } finally {
-      setIsLoggingIn(false);
+      setIsVerifying(false);
     }
   };
 
-  const handleCancel = () => {
-    setFormData({ username: "", emailOrMobile: "" });
-    setShowOtp(false);
-    setOtp(["", "", "", "", "", ""]);
-    setOtpError("");
-    setIsVerified(false);
-    setShowRecovery(false);
-    setRecoveryStep("username");
-    setRecoveryIdentifier("");
-    setRecoveryMethod(null);
-    // setRecoveryDetails(null);
-    setRecoveryOtp(["", "", "", "", "", ""]);
-    setRecoveryError("");
-    setRecoverySuccess(false);
-    setRecoveredUsernames([]);
-    closeSignIn();
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1);
+    setOtp(newOtp);
+    if (value && index < 5) otpRefs.current[index + 1]?.focus();
   };
 
-  // const handleCreateAccount = () => {
-  //   closeSignIn();
-  //   openLogin();
-  // };
-
-  if (!isSignInOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overscroll-contain">
-      <div className="absolute inset-0 bg-black/40 touch-none" />
-      <div className="relative bg-white rounded-3xl shadow-[#000000A6] max-w-6xl w-full min-h-[32rem] overflow-hidden flex">
-        <div className="hidden md:flex md:w-[38%] bg-[#f5f7fa] items-center justify-center p-6">
-          <div className="relative w-full">
-            <div className="relative w-full max-w-sm">
-              <img
-                src="/image84.svg"
-                alt="Students Illustration"
-                className="w-full h-auto"
-              />
+    <div className="auth-body">
+      <header className="site-header">
+        <div className="wrap">
+          <Link to="/" className="brand" aria-label="MokshPath home">
+            <img src="/logogod.svg" alt="" className="brand-mark" />
+            <div>
+              <div className="name">MokshPath <span style={{ color: "var(--saffron)" }}>Academia</span></div>
+              <div className="tag">सत्यं ज्ञानं · a guided path to true learning</div>
             </div>
-          </div>
+          </Link>
+          <nav className="nav" aria-label="Primary">
+            <Link to="/#personas">Who it's for</Link>
+            <Link to="/#faq">FAQ</Link>
+            <Link to="/#pricing">Pricing</Link>
+            <Link to="/register" className="btn btn-primary cta">Create account</Link>
+          </nav>
         </div>
-        <div className="w-full md:w-[62%] p-8">
-          <button
-            onClick={closeSignIn}
-            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-          <h1 className="text-3xl font-bold text-primary mb-8">
-            {showRecovery ? "Account Recovery" : "Sign in to Your Account"}
-          </h1>
-          {showRecovery ? (
-            <div className="space-y-6">
-              {!recoverySuccess ? (
-                <>
-                  {recoveryStep === "username" ? (
-                    <div>
-                      <label className="block text-sm font-medium text-primary mb-2">
-                        Enter Username, Email, or Mobile
-                      </label>
-                      <input
-                        type="text"
-                        value={recoveryIdentifier}
-                        onChange={(e) => setRecoveryIdentifier(e.target.value)}
-                        placeholder="Username / Email / Mobile"
-                        className="w-full pb-2 border-b border-gray-300 text-primary placeholder-gray-400 focus:outline-none focus:border-gray-500 bg-transparent"
-                      />
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="text-xs text-gray-500 mb-2">
-                        Enter OTP sent to your {recoveryMethod}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        {recoveryOtp.map((digit, index) => (
-                          <input
-                            key={index}
-                            ref={(el: HTMLInputElement | null) => {
-                              recoveryOtpRefs.current[index] = el;
-                            }}
-                            type="text"
-                            maxLength={1}
-                            value={digit}
-                            onChange={(e) =>
-                              handleRecoveryOtpChange(index, e.target.value)
-                            }
-                            onKeyDown={(e) =>
-                              handleRecoveryOtpKeyDown(index, e)
-                            }
-                            className="w-8 h-9 text-center border border-gray-300 rounded-md text-primary focus:outline-none focus:border-blue-500"
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
+      </header>
 
-                  {recoveryError && (
-                    <p className="text-xs text-red-500 mt-2">{recoveryError}</p>
-                  )}
+      <main className="auth-main">
+        <img className="auth-mandala" src="/assets/mandala.svg" alt="" aria-hidden="true" />
 
-                  <div className="flex gap-3 pt-4">
-                    <button
-                      onClick={() => {
-                        if (recoveryStep === "otp") {
-                          setRecoveryStep("username");
-                          setRecoveryError("");
-                          setRecoveryOtp(["", "", "", "", "", ""]);
-                        } else {
-                          setShowRecovery(false);
-                          setRecoveryError("");
-                          setRecoveryIdentifier("");
-                        }
-                      }}
-                      className="px-7 py-2.5 rounded-full bg-primary text-white text-sm font-medium hover:bg-gray-700 transition-colors"
-                    >
-                      Back
-                    </button>
-                    <button
-                      onClick={
-                        recoveryStep === "username"
-                          ? handleRecoveryNext
-                          : handleVerifyRecoveryOtp
-                      }
-                      disabled={
-                        isRecoveryLoading ||
-                        (recoveryStep === "username" && !recoveryIdentifier) ||
-                        (recoveryStep === "otp" &&
-                          recoveryOtp.join("").length !== 6)
-                      }
-                      className={`px-7 py-2.5 rounded-full text-sm font-medium transition-colors disabled:cursor-not-allowed ${
-                        (recoveryStep === "username" && !recoveryIdentifier) ||
-                        (recoveryStep === "otp" &&
-                          recoveryOtp.join("").length !== 6) ||
-                        isRecoveryLoading
-                          ? "bg-primary text-white"
-                          : "bg-button-primary text-primary hover:opacity-90"
-                      }`}
-                    >
-                      {isRecoveryLoading
-                        ? "Loading..."
-                        : recoveryStep === "username"
-                          ? "Next"
-                          : "Verify"}
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-4">
-                  <div className="mb-4 text-green-500 text-5xl">✓</div>
-                  <h3 className="text-xl font-bold text-primary mb-2">
-                    Success!
-                  </h3>
-
-                  {recoveredUsernames.length > 0 ? (
-                    <div className="mb-6">
-                      <p className="text-gray-500 mb-3">
-                        Here are your recovered usernames:
-                      </p>
-                      <div className="bg-gray-50 rounded-lg p-3 max-h-40 overflow-y-auto">
-                        {recoveredUsernames.map((username, idx) => (
-                          <div
-                            key={idx}
-                            className="bg-white border text-primary p-2 mb-2 rounded bg-opacity-70 font-medium select-all"
-                          >
-                            {username}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-gray-500 mb-6">
-                      Account verified successfully.
-                    </p>
-                  )}
-
-                  <button
-                    onClick={() => {
-                      setShowRecovery(false);
-                      setRecoverySuccess(false);
-                      setRecoveryIdentifier("");
-                      setRecoveryStep("username");
-                      setRecoveredUsernames([]);
-                    }}
-                    className="px-7 py-2.5 rounded-full bg-button-primary text-primary text-sm font-medium hover:opacity-90 transition-colors"
-                  >
-                    Back to Sign in
-                  </button>
+        <div className="auth-shell">
+          <div className="auth-card">
+            {!showOtp ? (
+              <>
+                <div className="auth-card__eyebrow">
+                  <span className="accent-sanskrit">पुनरागमन</span>
+                  <span className="auth-eb-en">Welcome back</span>
                 </div>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-primary mb-2">
-                  E-mail ID / Mobile Number
-                </label>
-                <div className="flex items-end gap-3">
-                  <input
-                    type="text"
-                    name="emailOrMobile"
-                    value={formData.emailOrMobile}
-                    onChange={handleChange}
-                    placeholder="Enter your email or mobile"
-                    disabled={showOtp}
-                    className="flex-1 pb-2 border-b border-gray-300 text-primary placeholder-gray-400 focus:outline-none focus:border-gray-500 bg-transparent disabled:opacity-60"
-                  />
-                  {!showOtp && !isVerified && (
-                    <button
-                      onClick={handleSendOtp}
-                      disabled={
-                        isSendingOtp ||
-                        !formData.emailOrMobile ||
-                        (!isValidEmail(formData.emailOrMobile) &&
-                          !isValidMobile(formData.emailOrMobile))
-                      }
-                      className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors disabled:cursor-not-allowed ${
-                        formData.emailOrMobile &&
-                        (isValidEmail(formData.emailOrMobile) ||
-                          isValidMobile(formData.emailOrMobile))
-                          ? "bg-button-primary text-primary border-button-primary hover:opacity-90"
-                          : "bg-primary text-white"
-                      }`}
-                    >
-                      {isSendingOtp ? "Sending..." : "Send OTP"}
-                    </button>
-                  )}
-                </div>
-
-                {/* OTP Input */}
-                {showOtp && (
-                  <div className="mt-4">
-                    <p className="text-xs text-gray-500 mb-2">
-                      Enter OTP sent to your email
-                    </p>
-                    <div className="flex items-center gap-2">
-                      {otp.map((digit, index) => (
-                        <input
-                          key={index}
-                          ref={(el: HTMLInputElement | null) => {
-                            otpRefs.current[index] = el;
-                          }}
-                          type="text"
-                          maxLength={1}
-                          value={digit}
-                          onChange={(e) =>
-                            handleOtpChange(index, e.target.value)
-                          }
-                          onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                          className="w-8 h-9 text-center border border-gray-300 rounded-md text-primary focus:outline-none focus:border-blue-500"
-                        />
-                      ))}
-                    </div>
-                    <div className="flex gap-6 items-center mt-3">
-                      <button
-                        onClick={() => {
-                          setShowOtp(false);
-                          setOtp(["", "", "", "", "", ""]);
-                          setOtpError("");
-                        }}
-                        className="text-xs text-blue-500 hover:underline"
-                      >
-                        Change email
-                      </button>
-
-                      {canResend ? (
-                        <button
-                          onClick={handleResendOtp}
-                          disabled={isSendingOtp}
-                          className="text-xs text-blue-500 font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {isSendingOtp ? "Sending..." : "Resend OTP"}
-                        </button>
-                      ) : (
-                        <span className="text-xs text-gray-500">
-                          Resend in {resendTimer}s
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {otpError && (
-                  <p className="text-xs text-red-500 mt-2">{otpError}</p>
-                )}
-              </div>
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={handleCancel}
-                  className="px-7 py-2.5 rounded-full bg-primary text-white text-sm font-medium hover:bg-gray-700 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSignIn}
-                  disabled={
-                    isLoggingIn ||
-                    (showOtp ? otp.join("").length !== 6 : !isVerified)
-                  }
-                  className={`px-7 py-2.5 rounded-full text-sm font-medium transition-colors disabled:cursor-not-allowed ${
-                    (showOtp ? otp.join("").length === 6 : isVerified)
-                      ? "bg-button-primary text-primary hover:opacity-90"
-                      : "bg-primary text-white"
-                  }`}
-                >
-                  {isLoggingIn ? "Signing in..." : "Sign in"}
-                </button>
-              </div>
-
-              {/* Create Account Link */}
-              {/* <div className="pt-3">
-                <p className="text-sm text-gray-500">
-                  Don't have an account?{" "}
-                  <button
-                    onClick={handleCreateAccount}
-                    className="text-blue-500 font-medium hover:underline"
-                  >
-                    Create an account
-                  </button>
+                <h1 className="auth-card__title">Continue your path.</h1>
+                <p className="auth-card__lede">
+                  Enter the email or phone you signed up with. We'll send a one-time code — no password to remember.
                 </p>
-              </div> */}
+
+                <form className="auth-form" onSubmit={handleSendOtp}>
+                  <div className="auth-toggle" role="tablist" aria-label="Contact method">
+                    <button
+                      type="button"
+                      className={`auth-toggle__btn ${method === "email" ? "is-active" : ""}`}
+                      onClick={() => setMethod("email")}
+                    >
+                      Email
+                    </button>
+                    <button
+                      type="button"
+                      className={`auth-toggle__btn ${method === "phone" ? "is-active" : ""}`}
+                      onClick={() => setMethod("phone")}
+                    >
+                      Phone
+                    </button>
+                  </div>
+
+                  {method === "email" ? (
+                    <label className="auth-field">
+                      <span className="auth-field__label">Email</span>
+                      <input
+                        type="email"
+                        className="auth-field__input"
+                        placeholder="you@school.edu"
+                        value={contactValue}
+                        onChange={(e) => setContactValue(e.target.value)}
+                        required
+                      />
+                    </label>
+                  ) : (
+                    <label className="auth-field">
+                      <span className="auth-field__label">Phone</span>
+                      <div className="auth-field__phone">
+                        <span className="auth-field__cc">+91</span>
+                        <input
+                          type="tel"
+                          className="auth-field__input"
+                          placeholder="98765 43210"
+                          value={contactValue}
+                          onChange={(e) => setContactValue(e.target.value)}
+                        />
+                      </div>
+                    </label>
+                  )}
+
+                  <button type="submit" className="btn btn-primary btn-block" disabled={isSendingOtp}>
+                    {isSendingOtp ? "Sending..." : "Send one-time code →"}
+                  </button>
+
+                  <div className="auth-divider"><span>or</span></div>
+
+                  <button type="button" className="btn btn-auth-google btn-block">
+                    <span className="google-g" aria-hidden="true">
+                      <svg viewBox="0 0 48 48" width="20" height="20">
+                        <path fill="#4285F4" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                        <path fill="#34A853" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                        <path fill="#EA4335" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                      </svg>
+                    </span>
+                    Continue with Google
+                  </button>
+
+                  <p className="auth-footnote">
+                    New here? <Link to="/register">Create an account</Link> · it takes 60 seconds.
+                  </p>
+                </form>
+              </>
+            ) : (
+              <>
+                <div className="auth-card__eyebrow">
+                  <span className="accent-sanskrit">सत्यापन</span>
+                  <span className="auth-eb-en">Verification</span>
+                </div>
+                <h1 className="auth-card__title">Enter the code.</h1>
+                <p className="auth-card__lede">
+                  We've sent a 6-digit code to <strong>{contactValue}</strong>.
+                </p>
+
+                <form className="auth-form" onSubmit={handleVerifyOtp}>
+                  <div className="otp-boxes">
+                    {otp.map((digit, index) => (
+                      <input
+                        key={index}
+                        ref={(el) => { otpRefs.current[index] = el; }}
+                        type="text"
+                        maxLength={1}
+                        className="otp-box"
+                        value={digit}
+                        onChange={(e) => handleOtpChange(index, e.target.value)}
+                        onKeyDown={(e) => e.key === "Backspace" && !digit && index > 0 && otpRefs.current[index - 1]?.focus()}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="otp-resend">
+                    Didn't get it? {canResend ? (
+                      <button type="button" className="link-btn" onClick={handleSendOtp}>Resend code</button>
+                    ) : (
+                      <span>Resend in {resendTimer}s</span>
+                    )}
+                    {" or "}
+                    <button type="button" className="link-btn" onClick={() => setShowOtp(false)}>change method</button>.
+                  </div>
+
+                  {otpError && <p className="auth-error">{otpError}</p>}
+
+                  <button type="submit" className="btn btn-primary btn-block" disabled={isVerifying || otp.join("").length !== 6}>
+                    {isVerifying ? "Verifying..." : "Verify and sign in →"}
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
+
+          <aside className="auth-aside">
+            <div className="auth-aside__inner">
+              <img src="/logogod.svg" alt="" className="auth-aside__logo" aria-hidden="true" />
+              <blockquote className="auth-aside__quote">
+                "A single stone, dropped in the right pond, changes the direction of every ripple."
+              </blockquote>
+              <div className="auth-aside__facts">
+                <div><span className="aaf-n">4</span><span className="aaf-l">Dashboards</span></div>
+                <div><span className="aaf-n">1</span><span className="aaf-l">Adaptive engine</span></div>
+                <div><span className="aaf-n">∞</span><span className="aaf-l">Personal paths</span></div>
+              </div>
+              <div className="auth-aside__trust">
+                🔒 GDPR + COPPA compliant · WCAG 2.1 AA
+              </div>
             </div>
-          )}
+          </aside>
         </div>
-      </div>
+      </main>
+
+      <footer className="auth-footer">
+        <div className="wrap">
+          <div>© 2026 MokshPath Academia</div>
+          <div><Link to="#">Privacy</Link> · <Link to="#">Terms</Link> · <Link to="#">Help</Link></div>
+        </div>
+      </footer>
     </div>
   );
 };
 
-const SignIn: React.FC = () => {
-  return <SignInModal />;
-};
-
+const SignIn: React.FC = () => <SignInModal />;
 export default SignIn;

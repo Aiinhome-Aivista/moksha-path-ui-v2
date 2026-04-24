@@ -1,6 +1,7 @@
 import { createBrowserRouter, type RouteObject, Navigate } from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
 import Login from "../features/auth/modal/Login";
+import SignIn from "../features/auth/modal/SignIn";
 import { SelectRole } from "../features/auth/modal/SelectRole";
 import { Dashboard } from "../features/student/pages/dashboard/Dashboard";
 import StudentProfile from "../features/student/pages/Profile";
@@ -51,6 +52,8 @@ import { DashboardParent } from "../features/parent/pages/dashboard/DashboardPar
 const routes: RouteObject[] = [
   // Standalone Routes
   { path: "/login", element: <Login /> },
+  { path: "/register", element: <Login /> },
+  { path: "/signin", element: <SignIn /> },
   { path: "/select-role", element: <SelectRole /> },
 
   // App Routes (Header + Sidebar + Content)

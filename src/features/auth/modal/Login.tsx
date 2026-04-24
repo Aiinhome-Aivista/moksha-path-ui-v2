@@ -1,638 +1,548 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useModal } from "../context/AuthContext";
 import { useToast } from "../../../app/providers/ToastProvider";
-// import { useNavigate } from "react-router-dom";
 import ApiServices from "../../../services/ApiServices";
+import { useAuth } from "../../../app/providers/AuthProvider";
 
-const isValidIndianMobile = (mobile: string) => {
-  return /^[6-9]\d{9}$/.test(mobile);
-};
+const isValidIndianMobile = (mobile: string) => /^[6-9]\d{9}$/.test(mobile);
+const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+const PERSONA_COPY = {
+  1: { sa: 'अभ्यासी', en: 'Student', title: 'Tell us a little about your studies.', lede: 'So we can shape a path that actually fits.' },
+  2: { sa: 'अभिभावक', en: 'Parent', title: 'Tell us a little about your child.', lede: "We'll tailor early alerts and conversation-starters." },
+  3: { sa: 'शिक्षक', en: 'Teacher', title: 'Tell us about your classroom.', lede: "We'll map the right tools to your subjects and grades." },
+  4: { sa: 'संस्था', en: 'Institution', title: 'Tell us about your school.', lede: 'Our academic team will get in touch within a working day.' }
+} as any;
+
+const TEACHER_SUBJECTS = ["Math", "Science", "Physics", "Chemistry", "Biology", "English", "Social Studies", "Hindi"];
+const TEACHER_GRADES = ["6", "7", "8", "9", "10", "11", "12"];
 
 export const LoginModal: React.FC = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    mobile: "",
+  const [currentStep, setCurrentStep] = useState(1);
+  const [persona, setPersona] = useState<number | null>(null);
+  const [roles, setRoles] = useState<any[]>([]);
+  
+  // Profile Data
+  const [profileData, setProfileData] = useState({
+    fullName: "",
+    // Student specific
+    boardId: "" as number | "",
+    classId: "" as number | "",
+    // Parent specific
+    childName: "",
+    childClassId: "" as number | "",
+    childBoardId: "" as number | "",
+    // Teacher specific
+    schoolName: "",
+    selectedSubjects: [] as string[],
+    selectedGrades: [] as string[],
+    // Institution specific
+    institutionName: "",
+    primaryBoard: "",
+    adminRole: "",
+    enrollment: "",
   });
 
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [mobileVerified, setMobileVerified] = useState(false);
-  const [showOtp, setShowOtp] = useState(false);
+  // Contact Data
+  const [contactMethod, setContactMethod] = useState<"email" | "phone">("email");
+  const [contactValue, setContactValue] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+  // OTP State
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [otpError, setOtpError] = useState("");
-  const [verifyingType, setVerifyingType] = useState<"email" | "mobile" | null>(
-    null,
-  );
-  const [registerError, setRegisterError] = useState("");
-  const [isSigningUp, setIsSigningUp] = useState(false);
-  const [mobileError, setMobileError] = useState("");
-
-  // OTP Timer Logic
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [resendTimer, setResendTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
 
+  // Master Data
+  const [boards, setBoards] = useState<any[]>([]);
+  const [classes, setClasses] = useState<any[]>([]);
+
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const { fetchMenu, handleSignInSuccess } = useModal();
+
+  // Load Initial Data
+  useEffect(() => {
+    const loadMasterData = async () => {
+      try {
+        const rolesRes = await ApiServices.getRoles();
+        if (rolesRes.data?.status === "success") setRoles(rolesRes.data.data);
+
+        const academicRes = await ApiServices.getAcademicMasterData();
+        if (academicRes.data?.status === "success") {
+          setBoards(academicRes.data.data.boards || []);
+          setClasses(academicRes.data.data.classes || []);
+        }
+      } catch (err) {
+        console.error("Failed to load master data", err);
+      }
+    };
+    loadMasterData();
+  }, []);
+
+  // OTP Timer
   useEffect(() => {
     let timer: any;
-    if (showOtp && resendTimer > 0) {
-      timer = setInterval(() => {
-        setResendTimer((prev) => prev - 1);
-      }, 1000);
+    if (currentStep === 4 && resendTimer > 0) {
+      timer = setInterval(() => setResendTimer((prev) => prev - 1), 1000);
     } else if (resendTimer === 0) {
       setCanResend(true);
     }
     return () => clearInterval(timer);
-  }, [showOtp, resendTimer]);
+  }, [currentStep, resendTimer]);
 
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  const { showToast } = useToast();
-  const {
-    isLoginOpen,
-    closeLogin,
-    openSelectRole,
-    initialAuthIdentifier,
-    isNewUser,
-    setIsNewUser,
-    setInitialAuthIdentifier,
-    // decodeUserToken,
-    openProfileSelection,
-    setProfilesList,
-  } = useModal();
-  // const navigate = useNavigate();
-
-  useEffect(() => {
-    if (isLoginOpen && initialAuthIdentifier) {
-      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(initialAuthIdentifier)) {
-        setFormData((prev) => ({ ...prev, email: initialAuthIdentifier }));
-      } else if (/^\d{10}$/.test(initialAuthIdentifier)) {
-        setFormData((prev) => ({ ...prev, mobile: initialAuthIdentifier }));
-      }
+  const handleNextStep = () => {
+    if (currentStep === 1 && !persona) return;
+    
+    // Step 2 Validation
+    if (currentStep === 2) {
+      if (persona === 1 && (!profileData.fullName || !profileData.boardId || !profileData.classId)) return;
+      if (persona === 2 && !profileData.fullName) return;
+      if (persona === 3 && (!profileData.fullName || !profileData.schoolName)) return;
+      if (persona === 4 && (!profileData.institutionName || !profileData.fullName)) return;
     }
-  }, [isLoginOpen, initialAuthIdentifier]);
-
-  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value } = e.target;
-  //   setFormData({
-  //     ...formData,
-  //     [name]: value,
-  //   });
-  // };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-
-    if (name === "mobile") {
-      const numericValue = value.replace(/\D/g, ""); // remove non-digits
-      setFormData({
-        ...formData,
-        mobile: numericValue.slice(0, 10), // limit to 10 digits
-      });
-      if (numericValue.length > 0 && !/^[6-9]/.test(numericValue)) {
-        setMobileError("Mobile number must start with 6, 7, 8, or 9.");
-      } else {
-        setMobileError("");
-      }
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
+    
+    if (currentStep === 3) {
+      handleSendOtp();
+      return;
     }
+
+    setCurrentStep((prev) => Math.min(prev + 1, 4));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Prevent background scroll when modal is open
-  useEffect(() => {
-    if (isLoginOpen) {
-      const scrollY = window.scrollY;
-      document.body.style.setProperty("position", "fixed", "important");
-      document.body.style.setProperty("top", `-${scrollY}px`, "important");
-      document.body.style.setProperty("width", "100%", "important");
-      document.body.style.setProperty("overflow", "hidden", "important");
-    }
-
-    return () => {
-      if (isLoginOpen) {
-        const scrollY = document.body.style.top;
-        document.body.style.removeProperty("position");
-        document.body.style.removeProperty("top");
-        document.body.style.removeProperty("width");
-        document.body.style.removeProperty("overflow");
-        window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
-      }
-    };
-  }, [isLoginOpen]);
-
-  const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return; // Only allow digits
-
-    const newOtp = [...otp];
-    newOtp[index] = value.slice(-1); // Take only last digit
-    setOtp(newOtp);
-
-    // Auto focus next input
-    if (value && index < 5) {
-      otpRefs.current[index + 1]?.focus();
-    }
-
-    // Auto verify when 6 digits are reached
-    if (value && index === 5) {
-      const fullOtp = newOtp.join("");
-      if (fullOtp.length === 6) {
-        setTimeout(() => {
-          handleConfirmOtp(fullOtp);
-        }, 100);
-      }
-    }
+  const handleBackStep = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const handleOtpKeyDown = (
-    index: number,
-    e: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus();
+  const handleSendOtp = async () => {
+    if (!contactValue) {
+      showToast("Please enter contact details", "error");
+      return;
     }
-  };
-
-  // Static API replacements
-  const handleVerifyEmail = async () => {
-    if (!formData.email) {
-      showToast("Please enter email first", "error");
+    if (contactMethod === "email" && !isValidEmail(contactValue)) {
+      showToast("Invalid email address", "error");
+      return;
+    }
+    if (contactMethod === "phone" && !isValidIndianMobile(contactValue.replace(/\s/g, ""))) {
+      showToast("Invalid mobile number", "error");
+      return;
+    }
+    if (!agreedToTerms) {
+      showToast("Please agree to terms", "error");
       return;
     }
 
     try {
-      setOtpError("");
+      setIsSendingOtp(true);
       const res = await ApiServices.sendOtpV4({
-        auth_identifier: formData.email,
-        email: formData.email,
-        mobile: formData.mobile,
+        auth_identifier: contactValue,
+        [contactMethod === "email" ? "email" : "mobile"]: contactValue,
       });
 
       if (res.data?.status === "success") {
-        setVerifyingType("email");
-        setShowOtp(true);
+        showToast("OTP sent successfully", "success");
+        setCurrentStep(4);
         setResendTimer(60);
         setCanResend(false);
-        showToast("OTP sent to your email", "success");
       } else {
         showToast(res.data?.message || "Failed to send code", "error");
-        setIsSigningUp(false);
       }
-    } catch (error: any) {
-      showToast(
-        error.response?.data?.message || "Something went wrong",
-        "error",
-      );
-      setIsSigningUp(false);
+    } catch (err) {
+      showToast("Failed to send code", "error");
+    } finally {
+      setIsSendingOtp(false);
     }
   };
 
-  const handleVerifyMobile = async () => {
-    if (!isValidIndianMobile(formData.mobile)) {
-      showToast(
-        "Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.",
-        "error",
-      );
-      return;
-    }
-
-    try {
-      setOtpError("");
-      const res = await ApiServices.sendOtpV4({
-        auth_identifier: formData.mobile,
-        email: formData.email,
-        mobile: formData.mobile,
-      });
-
-      if (res.data?.status === "success") {
-        setVerifyingType("mobile");
-        setShowOtp(true);
-        setResendTimer(60);
-        setCanResend(false);
-        showToast("OTP sent to your mobile", "success");
-      } else {
-        showToast(res.data?.message || "Failed to send code", "error");
-        setIsSigningUp(false);
-      }
-    } catch (error: any) {
-      showToast(
-        error.response?.data?.message || "Something went wrong",
-        "error",
-      );
-      setIsSigningUp(false);
-    }
-  };
-
-  const handleSendRegistrationOtp = async () => {
-    if (!formData.email && !formData.mobile) {
-      showToast("Please enter email or mobile number", "error");
-      setIsSigningUp(false);
-      return;
-    }
-
-    if (formData.mobile && !isValidIndianMobile(formData.mobile)) {
-      showToast("Please enter a valid 10-digit mobile number.", "error");
-      setIsSigningUp(false);
-      return;
-    }
-
-    try {
-      setOtpError("");
-      const identifier = formData.email || formData.mobile;
-      const res = await ApiServices.sendOtpV4({
-        auth_identifier: identifier,
-        email: formData.email,
-        mobile: formData.mobile,
-      });
-
-      if (res.data?.status === "success") {
-        setVerifyingType(formData.email ? "email" : "mobile");
-        setShowOtp(true);
-        setResendTimer(60);
-        setCanResend(false);
-        showToast("OTP sent to your email and mobile", "success");
-      } else {
-        showToast(res.data?.message || "Failed to send code", "error");
-        setIsSigningUp(false);
-      }
-    } catch (error: any) {
-      showToast(
-        error.response?.data?.message || "Something went wrong",
-        "error",
-      );
-      setIsSigningUp(false);
-    }
-  };
-
-  const handleConfirmOtp = async (forcedOtp?: string) => {
-    const otpValue = forcedOtp || otp.join("");
+  const handleVerifyAndFinish = async () => {
+    const otpValue = otp.join("");
     if (otpValue.length !== 6) {
-      setOtpError("Please enter complete 6-digit OTP");
+      setOtpError("Enter 6-digit code");
       return;
     }
 
-    const identifier =
-      verifyingType === "email" ? formData.email : formData.mobile;
-
     try {
-      setRegisterError(""); // Clear any previous register error
-      const res = await ApiServices.verifyAccountV4({
-        auth_identifier: identifier,
+      setIsVerifying(true);
+      setOtpError("");
+      const verifyRes = await ApiServices.verifyAccountV4({
+        auth_identifier: contactValue,
         otp: otpValue,
-        email: formData.email,
-        mobile: formData.mobile,
       });
 
-      if (res.data?.status === "success") {
-        const { auth_token, refresh_token, subscription_token } = res.data.data;
-
+      if (verifyRes.data?.status === "success") {
+        const { auth_token, refresh_token, subscription_token } = verifyRes.data.data;
         if (auth_token) localStorage.setItem("auth_token", auth_token);
         if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
-        if (subscription_token)
-          localStorage.setItem("subscription_token", subscription_token);
-        setOtpError("");
-        // if (verifyingType === "email") {
-        //   setEmailVerified(true);
-        // } else {
-        //   setMobileVerified(true);
-        // }
-        setShowOtp(false);
-        setVerifyingType(null);
-        setIsSigningUp(false); // Reset signing up state
+        if (subscription_token) localStorage.setItem("subscription_token", subscription_token);
 
-        showToast(
-          `${verifyingType === "email" ? "Email" : "Mobile"} verified successfully`,
-          "success",
-        );
-        const profileRes = await ApiServices.getUsersByTokenContact();
+        // Profile Add Logic (simplified to role-based)
+        const profilePayload: any = {
+          actual_name: profileData.fullName,
+          profile_name: "Primary",
+          role_id: persona,
+        };
+        
+        if (persona === 1) {
+          profilePayload.board_id = profileData.boardId;
+          profilePayload.class_id = profileData.classId;
+        }
 
-        const profiles = profileRes?.data?.data ?? [];
+        const profileRes = await ApiServices.addProfileV4(profilePayload);
+        
+        if (profileRes.data?.status === "success") {
+          showToast("Registration successful!", "success");
+          await fetchMenu();
+          const userData = profileRes.data.data.user;
+          login({
+            id: userData.sub,
+            name: userData.name || profileData.fullName,
+            email: contactValue,
+            role: roles.find(r => r.role_id === persona)?.role_name.toLowerCase()
+          });
 
-        // filter valid profiles (profile created)
-        const validProfiles = profiles.filter(
-          (p: any) => p.username !== null && p.role_id !== null,
-        );
-
-        if (validProfiles.length > 0) {
-          // profile exists
-          localStorage.setItem("profile_modal_mode", "manage");
-          setProfilesList(validProfiles);
-          closeLogin();
-          openProfileSelection();
+          handleSignInSuccess();
+          navigate("/dashboard");
         } else {
-          // no profile → complete profile
-          closeLogin();
-          openSelectRole();
+          showToast("Account created, but profile setup failed.", "warning");
+          navigate("/signin");
         }
       } else {
-        setOtpError(res.data?.message || "Failed Verification");
-        setIsSigningUp(false);
+        setOtpError(verifyRes.data?.message || "Invalid OTP");
       }
-    } catch (error: any) {
-      setOtpError(error.response?.data?.message || "Invalid OTP");
-      setIsSigningUp(false);
+    } catch (err) {
+      setOtpError("Verification failed");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
-  const handleResendOtp = () => {
-    setOtp(["", "", "", "", "", ""]);
-    setOtpError("");
-    setResendTimer(60);
-    setCanResend(false);
-    setTimeout(() => {
-      otpRefs.current[0]?.focus();
-    }, 0);
-    if (isNewUser) handleSendRegistrationOtp();
-    else if (verifyingType === "email") handleVerifyEmail();
-    else handleVerifyMobile();
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1);
+    setOtp(newOtp);
+    if (value && index < 5) otpRefs.current[index + 1]?.focus();
   };
 
-  const handleSignIn = async () => {
-    if (showOtp) {
-      await handleConfirmOtp();
-      return;
-    }
-
-    if (isNewUser) {
-      setIsSigningUp(true);
-      setRegisterError("");
-
-      try {
-        await handleSendRegistrationOtp();
-        return;
-      } catch (err) {
-        setIsSigningUp(false);
-      }
-
-      const msg = "Please enter and verify Email or Mobile via OTP first";
-      setRegisterError(msg);
-      showToast(msg, "error");
-      setIsSigningUp(false);
-      return;
-    }
-
-    // Validate at least one OTP verified
-    if (!emailVerified && !mobileVerified) {
-      const msg = "Please verify at least one (Email or Mobile) via OTP first";
-      setRegisterError(msg);
-      showToast(msg, "error");
-      return;
-    }
-
-    setRegisterError("");
-    setIsNewUser(false);
-    setInitialAuthIdentifier("");
-
-    closeLogin();
-    openSelectRole();
+  const toggleChip = (list: string[], item: string) => {
+    return list.includes(item) ? list.filter(i => i !== item) : [...list, item];
   };
-
-  const handleCancel = () => {
-    setFormData({ email: "", mobile: "" });
-    setEmailVerified(false);
-    setMobileVerified(false);
-    setShowOtp(false);
-    setOtp(["", "", "", "", "", ""]);
-    setOtpError("");
-    setVerifyingType(null);
-    setIsNewUser(false);
-    setInitialAuthIdentifier("");
-    closeLogin();
-  };
-
-  if (!isLoginOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 overscroll-contain">
-      <div className="absolute inset-0 bg-black/40 touch-none" />
-      <div className="relative bg-white rounded-2xl sm:rounded-3xl shadow-[#000000A6] max-w-6xl w-full min-h-0 sm:min-h-[32rem] max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col md:flex-row">
-        <div className="hidden md:flex md:w-[38%] bg-[#f5f7fa] items-center justify-center p-6">
-          <div className="relative w-full">
-            <div className="relative w-full max-w-sm">
-              <img
-                src="/image84.svg"
-                alt="Students Illustration"
-                className="w-full h-auto"
-              />
+    <div className="auth-body">
+      <header className="site-header">
+        <div className="wrap">
+          <Link to="/" className="brand">
+            <img src="/logogod.svg" alt="" className="brand-mark" />
+            <div>
+              <div className="name">MokshPath <span style={{ color: 'var(--saffron)' }}>Academia</span></div>
+              <div className="tag">सत्यं ज्ञानं · a guided path to true learning</div>
             </div>
-          </div>
+          </Link>
+          <nav className="nav">
+            <Link to="/#personas">Who it's for</Link>
+            <Link to="/#faq">FAQ</Link>
+            <Link to="/#pricing">Pricing</Link>
+            <Link to="/signin" className="btn btn-ghost">Sign in</Link>
+          </nav>
         </div>
-        <div className="w-full md:w-[62%] p-5 sm:p-8 overflow-y-auto custom-scrollbar">
-          <button
-            onClick={closeLogin}
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 p-2 text-gray-400 hover:text-gray-600 transition-colors z-10"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-          <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-6 sm:mb-8 pr-8 sm:pr-0">
-            New User Setup
-          </h1>
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-6">
-              {/* Email Section */}
-              <div>
-                <label className="block text-sm font-medium text-primary mb-2">
-                  E-mail ID <span className="text-red-500">*</span>
-                </label>
-                <div className="flex items-end gap-3">
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Enter your email"
-                    disabled={emailVerified}
-                    className="flex-1 py-2 border-b border-gray-300 text-primary placeholder-gray-400 focus:outline-none focus:border-gray-500 bg-transparent text-base"
-                  />
-                  {!emailVerified && !showOtp && !isNewUser && (
-                    <button
-                      onClick={handleVerifyEmail}
-                      disabled={
-                        !formData.email ||
-                        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
-                      }
-                      className={`px-4 py-1.5 rounded-full text-xs font-medium border transition-colors disabled:cursor-not-allowed ${
-                        formData.email &&
-                        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
-                          ? "bg-button-primary text-primary border-button-primary hover:opacity-90"
-                          : "bg-primary text-white"
-                      }`}
-                    >
-                      Verify
-                    </button>
-                  )}
-                  {emailVerified && (
-                    <span className="px-3 py-2 sm:px-2 sm:py-2 rounded-full text-sm sm:text-xs font-medium bg-green-500 text-white">
-                      Verified ✓
-                    </span>
-                  )}
-                </div>
-              </div>
+      </header>
 
-              {/* Mobile Section */}
-              <div>
-                <label className="block text-sm font-medium text-primary mb-2">
-                  Mobile <span className="text-red-500">*</span>
-                </label>
-                <div className="flex items-end gap-3">
-                  <input
-                    type="tel"
-                    name="mobile"
-                    value={formData.mobile}
-                    onChange={handleChange}
-                    placeholder="1234567890"
-                    maxLength={10}
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    disabled={mobileVerified}
-                    className="flex-1 py-2 border-b border-gray-300 text-primary placeholder-gray-400 focus:outline-none focus:border-gray-500 bg-transparent disabled:opacity-60 text-base"
-                  />
-                  {!mobileVerified && !showOtp && !isNewUser && (
-                    <button
-                      onClick={handleVerifyMobile}
-                      disabled={!isValidIndianMobile(formData.mobile)}
-                      className={`px-4 py-1.5 rounded-full text-xs font-medium border transition-colors disabled:cursor-not-allowed ${
-                        isValidIndianMobile(formData.mobile)
-                          ? "bg-button-primary text-primary border-button-primary hover:opacity-90"
-                          : "bg-primary text-white"
-                      }`}
-                    >
-                      Verify
-                    </button>
-                  )}
-                  {mobileVerified && (
-                    <span className="px-3 py-2 sm:px-2 sm:py-2 rounded-full text-sm sm:text-xs font-medium bg-green-500 text-white">
-                      Verified ✓
-                    </span>
-                  )}
-                </div>
-                {mobileError && (
-                  <p className="text-xs text-red-500 mt-1">{mobileError}</p>
-                )}
-              </div>
-            </div>
+      <main className="wizard-main">
+        <img className="auth-mandala" src="/assets/mandala.svg" alt="" aria-hidden="true" />
 
-            {/* Common OTP Section */}
-            {showOtp && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                <p className="text-sm font-medium text-primary mb-3">
-                  Enter OTP sent to your email or mobile
-                </p>
-                <div className="flex flex-wrap items-center gap-2">
-                  {otp.map((digit, index) => (
-                    <input
-                      key={index}
-                      ref={(el: HTMLInputElement | null) => {
-                        otpRefs.current[index] = el;
-                      }}
-                      type="text"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      className="w-10 h-12 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg text-primary focus:outline-none focus:border-button-primary transition-all"
-                    />
-                  ))}
-                </div>
-                <div className="flex items-center gap-4 mt-3">
-                  {canResend ? (
-                    <button
-                      onClick={handleResendOtp}
-                      className="text-xs text-blue-600 font-bold hover:underline"
-                    >
-                      Resend OTP
-                    </button>
-                  ) : (
-                    <span className="text-xs text-gray-500 font-medium">
-                      Resend in {resendTimer}s
-                    </span>
-                  )}
-                  <button
-                    onClick={() => {
-                      setShowOtp(false);
-                      setIsSigningUp(false);
-                    }}
-                    className="text-xs text-gray-400 hover:text-gray-600 font-medium"
-                  >
-                    Cancel Verification
-                  </button>
-                </div>
-                {otpError && (
-                  <p className="text-sm text-red-500 mt-2 font-medium">
-                    {otpError}
-                  </p>
-                )}
-              </div>
-            )}
-
-            <div className="pt-4 sm:pt-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-base sm:text-sm text-primary">
-                  I have read and agreed to the application's
-                </span>
-              </div>
-              <div className="flex flex-wrap items-center gap-1.5 ml-0 sm:ml-6 mt-3 sm:mt-2 text-base sm:text-sm">
-                <span className="text-green-500 text-xs sm:text-xs">✓</span>
-                <p className="text-[#3399C2] font-bold hover:underline cursor-pointer">
-                  Privacy Policy
-                </p>
-                <span className="text-gray-400 mx-1">&</span>
-                <span className="text-green-500 text-xs sm:text-xs">✓</span>
-                <p className="text-[#3399C2] font-bold hover:underline cursor-pointer">
-                  Terms of Service
-                </p>
-              </div>
-            </div>
-
-            {registerError && (
-              <p className="text-sm sm:text-xs text-red-500 mb-2 font-medium">
-                {registerError}
-              </p>
-            )}
-
-            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6 sm:pt-4 w-full">
-              <button
-                onClick={handleCancel}
-                className="w-full sm:w-auto flex justify-center px-7 py-3 sm:py-2.5 rounded-full bg-primary text-white text-base sm:text-sm font-medium hover:bg-gray-700 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSignIn}
-                disabled={
-                  (!emailVerified && !mobileVerified && !isNewUser) ||
-                  isSigningUp
-                }
-                className={`px-7 py-2.5 rounded-full text-sm font-medium transition-colors disabled:cursor-not-allowed ${
-                  emailVerified || mobileVerified || isNewUser
-                    ? "bg-button-primary text-primary hover:opacity-90"
-                    : "bg-primary text-white"
-                }`}
-              >
-                {isSigningUp ? "Signing up..." : "Sign Up"}
-              </button>
-            </div>
+        <div className="wizard">
+          <div className="wizard__progress">
+            {[1, 2, 3, 4].map((s) => (
+              <span key={s} className={`wp-step ${s === currentStep ? 'is-active' : s < currentStep ? 'is-done' : ''}`} />
+            ))}
           </div>
+          <div className="wizard__counter">{currentStep} <span className="wc-sep">of</span> 4</div>
+
+          <form className="wizard__form" onSubmit={e => e.preventDefault()}>
+            <section className={`w-step ${currentStep === 1 ? 'is-active' : ''}`}>
+              {currentStep === 1 && (
+                <>
+                  <div className="w-step__eyebrow">
+                    <span className="accent-sanskrit">नमस्ते</span>
+                    <span className="wse-en">Let's begin</span>
+                  </div>
+                  <h1 className="w-step__title">Who walks this path with us?</h1>
+                  <p className="w-step__lede">Pick the role that describes you best today.</p>
+                  
+                  <div className="persona-cards">
+                    {roles.filter(r => [1,2,3,4].includes(r.role_id)).map(role => (
+                      <button 
+                        key={role.role_id}
+                        type="button"
+                        className={`persona-card ${persona === role.role_id ? 'is-selected' : ''}`}
+                        onClick={() => setPersona(role.role_id)}
+                      >
+                        <span className="pc-ico">
+                          {role.role_id === 1 && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M3 8l9-4 9 4-9 4-9-4z"/><path d="M7 10v5c0 1.5 2.5 3 5 3s5-1.5 5-3v-5"/></svg>}
+                          {role.role_id === 2 && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>}
+                          {role.role_id === 3 && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 9h6M7 13h10"/></svg>}
+                          {role.role_id === 4 && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M3 21h18M5 21V9l7-5 7 5v12"/><path d="M9 21v-6h6v6"/></svg>}
+                        </span>
+                        <span className="pc-name">{role.role_name}</span>
+                        <span className="pc-sub">{role.role_id === 1 ? "I'm learning" : role.role_id === 2 ? "Supporting a learner" : "Teaching a class"}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="w-step__actions">
+                    <Link to="/signin" className="w-link">Already have an account? Sign in</Link>
+                    <button type="button" className="btn btn-primary" onClick={handleNextStep} disabled={!persona}>Continue →</button>
+                  </div>
+                </>
+              )}
+            </section>
+
+            <section className={`w-step ${currentStep === 2 ? 'is-active' : ''}`}>
+              {currentStep === 2 && persona && (
+                <>
+                  <div className="w-step__eyebrow">
+                    <span className="accent-sanskrit">{PERSONA_COPY[persona].sa}</span>
+                    <span className="wse-en">{PERSONA_COPY[persona].en}</span>
+                  </div>
+                  <h1 className="w-step__title">{PERSONA_COPY[persona].title}</h1>
+                  <p className="w-step__lede">{PERSONA_COPY[persona].lede}</p>
+
+                  <div className="profile-fields">
+                    {persona === 1 && (
+                      <>
+                        <label className="auth-field">
+                          <span className="auth-field__label">Your name</span>
+                          <input type="text" className="auth-field__input" placeholder="e.g. Aarav Mehta" value={profileData.fullName} onChange={e => setProfileData({...profileData, fullName: e.target.value})} />
+                        </label>
+                        <div className="auth-row">
+                          <label className="auth-field">
+                            <span className="auth-field__label">Class</span>
+                            <select className="auth-field__input" value={profileData.classId} onChange={e => setProfileData({...profileData, classId: Number(e.target.value)})}>
+                              <option value="">Select your class…</option>
+                              {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </select>
+                          </label>
+                          <label className="auth-field">
+                            <span className="auth-field__label">Board</span>
+                            <select className="auth-field__input" value={profileData.boardId} onChange={e => setProfileData({...profileData, boardId: Number(e.target.value)})}>
+                              <option value="">Select your board…</option>
+                              {boards.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                            </select>
+                          </label>
+                        </div>
+                      </>
+                    )}
+
+                    {persona === 2 && (
+                      <>
+                        <label className="auth-field">
+                          <span className="auth-field__label">Your name</span>
+                          <input type="text" className="auth-field__input" placeholder="e.g. Priya Mehta" value={profileData.fullName} onChange={e => setProfileData({...profileData, fullName: e.target.value})} />
+                        </label>
+                        <label className="auth-field">
+                          <span className="auth-field__label">Your child's name <span className="muted">(optional)</span></span>
+                          <input type="text" className="auth-field__input" placeholder="e.g. Aarav" value={profileData.childName} onChange={e => setProfileData({...profileData, childName: e.target.value})} />
+                        </label>
+                        <div className="auth-row">
+                          <label className="auth-field">
+                            <span className="auth-field__label">Child's class</span>
+                            <select className="auth-field__input" value={profileData.childClassId} onChange={e => setProfileData({...profileData, childClassId: Number(e.target.value)})}>
+                              <option value="">Select…</option>
+                              {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </select>
+                          </label>
+                          <label className="auth-field">
+                            <span className="auth-field__label">Child's board</span>
+                            <select className="auth-field__input" value={profileData.childBoardId} onChange={e => setProfileData({...profileData, childBoardId: Number(e.target.value)})}>
+                              <option value="">Select…</option>
+                              {boards.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                            </select>
+                          </label>
+                        </div>
+                      </>
+                    )}
+
+                    {persona === 3 && (
+                      <>
+                        <label className="auth-field">
+                          <span className="auth-field__label">Your name</span>
+                          <input type="text" className="auth-field__input" placeholder="e.g. Anjali Sharma" value={profileData.fullName} onChange={e => setProfileData({...profileData, fullName: e.target.value})} />
+                        </label>
+                        <label className="auth-field">
+                          <span className="auth-field__label">School name</span>
+                          <input type="text" className="auth-field__input" placeholder="e.g. DAV Public School, Pune" value={profileData.schoolName} onChange={e => setProfileData({...profileData, schoolName: e.target.value})} />
+                        </label>
+                        <div className="auth-field">
+                          <span className="auth-field__label">Subjects you teach</span>
+                          <div className="chip-select">
+                            {TEACHER_SUBJECTS.map(s => (
+                              <label key={s} className={`chip ${profileData.selectedSubjects.includes(s) ? 'is-active' : ''}`}>
+                                <input type="checkbox" checked={profileData.selectedSubjects.includes(s)} onChange={() => setProfileData({...profileData, selectedSubjects: toggleChip(profileData.selectedSubjects, s)})} />
+                                {s}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="auth-field">
+                          <span className="auth-field__label">Grades you teach</span>
+                          <div className="chip-select">
+                            {TEACHER_GRADES.map(g => (
+                              <label key={g} className={`chip ${profileData.selectedGrades.includes(g) ? 'is-active' : ''}`}>
+                                <input type="checkbox" checked={profileData.selectedGrades.includes(g)} onChange={() => setProfileData({...profileData, selectedGrades: toggleChip(profileData.selectedGrades, g)})} />
+                                {g}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {persona === 4 && (
+                      <>
+                        <label className="auth-field">
+                          <span className="auth-field__label">School or organisation name</span>
+                          <input type="text" className="auth-field__input" placeholder="e.g. DAV Public School, Pune" value={profileData.institutionName} onChange={e => setProfileData({...profileData, institutionName: e.target.value})} />
+                        </label>
+                        <div className="auth-row">
+                          <label className="auth-field">
+                            <span className="auth-field__label">Primary board</span>
+                            <select className="auth-field__input" value={profileData.primaryBoard} onChange={e => setProfileData({...profileData, primaryBoard: e.target.value})}>
+                              <option value="">Select…</option>
+                              {boards.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
+                            </select>
+                          </label>
+                          <label className="auth-field">
+                            <span className="auth-field__label">Your role</span>
+                            <select className="auth-field__input" value={profileData.adminRole} onChange={e => setProfileData({...profileData, adminRole: e.target.value})}>
+                              <option value="">Select…</option>
+                              <option>Principal</option><option>Vice-Principal</option><option>Academic Head</option><option>Administrator</option>
+                            </select>
+                          </label>
+                        </div>
+                        <div className="auth-row">
+                          <label className="auth-field">
+                            <span className="auth-field__label">Approximate students enrolled</span>
+                            <select className="auth-field__input" value={profileData.enrollment} onChange={e => setProfileData({...profileData, enrollment: e.target.value})}>
+                              <option value="">Select…</option>
+                              <option>&lt; 250</option><option>250–500</option><option>500–1,000</option><option>1,000+</option>
+                            </select>
+                          </label>
+                          <label className="auth-field">
+                            <span className="auth-field__label">Your name</span>
+                            <input type="text" className="auth-field__input" placeholder="e.g. Dr. Meera Ranganathan" value={profileData.fullName} onChange={e => setProfileData({...profileData, fullName: e.target.value})} />
+                          </label>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="w-step__actions">
+                    <button type="button" className="btn btn-ghost" onClick={handleBackStep}>← Back</button>
+                    <button type="button" className="btn btn-primary" onClick={handleNextStep}>Continue →</button>
+                  </div>
+                </>
+              )}
+            </section>
+
+            <section className={`w-step ${currentStep === 3 ? 'is-active' : ''}`}>
+              {currentStep === 3 && (
+                <>
+                  <div className="w-step__eyebrow">
+                    <span className="accent-sanskrit">संपर्क</span>
+                    <span className="wse-en">Contact</span>
+                  </div>
+                  <h1 className="w-step__title">How should we reach you?</h1>
+                  <p className="w-step__lede">We'll send a one-time code to verify it's really you.</p>
+
+                  <div className="auth-toggle">
+                    <button type="button" className={`auth-toggle__btn ${contactMethod === 'email' ? 'is-active' : ''}`} onClick={() => setContactMethod('email')}>Email</button>
+                    <button type="button" className={`auth-toggle__btn ${contactMethod === 'phone' ? 'is-active' : ''}`} onClick={() => setContactMethod('phone')}>Phone</button>
+                  </div>
+
+                  <label className="auth-field">
+                    <span className="auth-field__label">{contactMethod === 'email' ? 'Email address' : 'Phone'}</span>
+                    <div className={contactMethod === 'phone' ? "auth-field__phone" : ""}>
+                      {contactMethod === 'phone' && <span className="auth-field__cc">+91</span>}
+                      <input type={contactMethod === 'email' ? 'email' : 'tel'} className="auth-field__input" placeholder={contactMethod === 'email' ? "you@school.edu" : "98765 43210"} value={contactValue} onChange={(e) => setContactValue(e.target.value)} />
+                    </div>
+                  </label>
+
+                  <label className="auth-checkbox">
+                    <input type="checkbox" checked={agreedToTerms} onChange={(e) => setAgreedToTerms(e.target.checked)} />
+                    <span>I agree to the <Link to="#">terms</Link> and <Link to="#">data policy</Link>. Student data stays anonymised.</span>
+                  </label>
+
+                  <div className="w-step__actions">
+                    <button type="button" className="btn btn-ghost" onClick={handleBackStep}>← Back</button>
+                    <button type="button" className="btn btn-primary" onClick={handleNextStep} disabled={isSendingOtp || !agreedToTerms || !contactValue}>
+                      {isSendingOtp ? "Sending..." : "Send code →"}
+                    </button>
+                  </div>
+                </>
+              )}
+            </section>
+
+            <section className={`w-step ${currentStep === 4 ? 'is-active' : ''}`}>
+              {currentStep === 4 && (
+                <>
+                  <div className="w-step__eyebrow">
+                    <span className="accent-sanskrit">स्वागतम्</span>
+                    <span className="wse-en">Welcome</span>
+                  </div>
+                  <h1 className="w-step__title">Verify and step onto your path.</h1>
+                  <p className="w-step__lede">We sent a 6-digit code to <strong>{contactValue}</strong>.</p>
+
+                  <div className="otp-boxes">
+                    {otp.map((digit, index) => (
+                      <input
+                        key={index}
+                        ref={(el) => { otpRefs.current[index] = el; }}
+                        type="text"
+                        maxLength={1}
+                        className="otp-box"
+                        value={digit}
+                        onChange={(e) => handleOtpChange(index, e.target.value)}
+                        onKeyDown={(e) => e.key === 'Backspace' && !digit && index > 0 && otpRefs.current[index-1]?.focus()}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="otp-resend">
+                    Didn't get it? {canResend ? <button type="button" className="link-btn" onClick={handleSendOtp}>Resend code</button> : <span>Resend in {resendTimer}s</span>}
+                    {" or "} <button type="button" className="link-btn" onClick={handleBackStep}>change method</button>.
+                  </div>
+
+                  {otpError && <p className="auth-error">{otpError}</p>}
+
+                  <div className="w-step__actions">
+                    <button type="button" className="btn btn-ghost" onClick={handleBackStep}>← Back</button>
+                    <button type="button" className="btn btn-primary" onClick={handleVerifyAndFinish} disabled={isVerifying || otp.join("").length !== 6}>
+                      {isVerifying ? "Verifying..." : "Begin my path →"}
+                    </button>
+                  </div>
+                </>
+              )}
+            </section>
+          </form>
         </div>
-      </div>
+      </main>
+
+      <footer className="auth-footer">
+        <div className="wrap">
+          <div>© 2026 MokshPath Academia</div>
+          <div><Link to="#">Privacy</Link> · <Link to="#">Terms</Link> · <Link to="#">Help</Link></div>
+        </div>
+      </footer>
     </div>
   );
 };
 
-const Login: React.FC = () => {
-  return <LoginModal />;
-};
-
+const Login: React.FC = () => <LoginModal />;
 export default Login;
