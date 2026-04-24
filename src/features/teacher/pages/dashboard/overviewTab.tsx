@@ -119,13 +119,13 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
           {topStats.map((stat: any, i: number) => (
             <div key={i} className="flex flex-col justify-center">
               {/* 1. Large Number (Value) with Dynamic Color */}
-              <p className="text-4xl lg:text-5xl font-black leading-none tracking-tight" style={{ color: stat.color }}>
+              <p className="text-4xl lg:text-5xl font-medium leading-none tracking-tight" style={{ color: stat.color }}>
                 {stat.value}
               </p>
               
               <div className="mt-2">
                 {/* 2. Label */}
-                <p className="text-[11px] font-bold leading-tight text-gray-800">
+                <p className="text-[11px] font-bold leading-tight text-gray-800" style={{ color: stat.color }}>
                   {stat.label}
                 </p>
                 
