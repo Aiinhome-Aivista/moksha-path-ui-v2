@@ -41,11 +41,7 @@ export const AppLayout: React.FC = () => {
         </main>
         <Footer />
 
-        {/* Modal Flow - All render on top of dashboard */}
-        {/* Step 0: SignIn Modal (Existing User) */}
-        <SignInModal />
-        {/* Step 1: Login Modal (New User Setup) */}
-        <LoginModal />
+        {/* Modal Flow - Initial steps now handled as pages */}
         {/* Step 2: Academic Details Modal */}
         <AcademicDetails />
         {/* Step 3: Select Subjects Modal */}
@@ -80,13 +76,7 @@ export const AppLayout: React.FC = () => {
 
         <Footer />
 
-        {/* Modal Flow - All render on top of dashboard */}
-        {/* Step 0: SignIn Modal (Existing User) */}
-        <SignInModal />
-
-        {/* Step 1: Login Modal (New User Setup) */}
-        <LoginModal />
-
+        {/* Modal Flow - Initial steps now handled as pages */}
         {/* Step 2: Academic Details Modal */}
         <AcademicDetails />
 

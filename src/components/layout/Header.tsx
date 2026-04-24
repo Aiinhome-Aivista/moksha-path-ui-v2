@@ -4,7 +4,6 @@ import { UserCircle } from 'lucide-react';
 import Brand from '../common/Brand';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { ProfileDropdown } from '../../features/auth/modal/ProfileDropdown';
-import { useModal } from '../../features/auth/context/AuthContext';
 
 export type HeaderVariant = 'landing' | 'auth';
 
@@ -20,7 +19,6 @@ const Header = ({ variant = 'landing' }: HeaderProps) => {
   const toggle = () => setOpen((v) => !v);
 
   const { isAuthenticated, user } = useAuth();
-  const { openSignIn, openSelectRole } = useModal();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -85,18 +83,20 @@ const Header = ({ variant = 'landing' }: HeaderProps) => {
                    className="btn btn-ghost">
                   Blog
                 </Link>
-                <button 
-                  onClick={() => { setOpen(false); openSignIn(); }} 
+                <Link 
+                  to="/signin"
+                  onClick={() => setOpen(false)} 
                   className="btn btn-ghost"
                 >
                   Sign in
-                </button>
-                <button 
-                  onClick={() => { setOpen(false); openSelectRole(); }} 
+                </Link>
+                <Link 
+                  to="/register"
+                  onClick={() => setOpen(false)} 
                   className="btn btn-primary cta"
                 >
                   Create account
-                </button>
+                </Link>
               </>
             ) : (
               <>
@@ -104,18 +104,20 @@ const Header = ({ variant = 'landing' }: HeaderProps) => {
                 <Link to="/#faq">FAQ</Link>
                 <Link to="/#pricing">Pricing</Link>
                 <Link to="/blogs">Blog</Link>
-                <button 
-                  onClick={() => { setOpen(false); openSignIn(); }} 
+                <Link 
+                  to="/signin"
+                  onClick={() => setOpen(false)} 
                   className="btn btn-ghost"
                 >
                   Sign in
-                </button>
-                <button 
-                  onClick={() => { setOpen(false); openSelectRole(); }} 
+                </Link>
+                <Link 
+                  to="/register"
+                  onClick={() => setOpen(false)} 
                   className="btn btn-primary cta"
                 >
                   Create account
-                </button>
+                </Link>
               </>
             )}
           </nav>
