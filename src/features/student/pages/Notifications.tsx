@@ -1015,7 +1015,7 @@ const Notifications: React.FC = () => {
                           Marks
                         </p>
                         <p className="text-gray-700 font-semibold">
-                          {test.marks_obtained}/{test.total_marks}
+                         {test.total_marks}
                         </p>
                       </div>
                     </div>

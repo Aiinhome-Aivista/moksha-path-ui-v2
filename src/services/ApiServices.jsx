@@ -434,6 +434,14 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.student_subject_dashboard_vw);
   }
 
+  getStudentMockDashboard() {
+    return axiosInstance.get(GET_APIS.student_mock_dashboard_vw);
+  }
+
+  getStudentChapterRemediation() {
+    return axiosInstance.get(GET_APIS.student_chapter_remediation_vw);
+  }
+
   // Teacher APIs
   getTeacherStudentStatusDashboard() {
     return axiosInstance.get(GET_APIS.teacher_student_status_dashboard);
@@ -525,7 +533,11 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.teacher_profile);
   }
 
-    getStudentProfile() {
+  getTeacherDashboard() {
+    return axiosInstance.get(GET_APIS.teacher_dashboard_vw);
+  }
+
+  getStudentProfile() {
     return axiosInstance.get(GET_APIS.student_profile);
   }
   getParentStrengthWeakness(student_id) {

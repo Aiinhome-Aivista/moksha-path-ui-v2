@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, CheckCircle2, XCircle } from "lucide-react";
 import ApiServices from "../../../services/ApiServices";
 import { useToast } from "../../../app/providers/ToastProvider";
 
@@ -23,7 +23,7 @@ interface Question {
 interface ApiQuestion {
   question_id: number;
   question_text: string;
-  question_type: "MCQ" | "TrueFalse" | "Textual";
+  question_type: "Single-Choice MCQ" | "Multi-Choice MCQ";
   options: Record<string, string> | null;
   difficulty: string;
   marks: number;
@@ -36,22 +36,12 @@ interface ApiQuestion {
 const transformApiQuestion = (apiQuestion: ApiQuestion): Question => {
   let options: Option[] = [];
 
-  // Determine type automatically if options are present
-  const baseType = apiQuestion.question_type || (apiQuestion.options ? "MCQ" : "TrueFalse");
-
-  if (baseType === "MCQ" && apiQuestion.options) {
+  if (apiQuestion.options) {
     options = Object.entries(apiQuestion.options).map(([key, value]) => ({
       label: key.toUpperCase(),
       text: value as string,
     }));
-  } else if (baseType === "TrueFalse" || (!apiQuestion.options && baseType === "MCQ")) {
-    // If it's True/False or marked as MCQ but has no options, default to True/False options
-    options = [
-      { label: "A", text: "True" },
-      { label: "B", text: "False" },
-    ];
   }
-  // Textual questions don't have options
 
   return {
     id: apiQuestion.question_id,
@@ -59,7 +49,7 @@ const transformApiQuestion = (apiQuestion: ApiQuestion): Question => {
     options,
     correctAnswer: "", // Will be validated server-side
     sl_no: apiQuestion.sl_no,
-    type: baseType,
+    type: apiQuestion.question_type,
     adaptive_level_code: apiQuestion.adaptive_level_code,
     mapped_bucket: apiQuestion.mapped_bucket,
   };
@@ -101,10 +91,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questionOrder, setQuestionOrder] = useState<number[]>([]);
   const [selectedAnswers, setSelectedAnswers] = useState<
-    Record<number, string>
-  >({});
-  const [textualAnswers, setTextualAnswers] = useState<
-    Record<number, string>
+    Record<number, string | string[]>
   >({});
   const [savedQuestions, setSavedQuestions] = useState<Set<number>>(new Set());
   const [skippedSet, setSkippedSet] = useState<Set<number>>(new Set());
@@ -113,6 +100,8 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [isCompleteFromServer, setIsCompleteFromServer] = useState(false);
+  const [questionFeedback, setQuestionFeedback] = useState<Record<number, boolean | null>>({});
+  const [lastSavedAnswers, setLastSavedAnswers] = useState<Record<number, any>>({});
   const questionStartTimeRef = useRef<number>(Date.now());
   const { showToast } = useToast();
 
@@ -149,12 +138,13 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
         setQuestionOrder(initialQuestions.map((q: Question) => q.id));
       }
       setSelectedAnswers({});
-      setTextualAnswers({});
       setSavedQuestions(new Set());
       setSkippedSet(new Set());
       setTimeLeft((testDurationMinutes ?? 0) * 60);
       setTestFinished(false);
       setIsCompleteFromServer(false);
+      setQuestionFeedback({});
+      setLastSavedAnswers({});
       questionStartTimeRef.current = Date.now();
     }
   }, [isOpen, initialQuestions, testDurationMinutes]);
@@ -213,6 +203,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
 
   const finishAssessmentAndShowResult = useCallback(async () => {
     if (testFinished || !attemptId) return;
+    setIsSubmitting(true);
     setTestFinished(true);
 
     try {
@@ -254,6 +245,10 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
         if (onComplete) {
           onComplete(result);
         }
+      } else {
+        showToast(response.data?.message || "Failed to submit assessment", "error");
+        setIsSubmitting(false);
+        setTestFinished(false);
       }
     } catch (error: any) {
       showToast(
@@ -261,6 +256,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
         "error",
       );
       setTestFinished(false); // Reset to allow retry
+      setIsSubmitting(false);
     }
   }, [
     attemptId,
@@ -287,10 +283,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
     (q: Question) => q.id === currentQuestionId,
   );
 
-  // Fallback while useEffect synchronizes questionOrder
   if (!currentQuestion) return null;
-
-  const isTextualQuestion = !currentQuestion.options || currentQuestion.options.length === 0;
 
   // Progress Calculation: 
   // In adaptive mode, we increment 1 by 1. So if current is 2, total is 2 (2/2).
@@ -300,10 +293,29 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
   const completedPercent = isCompleteFromServer ? 100 : Math.round((answeredCount / totalQuestions) * 100);
 
   const handleSelectOption = (optionLabel: string) => {
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [currentQuestion.id]: optionLabel,
-    }));
+    if (!currentQuestion) return;
+
+    setSelectedAnswers((prev) => {
+      const qType = currentQuestion.type;
+      const currentSelection = prev[currentQuestion.id];
+
+      if (qType?.toLowerCase().includes("multi")) {
+        const selectedList = (currentSelection as string[]) || [];
+        const newSelection = selectedList.includes(optionLabel)
+          ? selectedList.filter((l) => l !== optionLabel)
+          : [...selectedList, optionLabel];
+        return { ...prev, [currentQuestion.id]: newSelection };
+      } else {
+        // Toggle for single choice: if already selected, clear it.
+        const newVal = currentSelection === optionLabel ? "" : optionLabel;
+        return { ...prev, [currentQuestion.id]: newVal };
+      }
+    });
+    setQuestionFeedback(prev => {
+      const newFB = { ...prev };
+      delete newFB[currentQuestion.id];
+      return newFB;
+    });
     setSkippedSet(prev => {
       const newSet = new Set(prev);
       newSet.delete(currentQuestion.id);
@@ -311,23 +323,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
     });
   };
 
-  const handleTextualAnswer = (text: string) => {
-    setTextualAnswers((prev) => ({
-      ...prev,
-      [currentQuestion.id]: text,
-    }));
-    setSkippedSet(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(currentQuestion.id);
-      return newSet;
-    });
-  };
 
-  const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1);
-    }
-  };
 
   const handlePrev = () => {
     if (currentQuestionIndex > 0) {
@@ -335,7 +331,49 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
     }
   };
 
-  const handleSkip = async () => {
+  const handleNext = async () => {
+    if (isSubmitting) return;
+
+    const isAtLast = currentQuestionIndex === questions.length - 1;
+
+    if (isAdaptive && !isCompleteFromServer) {
+      if (isAtLast) {
+        const currentSelection = selectedAnswers[currentQuestion.id];
+        const hasSelection = currentSelection && (Array.isArray(currentSelection) ? currentSelection.length > 0 : true);
+
+        if (hasSelection) {
+          await handleSubmit();
+        } else {
+          await handleSkip();
+        }
+      } else {
+        // We are on a previous question. 
+        // Check if answer changed
+        const currentSelection = JSON.stringify(selectedAnswers[currentQuestion.id]);
+        const lastSaved = JSON.stringify(lastSavedAnswers[currentQuestion.id]);
+
+        if (currentSelection !== lastSaved) {
+          // Answer changed, save it but don't fetch next question (since we already have the next ones)
+          await handleSubmit(false);
+        }
+        setCurrentQuestionIndex((prev) => prev + 1);
+      }
+    } else {
+      // Non-adaptive or Adaptive-Complete mode
+      if (currentQuestionIndex < questions.length - 1) {
+        setCurrentQuestionIndex((prev) => prev + 1);
+      } else {
+        // Last question - handle final submission
+        if (isAdaptive && isCompleteFromServer) {
+          await finishAssessmentAndShowResult();
+        } else if (!isAdaptive) {
+          await handleSubmit();
+        }
+      }
+    }
+  };
+
+  const handleSkip = async (fetchNext = true) => {
     if (isAdaptive) {
       if (isSubmitting || !attemptId) return;
       setIsSubmitting(true);
@@ -353,6 +391,14 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
         });
 
         if (skipRes.data?.status === "success" || skipRes.data?.status === true) {
+          setLastSavedAnswers(prev => ({ ...prev, [currentQuestion.id]: undefined }));
+          setSkippedSet(prev => new Set(prev).add(currentQuestion.id));
+
+          if (!fetchNext) {
+            setIsSubmitting(false);
+            return;
+          }
+
           // 2. Load Next Question
           const nextRes = await ApiServices.getNextAdaptiveQuestion(attemptId);
           if (nextRes.data?.status === "success" || nextRes.data?.status === true) {
@@ -364,7 +410,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
               const apiNext = {
                 question_id: nextData.question_id,
                 question_text: nextData.question_text,
-                question_type: (nextData.question_type || "MCQ") as "MCQ" | "TrueFalse" | "Textual",
+                question_type: nextData.question_type as "Single-Choice MCQ" | "Multi-Choice MCQ",
                 options: nextData.options,
                 difficulty: nextData.difficulty,
                 marks: nextData.marks,
@@ -402,12 +448,18 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (fetchNext = true) => {
     if (isSubmitting || !attemptId) return;
 
-    const answer = isTextualQuestion
-      ? textualAnswers[currentQuestion.id]
-      : selectedAnswers[currentQuestion.id];
+    const currentSelection = selectedAnswers[currentQuestion.id];
+    let answer = "";
+
+    if (Array.isArray(currentSelection)) {
+      const labels = currentSelection.map(l => l.toLowerCase()).sort().join(",");
+      answer = `{${labels}}`;
+    } else {
+      answer = currentSelection ? `{${currentSelection.toLowerCase()}}` : "";
+    }
 
     // On the last question, allow submitting without an answer. 
     // In adaptive mode, we also allow empty answer (which counts as a skip).
@@ -425,19 +477,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
       );
       const slNo = currentQuestion.sl_no || currentQuestionIndex + 1;
 
-      // Map answer label if it's MCQ (e.g., "b" instead of "15")
-      let finalAnswer = "";
-      if (isTextualQuestion) {
-        finalAnswer = textualAnswers[currentQuestion.id] || "";
-      } else {
-        const selectedLabel = selectedAnswers[currentQuestion.id];
-        if (currentQuestion.type === "TrueFalse") {
-          const opt = currentQuestion.options.find(o => o.label === selectedLabel);
-          finalAnswer = opt ? opt.text.toLowerCase() : "";
-        } else {
-          finalAnswer = selectedLabel ? selectedLabel.toLowerCase() : "";
-        }
-      }
+      const finalAnswer = answer;
 
       try {
         // 1. Save Adaptive Answer
@@ -450,6 +490,25 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
         });
 
         if (saveRes.data?.status === "success" || saveRes.data?.status === true) {
+          // Set feedback for current question
+          const isCorrect = saveRes.data.data.is_correct;
+          setQuestionFeedback(prev => ({ ...prev, [currentQuestion.id]: isCorrect }));
+          setLastSavedAnswers(prev => ({ ...prev, [currentQuestion.id]: currentSelection }));
+          setSavedQuestions(prev => new Set(prev).add(currentQuestion.id));
+          setSkippedSet(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(currentQuestion.id);
+            return newSet;
+          });
+
+          // Short delay to show feedback before moving to next question
+          await new Promise(resolve => setTimeout(resolve, 1500));
+
+          if (!fetchNext) {
+            setIsSubmitting(false);
+            return;
+          }
+
           // 2. Load Next Question
           const nextRes = await ApiServices.getNextAdaptiveQuestion(attemptId);
           if (nextRes.data?.status === "success" || nextRes.data?.status === true) {
@@ -461,7 +520,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
               const apiNext = {
                 question_id: nextData.question_id,
                 question_text: nextData.question_text,
-                question_type: (nextData.question_type || "MCQ") as "MCQ" | "TrueFalse" | "Textual",
+                question_type: nextData.question_type as "Single-Choice MCQ" | "Multi-Choice MCQ",
                 options: nextData.options,
                 difficulty: nextData.difficulty,
                 marks: nextData.marks,
@@ -505,15 +564,11 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
       const slNo = apiQuestion?.sl_no || currentQuestionIndex + 1;
 
       try {
-        await ApiServices.saveAssessmentAnswer({
+        const saveRes = await ApiServices.saveAssessmentAnswer({
           attempt_id: attemptId,
           question_id: currentQuestion.id,
           sl_no: slNo,
-          answer: isTextualQuestion
-            ? answer
-            : (currentQuestion.type === "TrueFalse"
-              ? (currentQuestion.options.find(o => o.label === answer)?.text.toLowerCase() || "")
-              : (answer ? answer.toLowerCase() : "")),
+          answer: answer,
           time_taken: timeTaken,
         });
 
@@ -523,6 +578,15 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
           newSet.delete(currentQuestion.id);
           return newSet;
         });
+
+        // Show feedback if available in non-adaptive response
+        if (saveRes.data?.data?.is_correct !== undefined) {
+          setQuestionFeedback(prev => ({ ...prev, [currentQuestion.id]: saveRes.data.data.is_correct }));
+          // For non-adaptive, we might want to wait if we're auto-advancing
+          if (currentQuestionIndex < totalQuestions - 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
       } catch (error: any) {
         showToast(
           error.response?.data?.message || "Failed to save answer",
@@ -544,7 +608,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
 
   const handleQuit = () => setShowExitConfirm(true);
   const handleConfirmExit = async () => {
-    setShowExitConfirm(false);
+    // Don't close immediately so student sees 'Processing...' on the button
     await finishAssessmentAndShowResult();
   };
   const handleCancelExit = () => setShowExitConfirm(false);
@@ -675,7 +739,9 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
           {/* ─── Right Panel: Question Area ─── */}
           <div className="flex-1 flex flex-col p-5 sm:p-8 overflow-y-auto">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 pr-8 sm:pr-0">
-              Assessment
+              {assessmentDetails?.set_name
+                ? `Chapter - ${assessmentDetails.set_name.split("-")[0].trim()} - Assessment`
+                : "Assessment"}
             </h2>
 
             <p className="text-base sm:text-sm font-bold text-gray-800 mb-5 leading-relaxed">
@@ -685,30 +751,31 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
               . {currentQuestion.question}
             </p>
 
-            {isTextualQuestion ? (
-              <div className="mb-auto shrink-0">
-                <textarea
-                  value={textualAnswers[currentQuestion.id] || ""}
-                  onChange={(e) => handleTextualAnswer(e.target.value)}
-                  placeholder="Enter your answer here..."
-                  className="w-full h-32 sm:h-40 px-4 py-3 border border-gray-300 rounded-xl text-base sm:text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#b0cb1f] focus:border-[#b0cb1f] transition-all"
-                />
-              </div>
-            ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 sm:gap-y-4 mb-auto shrink-0">
                 {currentQuestion.options && currentQuestion.options.map((option: Option) => {
-                  const isSelected = selectedAnswers[currentQuestion.id] === option.label;
+                  const isSelected = Array.isArray(selectedAnswers[currentQuestion.id])
+                    ? (selectedAnswers[currentQuestion.id] as string[]).includes(option.label)
+                    : selectedAnswers[currentQuestion.id] === option.label;
+                  const isMultiple = currentQuestion.type?.toLowerCase().includes("multi");
+                  const hasFeedback = questionFeedback[currentQuestion.id] !== undefined && questionFeedback[currentQuestion.id] !== null;
+                  const isCorrect = questionFeedback[currentQuestion.id] === true;
+
+                  let indicatorClass = "";
+                  if (isSelected) {
+                    indicatorClass = "bg-[#b0cb1f] border-[#b0cb1f]";
+                  } else {
+                    indicatorClass = "border-gray-300 bg-white group-hover:border-[#b0cb1f]";
+                  }
+
                   return (
                     <button
                       key={option.label}
-                      onClick={() => handleSelectOption(option.label)}
-                      className="flex items-start sm:items-center gap-3 text-left group p-2 sm:p-0 -mx-2 sm:mx-0 rounded-lg hover:bg-gray-50 sm:hover:bg-transparent transition-colors"
+                      onClick={() => !isSubmitting && handleSelectOption(option.label)}
+                      disabled={isSubmitting}
+                      className={`flex items-start sm:items-center gap-3 text-left group p-2 sm:p-0 -mx-2 sm:mx-0 rounded-lg transition-colors ${isSubmitting ? "cursor-default" : "hover:bg-gray-50 sm:hover:bg-transparent"}`}
                     >
                       <div
-                        className={`w-5 h-5 sm:w-6 sm:h-6 mt-0.5 sm:mt-0 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isSelected
-                          ? "bg-[#b0cb1f] border-[#b0cb1f]"
-                          : "border-gray-300 bg-white group-hover:border-[#b0cb1f]"
-                          }`}
+                        className={`w-5 h-5 sm:w-6 sm:h-6 mt-0.5 sm:mt-0 flex items-center justify-center shrink-0 transition-all ${isMultiple ? "rounded-md" : "rounded-full"} border-2 ${indicatorClass}`}
                       >
                         {isSelected && (
                           <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -716,14 +783,30 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                           </svg>
                         )}
                       </div>
-                      <span className="text-base sm:text-sm text-gray-700 font-medium">
-                        {option.label}. {option.text}
-                      </span>
+                      <div className="flex items-center gap-2 flex-1">
+                        <span className="text-base sm:text-sm font-medium text-gray-700">
+                          {option.label}. {option.text}
+                        </span>
+                        {isSelected && hasFeedback && (
+                          isCorrect ? (
+                            <div className="w-6 h-6 rounded-full bg-[#22c55e] flex items-center justify-center shrink-0 shadow-sm">
+                              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-[#ef4444] flex items-center justify-center shrink-0 shadow-sm">
+                              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </div>
+                          )
+                        )}
+                      </div>
                     </button>
                   );
                 })}
               </div>
-            )}
 
             {/* ─── Action Buttons ─── */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-3 mt-6 sm:mt-8 pt-4 border-t border-gray-100 sm:border-transparent shrink-0 w-full">
@@ -744,40 +827,22 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                   <ChevronLeft size={16} /> Previous
                 </button>
                 <button
-                  onClick={handleNext}
-                  disabled={currentQuestionIndex === questions.length - 1 || isSubmitting}
-                  className="flex items-center gap-1 w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-[#464646] text-white text-base md:text-sm font-medium hover:bg-[#333] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  onClick={() => handleNext()}
+                  disabled={isSubmitting}
+                  className="flex items-center justify-center gap-2 w-full md:w-auto px-10 py-3 md:py-2.5 rounded-full bg-[#b0cb1f] text-gray-900 text-base md:text-sm font-bold hover:bg-[#c5de3a] transition-all sm:hover:scale-[1.02] shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:sm:hover:scale-100"
                 >
-                  Next <ChevronRight size={16} />
+                  {isSubmitting ? (
+                    "Processing..."
+                  ) : (
+                    <>
+                      {currentQuestionIndex === questions.length - 1 && (!isAdaptive || isCompleteFromServer) ? "Final Submit" : "Next"}
+                      <ChevronRight size={18} />
+                    </>
+                  )}
                 </button>
               </div>
 
-              <div className="order-1 md:order-3 flex flex-col md:flex-row w-full md:w-auto gap-3">
-                <button
-                  onClick={handleSkip}
-                  disabled={isSubmitting}
-                  className="w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-[#464646] text-white text-base md:text-sm font-medium hover:bg-[#333] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Skip
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  disabled={isSubmitting || isCompleteFromServer}
-                  className="w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-[#b0cb1f] text-gray-900 text-base md:text-sm font-semibold hover:bg-[#c5de3a] transition-all sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:sm:hover:scale-100"
-                >
-                  {isSubmitting ? "Submitting..." : (isAdaptive ? "Save & continue" : (currentQuestionIndex === totalQuestions - 1 ? "Final Submit" : "Save & continue"))}
-                </button>
-                {/* Manual Final Submit Button for Adaptive - Triggered only on completion or manual quit logic */}
-                {isAdaptive && isCompleteFromServer && (
-                  <button
-                    onClick={finishAssessmentAndShowResult}
-                    disabled={isSubmitting || testFinished}
-                    className="w-full md:w-auto px-6 py-3 md:py-2.5 rounded-full bg-green-600 text-white text-base md:text-sm font-semibold shadow-lg scale-[1.05] transition-all sm:hover:scale-[1.1] disabled:opacity-50"
-                  >
-                    Final Submit
-                  </button>
-                )}
-              </div>
+
             </div>
           </div>
         </div>
@@ -802,9 +867,10 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
               </button>
               <button
                 onClick={handleConfirmExit}
-                className="w-full sm:w-auto px-5 py-2.5 sm:py-2 rounded-full bg-[#E91E7B] text-white text-base sm:text-sm font-medium hover:bg-[#d11a6d] transition-colors"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto px-5 py-2.5 sm:py-2 rounded-full bg-[#E91E7B] text-white text-base sm:text-sm font-medium hover:bg-[#d11a6d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Quit & Submit
+                {isSubmitting ? "Processing..." : "Quit & Submit"}
               </button>
             </div>
           </div>

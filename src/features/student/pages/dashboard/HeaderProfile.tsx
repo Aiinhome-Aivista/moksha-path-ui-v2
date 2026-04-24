@@ -46,7 +46,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
   const examDropdownRef = useRef<HTMLDivElement>(null);
 
   const [notifications, setNotifications] = useState<Record<string, number>>({});
-  const [overallTestCount, setOverallTestCount] = useState<number>(0);
+  // const [overallTestCount, setOverallTestCount] = useState<number>(0);
 
   useEffect(() => {
     const fetchProfile = async () => {

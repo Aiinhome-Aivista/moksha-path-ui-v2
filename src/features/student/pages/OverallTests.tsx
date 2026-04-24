@@ -113,7 +113,7 @@ const OverallTests: React.FC = () => {
                   </div>
                   <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
                     <p className="text-gray-400 font-bold uppercase text-[9px] mb-1">Marks</p>
-                    <p className="text-sm font-bold text-gray-700">{test.marks_obtained || 0}/{test.total_marks}</p>
+                    <p className="text-sm font-bold text-gray-700">{test.total_marks}</p>
                   </div>
                 </div>
 

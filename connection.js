@@ -27,6 +27,8 @@ export const GET_APIS = {
 
   // Subscription Invitations
   subscription_invite_list: `${BASE_URL}subscription/invite_list`,
+  student_mock_dashboard_vw: `${BASE_URL}learning/student_mock_dashboard_vw`,
+  student_chapter_remediation_vw: `${BASE_URL}learning/student_chapter_remediation_vw`,
   subscription_invite_history: `${BASE_URL}subscription/invite_history`,
   subscription_list: `${BASE_URL}subscription/subscription_list`,
   //user subscription details
@@ -75,6 +77,7 @@ export const GET_APIS = {
   teacher_top_bottom_students: `${BASE_URL}parent_teacher/dashboard/top-bottom-students`,
 
   teacher_profile: `${BASE_URL}parent_teacher/dashboard/teacher-profile`,
+  teacher_dashboard_vw: `${BASE_URL}learning/teacher_dashboard_vw`,
   student_profile: `${BASE_URL}parent_teacher/dashboard/teacher-profile`,
 
   // Learning Planner for teacher and parent
