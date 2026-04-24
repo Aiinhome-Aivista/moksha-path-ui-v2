@@ -275,7 +275,7 @@ export const LoginModal: React.FC = () => {
                     <span className="wse-en">Let's begin</span>
                   </div>
                   <h1 className="w-step__title">Who walks this path with us?</h1>
-                  <p className="w-step__lede">Pick the role that describes you best today.</p>
+                  <p className="w-step__lede">Pick the role that describes you best today. You can always invite others later.</p>
                   
                   <div className="persona-cards">
                     {roles.filter(r => [1,2,3,4].includes(r.role_id)).map(role => (
@@ -292,7 +292,7 @@ export const LoginModal: React.FC = () => {
                           {role.role_id === 4 && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M3 21h18M5 21V9l7-5 7 5v12"/><path d="M9 21v-6h6v6"/></svg>}
                         </span>
                         <span className="pc-name">{role.role_name}</span>
-                        <span className="pc-sub">{role.role_id === 1 ? "I'm learning" : role.role_id === 2 ? "Supporting a learner" : "Teaching a class"}</span>
+                        <span className="pc-sub">{role.role_id === 1 ? "I'm learning — in Class 6 to 12" : role.role_id === 2 ? "Supporting a learner at home" : role.role_id === 3 ?"Teaching a class, running diagnostics":"School, chain, or academic body"}</span>
                       </button>
                     ))}
                   </div>

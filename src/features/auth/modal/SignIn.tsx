@@ -4,7 +4,7 @@ import { useModal } from "../context/AuthContext";
 import { useToast } from "../../../app/providers/ToastProvider";
 import ApiServices from "../../../services/ApiServices";
 import { useAuth } from "../../../app/providers/AuthProvider";
-
+import babaji from "../../../assets/icon/hero.svg"
 const isValidIndianMobile = (mobile: string) => /^[6-9]\d{9}$/.test(mobile);
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -285,7 +285,7 @@ export const SignInModal: React.FC = () => {
 
           <aside className="auth-aside">
             <div className="auth-aside__inner">
-              <img src="/logogod.svg" alt="" className="auth-aside__logo" aria-hidden="true" />
+              <img src={babaji} alt="" className="auth-aside__logo" aria-hidden="true" />
               <blockquote className="auth-aside__quote">
                 "A single stone, dropped in the right pond, changes the direction of every ripple."
               </blockquote>
