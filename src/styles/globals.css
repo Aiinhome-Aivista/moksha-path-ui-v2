@@ -1,3 +1,7 @@
+/* Import the original MokshPath stylesheet (preserves exact design & animations) */
+@import './legacy.css';
+
+
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;700&display=swap");
 
 
