@@ -770,26 +770,26 @@ const TeacherLearningPlanner: React.FC = () => {
 
                 <td className="py-3 px-2 text-center">
                   <div className={`flex justify-end items-center gap-2 
-                      ${row.completed && row.isSaved === true
+                      ${row.completed
                       ? "opacity-50 cursor-not-allowed"
                       : "cursor-pointer"
                     }`}>
                     {row.startDate || "—"}
                     <label
-                      className={`relative ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}
+                      className={`relative ${row.completed ? "cursor-not-allowed" : "cursor-pointer"}`}
                     >
                       <input
                         type="date"
                         min={today}
-                        disabled={row.completed && row.isSaved === true}
-                        className={`absolute inset-0 opacity-0 w-full h-full z-10 ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}
+                        disabled={row.completed}
+                        className={`absolute inset-0 opacity-0 w-full h-full z-10 ${row.completed ? "cursor-not-allowed" : "cursor-pointer"}`}
                         onChange={(e) =>
                           handleDateChange(row.id, "startDate", e.target.value)
                         }
                       />
                       <Calendar
                         size={16}
-                        className={`${row.completed && row.isSaved === true ? "text-gray-400" : "text-primary"} pointer-events-none`}
+                        className={`${row.completed ? "text-gray-400" : "text-primary"} pointer-events-none`}
                       />
                     </label>
                   </div>
@@ -797,26 +797,26 @@ const TeacherLearningPlanner: React.FC = () => {
 
                 <td className="py-3 px-2 text-center">
                   <div className={`flex justify-end items-center gap-2 
-  ${row.completed && row.isSaved === true
-                      ? "cursor-not-allowed"
+  ${row.completed
+                      ? "opacity-50 cursor-not-allowed"
                       : "cursor-pointer"
                     }`}>
                     {row.endDate || "—"}
                     <label
-                      className={`relative ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}
+                      className={`relative ${row.completed ? "cursor-not-allowed" : "cursor-pointer"}`}
                     >
                       <input
                         type="date"
                         min={today}
-                        disabled={row.completed && row.isSaved === true}
-                        className={`absolute inset-0 opacity-0 w-full h-full z-10 ${row.completed && row.isSaved === true ? "cursor-not-allowed" : "cursor-pointer"}`}
+                        disabled={row.completed}
+                        className={`absolute inset-0 opacity-0 w-full h-full z-10 ${row.completed ? "cursor-not-allowed" : "cursor-pointer"}`}
                         onChange={(e) =>
                           handleDateChange(row.id, "endDate", e.target.value)
                         }
                       />
                       <Calendar
                         size={16}
-                        className={`${row.completed && row.isSaved === true ? "text-gray-400" : "text-primary"} pointer-events-none`}
+                        className={`${row.completed ? "text-gray-400" : "text-primary"} pointer-events-none`}
                       />
                     </label>
                   </div>

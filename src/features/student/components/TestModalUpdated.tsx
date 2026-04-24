@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, CheckCircle2, XCircle } from "lucide-react";
 import ApiServices from "../../../services/ApiServices";
 import { useToast } from "../../../app/providers/ToastProvider";
 
@@ -100,6 +100,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [isCompleteFromServer, setIsCompleteFromServer] = useState(false);
+  const [questionFeedback, setQuestionFeedback] = useState<Record<number, boolean | null>>({});
   const questionStartTimeRef = useRef<number>(Date.now());
   const { showToast } = useToast();
 
@@ -141,6 +142,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
       setTimeLeft((testDurationMinutes ?? 0) * 60);
       setTestFinished(false);
       setIsCompleteFromServer(false);
+      setQuestionFeedback({});
       questionStartTimeRef.current = Date.now();
     }
   }, [isOpen, initialQuestions, testDurationMinutes]);
@@ -427,6 +429,13 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
         });
 
         if (saveRes.data?.status === "success" || saveRes.data?.status === true) {
+          // Set feedback for current question
+          const isCorrect = saveRes.data.data.is_correct;
+          setQuestionFeedback(prev => ({ ...prev, [currentQuestion.id]: isCorrect }));
+
+          // Short delay to show feedback before moving to next question
+          await new Promise(resolve => setTimeout(resolve, 1500));
+
           // 2. Load Next Question
           const nextRes = await ApiServices.getNextAdaptiveQuestion(attemptId);
           if (nextRes.data?.status === "success" || nextRes.data?.status === true) {
@@ -482,7 +491,7 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
       const slNo = apiQuestion?.sl_no || currentQuestionIndex + 1;
 
       try {
-        await ApiServices.saveAssessmentAnswer({
+        const saveRes = await ApiServices.saveAssessmentAnswer({
           attempt_id: attemptId,
           question_id: currentQuestion.id,
           sl_no: slNo,
@@ -496,6 +505,15 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
           newSet.delete(currentQuestion.id);
           return newSet;
         });
+
+        // Show feedback if available in non-adaptive response
+        if (saveRes.data?.data?.is_correct !== undefined) {
+          setQuestionFeedback(prev => ({ ...prev, [currentQuestion.id]: saveRes.data.data.is_correct }));
+          // For non-adaptive, we might want to wait if we're auto-advancing
+          if (currentQuestionIndex < totalQuestions - 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
       } catch (error: any) {
         showToast(
           error.response?.data?.message || "Failed to save answer",
@@ -648,7 +666,9 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
           {/* ─── Right Panel: Question Area ─── */}
           <div className="flex-1 flex flex-col p-5 sm:p-8 overflow-y-auto">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 pr-8 sm:pr-0">
-              Assessment
+              {assessmentDetails?.set_name
+                ? assessmentDetails.set_name.split("-")[0].trim()
+                : "Assessment"}
             </h2>
 
             <p className="text-base sm:text-sm font-bold text-gray-800 mb-5 leading-relaxed">
@@ -664,18 +684,25 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                     ? (selectedAnswers[currentQuestion.id] as string[]).includes(option.label)
                     : selectedAnswers[currentQuestion.id] === option.label;
                   const isMultiple = currentQuestion.type?.toLowerCase().includes("multi");
+                  const hasFeedback = questionFeedback[currentQuestion.id] !== undefined && questionFeedback[currentQuestion.id] !== null;
+                  const isCorrect = questionFeedback[currentQuestion.id] === true;
+
+                  let indicatorClass = "";
+                  if (isSelected) {
+                    indicatorClass = "bg-[#b0cb1f] border-[#b0cb1f]";
+                  } else {
+                    indicatorClass = "border-gray-300 bg-white group-hover:border-[#b0cb1f]";
+                  }
 
                   return (
                     <button
                       key={option.label}
-                      onClick={() => handleSelectOption(option.label)}
-                      className="flex items-start sm:items-center gap-3 text-left group p-2 sm:p-0 -mx-2 sm:mx-0 rounded-lg hover:bg-gray-50 sm:hover:bg-transparent transition-colors"
+                      onClick={() => !hasFeedback && handleSelectOption(option.label)}
+                      disabled={hasFeedback}
+                      className={`flex items-start sm:items-center gap-3 text-left group p-2 sm:p-0 -mx-2 sm:mx-0 rounded-lg transition-colors ${hasFeedback ? "cursor-default" : "hover:bg-gray-50 sm:hover:bg-transparent"}`}
                     >
                       <div
-                        className={`w-5 h-5 sm:w-6 sm:h-6 mt-0.5 sm:mt-0 flex items-center justify-center shrink-0 transition-all ${isMultiple ? "rounded-md" : "rounded-full"} border-2 ${isSelected
-                          ? "bg-[#b0cb1f] border-[#b0cb1f]"
-                          : "border-gray-300 bg-white group-hover:border-[#b0cb1f]"
-                          }`}
+                        className={`w-5 h-5 sm:w-6 sm:h-6 mt-0.5 sm:mt-0 flex items-center justify-center shrink-0 transition-all ${isMultiple ? "rounded-md" : "rounded-full"} border-2 ${indicatorClass}`}
                       >
                         {isSelected && (
                           <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -683,9 +710,26 @@ const TestModalUpdated: React.FC<TestModalProps> = ({
                           </svg>
                         )}
                       </div>
-                      <span className="text-base sm:text-sm text-gray-700 font-medium">
-                        {option.label}. {option.text}
-                      </span>
+                      <div className="flex items-center gap-2 flex-1">
+                        <span className="text-base sm:text-sm font-medium text-gray-700">
+                          {option.label}. {option.text}
+                        </span>
+                        {isSelected && hasFeedback && (
+                          isCorrect ? (
+                            <div className="w-6 h-6 rounded-full bg-[#22c55e] flex items-center justify-center shrink-0 shadow-sm">
+                              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-[#ef4444] flex items-center justify-center shrink-0 shadow-sm">
+                              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </div>
+                          )
+                        )}
+                      </div>
                     </button>
                   );
                 })}
