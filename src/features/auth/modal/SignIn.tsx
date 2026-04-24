@@ -5,6 +5,7 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import ApiServices from "../../../services/ApiServices";
 import { useAuth } from "../../../app/providers/AuthProvider";
 import babaji from "../../../assets/icon/hero.svg"
+
 const isValidIndianMobile = (mobile: string) => /^[6-9]\d{9}$/.test(mobile);
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
