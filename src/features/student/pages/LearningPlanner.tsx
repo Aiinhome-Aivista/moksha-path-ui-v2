@@ -915,7 +915,8 @@ const LearningPlanner: React.FC = () => {
       });
 
       if (startRes.data?.status === "success") {
-        const attempt_id = startRes.data.data.attempt_id;
+        const startData = Array.isArray(startRes.data.data) ? startRes.data.data[0] : startRes.data.data;
+        const attempt_id = startData.attempt_id;
         setAttemptId(attempt_id);
 
         // 2. Get First Adaptive Question
@@ -930,6 +931,7 @@ const LearningPlanner: React.FC = () => {
           }
 
           setAssessmentDetails({
+            set_name: startData.set_name,
             questions: [{
               question_id: questionData.question_id,
               question_text: questionData.question_text,
@@ -943,8 +945,8 @@ const LearningPlanner: React.FC = () => {
             }]
           });
 
-          setTestDuration(startRes.data.data.duration_minutes);
-          setTotalMarks(startRes.data.data.total_marks);
+          setTestDuration(startData.duration_minutes);
+          setTotalMarks(startData.total_marks);
           setTestModalOpen(true);
           showToast("Adaptive test started!", "success");
           return true;
@@ -982,7 +984,8 @@ const LearningPlanner: React.FC = () => {
       });
 
       if (startRes.data?.status === "success") {
-        const attempt_id = startRes.data.data.attempt_id;
+        const startData = Array.isArray(startRes.data.data) ? startRes.data.data[0] : startRes.data.data;
+        const attempt_id = startData.attempt_id;
         setAttemptId(attempt_id);
 
         // 2. Get First Adaptive Question
@@ -999,6 +1002,7 @@ const LearningPlanner: React.FC = () => {
           // Transform adaptive response into expected format for the modal
           // The modal expects assessmentDetails.questions as an array
           setAssessmentDetails({
+            set_name: startData.set_name,
             questions: [{
               question_id: questionData.question_id,
               question_text: questionData.question_text,
@@ -1012,8 +1016,8 @@ const LearningPlanner: React.FC = () => {
             }]
           });
 
-          setTestDuration(startRes.data.data.duration_minutes);
-          setTotalMarks(startRes.data.data.total_marks);
+          setTestDuration(startData.duration_minutes);
+          setTotalMarks(startData.total_marks);
           setTestModalOpen(true);
           showToast("Adaptive test started!", "success");
         } else {
