@@ -25,9 +25,9 @@ export const PerformanceCards = ({ performanceData }: { performanceData?: any })
     },
     {
       label: "Mock Tests Attempted",
-      value: `${top_stats.completed_mock_tests || top_stats.total_attempts || 0}/${top_stats.total_mock_tests || 5}`,
+      value: `${top_stats.mock_tests_attempted || 0}/${top_stats.mock_tests_total || 0}`,
       icon: "",
-      title: `${(top_stats.total_mock_tests || 5) - (top_stats.completed_mock_tests || top_stats.total_attempts || 0)} pending`,
+      title: `${top_stats.mock_tests_pending || 0} pending`,
     },
     {
       label: "Avg Difficulty",
@@ -39,7 +39,7 @@ export const PerformanceCards = ({ performanceData }: { performanceData?: any })
 
   const dynamicPerformanceStatsData = latestRecord ? [
     {
-      value: latestRecord.accuracy,
+      value: latestRecord.attempt_rate,
       suffix: "%",
       valueColor: "#505050",
       title: "Difficulty Adapt Rate",
@@ -50,7 +50,7 @@ export const PerformanceCards = ({ performanceData }: { performanceData?: any })
       borderColor: "#7BA6B3",
     },
     {
-      value: latestRecord.attempt_rate,
+      value: latestRecord.time_utilization,
       suffix: "%",
       valueColor: "#D3A251",
       title: "On-time Completion",
@@ -72,13 +72,13 @@ export const PerformanceCards = ({ performanceData }: { performanceData?: any })
       borderColor: "#7BA6B3",
     },
     {
-      value: latestRecord.unattempted,
-      suffix: "",
+      value: latestRecord.skip_rate,
+      suffix: "%",
       valueColor: "#B7C356",
       title: "Question Skip Rate",
       titleColor: "#474747",
-      icon: latestRecord.unattempted > 0 ? "up" : "down",
-      subText: latestRecord.unattempted > 0 ? "Needs improvement" : "Well managed",
+      icon: (100 - parseFloat(latestRecord.attempt_rate)) > 0 ? "up" : "down",
+      subText: (100 - parseFloat(latestRecord.attempt_rate)) > 15 ? "Needs improvement" : "Well managed",
       subTextColor: "#3B8263",
       borderColor: "#7BA6B3",
     },
@@ -107,11 +107,12 @@ const levelMapping: Record<string, { color: string, label: string }> = {
 };
 
 const levelOrder = ['Easy', 'Medium', 'Hard', 'Expert'];
+const maxTime = time_distribution.length > 0 ? Math.max(...time_distribution.map((i: any) => i.avg_time)) : 1;
 const dynamicTimeDistribution = (time_distribution.length > 0
   ? time_distribution
     .map((item: any) => ({
       label: levelMapping[item.level]?.label || item.level,
-      value: (item.avg_time / 30) * 100, // Normalize to percentage for bar width
+      value: (item.avg_time / (maxTime || 1)) * 100, // Normalize to percentage based on max time
       color: levelMapping[item.level]?.color,
       avg: `${item.avg_time.toFixed(2)}m avg`,
       level: item.level // keep for sorting
@@ -338,7 +339,7 @@ return (
                   check
                 </span>
                 <p className="text-xl text-primary font-bold">
-                  {parseFloat(latestRecord?.last_minute_error || 0) > 20
+                  {parseFloat(latestRecord?.last_minute_error || 0) > 80
                     ? `Last minute pressure detected (${latestRecord?.last_minute_error || 0}% error rate). Focus on steady pacing.`
                     : "Your pacing is steady, minimizing errors in the final minutes."}
                 </p>
@@ -348,7 +349,7 @@ return (
                   check
                 </span>{" "}
                 <p className="text-xl text-primary font-bold">
-                    {parseFloat(latestRecord?.guessing_index || 0) > 0.1 
+                    {parseFloat(latestRecord?.guessing_index || 0) > 10 
                       ? `Guessing index is ${latestRecord?.guessing_index || 0}. Work on conceptual clarity to reduce guesswork.`
                       : "Strong conceptual accuracy with minimal guessing detected."}
                 </p>

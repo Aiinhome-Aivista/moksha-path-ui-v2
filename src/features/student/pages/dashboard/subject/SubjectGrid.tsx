@@ -18,25 +18,44 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject }) => {
         const response = await ApiServices.getStudentSubjectDashboard();
         if (response.data?.status === "success") {
           const subjects = response.data.data?.subjects || [];
-          
+
           if (selectedSubject) {
             // Find the selected subject and map its chapters
             const currentSubject = subjects.find((s: any) => s.subject_name === selectedSubject);
             if (currentSubject) {
               setTotalSubjects(currentSubject.total_attempts || 0);
-              const formattedChapters = currentSubject.chapters.map((chapter: any) => ({
-                title: chapter.chapter_name,
-                score: Math.round(Number(chapter.accuracy) || 0),
-                level: "L3",
-                difficulty: "Hard",
-                statusColor: (Number(chapter.accuracy) || 0) > 80 ? "#568F14" : (Number(chapter.accuracy) || 0) > 60 ? "#EA9003" : "#FF7361",
-                levels: (currentSubject.levels || []).map((lvl: any) => ({
-                  label: lvl.level,
-                  value: Math.round(Number(lvl.accuracy) || 0),
-                  color: lvl.bucket === "Easy" ? "#578E12" : lvl.bucket === "Medium" ? "#EA9003" : "#FF7361",
-                  time: `${Math.round(Number(lvl.avg_time) || 0)}s`
-                }))
-              }));
+              const formattedChapters = currentSubject.chapters.map((chapter: any) => {
+                const sortedLevels = [...(chapter.levels || [])].sort((a, b) => {
+                  const numA = parseInt(a.level.replace(/\D/g, "")) || 0;
+                  const numB = parseInt(b.level.replace(/\D/g, "")) || 0;
+                  return numA - numB;
+                });
+                const latestLevel = sortedLevels.length > 0 ? sortedLevels[sortedLevels.length - 1] : null;
+                
+                const chapterAccuracy =
+                  chapter.levels && chapter.levels.length > 0
+                    ? Math.round(
+                        chapter.levels.reduce(
+                          (sum: number, l: any) => sum + Number(l.accuracy || 0),
+                          0
+                        ) / chapter.levels.length
+                      )
+                    : Number(chapter.accuracy) || 0;
+
+                return {
+                  title: chapter.chapter_name,
+                  score: chapterAccuracy,
+                  level: latestLevel?.level || "N/A",
+                  difficulty: latestLevel?.bucket || "N/A",
+                  statusColor: chapterAccuracy > 80 ? "#568F14" : chapterAccuracy > 60 ? "#EA9003" : "#FF7361",
+                  levels: sortedLevels.map((lvl: any) => ({
+                    label: lvl.level,
+                    value: Math.round(Number(lvl.accuracy) || 0),
+                    color: lvl.bucket === "Easy" ? "#578E12" : lvl.bucket === "Medium" ? "#EA9003" : "#FF7361",
+                    time: `${parseFloat(lvl.avg_time).toFixed(1)}m`
+                  }))
+                };
+              });
               setData(formattedChapters);
             } else {
               setData([]);
@@ -48,19 +67,38 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject }) => {
             setTotalSubjects(totalAllAttempts);
 
             // Map all subjects as summary cards
-            const formattedSubjects = subjects.map((sub: any) => ({
-              title: sub.subject_name,
-              score: Math.round(Number(sub.accuracy) || 0),
-              level: "L3",
-              difficulty: "Hard",
-              statusColor: (Number(sub.accuracy) || 0) > 80 ? "#568F14" : (Number(sub.accuracy) || 0) > 60 ? "#EA9003" : "#FF7361",
-              levels: (sub.levels || []).map((lvl: any) => ({
-                label: lvl.level,
-                value: Math.round(Number(lvl.accuracy) || 0),
-                color: lvl.bucket === "Easy" ? "#578E12" : lvl.bucket === "Medium" ? "#EA9003" : "#FF7361",
-                time: `${Math.round(Number(lvl.avg_time) || 0)}s`
-              }))
-            }));
+            const formattedSubjects = subjects.map((sub: any) => {
+              const sortedLevels = [...(sub.levels || [])].sort((a, b) => {
+                const numA = parseInt(a.level.replace(/\D/g, "")) || 0;
+                const numB = parseInt(b.level.replace(/\D/g, "")) || 0;
+                return numA - numB;
+              });
+              const latestLevel = sortedLevels.length > 0 ? sortedLevels[sortedLevels.length - 1] : null;
+              
+              const subAccuracy =
+                sub.levels && sub.levels.length > 0
+                  ? Math.round(
+                      sub.levels.reduce(
+                        (sum: number, l: any) => sum + Number(l.accuracy || 0),
+                        0
+                      ) / sub.levels.length
+                    )
+                  : Number(sub.accuracy) || 0;
+              
+              return {
+                title: sub.subject_name,
+                score: subAccuracy,
+                level: latestLevel?.level || "N/A",
+                difficulty: latestLevel?.bucket || "N/A",
+                statusColor: subAccuracy > 80 ? "#568F14" : subAccuracy > 60 ? "#EA9003" : "#FF7361",
+                levels: sortedLevels.map((lvl: any) => ({
+                  label: lvl.level,
+                  value: Math.round(Number(lvl.accuracy) || 0),
+                  color: lvl.bucket === "Easy" ? "#578E12" : lvl.bucket === "Medium" ? "#EA9003" : "#FF7361",
+                  time: `${parseFloat(lvl.avg_time).toFixed(1)}m`
+                }))
+              };
+            });
             setData(formattedSubjects);
           }
         }
@@ -90,9 +128,9 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject }) => {
     <>
       <div className="px-8 py-4 flex items-center justify-between">
         <h2 className="text-3xl font-bold text-[#212B36]">
-          {selectedSubject || "All Subjects"} 
+          {selectedSubject || "All Subjects"}
           <span className="ml-3 text-sm bg-[#BADA55] text-[#2b3a00] px-3 py-1 rounded-full font-bold">
-             {totalSubjects} {totalSubjects === 1 ? 'Test' : 'Tests'}
+            {totalSubjects} {totalSubjects === 1 ? 'Test' : 'Tests'}
           </span>
         </h2>
       </div>
@@ -105,8 +143,8 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject }) => {
         ) : (
           <div className="col-span-full py-20 text-center">
             <p className="text-gray-500 font-medium italic text-xl">
-              {selectedSubject 
-                ? `No performance data available for ${selectedSubject}.` 
+              {selectedSubject
+                ? `No performance data available for ${selectedSubject}.`
                 : "No subjects found."}
             </p>
           </div>
