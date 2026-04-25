@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import SubjectCard from "./SubjectCard";
 
 interface SubjectGridProps {
@@ -8,7 +8,7 @@ interface SubjectGridProps {
 
 const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject, subjectDashboardData }) => {
 
-  const { data, totalSubjects } = React.useMemo(() => {
+  const { data, totalSubjects } = React.useMemo<{ data: any[], totalSubjects: number }>(() => {
     if (!subjectDashboardData) return { data: [], totalSubjects: 0 };
 
     const subjects = subjectDashboardData.subjects || [];
