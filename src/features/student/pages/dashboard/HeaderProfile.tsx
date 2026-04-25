@@ -93,7 +93,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
 
         if (response.data?.status === "success") {
           const fetchedSubjects = response.data.data?.subjects || [];
-          
+
           if (Array.isArray(fetchedSubjects) && fetchedSubjects.length > 0) {
             setSubjectsList(fetchedSubjects);
 
@@ -101,7 +101,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
             // For now, setting a simple count if available
             const counts: Record<string, number> = {};
             fetchedSubjects.forEach((sub: any) => {
-               counts[sub.subject_name] = sub.total_attempts || 0;
+              counts[sub.subject_name] = sub.chapters?.length || 0;
             });
             setNotifications(counts);
 
@@ -145,7 +145,34 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
     { name: "Remediation", key: "remediation" },
   ];
 
-  const examList = ["MCQ", "Quiz"];
+  const [examList, setExamList] = useState<string[]>([]);
+  const [mockCount, setMockCount] = useState<number>(0);
+  const [mockData, setMockData] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchMocks = async () => {
+      try {
+        const response = await ApiServices.getStudentMockDashboard();
+        if (response.data?.status === "success") {
+          const fetchedMocks = response.data.data?.mocks || [];
+          setMockCount(fetchedMocks.length);
+          setMockData(fetchedMocks);
+          
+          if (Array.isArray(fetchedMocks) && fetchedMocks.length > 0) {
+            const dynamicExams = fetchedMocks.map((_: any, index: number) => `Mock: M${(index + 1).toString().padStart(2, '0')}`);
+            setExamList(dynamicExams);
+
+            if (!selectedExam && dynamicExams.length > 0) {
+              onExamSelect(dynamicExams[dynamicExams.length - 1]);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching student mocks:", error);
+      }
+    };
+    fetchMocks();
+  }, []);
 
   // ✅ Fallbacks: Get data from local storage immediately so the UI isn't blank while loading
   const localUser = JSON.parse(localStorage.getItem("active_profile") || "{}");
@@ -194,8 +221,10 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
           </div>
         </div>
 
-        {/* ─── Tabs ─────────────────────────────────────────────────────── */}
-        <div className="flex items-center justify-around py-1 bg-[#ECECED] rounded-tr-full rounded-br-full shadow lg:col-span-2 xl:col-span-3">
+        {/* ─── Right Side Stack ─────────────────────────────────────────────────────── */}
+        <div className="flex flex-col gap-4 lg:col-span-2 xl:col-span-3">
+          {/* ─── Tabs ─────────────────────────────────────────────────────── */}
+          <div className="flex items-center justify-around py-1 bg-[#ECECED] rounded-tr-full rounded-br-full shadow w-full">
           <h1 className="text-[#00bcd4] font-black text-lg tracking-tight whitespace-nowrap hidden lg:hidden xl:block">
             My Dashboard
           </h1>
@@ -289,6 +318,9 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                     <span className="material-symbols-outlined ml-1">
                       keyboard_arrow_down
                     </span>
+                    <span className="ml-1.5 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
+                      {mockCount}
+                    </span>
                   </button>
 
                   {showExamDropdown && (
@@ -296,24 +328,30 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                       className="absolute top-12 left-0 bg-white shadow-lg rounded-lg w-full z-50 overflow-hidden"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {examList.map((exam, i) => (
-                        <div
-                          key={i}
-                          onClick={() => {
-                            onExamSelect(exam);
-                            setShowExamDropdown(false);
-                          }}
-                          className={`flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer font-medium transition-colors ${selectedExam === exam
-                            ? "bg-lime-100 text-lime-800"
-                            : "text-gray-700 hover:bg-gray-100"
-                            }`}
-                        >
-                          <span>{exam}</span>
-                          {selectedExam === exam && (
-                            <span className="material-symbols-outlined text-lime-600 text-base">check</span>
-                          )}
+                      {examList.length > 0 ? (
+                        examList.map((exam, i) => (
+                          <div
+                            key={i}
+                            onClick={() => {
+                              onExamSelect(exam);
+                              setShowExamDropdown(false);
+                            }}
+                            className={`flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer font-medium transition-colors ${selectedExam === exam
+                              ? "bg-lime-100 text-lime-800"
+                              : "text-gray-700 hover:bg-gray-100"
+                              }`}
+                          >
+                            <span>{exam}</span>
+                            {selectedExam === exam && (
+                              <span className="material-symbols-outlined text-lime-600 text-base">check</span>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-2.5 text-sm text-left text-gray-400 italic">
+                          No mocks available
                         </div>
-                      ))}
+                      )}
                     </div>
                   )}
                 </div>
@@ -338,6 +376,55 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
               </button>
             );
           })}
+          </div>
+
+          {/* ─── Mock KPIs (Renders below tabs) ─────────────────────────── */}
+          {activeTab === "exam" && mockData.length > 0 && (
+            <div className="flex items-center justify-between pl-4 pr-2 w-full animate-in slide-in-from-top-2 duration-300">
+              {(() => {
+                const mockIndex = examList.indexOf(selectedExam);
+                const currentMock = mockIndex >= 0 ? mockData[mockIndex] : mockData[mockData.length - 1];
+                if (!currentMock) return null;
+                
+                const attemptDate = new Date(currentMock.attempt_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
+                const overallScore = Math.round(currentMock.overall_score || 0);
+                const accuracyRate = Math.round(currentMock.accuracy_rate || 0);
+                // The screenshot uses 'min', but the actual data is in seconds (e.g. 15.69s). 
+                // Displaying as 'sec' matches the Difficulty Matrix below it.
+                const avgTime = Number(currentMock.avg_time_per_question || 0).toFixed(1); 
+                
+                return (
+                  <>
+                    <div className="flex flex-col">
+                      <h2 className="text-lg font-bold text-[#212B36] tracking-tight">{selectedExam || `Mock: M${mockData.length.toString().padStart(2, '0')}`}</h2>
+                      <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">{attemptDate}</p>
+                    </div>
+
+                    <div className="flex gap-12 items-end">
+                      <div className="text-center">
+                        <h3 className="text-[26px] font-normal text-[#637381] flex items-baseline justify-center">
+                          {overallScore}<span className="text-base ml-0.5">%</span>
+                        </h3>
+                        <p className="text-[10px] font-extrabold text-[#212B36] uppercase tracking-widest mt-0.5">Overall Score</p>
+                      </div>
+                      <div className="text-center">
+                        <h3 className="text-[26px] font-normal text-[#637381] flex items-baseline justify-center">
+                          {accuracyRate}<span className="text-base ml-0.5">%</span>
+                        </h3>
+                        <p className="text-[10px] font-extrabold text-[#212B36] uppercase tracking-widest mt-0.5">Accuracy Rate</p>
+                      </div>
+                      <div className="text-center">
+                        <h3 className="text-[26px] font-normal text-[#637381] flex items-baseline justify-center">
+                          {avgTime}<span className="text-base ml-1 text-gray-500 font-normal">sec</span>
+                        </h3>
+                        <p className="text-[10px] font-extrabold text-[#212B36] uppercase tracking-widest mt-0.5">Average/Question</p>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          )}
         </div>
       </div>
     </>

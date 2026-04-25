@@ -1,117 +1,84 @@
 import React, { useEffect, useState } from "react";
 import SubjectCard from "./SubjectCard";
-import ApiServices from "../../../../../services/ApiServices";
 
 interface SubjectGridProps {
   selectedSubject: string;
+  subjectDashboardData: any;
 }
 
-const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject }) => {
+const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject, subjectDashboardData }) => {
   const [data, setData] = useState<any[]>([]);
   const [totalSubjects, setTotalSubjects] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    if (subjectDashboardData) {
       setLoading(true);
-      try {
-        const response = await ApiServices.getStudentSubjectDashboard();
-        if (response.data?.status === "success") {
-          const subjects = response.data.data?.subjects || [];
+      const subjects = subjectDashboardData.subjects || [];
+      const totalSubjectsCount = subjectDashboardData.total_subjects || subjects.length;
 
-          if (selectedSubject) {
-            // Find the selected subject and map its chapters
-            const currentSubject = subjects.find((s: any) => s.subject_name === selectedSubject);
-            if (currentSubject) {
-              setTotalSubjects(currentSubject.total_attempts || 0);
-              const formattedChapters = currentSubject.chapters.map((chapter: any) => {
-                const sortedLevels = [...(chapter.levels || [])].sort((a, b) => {
-                  const numA = parseInt(a.level.replace(/\D/g, "")) || 0;
-                  const numB = parseInt(b.level.replace(/\D/g, "")) || 0;
-                  return numA - numB;
-                });
-                const latestLevel = sortedLevels.length > 0 ? sortedLevels[sortedLevels.length - 1] : null;
-                
-                const chapterAccuracy =
-                  chapter.levels && chapter.levels.length > 0
-                    ? Math.round(
-                        chapter.levels.reduce(
-                          (sum: number, l: any) => sum + Number(l.accuracy || 0),
-                          0
-                        ) / chapter.levels.length
-                      )
-                    : Number(chapter.accuracy) || 0;
-
-                return {
-                  title: chapter.chapter_name,
-                  score: chapterAccuracy,
-                  level: latestLevel?.level || "N/A",
-                  difficulty: latestLevel?.bucket || "N/A",
-                  statusColor: chapterAccuracy > 80 ? "#568F14" : chapterAccuracy > 60 ? "#EA9003" : "#FF7361",
-                  levels: sortedLevels.map((lvl: any) => ({
-                    label: lvl.level,
-                    value: Math.round(Number(lvl.accuracy) || 0),
-                    color: lvl.bucket === "Easy" ? "#578E12" : lvl.bucket === "Medium" ? "#EA9003" : "#FF7361",
-                    time: `${parseFloat(lvl.avg_time).toFixed(1)}m`
-                  }))
-                };
-              });
-              setData(formattedChapters);
-            } else {
-              setData([]);
-              setTotalSubjects(0);
-            }
-          } else {
-            // Sum all attempts for ALL Subjects view
-            const totalAllAttempts = subjects.reduce((acc: number, sub: any) => acc + (sub.total_attempts || 0), 0);
-            setTotalSubjects(totalAllAttempts);
-
-            // Map all subjects as summary cards
-            const formattedSubjects = subjects.map((sub: any) => {
-              const sortedLevels = [...(sub.levels || [])].sort((a, b) => {
-                const numA = parseInt(a.level.replace(/\D/g, "")) || 0;
-                const numB = parseInt(b.level.replace(/\D/g, "")) || 0;
-                return numA - numB;
-              });
-              const latestLevel = sortedLevels.length > 0 ? sortedLevels[sortedLevels.length - 1] : null;
-              
-              const subAccuracy =
-                sub.levels && sub.levels.length > 0
-                  ? Math.round(
-                      sub.levels.reduce(
-                        (sum: number, l: any) => sum + Number(l.accuracy || 0),
-                        0
-                      ) / sub.levels.length
-                    )
-                  : Number(sub.accuracy) || 0;
-              
-              return {
-                title: sub.subject_name,
-                score: subAccuracy,
-                level: latestLevel?.level || "N/A",
-                difficulty: latestLevel?.bucket || "N/A",
-                statusColor: subAccuracy > 80 ? "#568F14" : subAccuracy > 60 ? "#EA9003" : "#FF7361",
-                levels: sortedLevels.map((lvl: any) => ({
-                  label: lvl.level,
-                  value: Math.round(Number(lvl.accuracy) || 0),
-                  color: lvl.bucket === "Easy" ? "#578E12" : lvl.bucket === "Medium" ? "#EA9003" : "#FF7361",
-                  time: `${parseFloat(lvl.avg_time).toFixed(1)}m`
-                }))
-              };
+      if (selectedSubject) {
+        // Find the selected subject and map its chapters
+        const currentSubject = subjects.find((s: any) => s.subject_name === selectedSubject);
+        if (currentSubject && currentSubject.chapters) {
+          setTotalSubjects(currentSubject.chapters.length);
+          const formattedChapters = currentSubject.chapters.map((chapter: any) => {
+            const sortedLevels = [...(chapter.levels || [])].sort((a, b) => {
+              const numA = parseInt(a.level.replace(/\D/g, "")) || 0;
+              const numB = parseInt(b.level.replace(/\D/g, "")) || 0;
+              return numA - numB;
             });
-            setData(formattedSubjects);
-          }
+            
+            return {
+              title: chapter.chapter_name,
+              score: Math.round(chapter.overall_accuracy || 0),
+              level: chapter.level_label || "N/A",
+              difficulty: chapter.levels?.find((l: any) => l.level === chapter.level_label)?.bucket || "N/A",
+              statusColor: chapter.overall_accuracy > 80 ? "#568F14" : chapter.overall_accuracy > 60 ? "#EA9003" : "#FF7361",
+              levels: sortedLevels.map((lvl: any) => ({
+                label: lvl.level,
+                value: Math.round(Number(lvl.accuracy) || 0),
+                color: lvl.bucket === "Easy" ? "#578E12" : lvl.bucket === "Medium" ? "#EA9003" : lvl.bucket === "Hard" ? "#FF7361" : "#ea4335",
+                time: `${parseFloat(lvl.avg_time).toFixed(1)}m`
+              }))
+            };
+          });
+          setData(formattedChapters);
+        } else {
+          setData([]);
+          setTotalSubjects(0);
         }
-      } catch (error) {
-        console.error("Failed to fetch dashboard subjects:", error);
-        setData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+      } else {
+        setTotalSubjects(totalSubjectsCount);
 
-    fetchData();
-  }, [selectedSubject]);
+        // Map all subjects as summary cards
+        const formattedSubjects = subjects.map((sub: any) => {
+          // Aggregate accuracy from chapters
+          const subAccuracy = sub.chapters?.length > 0
+            ? Math.round(sub.chapters.reduce((sum: number, ch: any) => sum + (ch.overall_accuracy || 0), 0) / sub.chapters.length)
+            : 0;
+
+          const lastChapter = sub.chapters?.length > 0 ? sub.chapters[sub.chapters.length - 1] : null;
+          
+          return {
+            title: sub.subject_name,
+            score: subAccuracy,
+            level: lastChapter?.level_label || "N/A",
+            difficulty: lastChapter?.levels?.find((l: any) => l.level === lastChapter.level_label)?.bucket || "N/A",
+            statusColor: subAccuracy > 80 ? "#568F14" : subAccuracy > 60 ? "#EA9003" : "#FF7361",
+            levels: lastChapter?.levels?.map((lvl: any) => ({
+              label: lvl.level,
+              value: Math.round(Number(lvl.accuracy) || 0),
+              color: lvl.bucket === "Easy" ? "#578E12" : lvl.bucket === "Medium" ? "#EA9003" : lvl.bucket === "Hard" ? "#FF7361" : "#ea4335",
+              time: `${parseFloat(lvl.avg_time).toFixed(1)}m`
+            })) || []
+          };
+        });
+        setData(formattedSubjects);
+      }
+      setLoading(false);
+    }
+  }, [selectedSubject, subjectDashboardData]);
 
   if (loading) {
     return (
