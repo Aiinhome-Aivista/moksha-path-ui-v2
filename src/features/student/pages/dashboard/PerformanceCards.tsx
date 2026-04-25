@@ -4,102 +4,96 @@
 // } from "./NewStudent";
 
 export const PerformanceCards = ({ performanceData }: { performanceData?: any }) => {
-  const performance = Array.isArray(performanceData?.performance) ? performanceData.performance : [];
+  const performance = performanceData?.performance || {};
   const time_distribution = Array.isArray(performanceData?.time_distribution) ? performanceData.time_distribution : [];
-  const top_stats = performanceData?.top_stats || {};
-
-  const latestRecord = performance.length > 0 ? performance[performance.length - 1] : null;
+  const trend_graph = Array.isArray(performance?.trend_graph) ? performance.trend_graph : [];
 
   const stats = [
     {
       label: "Overall Score",
-      value: top_stats.avg_accuracy ? `${top_stats.avg_accuracy}%` : "0%",
-      icon: latestRecord?.score_trend > 0 ? "up" : latestRecord?.score_trend < 0 ? "down" : "",
-      title: latestRecord ? `${latestRecord.score_trend}% this month` : "No data",
+      value: `${performance.overall_score || 0}%`,
+      icon: (trend_graph[0]?.trend > 0) ? "up" : (trend_graph[0]?.trend < 0) ? "down" : "",
+      title: trend_graph[0] ? `${trend_graph[0].trend}% trend` : "No data",
     },
     {
       label: "Module Test Completed",
-      value: `${top_stats.completed_module_tests || 0}/${top_stats.total_module_tests || 0}`,
+      value: `${performance.completed_module_tests || 0}/${performance.total_module_tests || 0}`,
       icon: "",
-      title: `${(top_stats.total_module_tests || 0) - (top_stats.completed_module_tests || 0)} pending`,
+      title: `${(performance.total_module_tests || 0) - (performance.completed_module_tests || 0)} pending`,
     },
     {
       label: "Mock Tests Attempted",
-      value: `${top_stats.mock_tests_attempted || 0}/${top_stats.mock_tests_total || 0}`,
+      value: `${performance.attempted_mock_tests || 0}/${performance.total_mock_tests || 0}`,
       icon: "",
-      title: `${top_stats.mock_tests_pending || 0} pending`,
+      title: `${(performance.total_mock_tests || 0) - (performance.attempted_mock_tests || 0)} pending`,
     },
     {
       label: "Avg Difficulty",
-      value: top_stats.difficulty_level || "N/A",
+      value: performance.avg_difficulty || "N/A",
       icon: "",
-      title: `${top_stats.difficulty_bucket || "Unknown"} difficulty scale`,
+      title: `${performance.performance_label || "No label"}`,
     },
   ];
 
-  const dynamicPerformanceStatsData = latestRecord ? [
+  const dynamicPerformanceStatsData = Object.keys(performance).length > 0 ? [
     {
-      value: latestRecord.attempt_rate,
+      value: performance.difficulty_adapt_rate || 0,
       suffix: "%",
       valueColor: "#505050",
       title: "Difficulty Adapt Rate",
       titleColor: "#474747",
-      icon: parseFloat(latestRecord.score_trend) > 0 ? "up" : parseFloat(latestRecord.score_trend) < 0 ? "down" : "",
-      subText: `${latestRecord.score_trend}% vs prev`,
+      icon: (trend_graph[0]?.trend > 0) ? "up" : (trend_graph[0]?.trend < 0) ? "down" : "",
+      subText: trend_graph[0] ? `${trend_graph[0].trend}% trend` : "Initial attempt",
       subTextColor: "#3B8263",
       borderColor: "#7BA6B3",
     },
     {
-      value: latestRecord.time_utilization,
+      value: performance.on_time_completion || 0,
       suffix: "%",
       valueColor: "#D3A251",
       title: "On-time Completion",
       titleColor: "#474747",
       icon: "",
-      subText: "Target 20 mins max",
+      subText: performance.pacing_msg || "Target 20 mins max",
       subTextColor: "#D3A251",
       borderColor: "#7BA6B3",
     },
     {
-      value: latestRecord.score_pct,
+      value: performance.accuracy_after_adapt || 0,
       suffix: "%",
       valueColor: "#B7C356",
       title: "Accuracy After Adapt",
       titleColor: "#474747",
       icon: "",
-      subText: `Avg time: ${latestRecord.avg_time}m`,
+      subText: `Revisit count: ${performance.revisit_count || 0}`,
       subTextColor: "#3B8263",
       borderColor: "#7BA6B3",
     },
     {
-      value: latestRecord.skip_rate,
+      value: performance.skip_rate || 0,
       suffix: "%",
       valueColor: "#B7C356",
       title: "Question Skip Rate",
       titleColor: "#474747",
-      icon: (100 - parseFloat(latestRecord.attempt_rate)) > 0 ? "up" : "down",
-      subText: (100 - parseFloat(latestRecord.attempt_rate)) > 15 ? "Needs improvement" : "Well managed",
+      icon: (performance.skip_rate || 0) > 15 ? "up" : "down",
+      subText: (performance.skip_rate || 0) > 15 ? "Needs improvement" : "Well managed",
       subTextColor: "#3B8263",
       borderColor: "#7BA6B3",
     },
   ] : [];
 
-  const chartData = performance.length > 0 
-    ? performance.map((item: any) => parseFloat(item.score_pct))
+  const chartData = trend_graph.length > 0 
+    ? trend_graph.map((item: any) => parseFloat(item.score_pct))
     : [];
 
-const labels = performance.length > 0
-  ? performance.map((item: any) => `Set ${item.set_id}`)
+const labels = trend_graph.length > 0
+  ? trend_graph.map((item: any) => `Set ${item.attempt_id}`)
   : [];
 
 const max = 100;
 
 // Map levels to UI colors and labels (matching difficulty_level from SQL)
 const levelMapping: Record<string, { color: string, label: string }> = {
-  // 'L1': { color: '#EB8E02', label: 'Easy (L1-2)' },
-  // 'L2': { color: '#b0cb1f', label: 'Expert (L6+)' },
-  // 'L3': { color: '#ea4335', label: 'Medium (L3-4)' },
-  // 'L4': { color: '#6366f1', label: 'Hard (L5)' },
   'Easy': { color: '#b0cb1f', label: 'Easy (L1)' },
   'Medium': { color: '#EB8E02', label: 'Medium (L2)' },
   'Hard': { color: '#ed6c61', label: 'Hard (L3)' },
@@ -114,7 +108,7 @@ const dynamicTimeDistribution = (time_distribution.length > 0
       label: levelMapping[item.level]?.label || item.level,
       value: (item.avg_time / (maxTime || 1)) * 100, // Normalize to percentage based on max time
       color: levelMapping[item.level]?.color,
-      avg: `${item.avg_time.toFixed(2)}m avg`,
+      avg: `${item.avg_time.toFixed(1)} avg${item.avg_time === maxTime ? ' !' : ''}`,
       level: item.level // keep for sorting
     }))
   : [])
@@ -160,62 +154,129 @@ return (
 
     <div className="grid grid-cols-1 xl:grid-cols-2 m-1 gap-2 max-h-[70vh] overflow-y-auto custom-scrollbar">
       <div className="grid grid-cols-1 gap-2">
-        <div className="grid grid-cols-2 gap-4 h-80">
-          {dynamicPerformanceStatsData.length > 0 ? (
-            dynamicPerformanceStatsData.map((item, i) => (
-              <div
-                key={i}
-                className="px-4 border-b-4 h-36"
-                style={{ borderColor: item.borderColor }}
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          {[
+            ...dynamicPerformanceStatsData.map(item => ({
+              ...item,
+              // Remove revisit count from subtext if it's Accuracy After Adapt
+              subText: item.title === "Accuracy After Adapt" ? "Post-Adaptation" : item.subText
+            })),
+            {
+              title: "First Pass Accuracy",
+              value: performance.first_pass_accuracy,
+              suffix: "%",
+              valueColor: "#57A7B3",
+              borderColor: "#57A7B3",
+              titleColor: "#474747",
+              subText: "Initial Accuracy",
+              subTextColor: "#3B8263"
+            },
+            {
+              title: "Guessing Index",
+              value: performance.guessing_index,
+              suffix: "%",
+              valueColor: "#D3A251",
+              borderColor: "#D3A251",
+              titleColor: "#474747",
+              subText: "Conceptual Clarity",
+              subTextColor: "#3B8263"
+            },
+            {
+              title: "Easy Miss Rate",
+              value: performance.easy_miss_rate,
+              suffix: "%",
+              valueColor: "#ed6c61",
+              borderColor: "#ed6c61",
+              titleColor: "#474747",
+              subText: "Silly Mistakes",
+              subTextColor: "#3B8263"
+            },
+            {
+              title: "Hard Attempt Rate",
+              value: performance.hard_attempt_rate,
+              suffix: "%",
+              valueColor: "#ea4335",
+              borderColor: "#ea4335",
+              titleColor: "#474747",
+              subText: "Attempt Courage",
+              subTextColor: "#3B8263"
+            },
+            {
+              title: "Revisit Count",
+              value: performance.revisit_count,
+              suffix: "",
+              valueColor: "#7BA6B3",
+              borderColor: "#7BA6B3",
+              titleColor: "#474747",
+              subText: "Questions Reviewed",
+              subTextColor: "#3B8263"
+            },
+            {
+              title: "Last Minute Error Rate",
+              value: performance.last_minute_error_rate,
+              suffix: "%",
+              valueColor: "#ed6c61",
+              borderColor: "#ed6c61",
+              titleColor: "#474747",
+              subText: "Final Minutes Pressure",
+              subTextColor: "#3B8263"
+            },
+            {
+              title: "Total Marks",
+              value: `${performance.total_score || 0}/${performance.total_marks || 0}`,
+              suffix: "",
+              valueColor: "#57A7B3",
+              borderColor: "#57A7B3",
+              titleColor: "#474747",
+              subText: "Score Achievement",
+              subTextColor: "#3B8263"
+            }
+          ].map((item, i) => (
+            <div
+              key={i}
+              className="px-3 border-b-4 h-24 flex flex-col justify-center"
+              style={{ borderColor: item.borderColor }}
+            >
+              <h3
+                className="text-4xl font-normal leading-none"
+                style={{ color: item.valueColor }}
               >
-                <h3
-                  className="text-6xl font-normal"
-                  style={{ color: item.valueColor }}
-                >
-                  {item.value}
-                  <span className="text-3xl">{item.suffix}</span>
-                </h3>
+                {item.value || 0}
+                <span className="text-xl">{item.suffix}</span>
+              </h3>
 
-                <p
-                  className="text-xl font-bold"
-                  style={{ color: item.titleColor }}
-                >
-                  {item.title}
-                </p>
+              <p
+                className="text-sm font-bold mt-1 leading-tight"
+                style={{ color: item.titleColor }}
+              >
+                {item.title}
+              </p>
 
-                <p
-                  className="text-sm font-bold flex items-center"
-                  style={{ color: item.subTextColor }}
-                >
-                  {/* Icon */}
-                  {item.icon === "up" && (
-                    <span className="material-symbols-outlined text-5xl leading-3">
-                      keyboard_arrow_up
-                    </span>
-                  )}
-
-                  {item.icon === "down" && (
-                    <span className="material-symbols-outlined  text-5xl leading-3">
-                      keyboard_arrow_down
-                    </span>
-                  )}
-
-                  {item.subText}
-                </p>
-              </div>
-            ))
-          ) : (
-            <div className="col-span-2 flex items-center justify-center h-36 rounded-lg border-2 border-dashed border-gray-200">
-              <p className="text-gray-400 font-medium italic">No detailed metrics available yet</p>
+              <p
+                className="text-[10px] font-bold flex items-center mt-1"
+                style={{ color: item.subTextColor }}
+              >
+                {('icon' in item) && item.icon === "up" && (
+                  <span className="material-symbols-outlined text-2xl leading-3">
+                    keyboard_arrow_up
+                  </span>
+                )}
+                {('icon' in item) && item.icon === "down" && (
+                  <span className="material-symbols-outlined text-2xl leading-3">
+                    keyboard_arrow_down
+                  </span>
+                )}
+                {item.subText}
+              </p>
             </div>
-          )}
+          ))}
         </div>
 
         <div className="bg-primary text-white p-4 rounded-xl w-full xl:w-[107%] z-10">
           {/* Title */}
           <h2 className="text-3xl font-bold">Mock Score Trend</h2>
           <p className="text-sm text-gray-400 mb-4">
-            {performance.length} exams • {parseFloat(latestRecord?.score_trend || 0) >= 0 ? "+" : ""}{latestRecord?.score_trend || 0} pts improvement
+            {trend_graph.length} exams • {parseFloat(trend_graph[0]?.trend || 0) >= 0 ? "+" : ""}{trend_graph[0]?.trend || 0} pts trend
           </p>
 
           {chartData.length > 0 ? (
@@ -339,9 +400,7 @@ return (
                   check
                 </span>
                 <p className="text-xl text-primary font-bold">
-                  {parseFloat(latestRecord?.last_minute_error || 0) > 80
-                    ? `Last minute pressure detected (${latestRecord?.last_minute_error || 0}% error rate). Focus on steady pacing.`
-                    : "Your pacing is steady, minimizing errors in the final minutes."}
+                  {performance.pacing_msg || "Your pacing is steady, minimizing errors in the final minutes."}
                 </p>
               </li>
               <li className="w-full flex gap-4">
@@ -349,18 +408,16 @@ return (
                   check
                 </span>{" "}
                 <p className="text-xl text-primary font-bold">
-                    {parseFloat(latestRecord?.guessing_index || 0) > 10 
-                      ? `Guessing index is ${latestRecord?.guessing_index || 0}. Work on conceptual clarity to reduce guesswork.`
-                      : "Strong conceptual accuracy with minimal guessing detected."}
+                    {performance.accuracy_msg || "Strong conceptual accuracy with minimal guessing detected."}
                 </p>
               </li>
             </ul>
             <div className="mb-8">
               <p className="mt-2 text-xs text-primary font-semibold">
-                {(latestRecord?.score_pct || 0) >= 80 ? "You are performing at an elite level." : "Consistently clearing L3 will help you reach"}
+                {(performance.overall_score || 0) >= 80 ? "You are performing at an elite level." : "Consistently clearing L3 will help you reach"}
               </p>
               <h2 className="mt-2 text-primary">
-                <span className="text-4xl font-extrabold"> Top 8%</span>
+                <span className="text-4xl font-extrabold"> Top {performance.percentile || 0}%</span>
                 <span className="text-sm font-semibold">
                   {" "}
                   School Percentile
