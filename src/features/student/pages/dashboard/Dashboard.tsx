@@ -796,34 +796,59 @@ export const Dashboard = () => {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedExam, setSelectedExam] = useState("");
   const [performanceData, setPerformanceData] = useState<any>(null);
+  const [subjectDashboardData, setSubjectDashboardData] = useState<any>(null);
+  const [mockDashboardData, setMockDashboardData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchPerformance = async () => {
+    const fetchData = async () => {
       setIsLoading(true);
       try {
-        const response = await ApiServices.getStudentPerformance();
-        if (response.data?.status === "success") {
-          setPerformanceData(response.data.data);
+        const [performanceRes, subjectsRes, mocksRes] = await Promise.all([
+          ApiServices.getStudentPerformance(),
+          ApiServices.getStudentSubjectDashboard(),
+          ApiServices.getStudentMockDashboard()
+        ]);
+
+        if (performanceRes.data?.status === "success") {
+          setPerformanceData(performanceRes.data.data);
+        }
+        if (subjectsRes.data?.status === "success") {
+          setSubjectDashboardData(subjectsRes.data.data);
+          
+          // Auto-select first subject if none selected
+          const firstSub = subjectsRes.data.data?.subjects?.[0];
+          if (firstSub && !selectedSubject) {
+            setSelectedSubject(firstSub.subject_name);
+          }
+        }
+        if (mocksRes.data?.status === "success") {
+          setMockDashboardData(mocksRes.data.data);
         }
       } catch (error) {
-        console.error("Error fetching performance:", error);
+        console.error("Error fetching dashboard data:", error);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchPerformance();
+    fetchData();
   }, []);
 
   const tabComponents: Record<string, React.ReactElement> = {
     performance: <PerformanceCards performanceData={performanceData} />,
-    subject: <SubjectGrid selectedSubject={selectedSubject} />,
-    exam: <MockExamDashboard selectedExam={selectedExam} />,
+    subject: <SubjectGrid 
+      selectedSubject={selectedSubject} 
+      subjectDashboardData={subjectDashboardData} 
+    />,
+    exam: <MockExamDashboard 
+      selectedExam={selectedExam} 
+      mockDashboardData={mockDashboardData} 
+    />,
     remediation: <Remediation />,
   };
 
   return (
-    <div className="space-y-1 bg-gray-100 min-h-screen">
+    <div className="bg-gray-100 min-h-screen">
       <HeaderProfile
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -831,11 +856,13 @@ export const Dashboard = () => {
         onSubjectSelect={setSelectedSubject}
         selectedExam={selectedExam}
         onExamSelect={setSelectedExam}
+        subjectDashboardData={subjectDashboardData}
+        mockDashboardData={mockDashboardData}
       />
       <main className="min-h-[400px] flex flex-col">
         {isLoading ? (
           <div className="flex-1 flex flex-col items-center justify-center py-24">
-            <Loader size="xl" text="Fetching student performance..." />
+            <Loader size="xl" text="Fetching dashboard data..." />
           </div>
         ) : (
           <div className="animate-in fade-in duration-500">
