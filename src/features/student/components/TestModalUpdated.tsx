@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { X, ChevronLeft, ChevronRight, CheckCircle2, XCircle } from "lucide-react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import ApiServices from "../../../services/ApiServices";
 import { useToast } from "../../../app/providers/ToastProvider";
 

@@ -13,6 +13,8 @@ interface HeaderProfileProps {
   onSubjectSelect: (subject: string) => void;
   selectedExam: string;
   onExamSelect: (exam: string) => void;
+  subjectDashboardData: any;
+  mockDashboardData: any;
 }
 
 interface StudentProfile {
@@ -34,6 +36,8 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
   onSubjectSelect,
   selectedExam,
   onExamSelect,
+  subjectDashboardData,
+  mockDashboardData,
 }) => {
   const [showDropdown, setShowDropdown] = React.useState(false);
   const [showExamDropdown, setShowExamDropdown] = useState(false);
@@ -85,38 +89,25 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
     fetchProfileImage();
   }, []);
 
-  // ✅ Robustly fetch subjects
+  // ✅ Robustly sync subjects from passed props to avoid redundant API loading
   useEffect(() => {
-    const fetchSubjects = async () => {
-      try {
-        const response = await ApiServices.getStudentSubjectDashboard();
+    if (subjectDashboardData) {
+      const fetchedSubjects = subjectDashboardData.subjects || [];
+      if (Array.isArray(fetchedSubjects) && fetchedSubjects.length > 0) {
+        setSubjectsList(fetchedSubjects);
 
-        if (response.data?.status === "success") {
-          const fetchedSubjects = response.data.data?.subjects || [];
+        const counts: Record<string, number> = {};
+        fetchedSubjects.forEach((sub: any) => {
+          counts[sub.subject_name] = sub.chapters?.length || 0;
+        });
+        setNotifications(counts);
 
-          if (Array.isArray(fetchedSubjects) && fetchedSubjects.length > 0) {
-            setSubjectsList(fetchedSubjects);
-
-            // Build notifications map/counts if useful from top_stats or other fields
-            // For now, setting a simple count if available
-            const counts: Record<string, number> = {};
-            fetchedSubjects.forEach((sub: any) => {
-              counts[sub.subject_name] = sub.chapters?.length || 0;
-            });
-            setNotifications(counts);
-
-            // Auto-select the first subject if none is selected currently
-            if (!selectedSubject) {
-              onSubjectSelect(fetchedSubjects[0].subject_name);
-            }
-          }
+        if (!selectedSubject) {
+          onSubjectSelect(fetchedSubjects[0].subject_name);
         }
-      } catch (error) {
-        console.error("Error fetching student subjects:", error);
       }
-    };
-    fetchSubjects();
-  }, [selectedSubject, onSubjectSelect]); // Re-run if selectedSubject or onSubjectSelect changes
+    }
+  }, [subjectDashboardData, selectedSubject, onSubjectSelect]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -150,29 +141,21 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
   const [mockData, setMockData] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchMocks = async () => {
-      try {
-        const response = await ApiServices.getStudentMockDashboard();
-        if (response.data?.status === "success") {
-          const fetchedMocks = response.data.data?.mocks || [];
-          setMockCount(fetchedMocks.length);
-          setMockData(fetchedMocks);
+    if (mockDashboardData) {
+      const fetchedMocks = mockDashboardData.mocks || [];
+      setMockCount(fetchedMocks.length);
+      setMockData(fetchedMocks);
 
-          if (Array.isArray(fetchedMocks) && fetchedMocks.length > 0) {
-            const dynamicExams = fetchedMocks.map((_: any, index: number) => `Mock: M${(index + 1).toString().padStart(2, '0')}`);
-            setExamList(dynamicExams);
+      if (Array.isArray(fetchedMocks) && fetchedMocks.length > 0) {
+        const dynamicExams = fetchedMocks.map((_: any, index: number) => `Mock: M${(index + 1).toString().padStart(2, '0')}`);
+        setExamList(dynamicExams);
 
-            if (!selectedExam && dynamicExams.length > 0) {
-              onExamSelect(dynamicExams[dynamicExams.length - 1]);
-            }
-          }
+        if (!selectedExam && dynamicExams.length > 0) {
+          onExamSelect(dynamicExams[dynamicExams.length - 1]);
         }
-      } catch (error) {
-        console.error("Error fetching student mocks:", error);
       }
-    };
-    fetchMocks();
-  }, []);
+    }
+  }, [mockDashboardData, selectedExam, onExamSelect]);
 
   // ✅ Fallbacks: Get data from local storage immediately so the UI isn't blank while loading
   const localUser = JSON.parse(localStorage.getItem("active_profile") || "{}");
