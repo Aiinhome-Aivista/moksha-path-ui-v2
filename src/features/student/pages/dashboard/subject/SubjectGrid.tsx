@@ -35,7 +35,7 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject, subjectDashb
               label: lvl.level,
               value: Math.round(Number(lvl.accuracy) || 0),
               color: lvl.bucket === "Easy" ? "#578E12" : lvl.bucket === "Medium" ? "#EA9003" : lvl.bucket === "Hard" ? "#FF7361" : "#ea4335",
-              time: `${parseFloat(lvl.avg_time).toFixed(1)}m`
+              time: `${parseFloat(lvl.avg_time).toFixed(1)}sec`
             }))
           };
         });
@@ -63,7 +63,7 @@ const SubjectGrid: React.FC<SubjectGridProps> = ({ selectedSubject, subjectDashb
             label: lvl.level,
             value: Math.round(Number(lvl.accuracy) || 0),
             color: lvl.bucket === "Easy" ? "#578E12" : lvl.bucket === "Medium" ? "#EA9003" : lvl.bucket === "Hard" ? "#FF7361" : "#ea4335",
-            time: `${parseFloat(lvl.avg_time).toFixed(1)}m`
+            time: `${parseFloat(lvl.avg_time).toFixed(1)}sec`
           })) || []
         };
       });
