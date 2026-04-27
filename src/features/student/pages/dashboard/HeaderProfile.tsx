@@ -136,7 +136,6 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
     { name: "Remediation", key: "remediation" },
   ];
 
-  const [examList, setExamList] = useState<string[]>([]);
   const [mockCount, setMockCount] = useState<number>(0);
   const [mockData, setMockData] = useState<any[]>([]);
 
@@ -147,11 +146,9 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
       setMockData(fetchedMocks);
 
       if (Array.isArray(fetchedMocks) && fetchedMocks.length > 0) {
-        const dynamicExams = fetchedMocks.map((_: any, index: number) => `Mock: M${(index + 1).toString().padStart(2, '0')}`);
-        setExamList(dynamicExams);
-
-        if (!selectedExam && dynamicExams.length > 0) {
-          onExamSelect(dynamicExams[dynamicExams.length - 1]);
+        if (!selectedExam) {
+          const maxAttemptMock = fetchedMocks.reduce((max: any, mock: any) => mock.attempt_id > max.attempt_id ? mock : max, fetchedMocks[0]);
+          onExamSelect(maxAttemptMock.attempt_id.toString());
         }
       }
     }
@@ -286,8 +283,9 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                     <button
                       onClick={() => {
                         onTabChange(tab.key);
-                        if (!selectedExam) {
-                          onExamSelect(examList[0]);
+                        if (!selectedExam && mockData.length > 0) {
+                          const maxAttemptMock = mockData.reduce((max: any, mock: any) => mock.attempt_id > max.attempt_id ? mock : max, mockData[0]);
+                          onExamSelect(maxAttemptMock.attempt_id.toString());
                         }
                         setShowExamDropdown(!showExamDropdown);
                         setShowDropdown(false);
@@ -297,7 +295,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                         : "text-gray-600 hover:bg-gray-100"
                         }`}
                     >
-                      {activeTab === "exam" && selectedExam ? selectedExam : tab.name}
+                      {activeTab === "exam" && selectedExam ? `Mock: M${selectedExam.padStart(2, '0')}` : tab.name}
                       <span className="material-symbols-outlined ml-1">
                         keyboard_arrow_down
                       </span>
@@ -311,21 +309,21 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                         className="absolute top-12 left-0 bg-white shadow-lg rounded-lg w-full z-50 overflow-hidden"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {examList.length > 0 ? (
-                          examList.map((exam, i) => (
+                        {mockData.length > 0 ? (
+                          mockData.map((mock) => (
                             <div
-                              key={i}
+                              key={mock.attempt_id}
                               onClick={() => {
-                                onExamSelect(exam);
+                                onExamSelect(mock.attempt_id.toString());
                                 setShowExamDropdown(false);
                               }}
-                              className={`flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer font-medium transition-colors ${selectedExam === exam
+                              className={`flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer font-medium transition-colors ${selectedExam === mock.attempt_id.toString()
                                 ? "bg-lime-100 text-lime-800"
                                 : "text-gray-700 hover:bg-gray-100"
                                 }`}
                             >
-                              <span>{exam}</span>
-                              {selectedExam === exam && (
+                              <span>{`Mock: M${mock.attempt_id.toString().padStart(2, '0')}`}</span>
+                              {selectedExam === mock.attempt_id.toString() && (
                                 <span className="material-symbols-outlined text-lime-600 text-base">check</span>
                               )}
                             </div>
@@ -365,8 +363,9 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
           {activeTab === "exam" && mockData.length > 0 && (
             <div className="flex items-center justify-between pl-4 pr-2 w-full animate-in slide-in-from-top-2 duration-300">
               {(() => {
-                const mockIndex = examList.indexOf(selectedExam);
-                const currentMock = mockIndex >= 0 ? mockData[mockIndex] : mockData[mockData.length - 1];
+                const attemptId = parseInt(selectedExam, 10);
+                const currentMock = mockData.find(m => m.attempt_id === attemptId) 
+                  || mockData.reduce((max, mock) => mock.attempt_id > max.attempt_id ? mock : max, mockData[0]);
                 if (!currentMock) return null;
 
                 const attemptDate = new Date(currentMock.attempt_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
@@ -379,7 +378,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
                 return (
                   <>
                     <div className="flex flex-col">
-                      <h2 className="text-lg font-bold text-[#212B36] tracking-tight">{selectedExam || `Mock: M${mockData.length.toString().padStart(2, '0')}`}</h2>
+                      <h2 className="text-lg font-bold text-[#212B36] tracking-tight">{`Mock: M${currentMock.attempt_id.toString().padStart(2, '0')}`}</h2>
                       <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">{attemptDate}</p>
                     </div>
 

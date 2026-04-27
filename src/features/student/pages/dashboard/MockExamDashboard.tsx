@@ -11,12 +11,13 @@ export const MockExamDashboard = ({ selectedExam, mockDashboardData }: MockExamD
     return <div className="text-center py-20 text-gray-500 font-medium italic text-xl">No mock exam data available.</div>;
   }
 
-  // Parse 'Mock: M01' to get the index (1 -> 0)
-  const mockIndex = parseInt(selectedExam.split('M')[1]) - 1;
-  const currentMock = mockDashboardData.mocks[mockIndex] || mockDashboardData.mocks[0];
+  // Parse selectedExam to get the attempt_id
+  const attemptId = parseInt(selectedExam, 10);
+  const currentMock = mockDashboardData.mocks.find((m: any) => m.attempt_id === attemptId) 
+    || mockDashboardData.mocks.reduce((max: any, mock: any) => mock.attempt_id > max.attempt_id ? mock : max, mockDashboardData.mocks[0]);
 
   if (!currentMock) {
-    return <div className="text-center py-20 text-gray-500">No data found for {selectedExam}.</div>;
+    return <div className="text-center py-20 text-gray-500">No data found for the selected exam.</div>;
   }
 
 
