@@ -21,6 +21,7 @@ export const SignInModal: React.FC = () => {
   const [canResend, setCanResend] = useState(false);
 
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [open, setOpen] = useState(false);
   const { showToast } = useToast();
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -143,11 +144,36 @@ export const SignInModal: React.FC = () => {
               <div className="tag">सत्यं ज्ञानं · a guided path to true learning</div>
             </div>
           </Link>
-          <nav className="nav" aria-label="Primary">
-            <Link to="/#personas">Who it's for</Link>
-            <Link to="/#faq">FAQ</Link>
-            <Link to="/#pricing">Pricing</Link>
-            <Link to="/register" className="btn btn-primary cta">Create account</Link>
+
+          <button
+            className="nav-toggle"
+            aria-label="Open menu"
+            aria-expanded={open}
+            aria-controls="primary-nav"
+            onClick={() => setOpen(!open)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+
+          <nav 
+            id="primary-nav"
+            className={`nav ${open ? 'open' : 'hidden'}`} 
+            aria-label="Primary"
+            aria-hidden={!open}
+          >
+            <Link to="/#personas" onClick={() => setOpen(false)}>Who it's for</Link>
+            <Link to="/#faq" onClick={() => setOpen(false)}>FAQ</Link>
+            <Link to="/#pricing" onClick={() => setOpen(false)}>Pricing</Link>
+            <Link to="/blogs" onClick={() => setOpen(false)}>Blog</Link>
+            <Link 
+              to="/register" 
+              className="btn btn-primary cta"
+              onClick={() => setOpen(false)}
+            >
+              Create account
+            </Link>
           </nav>
         </div>
       </header>

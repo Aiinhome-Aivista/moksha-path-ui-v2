@@ -53,6 +53,8 @@ export const LoginModal: React.FC = () => {
   const [persona, setPersona] = useState<number | null>(null);
   const [roles, setRoles] = useState<any[]>([]);
 
+  const [open, setOpen] = useState(false);
+
   // Profile Data
   const [profileData, setProfileData] = useState({
     fullName: "",
@@ -301,11 +303,34 @@ export const LoginModal: React.FC = () => {
               </div>
             </div>
           </Link>
-          <nav className="nav">
-            <Link to="/#personas">Who it's for</Link>
-            <Link to="/#faq">FAQ</Link>
-            <Link to="/#pricing">Pricing</Link>
-            <Link to="/signin" className="btn btn-ghost">
+
+          <button
+            className="nav-toggle"
+            aria-label="Open menu"
+            aria-expanded={open}
+            aria-controls="primary-nav"
+            onClick={() => setOpen(!open)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+
+          <nav 
+            id="primary-nav"
+            className={`nav ${open ? 'open' : 'hidden'}`} 
+            aria-label="Primary"
+            aria-hidden={!open}
+          >
+            <Link to="/#personas" onClick={() => setOpen(false)}>Who it's for</Link>
+            <Link to="/#faq" onClick={() => setOpen(false)}>FAQ</Link>
+            <Link to="/#pricing" onClick={() => setOpen(false)}>Pricing</Link>
+            <Link to="/blogs" onClick={() => setOpen(false)}>Blog</Link>
+            <Link 
+              to="/signin" 
+              className="btn btn-ghost border-4 border-amber-500"
+              onClick={() => setOpen(false)}
+            >
               Sign in
             </Link>
           </nav>

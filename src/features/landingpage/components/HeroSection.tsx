@@ -13,17 +13,17 @@ const HeroSection = () => {
             <h1>
               Education is a <span className="em">team sport.</span>
             </h1>
-            <p className="sub-head">
+            <p className="sub-head w-96 md:w-full">
               Adaptive assessments, board-aligned learning plans, and role-specific
               dashboards — for <strong>CBSE, ICSE, CAIE, IB</strong>, and every Indian
               state board.
             </p>
-            <p className="lede">
+            <p className="lede w-96 md:w-full">
               MokshPath gives each player — students, parents, teachers, schools — the
               right view of the same journey. One adaptive engine. Four purposeful
               dashboards. Zero one-size-fits-all.
             </p>
-            <div className="cta-row">
+            <div className="cta-row flex-col md:flex-row">
               <a href="#diagnostic" className="btn btn-primary">
                 Run a free 20-minute diagnostic →
               </a>

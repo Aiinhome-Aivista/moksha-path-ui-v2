@@ -1209,7 +1209,7 @@ section {
 .hero-v2 .lede {
   font-size: 0.98rem;
   color: #545975;
-  max-width: 540px;
+  max-width: 500px;
   margin: 0 0 24px;
 }
 .hero-trust-mini {
@@ -2709,7 +2709,7 @@ select.auth-field__input {
    ========================================================= */
 .wizard-main {
   flex: 1;
-  padding: 40px 0 72px;
+  padding: 20px 0;
   position: relative;
   z-index: 1;
 }
