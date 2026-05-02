@@ -67,7 +67,7 @@ const SubjectRemediationCard = ({ data, isLoading }: any) => {
             <div className="flex flex-col items-center gap-3">
               <div className="w-10 h-10 border-4 border-gray-100 border-t-[#BADA55] rounded-full animate-spin" />
               <span className="text-[10px] text-gray-400 font-medium tracking-wide">
-                Analyzing patterns…
+                Analyzing pointers…
               </span>
             </div>
           </div>
