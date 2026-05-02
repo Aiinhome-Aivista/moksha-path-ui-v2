@@ -1,36 +1,18 @@
 import { useEffect, useState } from "react";
 import SubjectRemediationCard from "./SubjectRemediationCard";
-import ApiServices from "../../../../../services/ApiServices";
-import Loader from "../../../../../components/common/Loader";
 
-const Remediation = () => {
+interface RemediationProps {
+  remediationData: any;
+}
+
+const Remediation: React.FC<RemediationProps> = ({ remediationData }) => {
   const [subjects, setSubjects] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchRemediation = async () => {
-      setIsLoading(true);
-      try {
-        const response = await ApiServices.getStudentRemediationDashboard();
-        if (response.data?.status === "success") {
-          setSubjects(response.data.data.subjects.list || []);
-        }
-      } catch (error) {
-        console.error("Error fetching remediation data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchRemediation();
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24">
-        <Loader size="xl" text="Fetching remediation data..." />
-      </div>
-    );
-  }
+    if (remediationData?.subjects?.list) {
+      setSubjects(remediationData.subjects.list);
+    }
+  }, [remediationData]);
 
   const mapChapter = (chapter: any) => {
     const getLevelLabel = (lvl: string) => {
@@ -66,6 +48,14 @@ const Remediation = () => {
       }))
     };
   };
+
+  if (!remediationData) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-gray-500">
+        <p className="italic">No remediation data available.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 pb-4 bg-gray-100 min-h-screen space-y-6">

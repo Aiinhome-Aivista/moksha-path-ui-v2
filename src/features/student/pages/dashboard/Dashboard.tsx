@@ -14,16 +14,18 @@ export const Dashboard = () => {
   const [performanceData, setPerformanceData] = useState<any>(null);
   const [subjectDashboardData, setSubjectDashboardData] = useState<any>(null);
   const [mockDashboardData, setMockDashboardData] = useState<any>(null);
+  const [remediationData, setRemediationData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [performanceRes, subjectsRes, mocksRes] = await Promise.all([
+        const [performanceRes, subjectsRes, mocksRes, remediationRes] = await Promise.all([
           ApiServices.getStudentPerformance(),
           ApiServices.getStudentSubjectDashboard(),
-          ApiServices.getStudentMockDashboard()
+          ApiServices.getStudentMockDashboard(),
+          ApiServices.getStudentRemediationDashboard()
         ]);
 
         if (performanceRes.data?.status === "success") {
@@ -40,6 +42,9 @@ export const Dashboard = () => {
         }
         if (mocksRes.data?.status === "success") {
           setMockDashboardData(mocksRes.data.data);
+        }
+        if (remediationRes.data?.status === "success") {
+          setRemediationData(remediationRes.data.data);
         }
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -60,7 +65,7 @@ export const Dashboard = () => {
       selectedExam={selectedExam} 
       mockDashboardData={mockDashboardData} 
     />,
-    remediation: <Remediation />,
+    remediation: <Remediation remediationData={remediationData} />,
   };
 
   return (
