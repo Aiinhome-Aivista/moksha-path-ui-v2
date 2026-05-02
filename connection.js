@@ -29,6 +29,7 @@ export const GET_APIS = {
   subscription_invite_list: `${BASE_URL}subscription/invite_list`,
   student_mock_dashboard_vw: `${BASE_URL}learning/student_mock_dashboard_vw`,
   student_chapter_remediation_vw: `${BASE_URL}learning/student_chapter_remediation_vw`,
+  student_remediation_dashboard: `${BASE_URL}learning/student_remediation_dashboard`,
   subscription_invite_history: `${BASE_URL}subscription/invite_history`,
   subscription_list: `${BASE_URL}subscription/subscription_list`,
   //user subscription details

@@ -442,6 +442,10 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.student_chapter_remediation_vw);
   }
 
+  getStudentRemediationDashboard() {
+    return axiosInstance.get(GET_APIS.student_remediation_dashboard);
+  }
+
   // Teacher APIs
   getTeacherStudentStatusDashboard() {
     return axiosInstance.get(GET_APIS.teacher_student_status_dashboard);
