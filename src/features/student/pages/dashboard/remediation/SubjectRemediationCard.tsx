@@ -7,7 +7,7 @@ const getHexColor = (percent: number) => {
   return "#ea4335"; // Red
 };
 
-const SubjectRemediationCard = ({ data }: any) => {
+const SubjectRemediationCard = ({ data, isLoading }: any) => {
   return (
     <div className=" px-4 border-b-2">
       {/* Header */}
@@ -61,26 +61,42 @@ const SubjectRemediationCard = ({ data }: any) => {
       </div>
 
       {/* Actions */}
-      <div className="mt-4 space-y-1">
-        {data.actions.map((act: any, i: number) => (
-          <div
-            key={i}
-            className={`p-2 rounded-lg text-sm flex gap-4 ${i === 0
-              ? "bg-button-primary"
-              : i === 1
-                ? "bg-highlighter"
-                : "bg-lime-100"
-              }`}
-          >
-            <div className="font-bold bg-white w-12 h-12 flex items-center justify-center rounded-full text-xl shrink-0">
-              {i + 1}
-            </div>
-            <div>
-              <p className="font-bold">{act.title}</p>
-              <p className="font-medium">{act.subtitle}</p>
+      <div className="mt-6 space-y-3 pb-4 min-h-[120px] relative">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-8">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-10 h-10 border-4 border-gray-100 border-t-[#BADA55] rounded-full animate-spin" />
+              <span className="text-[10px] text-gray-400 font-medium tracking-wide">
+                Analyzing patterns…
+              </span>
             </div>
           </div>
-        ))}
+        ) : data.actions.length > 0 ? (
+          data.actions.map((act: any, i: number) => {
+            const bgColor = i === 0 ? "#c5e1a5" : i === 1 ? "#fff59d" : "#ef9a9a";
+            const textColor = i === 0 ? "#33691e" : i === 1 ? "#f57f17" : "#b71c1c";
+            
+            return (
+              <div
+                key={i}
+                className="p-3 rounded-2xl text-sm flex gap-4 items-center shadow-sm"
+                style={{ backgroundColor: bgColor }}
+              >
+                <div className="font-bold bg-white w-10 h-10 flex items-center justify-center rounded-full text-xl shrink-0 shadow-inner" style={{ color: textColor }}>
+                  {i + 1}
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-gray-900 leading-tight mb-0.5">{act.title}</p>
+                  {act.subtitle && <p className="font-medium text-gray-700 text-xs leading-snug">{act.subtitle}</p>}
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="text-center py-8 text-gray-400 italic text-sm">
+            No remediation insights available yet.
+          </div>
+        )}
       </div>
     </div>
   );

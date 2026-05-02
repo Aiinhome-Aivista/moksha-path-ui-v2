@@ -30,6 +30,7 @@ export const GET_APIS = {
   student_mock_dashboard_vw: `${BASE_URL}learning/student_mock_dashboard_vw`,
   student_chapter_remediation_vw: `${BASE_URL}learning/student_chapter_remediation_vw`,
   student_remediation_dashboard: `${BASE_URL}learning/student_remediation_dashboard`,
+  student_remediation_ai_insights: `${BASE_URL}learning/student_remediation_ai_insights`,
   subscription_invite_history: `${BASE_URL}subscription/invite_history`,
   subscription_list: `${BASE_URL}subscription/subscription_list`,
   //user subscription details
