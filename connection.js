@@ -121,6 +121,7 @@ export const GET_APIS = {
 
   get_teacher_study_material_v4: `${BASE_URL}parent_teacher/get_teacher_study_material`,
   adaptive_next_question: `${BASE_URL}learning/assessment/get_next_question`,
+  institute_admin_dashboard: `${BASE_URL}institute_admin/dashboard`,
 };
 
 export const POST_APIS = {

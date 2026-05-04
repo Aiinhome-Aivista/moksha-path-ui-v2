@@ -720,6 +720,9 @@ class ApiServices {
   getInstituteAdminSummary() {
     return axiosInstance.get(GET_APIS.get_institute_admin_summary);
   }
+  getInstituteAdminDashboard() {
+    return axiosInstance.get(GET_APIS.institute_admin_dashboard);
+  }
   upsertTeacherPlanner(payload) {
     return axiosInstance.post(POST_APIS.upsert_teacher_planner, payload);
   }
