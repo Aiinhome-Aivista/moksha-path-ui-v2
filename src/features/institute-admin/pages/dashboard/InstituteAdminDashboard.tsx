@@ -89,19 +89,19 @@ const InstituteAdminDashboard: React.FC = () => {
 
   // Extra KPIs
   const extraKpis = [
-    { label: "Avg Accuracy Improvement", value: dashboardData.avg_accuracy_improvement ?? 0, suffix: "%" },
-    { label: "Avg Consistency Index", value: dashboardData.avg_consistency_index ?? 0, suffix: "" },
-    { label: "Avg Intervention Index", value: dashboardData.avg_intervention_index ?? 0, suffix: "" },
-    { label: "Avg Teacher Improvement", value: dashboardData.avg_teacher_improvement ?? 0, suffix: "%" },
-    { label: "Avg Teacher Score", value: dashboardData.avg_teacher_score ?? 0, suffix: "" },
-    { label: "Bottom Percent", value: dashboardData.bottom_percent ?? 0, suffix: "%" },
-    { label: "Consistent Performer", value: dashboardData.consistent_performer_percent ?? 0, suffix: "%" },
-    { label: "High Impact Teacher", value: dashboardData.high_impact_teacher_percent ?? 0, suffix: "%" },
-    { label: "Improvement Consistency", value: dashboardData.improvement_consistency_percent ?? 0, suffix: "%" },
-    { label: "Mid Percent", value: dashboardData.mid_percent ?? 0, suffix: "%" },
-    { label: "School Avg Score", value: dashboardData.school_avg_score ?? 0, suffix: "" },
-    { label: "School Readiness Index", value: dashboardData.school_readiness_index ?? 0, suffix: "" },
-    { label: "Top Percent", value: dashboardData.top_percent ?? 0, suffix: "%" },
+    { label: "Avg Accuracy Improvement", value: dashboardData.avg_accuracy_improvement ?? 0, suffix: "%", color: "text-[#79C9D2]" },
+    { label: "Avg Consistency Index", value: dashboardData.avg_consistency_index ?? 0, suffix: "", color: "text-[#F5B041]" },
+    { label: "Avg Intervention Index", value: dashboardData.avg_intervention_index ?? 0, suffix: "", color: "text-[#7DCEA0]" },
+    { label: "Avg Teacher Improvement", value: dashboardData.avg_teacher_improvement ?? 0, suffix: "%", color: "text-[#79C9D2]" },
+    { label: "Avg Teacher Score", value: dashboardData.avg_teacher_score ?? 0, suffix: "", color: "text-[#F5B041]" },
+    { label: "Bottom Percent", value: dashboardData.bottom_percent ?? 0, suffix: "%", color: "text-[#7DCEA0]" },
+    { label: "Consistent Performer", value: dashboardData.consistent_performer_percent ?? 0, suffix: "%", color: "text-[#79C9D2]" },
+    { label: "High Impact Teacher", value: dashboardData.high_impact_teacher_percent ?? 0, suffix: "%", color: "text-[#F5B041]" },
+    { label: "Improvement Consistency", value: dashboardData.improvement_consistency_percent ?? 0, suffix: "%", color: "text-[#7DCEA0]" },
+    { label: "Mid Percent", value: dashboardData.mid_percent ?? 0, suffix: "%", color: "text-[#79C9D2]" },
+    { label: "School Avg Score", value: dashboardData.school_avg_score ?? 0, suffix: "", color: "text-[#F5B041]" },
+    { label: "School Readiness Index", value: dashboardData.school_readiness_index ?? 0, suffix: "", color: "text-[#7DCEA0]" },
+    { label: "Top Percent", value: dashboardData.top_percent ?? 0, suffix: "%", color: "text-[#79C9D2]" },
   ];
 
   const teacherScorecards: TeacherScorecard[] = (dashboardData.teacher_data ?? []).map((t: any) => ({
@@ -119,43 +119,42 @@ const InstituteAdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 pb-10">
+
       <DashboardHeader
         profile={principalProfile}
         meta={dashboardMeta}
         profileAltText="Principal Profile"
       />
 
+      {/* Stat cards*/}
+      <div className="flex w-full gap-8 py-5 pr-12" style={{ paddingLeft: "310px" }}>
+        {mainStats.map((stat, i) => (
+          <div key={i} className="text-start flex-1">
+            <p className={`font-bold boldleading-none text-xl lg:text-xl  ${stat.color}`}>
+              {stat.value}
+              {stat.suffix && (
+                <span className="text-sm">{stat.suffix}</span>
+              )}
+            </p>
+            <p className="text-[13px] font-bold text-gray-600 mt-2 whitespace-nowrap">
+              {stat.label}
+            </p>
+            <p className="text-[11px] text-gray-600 font-medium whitespace-nowrap">
+              {stat.subLabel}
+            </p>
+          </div>
+        ))}
+      </div>
       <div className="flex flex-col gap-8 px-12 py-5">
-        {/* Main Stat row */}
-        <div className="flex w-full justify-between gap-4">
-          {mainStats.map((stat, i) => (
-            <div key={i} className="text-start">
-              <p
-                className={`font-light leading-none text-4xl lg:text-5xl ${stat.color}`}
-              >
-                {stat.value}
-                {stat.suffix && (
-                  <span className="text-2xl font-light">
-                    {stat.suffix}
-                  </span>
-                )}
-              </p>
-              <p className="text-[13px] font-bold text-gray-800 mt-2 whitespace-nowrap">
-                {stat.label}
-              </p>
-              <p className="text-[11px] text-gray-600 font-medium whitespace-nowrap">
-                {stat.subLabel}
-              </p>
-            </div>
-          ))}
-        </div>
+
+
 
         {/* Extra KPIs row */}
         <div className="flex flex-wrap gap-x-12 gap-y-6 pt-2">
             {extraKpis.map((kpi, i) => (
                 <div key={i} className="flex flex-col min-w-[120px]">
-                    <span className="text-[9px] font-bold text-gray-500 uppercase tracking-tight whitespace-nowrap mb-1">{kpi.label}</span>
-                    <span className="text-lg font-bold text-gray-800">{kpi.value}{kpi.suffix}</span>
+                <span className="text-[13px] font-bold text-gray-600 mt-2 whitespace-nowrap">{kpi.label}</span>
+                <span className={`font-bold boldleading-none text-xl lg:text-xl ${kpi.color}`}>{kpi.value}{kpi.suffix}</span>
                 </div>
             ))}
         </div>
@@ -171,7 +170,7 @@ const InstituteAdminDashboard: React.FC = () => {
         <div className="overflow-x-auto px-12">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-t-4 border-[#E0E0E0] border-b-4 border-[#E0E0E0] text-primary text-sm font-bold">
+              <tr className="border-t-4 border-[#E0E0E0] border-b-4 border-[#E0E0E0] text-primary text-[15px] font-bold">
                 <th className="px-4 py-2 text-left">Teacher</th>
                 <th className="px-4 py-2 text-left">
                   Subjects<br />
