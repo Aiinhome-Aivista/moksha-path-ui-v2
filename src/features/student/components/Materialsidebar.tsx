@@ -115,11 +115,11 @@ const MaterialsSidebar: React.FC<Props> = ({
   // };
 
   return (
-    <div className="w-[280px] flex-shrink-0 overflow-visible relative z-[100]">
-      {/* Tutor Image */}
-      <div className="flex justify-start mb-2">
-        <img src="/Guy.svg" alt="Tutor" />
-      </div>
+    <div className="w-[280px] flex-shrink-0">
+            {/* Tutor Image */}
+            <div className="flex justify-start mb-2">
+                <img src="/Guy.svg" alt="Tutor" />
+            </div>
 
       {/* Filters */}
       <div className="flex gap-2 w-64 flex-col">
