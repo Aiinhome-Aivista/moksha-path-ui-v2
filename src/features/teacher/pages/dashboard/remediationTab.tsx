@@ -28,7 +28,7 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
   };
 
   return (
-    <div className="space-y-2 animate-in fade-in duration-500 pr-6 pl-6">
+    <div className="space-y-2 animate-in fade-in duration-500 pr-6 pl-6 relative -top-4">
       
       {/* 1. TOP SECTION: Title and Student Buckets */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-b border-gray-100">

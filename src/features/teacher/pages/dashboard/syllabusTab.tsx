@@ -17,23 +17,23 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
 
     // Map status to color
     const getStatusColor = (status: string) => {
-      if (status === "GOOD") return "bg-green-700";
-      if (status === "ACTION") return "bg-red-400";
-      if (status === "WATCH") return "bg-orange-400";
-      return "bg-gray-300";
+      if (status === "GOOD") return "bg-[#589F12]";
+      if (status === "ACTION") return "bg-[#FE6768]";
+      if (status === "WATCH") return "bg-[#E48D00]";
+      return "bg-[#E6E6E6]";
     };
 
     const getStatusTextColor = (status: string) => {
-      if (status === "GOOD") return "text-green-700";
-      if (status === "ACTION") return "text-red-400";
-      if (status === "WATCH") return "text-orange-400";
-      return "text-gray-400";
+      if (status === "GOOD") return "text-[#589F12]";
+      if (status === "ACTION") return "text-[#FE6768]";
+      if (status === "WATCH") return "text-[#E48D00]";
+      return "text-[#E6E6E6]";
     };
 
     return (
       <div className="flex-1">
         {/* Subject Header */}
-        <div className="mb-6 pb-1 border-b-[6px] border-gray-200">
+        <div className="mb-6 pb-1 border-b-[6px] border-gray-300">
           <h3 className="text-2xl text-gray-800 tracking-tight">
             <span className="font-black">{subjectData.subject_name}</span>
             <span className="font-medium mx-2 text-3xl">|</span>
@@ -60,7 +60,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
             <div key={i} className="flex items-center gap-2 group py-1">
               {/* Chapter Name */}
               <span
-                className={`w-32 text-sm font-bold leading-tight ${chapter.completion_pct === 0 ? "text-gray-300 italic" : "text-gray-700"}`}
+                className={`min-w-72 text-sm font-bold leading-tight ${chapter.completion_pct === 0 ? "text-gray-300 italic" : "text-gray-700"}`}
               >
                 {chapter.chapter_name}
               </span>
@@ -81,7 +81,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
                 )}
 
                 {/* Benchmark marker line - thin vertical line as seen in dummy */}
-                <div className="absolute -bottom-2 text-3xl font-bold text-red-400 z-10" style={{left:`${chapter.completion_pct}%`}} >|</div>
+                <div className="absolute -bottom-2 text-3xl font-bold text-[#989C9D] z-10" style={{left:`${chapter.completion_pct}%`}} >|</div>
               </div>
 
               {/* Percentage Display */}
@@ -113,7 +113,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
           <h2 className="text-2xl font-black text-cyan-600 ">
             Syllabus Progress
           </h2>
-          <p className="text-xs text-gray-400 font-bold tracking-tight">
+          <p className="text-sm text-secondary font-medium tracking-tight">
             Chapter-level progress vs academic benchmark
           </p>
         </div>
@@ -139,10 +139,10 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
         {/* 3. Legend Section */}
         <div className="mt-12 pt-8 border-t border-gray-100 flex justify-center gap-10 items-center">
           {[
-            { color: "bg-green-600", label: "≥ Benchmark" },
-            { color: "bg-orange-400", label: "Within 10%" },
-            { color: "bg-red-400", label: "Below 10%+" },
-            { color: "bg-gray-200", label: "Not Started" },
+            { color: "bg-[#589F12]", label: "≥ Benchmark" },
+            { color: "bg-[#E48D00]", label: "Within 10%" },
+            { color: "bg-[#FE6768]", label: "Below 10%+" },
+            { color: "bg-[#E6E6E6]", label: "Not Started" },
           ].map((dot, idx) => (
             <div key={idx} className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${dot.color}`} />
