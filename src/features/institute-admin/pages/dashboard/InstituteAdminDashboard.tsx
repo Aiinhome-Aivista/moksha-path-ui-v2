@@ -169,7 +169,7 @@ const InstituteAdminDashboard: React.FC = () => {
       <div className="rounded-xl mb-5 overflow-hidden">
         <div className="px-12 pt-6 pb-2">
           <span className="font-bold text-sm text-gray-800 uppercase tracking-wide">Teacher Performance Scorecards</span>
-          <span className="text-[10px] text-gray-400 ml-2 font-medium">Each Benchmarked in Own Domain</span>
+          <span className="text-[10px] text-primary ml-2 font-medium">Each Benchmarked in Own Domain</span>
         </div>
 
         <div className="overflow-x-auto px-12">
