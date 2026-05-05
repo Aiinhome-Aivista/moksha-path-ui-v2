@@ -130,7 +130,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         isLoading={isLoading}
         profileImage={profileImage}
       />
-      <div className="flex flex-1 items-center justify-start px-6 py-2 bg-[#E9E9E9] h-14 rounded-tr-full rounded-br-full">
+      <div className="flex flex-1 items-center justify-start px-12 py-2 bg-[#E9E9E9] h-14 rounded-tr-full rounded-br-full -ml-8">
         <div>
           <span className="text-lg font-bold text-cyan-600">{meta.title}</span>
           <span className="text-gray-400 mx-2 font-light">|</span>
