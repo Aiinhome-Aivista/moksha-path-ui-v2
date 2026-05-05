@@ -126,37 +126,47 @@ const InstituteAdminDashboard: React.FC = () => {
         profileAltText="Principal Profile"
       />
 
-      {/* Stat cards*/}
-      <div className="flex w-full gap-8 py-5 pr-12" style={{ paddingLeft: "310px" }}>
-        {mainStats.map((stat, i) => (
-          <div key={i} className="text-start flex-1">
-            <p className={`font-bold boldleading-none text-xl lg:text-xl  ${stat.color}`}>
-              {stat.value}
-              {stat.suffix && (
-                <span className="text-sm">{stat.suffix}</span>
-              )}
-            </p>
-            <p className="text-[13px] font-bold text-gray-600 mt-2 whitespace-nowrap">
-              {stat.label}
-            </p>
-            <p className="text-[11px] text-gray-600 font-medium whitespace-nowrap">
-              {stat.subLabel}
-            </p>
-          </div>
-        ))}
-      </div>
-      <div className="flex flex-col gap-8 px-12 py-5">
+      {/* Stat cards + Extra KPIs — একই flex row-এ */}
+      <div className="flex w-full gap-8">
 
+        {/* Spacer: black profile section এর width ধরে রাখার জন্য */}
+        <div style={{ minWidth: "310px" }} />
 
+        {/* সব content একটাই flex-1 div-এ */}
+        <div className="flex-1 flex flex-col gap-6 py-4">
 
-        {/* Extra KPIs row */}
-        <div className="flex flex-wrap gap-x-12 gap-y-6 pt-2">
-            {extraKpis.map((kpi, i) => (
-                <div key={i} className="flex flex-col min-w-[120px]">
-                <span className="text-[13px] font-bold text-gray-600 mt-2 whitespace-nowrap">{kpi.label}</span>
-                <span className={`font-bold boldleading-none text-xl lg:text-xl ${kpi.color}`}>{kpi.value}{kpi.suffix}</span>
-                </div>
+          {/* Stat cards */}
+          <div className="flex gap-8">
+            {mainStats.map((stat, i) => (
+              <div key={i} className="text-start flex-1">
+                <p className={`font-bold leading-none text-xl lg:text-xl ${stat.color}`}>
+                  {stat.value}
+                  {stat.suffix && <span className="text-sm">{stat.suffix}</span>}
+                </p>
+                <p className="text-[13px] font-bold text-gray-600 mt-2 whitespace-nowrap">
+                  {stat.label}
+                </p>
+                <p className="text-[11px] text-gray-600 font-medium whitespace-nowrap">
+                  {stat.subLabel}
+                </p>
+              </div>
             ))}
+          </div>
+
+          {/* Extra KPIs row */}
+          <div className="grid grid-cols-5 gap-x-12 gap-y-6">
+            {extraKpis.map((kpi, i) => (
+              <div key={i} className="flex flex-col">
+                <span className={`font-bold leading-none text-xl ${kpi.color}`}>
+                  {kpi.value}{kpi.suffix}
+                </span>
+                <span className="text-[13px] font-bold text-gray-600 whitespace-nowrap mt-2">
+                  {kpi.label}
+                </span>
+              </div>
+            ))}
+          </div>
+
         </div>
       </div>
 
