@@ -15,10 +15,10 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
 
   // Build summary stats array
   const summaryStats = [
-    { label: 'Excellent', value: summary.excellent || 0, color: 'text-[#4CAF50]', bgColor: 'bg-[#4CAF50]' },
-    { label: 'Watch Zone', value: summary.watch_zone || 0, color: 'text-[#FFC107]', bgColor: 'bg-[#FFC107]' },
-    { label: 'At-Risk', value: summary.at_risk || 0, color: 'text-[#FF9800]', bgColor: 'bg-[#FF9800]' },
-    { label: 'Critical', value: summary.critical || 0, color: 'text-[#F44336]', bgColor: 'bg-[#F44336]' },
+    { label: 'Excelling', labelScore: '>=Benchmark', value: summary.excellent || 0, color: 'text-[#4CAF50]', bgColor: 'bg-[#4CAF50]' },
+    { label: 'Watch Zone', labelScore: '5-15% below', value: summary.watch_zone || 0, color: 'text-[#FFC107]', bgColor: 'bg-[#FFC107]' },
+    { label: 'At-Risk', labelScore: '15-25% below', value: summary.at_risk || 0, color: 'text-[#E18E00]', bgColor: 'bg-[#E18E00]' },
+    { label: 'Critical', labelScore: '> 25% below', value: summary.critical || 0, color: 'text-[#F44336]', bgColor: 'bg-[#F44336]' },
   ];
 
   const getActionStyle = (action: string) => {
@@ -45,10 +45,10 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
         
         {/* Left Side: Title & Subtitle */}
         <div className="flex-shrink-0 pt-4">
-          <h2 className="text-1xl font-black text-cyan-600">
+          <h2 className="text-xl font-black text-cyan-600">
             Remediation Plan & Student Buckets
           </h2>
-          <p className="text-xs text-gray-400 font-bold tracking-tight">
+          <p className="text-xs text-primary font-medium tracking-tight">
             Priority actions, at-risk matrix and improvement strategies
           </p>
         </div>
@@ -56,7 +56,7 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
         {/* Right Side: 4 Student Bucket Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 items-start gap-8 pb-4">
           {summaryStats.map((item: any, i: number) => (
-            <div key={i} className="flex flex-col w-44">
+            <div key={i} className="flex flex-col w-44 2xl:w-60">
               <span className={`text-4xl font-medium leading-none tracking-tighter ${item.color}`}>
                 {item.value}
               </span>
@@ -66,16 +66,16 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
               </span>
               
               <div className="flex justify-between items-center w-full mt-1">
-                <span className="text-xs text-gray-500 font-medium">
-                  students
+                <span className="text-xs text-primary font-medium">
+                  {item.labelScore}
                 </span>
-                <span className="text-xs text-gray-400 font-medium">
+                <span className="text-xs text-primary font-medium">
                   {Math.round((item.value / (summary.excellent || 1 + summary.watch_zone || 1 + summary.at_risk || 1 + summary.critical || 1)) * 100)}% of class
                 </span>
               </div>
 
               {/* Progress Bar Line */}
-              <div className="w-full h-[3px] bg-gray-500 mt-1 overflow-hidden">
+              <div className="w-full h-1.5 rounded-full bg-gray-300 mt-1 overflow-hidden">
                 <div className={`h-full ${item.bgColor}`} style={{ width: `${Math.round((item.value / (summary.excellent || 1 + summary.watch_zone || 1 + summary.at_risk || 1 + summary.critical || 1)) * 100)}%` }} />
               </div>
             </div>
