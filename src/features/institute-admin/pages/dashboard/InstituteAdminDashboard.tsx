@@ -54,7 +54,7 @@ const InstituteAdminDashboard: React.FC = () => {
     {
       label: "Overall Score",
       value: (dashboardData.overall_score ?? 0).toString(),
-      subLabel: "8 Classes, 24 Sections",
+      subLabel: `${dashboardData.total_classes ?? 0} Classes, ${dashboardData.total_sections ?? 0} Sections`,
       color: "text-[#79C9D2]",
     },
     {
@@ -120,24 +120,22 @@ const InstituteAdminDashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-100 pb-10">
 
       <DashboardHeader
-        meta={dashboardMeta}
+        meta={{
+          ...dashboardMeta,
+          academicYear: dashboardData.academic_year 
+            ? (dashboardData.academic_year.startsWith("AY") ? dashboardData.academic_year : `AY ${dashboardData.academic_year}`)
+            : dashboardMeta.academicYear
+        }}
         profileAltText="Institute Admin Profile"
       />
 
       {/* Stat cards + Extra KPIs — একই flex row-এ */}
-      <div className="flex w-full gap-8">
+    <div className="flex w-full gap-8 py-5" style={{ paddingLeft: "310px" }}>
 
-        {/* Spacer: black profile section এর width ধরে রাখার জন্য */}
-        <div style={{ minWidth: "310px" }} />
-
-        {/* সব content একটাই flex-1 div-এ */}
-        <div className="flex-1 flex flex-col gap-6 py-4">
-
-          {/* Stat cards */}
-          <div className="flex gap-8">
+     
             {mainStats.map((stat, i) => (
               <div key={i} className="text-start flex-1">
-                <p className={`font-bold leading-none text-xl lg:text-xl ${stat.color}`}>
+                <p className={`font-bold leading-none text-2xl lg:text-2xl ${stat.color}`}>
                   {stat.value}
                   {stat.suffix && <span className="text-sm">{stat.suffix}</span>}
                 </p>
@@ -152,10 +150,10 @@ const InstituteAdminDashboard: React.FC = () => {
           </div>
 
           {/* Extra KPIs row */}
-          <div className="grid grid-cols-5 gap-x-12 gap-y-6">
+          <div className="grid grid-cols-6 gap-6 gap-y-6 px-12">
             {extraKpis.map((kpi, i) => (
-              <div key={i} className="flex flex-col">
-                <span className={`font-bold leading-none text-xl ${kpi.color}`}>
+              <div key={i} className="flex flex-col items-start text-start">
+                <span className={`font-bold leading-none text-2xl ${kpi.color}`}>
                   {kpi.value}{kpi.suffix}
                 </span>
                 <span className="text-[13px] font-bold text-gray-600 whitespace-nowrap mt-2">
@@ -165,14 +163,13 @@ const InstituteAdminDashboard: React.FC = () => {
             ))}
           </div>
 
-        </div>
-      </div>
+        
 
       {/* ── SCORECARD TABLE ────────────────────────────── */}
       <div className="rounded-xl mb-5 overflow-hidden">
         <div className="px-12 pt-6 pb-2">
           <span className="font-bold text-sm text-gray-800 uppercase tracking-wide">Teacher Performance Scorecards</span>
-          <span className="text-[10px] text-gray-400 ml-2 font-medium">Each Benchmarked in Own Domain</span>
+          <span className="text-[10px] text-primary ml-2 font-medium">Each Benchmarked in Own Domain</span>
         </div>
 
         <div className="overflow-x-auto px-12">
