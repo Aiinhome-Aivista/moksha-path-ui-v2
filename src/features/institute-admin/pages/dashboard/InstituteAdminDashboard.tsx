@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   dashboardMeta,
-  principalProfile,
   scoringWeights,
   actionInsights,
 } from "./data/teacherReview.data";
@@ -121,9 +120,8 @@ const InstituteAdminDashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-100 pb-10">
 
       <DashboardHeader
-        profile={principalProfile}
         meta={dashboardMeta}
-        profileAltText="Principal Profile"
+        profileAltText="Institute Admin Profile"
       />
 
       {/* Stat cards*/}
