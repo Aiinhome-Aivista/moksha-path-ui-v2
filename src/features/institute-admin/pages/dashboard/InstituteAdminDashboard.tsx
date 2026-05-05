@@ -54,7 +54,7 @@ const InstituteAdminDashboard: React.FC = () => {
     {
       label: "Overall Score",
       value: (dashboardData.overall_score ?? 0).toString(),
-      subLabel: "8 Classes, 24 Sections",
+      subLabel: `${dashboardData.total_classes ?? 0} Classes, ${dashboardData.total_sections ?? 0} Sections`,
       color: "text-[#79C9D2]",
     },
     {
