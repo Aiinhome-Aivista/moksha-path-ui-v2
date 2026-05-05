@@ -21,7 +21,7 @@ export const Loader: React.FC<LoaderProps> = ({
     text,
 }) => {
     return (
-        <div className={`flex flex-col items-center justify-center gap-3 ${className}`}>
+        <div className={`flex flex-col min-h-96 items-center justify-center gap-3 ${className}`}>
             <div className="relative">
                 <div
                     className={`${sizeStyles[size]} animate-spin rounded-full border-4 border-secondary-200 border-t-primary-600 dark:border-secondary-700 dark:border-t-primary-400`}

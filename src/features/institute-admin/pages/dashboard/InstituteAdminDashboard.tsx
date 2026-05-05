@@ -130,7 +130,7 @@ const InstituteAdminDashboard: React.FC = () => {
       />
 
       {/* Stat cards + Extra KPIs — একই flex row-এ */}
-    <div className="flex w-full gap-8 py-5" style={{ paddingLeft: "310px" }}>
+    <div className="flex w-full gap-8 pb-5" style={{ paddingLeft: "310px" }}>
 
      
             {mainStats.map((stat, i) => (
