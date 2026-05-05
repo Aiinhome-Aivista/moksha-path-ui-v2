@@ -22,9 +22,19 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
   ];
 
   const getActionStyle = (action: string) => {
-    if (action === 'SCHEDULE') return 'bg-[#f39c12] text-white';
-    if (action === 'ASSIGN') return 'bg-[#ff6b6b] text-white';
+    const act = action?.toUpperCase();
+    if (act === 'SCHEDULE') return 'bg-[#E67E22] text-white border-none';
+    if (act === 'ASSIGN' || act === 'ASSIGN_NOW') return 'bg-[#FF6060] text-white border-none';
+    if (act === 'MONITOR') return 'bg-white text-[#E67E22] border-[2px] border-[#E67E22]';
     return 'bg-white text-gray-600 border border-gray-300';
+  };
+
+  const getActionLabel = (action: string) => {
+    const act = action?.toUpperCase();
+    if (act === 'ASSIGN NOW' || act === 'ASSIGN NOW') return 'Assign Now';
+    if (act === 'SCHEDULE') return 'Schedule';
+    if (act === 'MONITOR') return 'Monitor';
+    return action;
   };
 
   return (
@@ -104,8 +114,8 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
                   <td className="py-2 text-[13px] text-gray-700 font-bold text-center">{item.at_risk_students}</td>
                   <td className="py-2 pr-2 text-center">
                     {/* Action Buttons */}
-                    <button className={`w-[100px] py-1.5 rounded-full text-xs font-black tracking-wider transition-all ${getActionStyle(item.action)}`}>
-                      {item.action}
+                    <button className={`w-[110px] py-1.5 rounded-full text-xs font-black tracking-tight transition-all ${getActionStyle(item.action)}`}>
+                      {getActionLabel(item.action)}
                     </button>
                   </td>
                 </tr>
