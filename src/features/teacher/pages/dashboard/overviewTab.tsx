@@ -13,8 +13,8 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
       case 'GOOD':
       case 'ON TRACK': return 'bg-green-600';
       case 'WATCH': return 'bg-orange-400';
-      case 'ACTION': return 'bg-red-500';
-      default: return 'bg-gray-400';
+      case 'ACTION': return 'bg-[#FF6666]';
+      default: return 'bg-[#E6E6E6]';
     }
   };
 
@@ -22,19 +22,19 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
     <div className="bg-color-secondary pt-6 pb-6 rounded-3xl  border border-gray-100 flex-1">
       <div className="flex justify-between items-end mb-4">
         <h3 className="text-xl font-black text-gray-800 tracking-tight">{title}</h3>
-        <p className="text-[12px] text-gray-700 font-bold ">
-          Syllabus: <span className="text-[10px] text-gray-400">{syllabus} complete</span> | Mock: <span className="text-[10px] text-gray-400">{mock}</span>
+        <p className="text-sm text-gray-700 font-bold ">
+          Syllabus: <span className="text-xs text-secondary font-medium">{syllabus} complete</span> | Mock: <span className="text-xs text-secondary font-medium">{mock}</span>
         </p>
       </div>
       
       <table className="w-full text-left">
-        <thead className="border-y-4 border-gray-300">
-          <tr className="text-gray-700 text-[14px] font-black tracking-widest">
-            <th className="p-2 text-center">Section</th>
-            <th className="p-2 text-center">Students</th>
-            <th className="p-2 text-center">Class Avg</th>
-            <th className="p-2 text-center">Benchmark</th>
-            <th className="p-2 text-center">Status</th>
+        <thead className="border-y-8 border-gray-300">
+          <tr className="text-gray-700 text-lg">
+            <th className="p-2 text-center font-black">Section</th>
+            <th className="p-2 text-center font-black">Students</th>
+            <th className="p-2 text-center font-black">Class Avg</th>
+            <th className="p-2 text-center font-black">Benchmark</th>
+            <th className="p-2 text-center font-black">Status</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-300">
@@ -53,7 +53,7 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
                 {item.benchmark}%
               </td>
               <td className="text-center">
-                <span className={`inline-block w-24 text-center py-1.5 rounded-full text-[9px] font-black text-white  transform group-hover:scale-105 transition-transform ${getStatusStyle(item.status)}`}>
+                <span className={`inline-block w-24 text-center py-1.5 rounded-full text-xs font-black text-white  transform group-hover:scale-105 transition-transform ${getStatusStyle(item.status)}`}>
                   {item.status?.toUpperCase()}
                 </span>
               </td>
@@ -109,7 +109,7 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
        <div className="bg-color-secondary rounded-3xl border border-gray-100 flex flex-col xl:flex-row justify-between items-center gap-12">
         <div className="flex-shrink-0 pt-2 px-6 ">
           <h2 className="text-xl font-black text-cyan-600 tracking-tight leading-none">Student & Subject Overview</h2>
-          <div className="text-[10px] text-gray-400 font-bold tracking-tight mt-1">
+          <div className="text-sm text-primary font-medium tracking-tight mt-1">
             <p>Performance summary across all classes</p>
             <p>{new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
           </div>
@@ -123,14 +123,14 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
                 {stat.value}
               </p>
               
-              <div className="mt-2">
+              <div className="mt-0.5">
                 {/* 2. Label */}
-                <p className="text-[11px] font-bold leading-tight text-gray-800" style={{ color: stat.color }}>
+                <p className="text-sm font-extrabold leading-tight text-primary" style={{ color: stat.color }}>
                   {stat.label}
                 </p>
                 
                 {/* 3. Sub-label */}
-                <p className="text-[9px] text-gray-500 mt-1 font-medium leading-tight">
+                <p className="text-xs text-secondary font-semibold leading-tight">
                   {stat.sublabel}
                 </p>
               </div>

@@ -60,7 +60,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
             <div key={i} className="flex items-center gap-2 group py-1">
               {/* Chapter Name */}
               <span
-                className={`min-w-72 text-sm font-bold leading-tight ${chapter.completion_pct === 0 ? "text-gray-300 italic" : "text-gray-700"}`}
+                className={`min-w-80 text-base font-semibold leading-tight ${chapter.completion_pct === 0 ? "text-gray-300 italic" : "text-gray-700"}`}
               >
                 {chapter.chapter_name}
               </span>
@@ -85,14 +85,14 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
               </div>
 
               {/* Percentage Display */}
-              <div className="w-16 flex items-baseline justify-end gap-0.5">
+              <div className="w-16 ml-2 flex items-baseline justify-end gap-0.5">
                 <span
-                  className={`text-2xl font-black ${chapter.completion_pct === 0 ? "text-gray-200" : getStatusTextColor(chapter.status)}`}
+                  className={`text-3xl font-medium ${chapter.completion_pct === 0 ? "text-gray-200" : getStatusTextColor(chapter.status)}`}
                 >
                   {chapter.completion_pct}
                 </span>
                 <span
-                  className={`text-[10px] font-bold ${chapter.completion_pct === 0 ? "text-gray-200" : getStatusTextColor(chapter.status)} opacity-70`}
+                  className={`text-lg font-medium ${chapter.completion_pct === 0 ? "text-gray-200" : getStatusTextColor(chapter.status)} opacity-70`}
                 >
                   %
                 </span>
