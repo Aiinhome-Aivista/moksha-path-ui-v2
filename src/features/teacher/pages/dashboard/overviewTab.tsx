@@ -108,7 +108,7 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
       {/* 1. Page Sub-Header and Top Stats in one responsive row */}
        <div className="bg-color-secondary rounded-3xl border border-gray-100 flex flex-col xl:flex-row justify-between items-center gap-12">
         <div className="flex-shrink-0 pt-2 px-6 ">
-          <h2 className="text-1xl font-black text-cyan-600 tracking-tight leading-none">Student & Subject Overview</h2>
+          <h2 className="text-xl font-black text-cyan-600 tracking-tight leading-none">Student & Subject Overview</h2>
           <div className="text-[10px] text-gray-400 font-bold tracking-tight mt-1">
             <p>Performance summary across all classes</p>
             <p>{new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
