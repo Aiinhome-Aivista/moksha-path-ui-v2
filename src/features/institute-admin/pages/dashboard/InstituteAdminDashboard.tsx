@@ -1,8 +1,4 @@
 import React, { useEffect, useState } from "react";
-import {
-  dashboardMeta,
-  scoringWeights,
-} from "./data/teacherReview.data";
 import type { TeacherScorecard, StatCard } from "./data/teacherReview.types";
 import { DashboardHeader } from "../../../../components/common/DashboardHeader";
 import ApiServices from "../../../../services/ApiServices";
@@ -157,10 +153,10 @@ const InstituteAdminDashboard: React.FC = () => {
 
       <DashboardHeader
         meta={{
-          ...dashboardMeta,
+          title: "Dashboard: Teacher Performance Review",
           academicYear: dashboardData.academic_year 
             ? (dashboardData.academic_year.startsWith("AY") ? dashboardData.academic_year : `AY ${dashboardData.academic_year}`)
-            : dashboardMeta.academicYear
+            : "AY 2025-26"
         }}
         profileAltText="Institute Admin Profile"
       />
@@ -265,7 +261,7 @@ const InstituteAdminDashboard: React.FC = () => {
           </div>
 
           <div className="flex justify-between w-full mb-1">
-            {scoringWeights.map((w, i) => (
+            {(dashboardData.scoring_guide || []).map((w: any, i: number) => (
               <p key={`num-${i}`} className="text-[11px] text-[#A2A46C] text-center font-semibold" style={{ width: `${w.weight}%` }}>
                 {w.weight}%
               </p>
@@ -273,12 +269,12 @@ const InstituteAdminDashboard: React.FC = () => {
           </div>
 
           <div className="flex w-full h-1.5 rounded-full overflow-hidden mb-2">
-            {scoringWeights.map((w, i) => {
+            {(dashboardData.scoring_guide || []).map((w: any, i: number) => {
               const colors = ["bg-[#58A5B0]", "bg-[#4D4D4D]", "bg-[#58A5B0]", "bg-[#4D4D4D]", "bg-[#58A5B0]"];
               return (
                 <div
                   key={`bar-${i}`}
-                  className={`${colors[i]}`}
+                  className={`${colors[i % colors.length]}`}
                   style={{ width: `${w.weight}%` }}
                 ></div>
               );
@@ -286,9 +282,9 @@ const InstituteAdminDashboard: React.FC = () => {
           </div>
 
           <div className="flex justify-between w-full">
-            {scoringWeights.map((w, i) => (
+            {(dashboardData.scoring_guide || []).map((w: any, i: number) => (
               <p key={`label-${i}`} className="text-[9px] text-[#4B4B4B] text-center font-bold leading-tight" style={{ width: `${w.weight}%` }}>
-                {w.label.split("\n").map((line, j) => (
+                {w.label.split(" ").map((line: string, j: number) => (
                   <span key={j} className="block">{line}</span>
                 ))}
               </p>
