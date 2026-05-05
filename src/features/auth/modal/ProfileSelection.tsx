@@ -162,11 +162,11 @@ export const ProfileSelectionModal: React.FC = () => {
 
         const dashboardRoute = activeRole.toLowerCase() === "teacher" ? teacherDashboard : studentDashboard;
 
-        if (!subscriptionId) {
+        if (activeRole === "institute-admin") {
+          navigate("/institute-admin/dashboard", { replace: true });
+        } else if (!subscriptionId) {
           let profileRoute = "/profile";
-          if (activeRole.toLowerCase().includes("institute")) {
-            profileRoute = "/institute-admin/profile";
-          } else if (activeRole.toLowerCase().includes("tutor")) {
+          if (activeRole.toLowerCase().includes("tutor")) {
             profileRoute = "/private-tutor/profile";
           }
 
