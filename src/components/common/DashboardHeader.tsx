@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import ApiServices from "../../services/ApiServices";
 
+import { useAuth } from "../../app/providers/AuthProvider";
+
 interface ProfileHeaderProps {
   avatarUrl: string;
   greeting: string;
@@ -67,6 +69,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   meta,
   profileAltText = "Profile",
 }) => {
+  const { user } = useAuth();
   const [dynProfile, setDynProfile] = useState<any>(null);
   const [profileImage, setProfileImage] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -75,25 +78,34 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     const fetchProfile = async () => {
       try {
         setIsLoading(true);
-        const [profileRes, imageRes] = await Promise.all([
-          ApiServices.getProfileInfo(),
-          ApiServices.getUserProfileImage(),
-        ]);
-
-        if (profileRes.data?.status === "success") {
-          setDynProfile(profileRes.data.data);
-        }
-        if (imageRes.data?.status === "success") {
-          const imgData = imageRes.data.data?.image || imageRes.data.data?.profile_image;
-          if (imgData) {
-            const profileImg = imgData.startsWith("data:")
-              ? imgData
-              : `data:image/jpeg;base64,${imgData}`;
-            setProfileImage(profileImg);
+        
+        // Fetch Profile Info
+        try {
+          const profileRes = await ApiServices.getTeacherProfile();
+          if (profileRes.data?.status === "success") {
+            setDynProfile(profileRes.data.data);
           }
+        } catch (err) {
+          console.error("Failed to fetch teacher profile");
+        }
+
+        // Fetch Profile Image
+        try {
+          const imageRes = await ApiServices.getUserProfileImage();
+          if (imageRes.data?.status === "success") {
+            const imgData = imageRes.data.data?.image || imageRes.data.data?.profile_image;
+            if (imgData) {
+              const profileImg = imgData.startsWith("data:")
+                ? imgData
+                : `data:image/jpeg;base64,${imgData}`;
+              setProfileImage(profileImg);
+            }
+          }
+        } catch (err) {
+          // Ignore image fetch error (common if no profile pic is set)
         }
       } catch (error) {
-        // console.error("Failed to fetch profile info", error);
+        // Global error handling
       } finally {
         setIsLoading(false);
       }
@@ -102,8 +114,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     fetchProfile();
   }, []);
 
-  const name = profile?.name || dynProfile?.full_name || "User";
-  const school = profile?.school || dynProfile?.school_name || "";
+  const name = profile?.name || dynProfile?.teacher_name || dynProfile?.full_name || user?.name || dynProfile?.name || "User";
+  const school = profile?.school || (dynProfile?.school_name ? `${dynProfile.school_name}${dynProfile.board_name ? ` (${dynProfile.board_name})` : ""}` : "");
   const greeting = profile?.greeting || "Greetings";
   const avatarUrl = profile?.avatarUrl || "";
 

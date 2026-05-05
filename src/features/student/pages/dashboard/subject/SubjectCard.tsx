@@ -58,7 +58,7 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
       </div>
 
       {/* Title */}
-      <h3 className="font-bold text-2xl text-gray-700 mb-2">{title}</h3>
+      <h3 className="font-bold text-xl text-gray-700 mb-2">{title}</h3>
 
       {/* Accuracy by Level */}
       <p className="text-xs text-primary font-semibold  mb-2">

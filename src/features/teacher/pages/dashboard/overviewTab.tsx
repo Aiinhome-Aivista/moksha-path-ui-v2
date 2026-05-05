@@ -41,7 +41,7 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
           {(tableData || []).map((item, i) => (
             <tr key={i} className=" transition-all duration-200">
               <td className="py-3.5 text-sm font-bold text-gray-700 text-center">
-                {item.section_name || item.section}
+                {item.class_name}-{item.section_name || item.section}
               </td>
               <td className="text-sm font-bold text-gray-700 text-center">
                 {item.students}

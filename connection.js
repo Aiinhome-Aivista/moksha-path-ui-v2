@@ -29,6 +29,8 @@ export const GET_APIS = {
   subscription_invite_list: `${BASE_URL}subscription/invite_list`,
   student_mock_dashboard_vw: `${BASE_URL}learning/student_mock_dashboard_vw`,
   student_chapter_remediation_vw: `${BASE_URL}learning/student_chapter_remediation_vw`,
+  student_remediation_dashboard: `${BASE_URL}learning/student_remediation_dashboard`,
+  student_remediation_ai_insights: `${BASE_URL}learning/student_remediation_ai_insights`,
   subscription_invite_history: `${BASE_URL}subscription/invite_history`,
   subscription_list: `${BASE_URL}subscription/subscription_list`,
   //user subscription details
@@ -119,6 +121,7 @@ export const GET_APIS = {
 
   get_teacher_study_material_v4: `${BASE_URL}parent_teacher/get_teacher_study_material`,
   adaptive_next_question: `${BASE_URL}learning/assessment/get_next_question`,
+  institute_admin_dashboard: `${BASE_URL}institute_admin/dashboard`,
 };
 
 export const POST_APIS = {

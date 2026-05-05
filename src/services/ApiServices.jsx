@@ -442,6 +442,14 @@ class ApiServices {
     return axiosInstance.get(GET_APIS.student_chapter_remediation_vw);
   }
 
+  getStudentRemediationDashboard() {
+    return axiosInstance.get(GET_APIS.student_remediation_dashboard);
+  }
+
+  getStudentRemediationAiInsights() {
+    return axiosInstance.get(GET_APIS.student_remediation_ai_insights);
+  }
+
   // Teacher APIs
   getTeacherStudentStatusDashboard() {
     return axiosInstance.get(GET_APIS.teacher_student_status_dashboard);
@@ -711,6 +719,9 @@ class ApiServices {
   // Get institute admin summary (class + subject list for assign dropdown)
   getInstituteAdminSummary() {
     return axiosInstance.get(GET_APIS.get_institute_admin_summary);
+  }
+  getInstituteAdminDashboard() {
+    return axiosInstance.get(GET_APIS.institute_admin_dashboard);
   }
   upsertTeacherPlanner(payload) {
     return axiosInstance.post(POST_APIS.upsert_teacher_planner, payload);

@@ -364,7 +364,7 @@ export const HeaderProfile: React.FC<HeaderProfileProps> = ({
             <div className="flex items-center justify-between pl-4 pr-2 w-full animate-in slide-in-from-top-2 duration-300">
               {(() => {
                 const attemptId = parseInt(selectedExam, 10);
-                const currentMock = mockData.find(m => m.attempt_id === attemptId) 
+                const currentMock = mockData.find(m => m.attempt_id === attemptId)
                   || mockData.reduce((max, mock) => mock.attempt_id > max.attempt_id ? mock : max, mockData[0]);
                 if (!currentMock) return null;
 
