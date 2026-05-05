@@ -73,7 +73,7 @@ export default function Footer() {
           </div>
           <div className="space-y-3 flex flex-col">
             <ul className="gap-2 text-sm md:flex flex-col grid grid-cols-2">
-              <li className="font-semibold text-white text-lg">Services</li>
+              <li className="font-semibold">Services</li>
               <li>Design Services</li>
               <li>Making Services</li>
               <li>After Sales Services</li>

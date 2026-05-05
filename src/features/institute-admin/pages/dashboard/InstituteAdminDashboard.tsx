@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  dashboardMeta,
-  scoringWeights,
-  actionInsights,
-} from "./data/teacherReview.data";
-import type { ActionInsight, TeacherScorecard, StatCard } from "./data/teacherReview.types";
+import type { TeacherScorecard, StatCard } from "./data/teacherReview.types";
 import { DashboardHeader } from "../../../../components/common/DashboardHeader";
 import ApiServices from "../../../../services/ApiServices";
 import Loader from "../../../../components/common/Loader";
@@ -17,12 +12,49 @@ const gradeColor = (grade: string) => {
   return "text-red-500 font-bold";
 };
 
-const insightIcon = (type: ActionInsight["type"]) => {
+const InsightIcon = ({ type }: { type: string }) => {
   switch (type) {
-    case "success": return { icon: "●", color: "text-green-500" };
-    case "danger": return { icon: "●", color: "text-red-500" };
-    case "warning": return { icon: "●", color: "text-orange-400" };
-    case "info": return { icon: "○", color: "text-blue-400" };
+    case "top":
+      return (
+        <svg width="16" height="16" viewBox="0 0 20 20" className="shrink-0">
+          <circle cx="10" cy="10" r="10" fill="#67B13F" />
+          <path d="M10 2.5 L12.2 7 L17.2 7.8 L13.6 11.2 L14.4 16 L10 13.8 L5.6 16 L6.4 11.2 L2.8 7.8 L7.8 7 Z" fill="white" />
+        </svg>
+      );
+    case "low":
+      return (
+        <svg width="16" height="16" viewBox="0 0 20 20" className="shrink-0">
+          <circle cx="10" cy="10" r="10" fill="#FF6B6B" />
+          <path d="M9 4 h2 v7 h-2 z M9 13 h2 v2 h-2 z" fill="white" />
+        </svg>
+      );
+    case "risk":
+      return (
+        <svg width="16" height="16" viewBox="0 0 20 20" className="shrink-0">
+          <circle cx="10" cy="10" r="10" fill="#E69919" />
+          <path d="M9 4 h2 v7 h-2 z M9 13 h2 v2 h-2 z" fill="white" />
+        </svg>
+      );
+    case "syllabus":
+      return (
+        <svg width="16" height="16" viewBox="0 0 20 20" className="shrink-0">
+          <circle cx="10" cy="10" r="10" fill="#67B13F" />
+          <path d="M6 10 L8.5 12.5 L14 7" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case "mock":
+      return (
+        <svg width="16" height="16" viewBox="0 0 20 20" className="shrink-0">
+          <circle cx="10" cy="10" r="10" fill="none" stroke="#66B2BA" strokeWidth="2.5" />
+          <path d="M10 5 L14.5 13 L5.5 13 Z" fill="#66B2BA" />
+        </svg>
+      );
+    default:
+      return (
+        <svg width="16" height="16" viewBox="0 0 20 20" className="shrink-0">
+          <circle cx="10" cy="10" r="10" fill="#999" />
+        </svg>
+      );
   }
 };
 
@@ -121,10 +153,10 @@ const InstituteAdminDashboard: React.FC = () => {
 
       <DashboardHeader
         meta={{
-          ...dashboardMeta,
+          title: "Dashboard: Teacher Performance Review",
           academicYear: dashboardData.academic_year 
             ? (dashboardData.academic_year.startsWith("AY") ? dashboardData.academic_year : `AY ${dashboardData.academic_year}`)
-            : dashboardMeta.academicYear
+            : "AY 2025-26"
         }}
         profileAltText="Institute Admin Profile"
       />
@@ -212,41 +244,48 @@ const InstituteAdminDashboard: React.FC = () => {
       </div>
 
       {/* ── BOTTOM ROW ────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-12 mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-[40%_60%] lg:grid-cols-[38%_62%] xl:grid-cols-[35%_65%] gap-8 px-12 mt-8">
         {/* Scoring Guide */}
-        <div className="bg-[#f5f9e8] border border-[#d4e68a] rounded-xl p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <svg width="40" height="40" viewBox="0 0 36 36" className="shrink-0">
-              <path d="M3 20 A15 15 0 0 1 33 20" fill="none" stroke="#c5de4a" strokeWidth="5" strokeLinecap="round" />
-              <path d="M18 20 L12 10" stroke="#333" strokeWidth="2" strokeLinecap="round" />
-              <circle cx="18" cy="20" r="2" fill="#333" />
+        <div className="bg-[#EAF0D2] rounded-2xl p-5 shadow-sm flex flex-col justify-center">
+          <div className="flex items-center gap-3 mb-6">
+            <svg width="40" height="32" viewBox="0 0 40 32" className="shrink-0 mt-2">
+              <path d="M4 28 A16 16 0 0 1 36 28" fill="none" stroke="#58A5B0" strokeWidth="3" strokeLinecap="round" />
+              <path d="M10 18 L12 21 M20 12 L20 15 M30 18 L28 21" stroke="#58A5B0" strokeWidth="2" strokeLinecap="round" />
+              <path d="M20 28 L11 17" stroke="#4B4B4B" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M15 28 A5 5 0 0 0 25 28 Z" fill="#4B4B4B" />
             </svg>
-            <div>
-              <p className="font-bold text-sm text-gray-800">Scoring Guide</p>
-              <p className="text-[10px] text-gray-600 font-medium">(within own subject benchmark):</p>
+            <div className="flex flex-col">
+              <p className="font-extrabold text-[17px] text-[#58A5B0] leading-tight">Scoring Guide</p>
+              <p className="text-[10px] text-gray-500 font-medium leading-tight mt-0.5">(within own subject benchmark):</p>
             </div>
           </div>
 
-          <div className="flex w-full h-5 rounded-xl overflow-hidden mb-3">
-            {scoringWeights.map((w, i) => {
-              const colors = ["bg-yellow-400", "bg-lime-400", "bg-green-400", "bg-teal-400", "bg-cyan-400"];
+          <div className="flex justify-between w-full mb-1">
+            {(dashboardData.scoring_guide || []).map((w: any, i: number) => (
+              <p key={`num-${i}`} className="text-[11px] text-[#A2A46C] text-center font-semibold" style={{ width: `${w.weight}%` }}>
+                {w.weight}%
+              </p>
+            ))}
+          </div>
+
+          <div className="flex w-full h-1.5 rounded-full overflow-hidden mb-2">
+            {(dashboardData.scoring_guide || []).map((w: any, i: number) => {
+              const colors = ["bg-[#58A5B0]", "bg-[#4D4D4D]", "bg-[#58A5B0]", "bg-[#4D4D4D]", "bg-[#58A5B0]"];
               return (
                 <div
-                  key={i}
-                  className={`${colors[i]} flex items-center justify-center text-[10px] font-bold text-white border-r border-white/20 last:border-0`}
+                  key={`bar-${i}`}
+                  className={`${colors[i % colors.length]}`}
                   style={{ width: `${w.weight}%` }}
-                >
-                  {w.weight}%
-                </div>
+                ></div>
               );
             })}
           </div>
 
-          <div className="flex justify-between mt-1">
-            {scoringWeights.map((w, i) => (
-              <p key={i} className="text-[10px] text-gray-600 text-center font-bold" style={{ width: `${w.weight}%` }}>
-                {w.label.split("\n").map((line, j) => (
-                  <span key={j} className="block leading-tight">{line}</span>
+          <div className="flex justify-between w-full">
+            {(dashboardData.scoring_guide || []).map((w: any, i: number) => (
+              <p key={`label-${i}`} className="text-[9px] text-[#4B4B4B] text-center font-bold leading-tight" style={{ width: `${w.weight}%` }}>
+                {w.label.split(" ").map((line: string, j: number) => (
+                  <span key={j} className="block">{line}</span>
                 ))}
               </p>
             ))}
@@ -254,15 +293,14 @@ const InstituteAdminDashboard: React.FC = () => {
         </div>
 
         {/* Principal's Action Insights */}
-        <div className="pl-0 md:pl-5">
+        <div className="pl-0 md:pl-5 overflow-hidden w-full">
           <p className="font-bold text-sm text-gray-800 mb-4 uppercase tracking-wide">Principal's Action Insights</p>
           <ul className="space-y-3">
-            {actionInsights.map((insight, i) => {
-              const { icon, color } = insightIcon(insight.type);
+            {(dashboardData.principal_insights || []).map((insight: any, i: number) => {
               return (
-                <li key={i} className="flex items-start gap-3 text-xs text-gray-700 font-medium leading-relaxed">
-                  <span className={`${color} text-lg leading-none mt-0.5 shrink-0`}>{icon}</span>
-                  <span>{insight.text}</span>
+                <li key={i} className="flex items-center gap-3 text-[11px] xl:text-xs text-gray-700 font-semibold leading-tight whitespace-nowrap overflow-hidden">
+                  <InsightIcon type={insight.type} />
+                  <span className="truncate" title={insight.text}>{insight.text}</span>
                 </li>
               );
             })}
