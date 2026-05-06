@@ -120,22 +120,13 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
           </p>
         </div>
 
-        <div className="flex flex-col xl:flex-row gap-16">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-16">
           {/* Render subjects dynamically */}
           {syllabusData.map((subject: any, idx: number) => (
             <div key={idx} className="flex-1 min-w-[350px]">
               {renderColumn(subject)}
             </div>
           ))}
-
-          {/* If only one subject, render placeholder for second column */}
-          {syllabusData.length === 1 && (
-            <div className="flex-1">
-              <div className="text-center text-gray-400 py-8">
-                <p className="text-sm font-bold">No additional subjects</p>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* 3. Legend Section */}

@@ -1,3 +1,4 @@
+import { ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
 import { dashboardData } from "./mockData";
 
 interface MockExamsTabProps {
@@ -17,8 +18,8 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
     <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-700 pt-4  pb-4 pr-6 pl-6">
       {/* 1. Header Title Section */}
       <div className="flex flex-col gap-1 ">
-        <h2 className="text-1xl font-black text-[#00a8cc]">Mock Exam Performance</h2>
-        <p className="text-[10px] text-gray-400 font-bold tracking-tight">
+        <h2 className="text-xl font-black text-[#00a8cc]">Mock Exam Performance</h2>
+        <p className="text-xs text-secondary tracking-tight">
           Class-wise mock scores, trends & chapter accuracy • Latest Mock
         </p>
       </div>
@@ -37,34 +38,27 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
           return (
             <div key={idx} className="flex flex-col justify-between h-full bg-transparent">
               
-              {/* Top Section: Scores and Class Info */}
-              <div className="flex justify-between items-start">
-                
-                {/* Left Side: Score & Class */}
-                <div>
-                  <div className="flex items-baseline">
-                    <span className={`text-[4rem] font-medium leading-none tracking-tighter ${textClass}`}>
+              <div className="flex justify-between items-end">
+                 <div className="flex items-baseline">
+                    <span className={`text-6xl leading-none tracking-tighter ${textClass}`}>
                       {item.score}
                     </span>
-                    <span className="text-gray-400 text-xl font-medium ml-1">/100</span>
+                    <span className="text-primary text-3xl ml-1">/100</span>
                   </div>
-                  <p className="font-bold text-lg text-gray-900  tracking-tight">
+                   <div className={`flex items-center justify-center font-bold text-sm ${textClass}`}>
+                    <span className="text-lg leading-none">
+                      {isPositive ? <ChevronUp /> : <ChevronDown />} 
+                    </span>
+                    <span className="text-xl">{Math.abs(item.trend || 0)}</span>
+                  </div>
+              </div>
+              <div className="flex justify-between items-end">
+                <p className="font-bold text-lg text-gray-900  tracking-tight">
                     {item.class} {item.section ? `- ${item.section}` : ''}
                   </p>
-                </div>
-                
-                {/* Right Side: Trend & Benchmark */}
-                <div className="text-right  flex flex-col items-end gap-1">
-                  <div className={`flex flex-col items-center justify-center font-bold text-sm ${textClass}`}>
-                    <span className="text-lg leading-none">
-                      {isPositive ? 'ᐱ' : 'ᐯ'}{Math.abs(item.trend || 0)}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-gray-500 font-bold tracking-tight whitespace-nowrap">
+                  <p className="text-xs text-primary font-bold tracking-tight whitespace-nowrap">
                     Bench: <span className="text-gray-800">{item.benchmark}</span>
                   </p>
-                </div>
-                
               </div>
               
               {/* Stepped Performance Chart Area */}
@@ -73,6 +67,7 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
                 {/* SVG for Continuous Stepped Lines */}
                 <svg className="absolute top-0 left-0 w-full h-[calc(100%-2rem)] overflow-visible" preserveAspectRatio="none">
                   {trendValues.map((p: number, i: number, arr: number[]) => {
+                    
                     if (i === arr.length - 1) return null; // Stop drawing lines at the last point
                     
                     const nextP = arr[i + 1];
@@ -80,19 +75,17 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
                     const range = 50; // Range from 40 to 90
                     
                     // Calculate Y position percentages (0% is top, 100% is bottom)
-                    const y1 = 100 - (((p - minScore) / range) * 100);
+                    // const y1 = 100 - (((p - minScore) / range) * 100);
+                    const y1 = 100-p;
                     const y2 = 100 - (((nextP - minScore) / range) * 100);
                     
                     // Calculate X position percentages
                     const x1 = (i / (arr.length - 1)) * 100;
                     const x2 = ((i + 1) / (arr.length - 1)) * 100;
-
                     return (
                       <g key={`line-${i}`}>
                         {/* Horizontal step forward */}
                         <line x1={`${x1}%`} y1={`${y1}%`} x2={`${x2}%`} y2={`${y1}%`} stroke={colorHex} strokeWidth="2.5" />
-                        {/* Vertical step up/down */}
-                        <line x1={`${x2}%`} y1={`${y1}%`} x2={`${x2}%`} y2={`${y2}%`} stroke={colorHex} strokeWidth="2.5" />
                       </g>
                     );
                   })}
@@ -101,9 +94,10 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
                 {/* Data Dots and Numbers matching text color */}
                 <div className="absolute top-0 left-0 w-full h-[calc(100%-2rem)]">
                   {trendValues.map((p: number, i: number, arr: number[]) => {
-                    const minScore = 40;
-                    const range = 50;
-                    const yPos = 100 - (((p - minScore) / range) * 100);
+                    // const minScore = 40;
+                    // const range = 50;
+                    // const yPos = 100 - (((p - minScore) / range) * 100);
+                    const yPos = 100-p;
                     const xPos = (i / (arr.length - 1)) * 100;
 
                     return (
@@ -111,12 +105,11 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
                         
                         {/* Number label colored dynamically above every dot */}
                         <span 
-                          className="absolute -top-4 -left-2 text-[10px] font-bold"
-                          style={{ color: colorHex }}
+                          className="absolute -top-4 -left-2 text-[10px] font-bold text-primary"
+                          style={{ color: i === arr.length - 1 ? colorHex : 'inherit' }} 
                         >
                           {p}
                         </span>
-
                         {/* Solid Colored Dot */}
                         <div 
                           className="absolute w-2 h-2 rounded-full z-10 transform -translate-x-1/2 -translate-y-1/2"
@@ -130,7 +123,7 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
                 {/* M1 to M5 Labels fixed to the bottom */}
                 <div className="absolute bottom-1 left-0 w-full flex justify-between">
                   {trendValues.map((_: any, i: number) => (
-                    <span key={`m-label-${i}`} className="text-[11px] font-black text-gray-800">
+                    <span key={`m-label-${i}`} className="text-xs font-black text-primary">
                       M{i+1}
                     </span>
                   ))}
@@ -149,9 +142,11 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
       {/* 3. Middle: Chapter Accuracy Grid (REFINED) */}
       <div className="bg-gray-100 rounded-3xl  border border-gray-100 pt-6">
         <div className="flex items-center gap-4 mb-3">
-          <h3 className="text-xl font-black text-gray-800">Chapter Accuracy</h3>
+          <h3 className="text-xl font-black text-gray-800">Chapter Accuracy - Mock V</h3>
           <span className="h-6 w-[2px] bg-gray-600" />
-          <p className="text-xs text-gray-600 font-bold uppercase tracking-widest">Latest Mock</p>
+          <p className="text-sm text-gray-600 font-bold tracking-widest">Mathamatics</p>
+          <span className="h-6 w-[2px] bg-gray-600" />
+          <p className="text-sm text-gray-600 font-bold tracking-widest">All Class</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-12 gap-y-12">
@@ -162,22 +157,22 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
               </h4>
               <div className="flex flex-col gap-5">
                 {(chap.classes || []).map((classItem: any, si: number) => (
-                  <div key={si} className="space-y-2">
-                    <div className="w-full bg-gray-100 h-[7px] rounded-full overflow-hidden">
+                  <div key={si} className="mt-2">
+                    <div className="w-2/3 bg-gray-100 h-2.5 rounded-full overflow-hidden">
                       <div 
                         className={`h-full rounded-full transition-all duration-1000 ease-out ${
-                          (classItem.accuracy || 0) < 50 ? 'bg-red-400' : 
-                          (classItem.accuracy || 0) < 75 ? 'bg-[#f39c12]' : 
-                          'bg-green-600'
+                          (classItem.accuracy || 0) < 50 ? 'bg-[#FF6666]' : 
+                          (classItem.accuracy || 0) < 75 ? 'bg-[#E48D00]' : 
+                          'bg-[#589F12]'
                         }`} 
                         style={{ width: `${classItem.accuracy || 0}%` }} 
                       />
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className={`text-[11px] font-black ${
-                        (classItem.accuracy || 0) < 50 ? 'text-red-500' : 
-                        (classItem.accuracy || 0) < 75 ? 'text-[#f39c12]' : 
-                        'text-green-600'
+                      <span className={`text-sm font-semibold ${
+                        (classItem.accuracy || 0) < 50 ? 'text-[#FF6666]' : 
+                        (classItem.accuracy || 0) < 75 ? 'text-[#E48D00]' : 
+                        'text-[#589F12]'
                       }`}>
                         {classItem.class}: {classItem.accuracy}%
                       </span>
@@ -195,18 +190,19 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
         {actions.map((alert: any, i: number) => {
           // Map alert type to color
           const colorClass = 
-            alert.type === 'success' ? 'bg-green-500' :
-            alert.type === 'warning' ? 'bg-yellow-500' :
-            alert.type === 'danger' ? 'bg-red-500' :
+            alert.type === 'success' ? 'bg-[#589F12]' :
+            alert.type === 'warning' ? 'bg-[#E48D00]' :
+            alert.type === 'danger' ? 'bg-[#FE6768]' :
             'bg-blue-500';
           
           return (
             <div key={i} className={`${colorClass} p-4 rounded-2xl text-white flex items-center gap-4  transition-all `}>
-              <div className="bg-white/20 p-2 rounded-lg flex items-center justify-center">
-                <span className="text-xl">➜</span>
+              <div className="p-2 rounded-lg flex items-center justify-center">
+                <span className="text-xl font-bold"><ChevronRight /></span>
               </div>
               <div>
-                <p className="text-xs font-black leading-tight uppercase tracking-wide">{alert.text}</p>
+                <p className="text-xs font-black">{alert.text}</p>
+                <p className="text-xs font-medium">text from backend</p>
               </div>
             </div>
           );
