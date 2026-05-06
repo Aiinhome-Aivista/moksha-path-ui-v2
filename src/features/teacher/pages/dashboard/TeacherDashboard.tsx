@@ -72,7 +72,7 @@ const TeacherDashboard = () => {
 
   const teacher_name = profileData?.teacher_name || 'Teacher';
   const school_name = profileData?.school_name || 'Moksha Path';
-  const class_name = profileData?.class_name || '';
+  const board_name = profileData?.board_name || '';
 
   return (
     // Single wrapper for the entire dashboard
@@ -84,7 +84,7 @@ const TeacherDashboard = () => {
 {/* <div className="flex lg:flex-row flex-col items-center w-full relative pt-2 -ml-6"> */}
         
         {/* Left: Dark Profile Pill */}
-        <div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-4 pl-6 pr-16 rounded-r-[10rem] shadow-md z-10 relative flex-shrink-0 min-w-[320px]">
+        <div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-4 pl-6 pr-16 rounded-r-[10rem] shadow-md z-10 relative flex-shrink-0 min-w-[390px]">
           <div className="relative flex-shrink-0">
             {profileImage ? (
               <img
@@ -109,14 +109,14 @@ const TeacherDashboard = () => {
             <h2 className="text-xl font-black leading-none tracking-tight">
               {teacher_name}
             </h2>
-            <p className="text-[10px] text-gray-300 font-medium mt-1 tracking-wide">
-              {school_name} {class_name ? `(${class_name})` : ""}
+            <p className="text-[10px] text-gray-300 font-bold mt-1 tracking-wide">
+              {school_name} {board_name ? `(${board_name})` : ""}
             </p>
           </div>
         </div>
 
         <div className="flex flex-1 items-center justify-between px-6 py-2 -ml-2 bg-[#E9E9E9] h-14 rounded-tr-full rounded-br-full lg:col-span-2 xl:col-span-3">
-          <h1 className="text-[#00bcd4] font-black text-lg tracking-tight  whitespace-nowrap hidden sm:block ml-1 xl:ml-6">
+          <h1 className="text-[#00bcd4] font-black text-lg tracking-tight  whitespace-nowrap hidden sm:block ml-1 xl:ml-12">
             My Dashboard
           </h1>
           <div className="flex gap-2 xl:gap-4">
