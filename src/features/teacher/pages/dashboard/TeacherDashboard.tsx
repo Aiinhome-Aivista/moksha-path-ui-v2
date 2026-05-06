@@ -84,7 +84,7 @@ const TeacherDashboard = () => {
 {/* <div className="flex lg:flex-row flex-col items-center w-full relative pt-2 -ml-6"> */}
         
         {/* Left: Dark Profile Pill */}
-        <div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-4 pl-6 pr-16 rounded-r-[10rem] shadow-md z-10 relative flex-shrink-0 min-w-[390px]">
+        <div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-4 pl-6 pr-16 rounded-r-[10rem] shadow-md z-10 relative flex-shrink-0 min-w-[320px]">
           <div className="relative flex-shrink-0">
             {profileImage ? (
               <img
@@ -106,17 +106,17 @@ const TeacherDashboard = () => {
             <span className="text-xl font-bold text-gray-200 leading-none mb-0.5">
               Greetings
             </span>
-            <h2 className="text-xl font-black leading-none tracking-tight">
+            <h2 className="text-xl font-black leading-none tracking-tight line-clamp-1">
               {teacher_name}
             </h2>
-            <p className="text-[10px] text-gray-300 font-bold mt-1 tracking-wide">
+            <p className="text-[10px] text-gray-300 font-bold mt-1 tracking-wide line-clamp-1">
               {school_name} {board_name ? `(${board_name})` : ""}
             </p>
           </div>
         </div>
 
         <div className="flex flex-1 items-center justify-between px-6 py-2 -ml-2 bg-[#E9E9E9] h-14 rounded-tr-full rounded-br-full lg:col-span-2 xl:col-span-3">
-          <h1 className="text-[#00bcd4] font-black text-lg tracking-tight  whitespace-nowrap hidden sm:block ml-1 xl:ml-12">
+          <h1 className="text-[#00bcd4] font-black text-lg tracking-tight  whitespace-nowrap hidden sm:block lg:hidden xl:block ml-1 xl:ml-12">
             My Dashboard
           </h1>
           <div className="flex gap-2 xl:gap-4">
@@ -124,9 +124,9 @@ const TeacherDashboard = () => {
               <button
                 key={tab.name}
                 onClick={() => setActiveTab(tab.name)}
-                className={`py-2 rounded-full font-medium transition-colors whitespace-nowrap ${
+                className={`py-2 rounded-full font-semibold transition-colors whitespace-nowrap ${
                   activeTab === tab.name
-                    ? "bg-yellow-500  text-black px-4 xl:px-10 font-semibold"
+                    ? "bg-[#E48D00] text-white/90 px-4 xl:px-10"
                     : "text-gray-600 hover:bg-gray-100 px-2 xl:px-6"
                 }`}
               >
