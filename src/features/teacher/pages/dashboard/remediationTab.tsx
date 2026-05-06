@@ -14,6 +14,10 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
   const recommendations = displayData?.recommendations || [];
 
   // Build summary stats array
+  // Calculate total students for percentage calculation
+  const totalStudents = (summary.excellent || 0) + (summary.watch_zone || 0) + (summary.at_risk || 0) + (summary.critical || 0) || 1;
+
+  // Build summary stats array
   const summaryStats = [
     { label: 'Excelling', labelScore: '>=Benchmark', value: summary.excellent || 0, color: 'text-[#4CAF50]', bgColor: 'bg-[#4CAF50]' },
     { label: 'Watch Zone', labelScore: '5-15% below', value: summary.watch_zone || 0, color: 'text-[#FFC107]', bgColor: 'bg-[#FFC107]' },
@@ -31,7 +35,7 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
 
   const getActionLabel = (action: string) => {
     const act = action?.toUpperCase();
-    if (act === 'ASSIGN NOW' || act === 'ASSIGN NOW') return 'Assign Now';
+    if (act === 'ASSIGN NOW' || act === 'ASSIGN_NOW') return 'Assign Now';
     if (act === 'SCHEDULE') return 'Schedule';
     if (act === 'MONITOR') return 'Monitor';
     return action;
@@ -41,10 +45,10 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
     <div className="space-y-2 animate-in fade-in duration-500 pr-6 pl-6 relative -top-4">
       
       {/* 1. TOP SECTION: Title and Student Buckets */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-b border-gray-100">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-b border-gray-100 pb-2">
         
         {/* Left Side: Title & Subtitle */}
-        <div className="flex-shrink-0 pt-4">
+        <div className="flex-shrink-0 pt-8">
           <h2 className="text-xl font-black text-cyan-600">
             Remediation Plan & Student Buckets
           </h2>
@@ -54,32 +58,38 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
         </div>
 
         {/* Right Side: 4 Student Bucket Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 items-start gap-8 pb-4">
-          {summaryStats.map((item: any, i: number) => (
-            <div key={i} className="flex flex-col w-44 2xl:w-60">
-              <span className={`text-4xl font-medium leading-none tracking-tighter ${item.color}`}>
-                {item.value}
-              </span>
-              
-              <span className="text-sm font-bold text-gray-800 mt-0.5 leading-none tracking-tight">
-                {item.label}
-              </span>
-              
-              <div className="flex justify-between items-center w-full mt-1">
-                <span className="text-xs text-primary font-medium">
-                  {item.labelScore}
+        <div className="grid grid-cols-2 md:grid-cols-4 items-start gap-4 lg:gap-8 flex-1 xl:max-w-4xl">
+          {summaryStats.map((item: any, i: number) => {
+            const percentage = Math.round((item.value / totalStudents) * 100);
+            return (
+              <div key={i} className="flex flex-col w-full min-w-0">
+                <span className={`text-4xl font-medium leading-none tracking-tighter ${item.color}`}>
+                  {item.value}
                 </span>
-                <span className="text-xs text-primary font-medium">
-                  {Math.round((item.value / (summary.excellent || 1 + summary.watch_zone || 1 + summary.at_risk || 1 + summary.critical || 1)) * 100)}% of class
+                
+                <span className="text-sm font-bold text-gray-800 mt-0.5 leading-none tracking-tight truncate">
+                  {item.label}
                 </span>
-              </div>
+                
+                <div className="flex justify-between items-center w-full mt-1">
+                  <span className="text-[10px] text-primary font-medium whitespace-nowrap">
+                    {item.labelScore}
+                  </span>
+                  <span className="text-[10px] text-primary font-medium whitespace-nowrap">
+                    {percentage}% of class
+                  </span>
+                </div>
 
-              {/* Progress Bar Line */}
-              <div className="w-full h-1.5 rounded-full bg-gray-300 mt-1 overflow-hidden">
-                <div className={`h-full ${item.bgColor}`} style={{ width: `${Math.round((item.value / (summary.excellent || 1 + summary.watch_zone || 1 + summary.at_risk || 1 + summary.critical || 1)) * 100)}%` }} />
+                {/* Progress Bar Line */}
+                <div className="w-full h-1.5 rounded-full bg-gray-200 mt-1 overflow-hidden">
+                  <div 
+                    className={`h-full ${item.bgColor} transition-all duration-1000`} 
+                    style={{ width: `${percentage}%` }} 
+                  />
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -88,7 +98,7 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
         <h3 className="text-[1.1rem] font-bold text-gray-800 mb-2 tracking-tight">Remediation Priority Matrix</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="border-y-4 border-gray-300 dark:border-secondary-700">
+            <thead className="border-y-[6px] border-gray-300 dark:border-secondary-700">
               <tr className="border-y-2 border-gray-100 text-gray-800 text-[16px] font-bold tracking-tight">
                 <th className="py-2 pl-2 font-bold">Class</th>
                 <th className="py-2 font-bold">Subject</th>
