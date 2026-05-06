@@ -63,7 +63,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
             <div key={i} className="flex items-center gap-2 group py-1">
               {/* Chapter Name */}
               <span
-                className={`min-w-[150px] flex-1 text-base font-semibold leading-tight truncate ${chapter.completion_pct === 0 ? "text-gray-300 italic" : "text-gray-700"}`}
+                className={`min-w-[230px] flex-1 text-xs font-semibold leading-tight truncate ${chapter.completion_pct === 0 ? "text-gray-800 opacity-70" : "text-gray-700"}`}
                 title={chapter.chapter_name}
               >
                 {chapter.chapter_name}
@@ -78,14 +78,16 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
                   />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center">
-                    <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest ">
+                    <span className="text-[10px] text-gray-800 opacity-100 font-black tracking-widest ">
                       Not started
                     </span>
                   </div>
                 )}
 
                 {/* Benchmark marker line - thin vertical line as seen in dummy */}
-                <div className="absolute -bottom-2 text-3xl font-bold text-[#989C9D] z-10" style={{left:`${chapter.completion_pct}%`}} >|</div>
+                {chapter.completion_pct > 0 && chapter.completion_pct < 100 && (
+                  <div className="absolute -bottom-2 text-3xl font-bold text-[#989C9D] z-10" style={{ left: `${chapter.completion_pct}%` }} >|</div>
+                )}
               </div>
 
               {/* Percentage Display */}
