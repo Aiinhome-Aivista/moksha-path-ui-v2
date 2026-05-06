@@ -10,6 +10,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
 
   // Extract syllabus data
   const syllabusData = displayData?.syllabus || [];
+  const isSingleSubject = syllabusData.length === 1;
 
   // Helper to render a single column (Subject)
   const renderColumn = (subjectData: any) => {
@@ -33,7 +34,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
     };
 
     return (
-      <div className="flex-1">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Subject Header */}
         <div className="mb-6 pb-1 border-b-[6px] border-gray-300">
           <h3 className="text-2xl text-gray-800 tracking-tight">
@@ -57,18 +58,19 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
         </div>
 
         {/* Progress Bars List */}
-        <div className="space-y-4">
+        <div className={`flex-1 overflow-y-auto pr-4 custom-scrollbar grid gap-x-12 ${isSingleSubject ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`} style={{ maxHeight: 'calc(80vh - 300px)' }}>
           {chapters.map((chapter: any, i: number) => (
             <div key={i} className="flex items-center gap-2 group py-1">
               {/* Chapter Name */}
               <span
-                className={`min-w-80 text-base font-semibold leading-tight ${chapter.completion_pct === 0 ? "text-gray-300 italic" : "text-gray-700"}`}
+                className={`min-w-[150px] flex-1 text-base font-semibold leading-tight truncate ${chapter.completion_pct === 0 ? "text-gray-300 italic" : "text-gray-700"}`}
+                title={chapter.chapter_name}
               >
                 {chapter.chapter_name}
               </span>
 
               {/* Progress Bar Container */}
-              <div className="flex-1 h-4 bg-gray-200 rounded-full relative overflow- shadow-inner">
+              <div className="flex-[2] h-4 bg-gray-200 rounded-full relative overflow- shadow-inner">
                 {chapter.completion_pct > 0 ? (
                   <div
                     className={`h-full rounded-full transition-all duration-1000 ${getStatusColor(chapter.status)}`}
@@ -83,7 +85,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
                 )}
 
                 {/* Benchmark marker line - thin vertical line as seen in dummy */}
-                <div className="absolute -bottom-2 text-3xl font-bold text-[#989C9D] z-10 -ml-2" style={{left:`${chapter.completion_pct}%`}} >|</div>
+                <div className="absolute -bottom-2 text-3xl font-bold text-[#989C9D] z-10" style={{left:`${chapter.completion_pct}%`}} >|</div>
               </div>
 
               {/* Percentage Display */}
@@ -107,9 +109,9 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
   };
 
   return (
-    <div className="animate-in fade-in duration-500 pr-6 pl-6">
+    <div className="animate-in fade-in duration-500 pr-6 pl-6 h-full flex flex-col overflow-hidden">
       {/* 2. Main White Card */}
-      <div className=" border border-gray-100 p-3">
+      <div className=" border border-gray-100 p-3 h-full flex flex-col overflow-hidden">
         {/* 1. Page Title */}
         <div className="mb-8 pl-2">
           <h2 className="text-2xl font-black text-cyan-600 ">
@@ -120,17 +122,18 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-16">
+        <div className={`grid gap-16 flex-1 overflow-hidden ${isSingleSubject ? 'grid-cols-1' : 'xl:grid-cols-2'}`}>
           {/* Render subjects dynamically */}
           {syllabusData.map((subject: any, idx: number) => (
-            <div key={idx} className="flex-1 min-w-[350px]">
+            <div key={idx} className="flex-1 min-w-[350px] flex flex-col overflow-hidden">
               {renderColumn(subject)}
             </div>
           ))}
         </div>
 
+
         {/* 3. Legend Section */}
-        <div className="mt-12 pt-8 border-t border-gray-100 flex justify-center gap-10 items-center">
+        <div className="mt-12 pt-2 border-t border-gray-100 flex justify-center gap-10 items-center">
           {[
             { color: "bg-[#589F12]", label: "Completed" },
             { color: "bg-[#E48D00]", label: "In Progress" },
