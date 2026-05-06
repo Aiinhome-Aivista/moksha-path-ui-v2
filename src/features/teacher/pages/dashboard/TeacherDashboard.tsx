@@ -84,7 +84,7 @@ const TeacherDashboard = () => {
 {/* <div className="flex lg:flex-row flex-col items-center w-full relative pt-2 -ml-6"> */}
         
         {/* Left: Dark Profile Pill */}
-        <div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-4 pl-6 pr-16 rounded-r-[10rem] shadow-md z-10 relative flex-shrink-0 min-w-[390px]">
+        <div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-4 pl-6 pr-16 rounded-r-[10rem] shadow-md z-10 relative flex-shrink-0 min-w-[320px]">
           <div className="relative flex-shrink-0">
             {profileImage ? (
               <img

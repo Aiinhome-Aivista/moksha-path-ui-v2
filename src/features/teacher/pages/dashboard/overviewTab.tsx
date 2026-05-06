@@ -54,7 +54,7 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
               </td>
               <td className="text-center">
                 <span className={`inline-block w-24 text-center py-1.5 rounded-full text-xs font-black text-white  transform group-hover:scale-105 transition-transform ${getStatusStyle(item.status)}`}>
-                  {item.status?.toUpperCase()}
+                  {item.status?.toLowerCase().replace(/^./,  (c: string) => c.toUpperCase())}
                 </span>
               </td>
             </tr>
@@ -80,25 +80,25 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
       value: overviewStats.subjects_taught || 0,
       label: 'Subjects Taught',
       sublabel: (overviewStats.subject_list || []).join(' · ') || 'No subjects',
-      color: '#00a8cc'
+      color: '#5AA7AD'
     },
     {
       value: `${Math.round(overviewStats.syllabus_on_track_pct || 0)}%`,
       label: 'Syllabus On-track',
       sublabel: 'Avg across subjects',
-      color: '#f39c12'
+      color: '#E38E00'
     },
     {
       value: overviewStats.at_risk_students || 0,
       label: 'At-risk Students',
       sublabel: 'Needs action',
-      color: '#ef4444'
+      color: '#FF6666'
     },
     {
       value: `${Math.round(overviewStats.mock_engagement_pct || 0)}%`,
       label: 'Mock Engagement',
       sublabel: 'Above school avg',
-      color: '#22c55e'
+      color: '#589E1A'
     }
   ];
 
@@ -110,17 +110,17 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
   kpiData?.forEach((cat: any) => {
     cat.kpis.forEach((kpi: any) => {
       if (kpi.name === "Score Distribution") {
-        expandedKpis.push({ name: "High Scorers (%)", value: kpi.high, color: "#22c55e" });
-        expandedKpis.push({ name: "Medium Scorers (%)", value: kpi.medium, color: "#f39c12" });
-        expandedKpis.push({ name: "Low Scorers (%)", value: kpi.low, color: "#ef4444" });
+        expandedKpis.push({ name: "High Scorers (%)", value: kpi.high, color: "#589E1A" });
+        expandedKpis.push({ name: "Medium Scorers (%)", value: kpi.medium, color: "#E38E00" });
+        expandedKpis.push({ name: "Low Scorers (%)", value: kpi.low, color: "#FF6666" });
       } else {
         // Assign default color if not already present
         const color = 
-          kpi.name.includes('Accuracy') ? '#00a8cc' : 
-          kpi.name.includes('Score') ? '#00bcd4' : 
-          kpi.name.includes('Trend') ? '#f39c12' : 
-          kpi.name.includes('Average Attempt') ? '#22c55e' : 
-          kpi.name.includes('Low Attempt') ? '#ef4444' : 
+          kpi.name.includes('Accuracy') ? '#5AA7AD' : 
+          kpi.name.includes('Score') ? '#5AA7AD' : 
+          kpi.name.includes('Trend') ? '#E38E00' : 
+          kpi.name.includes('Average Attempt') ? '#589E1A' : 
+          kpi.name.includes('Low Attempt') ? '#FF6666' : 
           kpi.name.includes('Skip') ? '#9b59b6' : '#1f2937';
         
         expandedKpis.push({ ...kpi, color });
@@ -134,7 +134,7 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
       {/* 1. Page Sub-Header and Top Stats in one responsive row */}
       <div className="bg-color-secondary rounded-3xl border border-gray-100 flex flex-col xl:flex-row justify-between items-center gap-12">
         <div className="flex-shrink-0 pt-2 px-6 ">
-          <h2 className="text-xl font-black text-cyan-600 tracking-tight leading-none">Student & Subject Overview</h2>
+          <h2 className="text-xl font-black text-[#5AA7AD] tracking-tight leading-none">Student & Subject Overview</h2>
           <div className="text-sm text-primary font-medium tracking-tight mt-1">
             <p>Performance summary across all classes</p>
             <p>{new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
