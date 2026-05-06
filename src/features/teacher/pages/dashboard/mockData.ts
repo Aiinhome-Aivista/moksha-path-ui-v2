@@ -1,6 +1,6 @@
 export const dashboardData = {
   // Stats for the very top of the Dashboard
- topStats: [
+  topStats: [
     // { label: 'Total Students', value: 147, sub: 'Across 6 sections', color: 'text-gray-600' },
     // { label: 'Subjects Taught', value: 3, sub: 'Maths • Science • EVS', color: 'text-cyan-600' },
     // { label: 'Syllabus On-track', value: '83%', sub: 'Avg across subjects', color: 'text-orange-400' },
@@ -47,7 +47,7 @@ export const dashboardData = {
     // { label: 'Statistics & Probability', value: 80, color: 'bg-green-500' },
     // { label: 'Co-ordinate Geometry', value: 65, color: 'bg-orange-400' },
     // { label: 'Matrices', value: 72, color: 'bg-orange-400' },
-    
+
   ],
 
   // Image 3: Mock Exams
@@ -84,8 +84,176 @@ export const dashboardData = {
   recommendedPlans: [
     // { id: 1, title: 'Trigonometry — Class 10-A & 10-B', desc: 'Assign L1 drill: Sin/Cos/Tan basics. Target 70% before L2.', color: 'bg-lime-500' },
     // { id: 2, title: 'Atoms & Molecules — Class 9-B', desc: 'Conceptual clarity on atomic structure. 2 x 40-min sessions.', color: 'bg-lime-500' },
-  ]
+  ],
 
-
-  
+  overview_dashboard: {
+    kpi: [
+      {
+        category: "Overall Performance",
+        kpis: [
+          {
+            name: "Class Average Score",
+            value: 4.33
+          },
+          {
+            high: 0.0,
+            low: 100.0,
+            medium: 0.0,
+            name: "Score Distribution"
+          },
+          {
+            name: "Performance Trend",
+            value: 4.33
+          }
+        ]
+      },
+      {
+        category: "Attempt Behavior",
+        kpis: [
+      //     {
+      //       name: "Average Attempt Rate (%)",
+      //       value: 41.67
+      //     },
+      //     {
+      //       name: "Low Attempt Student %",
+      //       value: 58.33
+      //     },
+      //     {
+      //       name: "Section Skip Frequency",
+      //       value: 0.2
+      //     }
+      //   ]
+      // },
+      // {
+      //   category: "Accuracy & Concept Clarity",
+      //   kpis: [
+      //     {
+      //       name: "Class Accuracy (%)",
+      //       value: 63.16
+      //     }
+         ]
+      }
+    ],
+    syllabus: [
+     // {
+        //chapters: [
+      //     {
+      //       chapter_id: 27,
+      //       chapter_name: "Crop Production and Management",
+      //       completion_pct: 100,
+      //       status: "COMPLETED"
+      //     },
+      //     {
+      //       chapter_id: 28,
+      //       chapter_name: "Microorganisms: Friend and Foe",
+      //       completion_pct: 100,
+      //       status: "COMPLETED"
+      //     },
+      //     {
+      //       chapter_id: 29,
+      //       chapter_name: "Synthetic Fibres and Plastics",
+      //       completion_pct: 100,
+      //       status: "COMPLETED"
+      //     },
+      //     {
+      //       chapter_id: 30,
+      //       chapter_name: "Materials: Metals and Non-Metals",
+      //       completion_pct: 100,
+      //       status: "COMPLETED"
+      //     },
+      //     {
+      //       chapter_id: 31,
+      //       chapter_name: "Coal and Petroleum",
+      //       completion_pct: 50,
+      //       status: "IN_PROGRESS"
+      //     },
+      //     {
+      //       chapter_id: 32,
+      //       chapter_name: "Combustion and Flame",
+      //       completion_pct: 0,
+      //       status: "NOT_STARTED"
+      //     },
+      //     {
+      //       chapter_id: 33,
+      //       chapter_name: "Conservation of Plants and Animals",
+      //       completion_pct: 0,
+      //       status: "NOT_STARTED"
+      //     },
+      //     {
+      //       chapter_id: 34,
+      //       chapter_name: "Cell - Structure and Functions",
+      //       completion_pct: 0,
+      //       status: "NOT_STARTED"
+      //     },
+      //     {
+      //       chapter_id: 35,
+      //       chapter_name: "Reproduction in Animals",
+      //       completion_pct: 0,
+      //       status: "NOT_STARTED"
+      //     },
+      //     {
+      //       chapter_id: 36,
+      //       chapter_name: "Reaching the Age of Adolescence",
+      //       completion_pct: 0,
+      //       status: "NOT_STARTED"
+      //     },
+      //     {
+      //       chapter_id: 37,
+      //       chapter_name: "Force and Pressure",
+      //       completion_pct: 0,
+      //       status: "NOT_STARTED"
+      //     },
+      //     {
+      //       chapter_id: 38,
+      //       chapter_name: "Friction",
+      //       completion_pct: 0,
+      //       status: "NOT_STARTED"
+      //     },
+      //     {
+      //       chapter_id: 39,
+      //       chapter_name: "Sound",
+      //       completion_pct: 0,
+      //       status: "NOT_STARTED"
+      //     },
+      //     {
+      //       chapter_id: 40,
+      //       chapter_name: "Chemical Effects of Electric Current",
+      //       completion_pct: 0,
+      //       status: "NOT_STARTED"
+      //     },
+      //     {
+      //       chapter_id: 41,
+      //       chapter_name: "Some Natural Phenomena",
+      //       completion_pct: 0,
+      //       status: "NOT_STARTED"
+      //     },
+      //     {
+      //       chapter_id: 42,
+      //       chapter_name: "Light",
+      //       completion_pct: 0,
+      //       status: "NOT_STARTED"
+      //     },
+      //     {
+      //       chapter_id: 43,
+      //       chapter_name: "Stars and the Solar System",
+      //       completion_pct: 0,
+      //       status: "NOT_STARTED"
+      //     },
+      //     {
+      //       chapter_id: 44,
+      //       chapter_name: "Pollution of Air and Water",
+      //       completion_pct: 0,
+      //       status: "NOT_STARTED"
+      //     }
+      //   ],
+      //   class_name: "Class 8",
+      //   completed_chapters: 4,
+      //   overall_completion_pct: 25.0,
+      //   section_name: "A",
+      //   subject_id: 2,
+      //   subject_name: "Science",
+      //   total_chapters: 18
+      // }
+    ]
+  }
 };

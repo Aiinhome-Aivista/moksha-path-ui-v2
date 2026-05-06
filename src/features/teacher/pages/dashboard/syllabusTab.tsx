@@ -17,16 +17,18 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
 
     // Map status to color
     const getStatusColor = (status: string) => {
-      if (status === "GOOD") return "bg-[#589F12]";
-      if (status === "ACTION") return "bg-[#FE6768]";
-      if (status === "WATCH") return "bg-[#E48D00]";
+      const s = status?.toUpperCase();
+      if (s === "COMPLETED" || s === "GOOD") return "bg-[#589F12]";
+      if (s === "IN_PROGRESS" || s === "WATCH") return "bg-[#E48D00]";
+      if (s === "ACTION") return "bg-[#FE6768]";
       return "bg-[#E6E6E6]";
     };
 
     const getStatusTextColor = (status: string) => {
-      if (status === "GOOD") return "text-[#589F12]";
-      if (status === "ACTION") return "text-[#FE6768]";
-      if (status === "WATCH") return "text-[#E48D00]";
+      const s = status?.toUpperCase();
+      if (s === "COMPLETED" || s === "GOOD") return "text-[#589F12]";
+      if (s === "IN_PROGRESS" || s === "WATCH") return "text-[#E48D00]";
+      if (s === "ACTION") return "text-[#FE6768]";
       return "text-[#E6E6E6]";
     };
 
@@ -139,9 +141,9 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
         {/* 3. Legend Section */}
         <div className="mt-12 pt-8 border-t border-gray-100 flex justify-center gap-10 items-center">
           {[
-            { color: "bg-[#589F12]", label: "≥ Benchmark" },
-            { color: "bg-[#E48D00]", label: "Within 10%" },
-            { color: "bg-[#FE6768]", label: "Below 10%+" },
+            { color: "bg-[#589F12]", label: "Completed" },
+            { color: "bg-[#E48D00]", label: "In Progress" },
+            { color: "bg-[#FE6768]", label: "Action Needed" },
             { color: "bg-[#E6E6E6]", label: "Not Started" },
           ].map((dot, idx) => (
             <div key={idx} className="flex items-center gap-2">

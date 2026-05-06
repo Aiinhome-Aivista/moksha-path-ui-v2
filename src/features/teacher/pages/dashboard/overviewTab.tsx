@@ -26,7 +26,7 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
           Syllabus: <span className="text-xs text-secondary font-medium">{syllabus} complete</span> | Mock: <span className="text-xs text-secondary font-medium">{mock}</span>
         </p>
       </div>
-      
+
       <table className="w-full text-left">
         <thead className="border-y-8 border-gray-300">
           <tr className="text-gray-700 text-lg">
@@ -102,11 +102,37 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
     }
   ];
 
+  // Extract KPIs
+  const kpiData = displayData?.kpi || displayData?.overview_dashboard?.kpi;
+
+  // Flatten and expand KPIs (especially Score Distribution)
+  const expandedKpis: any[] = [];
+  kpiData?.forEach((cat: any) => {
+    cat.kpis.forEach((kpi: any) => {
+      if (kpi.name === "Score Distribution") {
+        expandedKpis.push({ name: "High Scorers (%)", value: kpi.high, color: "#22c55e" });
+        expandedKpis.push({ name: "Medium Scorers (%)", value: kpi.medium, color: "#f39c12" });
+        expandedKpis.push({ name: "Low Scorers (%)", value: kpi.low, color: "#ef4444" });
+      } else {
+        // Assign default color if not already present
+        const color = 
+          kpi.name.includes('Accuracy') ? '#00a8cc' : 
+          kpi.name.includes('Score') ? '#00bcd4' : 
+          kpi.name.includes('Trend') ? '#f39c12' : 
+          kpi.name.includes('Average Attempt') ? '#22c55e' : 
+          kpi.name.includes('Low Attempt') ? '#ef4444' : 
+          kpi.name.includes('Skip') ? '#9b59b6' : '#1f2937';
+        
+        expandedKpis.push({ ...kpi, color });
+      }
+    });
+  });
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-      
+
       {/* 1. Page Sub-Header and Top Stats in one responsive row */}
-       <div className="bg-color-secondary rounded-3xl border border-gray-100 flex flex-col xl:flex-row justify-between items-center gap-12">
+      <div className="bg-color-secondary rounded-3xl border border-gray-100 flex flex-col xl:flex-row justify-between items-center gap-12">
         <div className="flex-shrink-0 pt-2 px-6 ">
           <h2 className="text-xl font-black text-cyan-600 tracking-tight leading-none">Student & Subject Overview</h2>
           <div className="text-sm text-primary font-medium tracking-tight mt-1">
@@ -122,13 +148,13 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
               <p className="text-4xl lg:text-5xl font-medium leading-none tracking-tight" style={{ color: stat.color }}>
                 {stat.value}
               </p>
-              
+
               <div className="mt-0.5">
                 {/* 2. Label */}
                 <p className="text-sm font-extrabold leading-tight text-primary" style={{ color: stat.color }}>
                   {stat.label}
                 </p>
-                
+
                 {/* 3. Sub-label */}
                 <p className="text-xs text-secondary font-semibold leading-tight">
                   {stat.sublabel}
@@ -139,8 +165,31 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
         </div>
       </div>
 
+      {/* 1.5. Performance KPI Section (Compact Version) */}
+      {expandedKpis.length > 0 && (
+        <div className="bg-color-secondary rounded-3xl border border-gray-100 p-8 px-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-8">
+            {expandedKpis.map((kpi: any, i: number) => (
+              <div key={i} className="flex flex-col justify-center">
+                <div className="flex flex-col h-full">
+                  <p className="text-3xl lg:text-4xl font-medium leading-none tracking-tight mb-1" style={{ color: kpi.color }}>
+                    {kpi.value}{kpi.name.includes('%') ? '%' : ''}
+                  </p>
+
+                  <div className="mt-auto">
+                    <p className="text-[12px] font-black leading-tight text-secondary tracking-wider">
+                      {kpi.name}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 2. Subject Tables Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 px-2">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 px-6">
         {subjectOverview.map((subject: any, idx: number) => (
           <div key={idx}>
             {renderTable(
@@ -156,31 +205,31 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
       {/* 3. RECOMMENDATIONS FOOTER */}
       {(displayData?.recommendations || []).map((item: any, i: number) => (
         <div key={i} className="bg-[#FCEA0A] rounded-[1rem] p-6 pb-2 flex items-center justify-between shadow-sm mx-6 border border-yellow-300 ">
-          
+
           <div className="flex items-start gap-4">
             {/* Orange Chevron Icon Box */}
             <div className="bg-[#f39c12] text-white w-7 h-7 flex items-center justify-center rounded-[6px] flex-shrink-0 shadow-sm mt-0.5">
-              <svg 
-                width="14" height="14" viewBox="0 0 24 24" fill="none" 
+              <svg
+                width="14" height="14" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
               >
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
             </div>
-            
+
             {/* Alert Text Content */}
             <div className="flex flex-col text-gray-900">
-              
+
               {/* Top Line: Title and Stats from Data */}
               <div className="flex items-center gap-3">
                 <span className="text-sm font-black tracking-wide">{item.title}</span>
               </div>
-              
+
               {/* Bottom Line: Recommendation from Data */}
               <div className="text-[10px] font-bold mt-0.5 text-gray-700">
                 {item.description}
               </div>
-              
+
             </div>
           </div>
 
@@ -190,7 +239,7 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
               VIEW
             </button>
           </div>
-          
+
         </div>
       ))}
     </div>
