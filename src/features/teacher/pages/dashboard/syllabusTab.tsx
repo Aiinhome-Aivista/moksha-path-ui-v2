@@ -81,7 +81,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
                 )}
 
                 {/* Benchmark marker line - thin vertical line as seen in dummy */}
-                <div className="absolute -bottom-2 text-3xl font-bold text-[#989C9D] z-10" style={{left:`${chapter.completion_pct}%`}} >|</div>
+                <div className="absolute -bottom-2 text-3xl font-bold text-[#989C9D] z-10 -ml-2" style={{left:`${chapter.completion_pct}%`}} >|</div>
               </div>
 
               {/* Percentage Display */}
