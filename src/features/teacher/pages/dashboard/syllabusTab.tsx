@@ -36,11 +36,11 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
     return (
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Subject Header */}
-        <div className="mb-6 pb-1 border-b-[6px] border-gray-300">
-          <h3 className="text-2xl text-gray-800 tracking-tight">
+        <div className="mb-6 pb-1 border-b-[6px] border-secondary">
+          <h3 className="text-2xl text-primary tracking-tight">
             <span className="font-black">{subjectData.subject_name}</span>
             <span className="font-medium mx-2 text-3xl">|</span>
-            <span className="text-gray-primary font-medium ml-1 ">
+            <span className="text-primary font-medium ml-1 ">
               {subjectData.class_name}
             </span>
             <span className=" lowercase">-{subjectData.section_name}</span>
@@ -63,7 +63,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
             <div key={i} className="flex items-center gap-2 group py-1">
               {/* Chapter Name */}
               <span
-                className={`min-w-[230px] flex-1 text-xs font-semibold leading-tight truncate ${chapter.completion_pct === 0 ? "text-gray-800 opacity-70" : "text-gray-700"}`}
+                className={`min-w-[230px] flex-1 text-xs font-semibold leading-tight truncate ${chapter.completion_pct === 0 ? "text-primary opacity-70" : "text-primary"}`}
                 title={chapter.chapter_name}
               >
                 {chapter.chapter_name}
@@ -78,7 +78,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
                   />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center">
-                    <span className="text-[10px] text-gray-800 opacity-100 font-black tracking-widest ">
+                    <span className="text-[10px] text-secondary opacity-100 font-black tracking-widest">
                       Not started
                     </span>
                   </div>
@@ -93,12 +93,12 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
               {/* Percentage Display */}
               <div className="w-16 ml-2 flex items-baseline justify-end gap-0.5">
                 <span
-                  className={`text-3xl font-medium ${chapter.completion_pct === 0 ? "text-gray-200" : getStatusTextColor(chapter.status)}`}
+                  className={`text-3xl font-medium ${chapter.completion_pct === 0 ? "text-gray-300" : getStatusTextColor(chapter.status)}`}
                 >
                   {chapter.completion_pct}
                 </span>
                 <span
-                  className={`text-lg font-medium ${chapter.completion_pct === 0 ? "text-gray-200" : getStatusTextColor(chapter.status)} opacity-70`}
+                  className={`text-lg font-medium ${chapter.completion_pct === 0 ? "text-gray-300" : getStatusTextColor(chapter.status)} opacity-70`}
                 >
                   %
                 </span>
@@ -144,7 +144,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
           ].map((dot, idx) => (
             <div key={idx} className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${dot.color}`} />
-              <span className="text-[11px] font-black text-gray-400 uppercase tracking-wider">
+              <span className="text-[11px] font-black text-secondary uppercase tracking-wider">
                 {dot.label}
               </span>
             </div>

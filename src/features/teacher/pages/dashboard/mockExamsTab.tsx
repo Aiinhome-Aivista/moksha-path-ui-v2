@@ -53,11 +53,11 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
                   </div>
               </div>
               <div className="flex justify-between items-end">
-                <p className="font-bold text-lg text-gray-900  tracking-tight">
+                <p className="font-bold text-lg text-primary tracking-tight">
                     {item.class} {item.section ? `- ${item.section}` : ''}
                   </p>
                   <p className="text-xs text-primary font-bold tracking-tight whitespace-nowrap">
-                    Bench: <span className="text-gray-800">{item.benchmark}</span>
+                    Bench: <span className="text-primary">{item.benchmark}</span>
                   </p>
               </div>
               
@@ -80,8 +80,8 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
                     const y2 = 100 - (((nextP - minScore) / range) * 100);
                     
                     // Calculate X position percentages
-                    const x1 = (i / (arr.length - 1)) * 100;
-                    const x2 = ((i + 1) / (arr.length - 1)) * 100;
+                    const x1 = (i / (arr.length - 1)) * 100+1;
+                    const x2 = ((i + 1) / (arr.length - 1)) * 100-1;
                     return (
                       <g key={`line-${i}`}>
                         {/* Horizontal step forward */}
@@ -112,8 +112,8 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
                         </span>
                         {/* Solid Colored Dot */}
                         <div 
-                          className="absolute w-2 h-2 rounded-full z-10 transform -translate-x-1/2 -translate-y-1/2"
-                          style={{ backgroundColor: colorHex }} 
+                          className="absolute w-2 h-2 bg-white rounded-full z-10 transform -translate-x-1/2 -translate-y-1/2"
+                          style={{ border: `2px solid ${colorHex}`,backgroundColor: i === arr.length - 1 ? colorHex : 'inherit' }} 
                         />
                       </div>
                     );
@@ -142,17 +142,17 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
       {/* 3. Middle: Chapter Accuracy Grid (REFINED) */}
       <div className="bg-gray-100 rounded-3xl  border border-gray-100 pt-6">
         <div className="flex items-center gap-4 mb-3">
-          <h3 className="text-xl font-black text-gray-800">Chapter Accuracy - Mock V</h3>
+          <h3 className="text-xl font-black text-primary">Chapter Accuracy - Mock V</h3>
           <span className="h-6 w-[2px] bg-gray-600" />
-          <p className="text-sm text-gray-600 font-bold tracking-widest">Mathamatics</p>
+          <p className="text-sm text-secondary font-bold tracking-widest">Mathamatics</p>
           <span className="h-6 w-[2px] bg-gray-600" />
-          <p className="text-sm text-gray-600 font-bold tracking-widest">All Class</p>
+          <p className="text-sm text-secondary font-bold tracking-widest">All Class</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-12 gap-y-12">
           {chapterAccuracy.map((chap: any, i: number) => (
             <div key={i} className="flex flex-col">
-              <h4 className="text-[12px] font-black text-gray-900 uppercase tracking-tight leading-tight min-h-[32px]">
+              <h4 className="text-[12px] font-black text-primary tracking-tight leading-tight min-h-[32px]">
                 {chap.chapter_name}
               </h4>
               <div className="flex flex-col gap-5">

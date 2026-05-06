@@ -99,7 +99,7 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead className="border-y-[6px] border-gray-300 dark:border-secondary-700">
-              <tr className="border-y-2 border-gray-100 text-gray-800 text-[16px] font-bold tracking-tight">
+              <tr className="border-y-2 border-gray-100 text-primary text-[16px] font-bold tracking-tight">
                 <th className="py-2 pl-2 font-bold">Class</th>
                 <th className="py-2 font-bold">Subject</th>
                 <th className="py-2 font-bold">Chapter</th>
@@ -113,15 +113,15 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
             <tbody className="divide-y divide-gray-300">
               {matrix.map((item: any, i: number) => (
                 <tr key={i} className="">
-                  <td className="py-2 pl-2 text-[13px] font-bold text-gray-600">
+                  <td className="py-2 pl-2 text-[13px] font-bold text-secondary">
                     {item.class}
                   </td>
-                  <td className="py-2 text-[13px] font-bold text-gray-800">{item.subject}</td>
-                  <td className="py-2 text-[13px] font-bold text-gray-800">{item.chapter}</td>
+                  <td className="py-2 text-[13px] font-bold text-secondary">{item.subject}</td>
+                  <td className="py-2 text-[13px] font-bold text-secondary">{item.chapter}</td>
                   <td className="py-2 text-[13px] font-bold text-[#F44336] text-center">{item.accuracy}%</td>
-                  <td className="py-2 text-[13px] text-gray-600 font-bold text-center">{item.benchmark}%</td>
+                  <td className="py-2 text-[13px] text-secondary font-bold text-center">{item.benchmark}%</td>
                   <td className="py-2 text-[13px]  font-bold text-[#F44336] text-center">{item.gap}%</td>
-                  <td className="py-2 text-[13px] text-gray-700 font-bold text-center">{item.at_risk_students}</td>
+                  <td className="py-2 text-[13px] text-secondary font-bold text-center">{item.at_risk_students}</td>
                   <td className="py-2 pr-2 text-center">
                     {/* Action Buttons */}
                     <button className={`w-[110px] py-1.5 rounded-full text-xs font-black tracking-tight transition-all ${getActionStyle(item.action)}`}>
@@ -137,7 +137,7 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
 
       {/* 3. RECOMMENDED PLANS (Green Cards at bottom) */}
       <div className="">
-        <h3 className="text-[1.1rem] font-bold text-gray-800 mb-4 tracking-tight">Recommended Remediation Plans</h3>
+        <h3 className="text-[1.1rem] font-bold text-primary mb-4 tracking-tight">Recommended Remediation Plans</h3>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {recommendations.map((plan: any, idx: number) => (
             <div key={idx} className="bg-[#bada55] p-5 rounded-[1.2rem] flex gap-4 items-start shadow-sm border border-[#a8c64a]">
@@ -145,8 +145,8 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
                 {idx + 1}
               </div>
               <div>
-                <p className="text-sm font-black text-gray-800 leading-tight mb-1">{plan.title}</p>
-                <p className="text-[11px] font-bold text-gray-700 leading-tight opacity-90">{plan.description}</p>
+                <p className="text-sm font-black text-primary leading-tight mb-1">{plan.title}</p>
+                <p className="text-[11px] font-bold text-secondary leading-tight opacity-90">{plan.description}</p>
               </div>
             </div>
           ))}

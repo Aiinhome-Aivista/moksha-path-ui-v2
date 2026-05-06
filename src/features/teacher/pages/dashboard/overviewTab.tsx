@@ -21,15 +21,15 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
   const renderTable = (title: string, tableData: any[], syllabus: string, mock: string) => (
     <div className="bg-color-secondary pt-6 pb-6 rounded-3xl  border border-gray-100 flex-1">
       <div className="flex justify-between items-end mb-4">
-        <h3 className="text-xl font-black text-gray-800 tracking-tight">{title}</h3>
-        <p className="text-sm text-gray-700 font-bold ">
+        <h3 className="text-xl font-black text-primary tracking-tight">{title}</h3>
+        <p className="text-sm text-primary font-bold ">
           Syllabus: <span className="text-xs text-secondary font-medium">{syllabus} complete</span> | Mock: <span className="text-xs text-secondary font-medium">{mock}</span>
         </p>
       </div>
 
       <table className="w-full text-left">
         <thead className="border-y-8 border-gray-300">
-          <tr className="text-gray-700 text-lg">
+          <tr className="text-primary text-lg">
             <th className="p-2 text-center font-black">Section</th>
             <th className="p-2 text-center font-black">Students</th>
             <th className="p-2 text-center font-black">Class Avg</th>
@@ -40,16 +40,16 @@ const OverviewTab = ({ data }: OverviewTabProps) => {
         <tbody className="divide-y divide-gray-300">
           {(tableData || []).map((item, i) => (
             <tr key={i} className=" transition-all duration-200">
-              <td className="py-3.5 text-sm font-bold text-gray-700 text-center">
+              <td className="py-3.5 text-sm font-bold text-secondary text-center">
                 {item.class_name}-{item.section_name || item.section}
               </td>
-              <td className="text-sm font-bold text-gray-700 text-center">
+              <td className="text-sm font-bold text-secondary text-center">
                 {item.students}
               </td>
-              <td className="text-sm font-bold text-gray-700 text-center">
+              <td className="text-sm font-bold text-secondary text-center">
                 {item.class_avg || item.avg}%
               </td>
-              <td className="text-sm font-bold text-gray-700 text-center">
+              <td className="text-sm font-bold text-secondary text-center">
                 {item.benchmark}%
               </td>
               <td className="text-center">
