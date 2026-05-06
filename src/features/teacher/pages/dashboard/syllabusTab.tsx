@@ -70,7 +70,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
               </span>
 
               {/* Progress Bar Container */}
-              <div className="flex-[2] h-4 bg-gray-200 rounded-full relative overflow- shadow-inner">
+              <div className="flex-[2] h-3 bg-gray-200 rounded-full relative overflow- shadow-inner">
                 {chapter.completion_pct > 0 ? (
                   <div
                     className={`h-full rounded-full transition-all duration-1000 ${getStatusColor(chapter.status)}`}
@@ -135,7 +135,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
 
 
         {/* 3. Legend Section */}
-        <div className="mt-12 pt-2 border-t border-gray-100 flex justify-center gap-10 items-center">
+        <div className="mt-6 pt-2 border-t border-gray-100 flex justify-center gap-10 items-center">
           {[
             { color: "bg-[#589F12]", label: "Completed" },
             { color: "bg-[#E48D00]", label: "In Progress" },

@@ -148,11 +148,10 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
           <span className="h-6 w-[2px] bg-gray-600" />
           <p className="text-sm text-secondary font-bold tracking-widest">All Class</p>
         </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-12 gap-y-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-12 gap-y-4 pt-2 mb-2">
           {chapterAccuracy.map((chap: any, i: number) => (
             <div key={i} className="flex flex-col">
-              <h4 className="text-[12px] font-black text-primary tracking-tight leading-tight min-h-[32px]">
+              <h4 className="text-sm font-black text-primary tracking-tight leading-tight max-h-[32px]">
                 {chap.chapter_name}
               </h4>
               <div className="flex flex-col gap-5">
@@ -174,7 +173,7 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
                         (classItem.accuracy || 0) < 75 ? 'text-[#E48D00]' : 
                         'text-[#589F12]'
                       }`}>
-                        {classItem.class}: {classItem.accuracy}%
+                        {classItem.class}-{classItem.section}: {classItem.accuracy}%
                       </span>
                     </div>
                   </div>
@@ -202,7 +201,7 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
               </div>
               <div>
                 <p className="text-xs font-black">{alert.text}</p>
-                <p className="text-xs font-medium">text from backend</p>
+               
               </div>
             </div>
           );
