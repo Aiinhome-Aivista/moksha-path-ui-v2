@@ -70,14 +70,8 @@ const MockExamsTab = ({ data }: MockExamsTabProps) => {
                     
                     if (i === arr.length - 1) return null; // Stop drawing lines at the last point
                     
-                    const nextP = arr[i + 1];
-                    const minScore = 40; // Floor score to give the graph vertical breathing room
-                    const range = 50; // Range from 40 to 90
-                    
                     // Calculate Y position percentages (0% is top, 100% is bottom)
-                    // const y1 = 100 - (((p - minScore) / range) * 100);
                     const y1 = 100-p;
-                    const y2 = 100 - (((nextP - minScore) / range) * 100);
                     
                     // Calculate X position percentages
                     const x1 = (i / (arr.length - 1)) * 100+1;
