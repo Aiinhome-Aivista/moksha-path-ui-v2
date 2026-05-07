@@ -58,7 +58,7 @@ const RemediationTab = ({ data }: RemediationTabProps) => {
         </div>
 
         {/* Right Side: 4 Student Bucket Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 items-start gap-4 lg:gap-8 flex-1 xl:max-w-4xl">
+        <div className="grid grid-cols-2 md:grid-cols-4 items-start gap-4 lg:gap-8 flex-1 xl:max-w-4xl 2xl:max-w-6xl">
           {summaryStats.map((item: any, i: number) => {
             const percentage = Math.round((item.value / totalStudents) * 100);
             return (

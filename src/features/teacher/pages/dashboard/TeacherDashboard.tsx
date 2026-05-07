@@ -84,7 +84,7 @@ const TeacherDashboard = () => {
 {/* <div className="flex lg:flex-row flex-col items-center w-full relative pt-2 -ml-6"> */}
         
         {/* Left: Dark Profile Pill */}
-        <div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-4 pl-6 pr-16 rounded-r-[10rem] shadow-md z-10 relative flex-shrink-0 min-w-[320px]">
+        <div className="flex items-center gap-4 bg-[#4a4b4c] text-white py-4 pl-6 pr-16 rounded-r-[10rem] shadow-md z-10 relative flex-shrink-0 min-w-[380px]">
           <div className="relative flex-shrink-0">
             {profileImage ? (
               <img
@@ -115,16 +115,16 @@ const TeacherDashboard = () => {
           </div>
         </div>
 
-        <div className="flex flex-1 items-center justify-between px-6 py-2 -ml-2 bg-[#E9E9E9] h-14 rounded-tr-full rounded-br-full lg:col-span-2 xl:col-span-3">
-          <h1 className="text-[#00bcd4] font-black text-lg tracking-tight  whitespace-nowrap hidden sm:block lg:hidden xl:block ml-1 xl:ml-12">
+        <div className="flex items-center justify-around px-6 py-2 -ml-2 bg-[#E9E9E9] h-14 rounded-tr-full rounded-br-full lg:col-span-2 xl:col-span-3 shadow w-full">
+          <h1 className="text-[#00bcd4] font-black text-lg tracking-tight  whitespace-nowrap hidden sm:block lg:hidden xl:block ml-1 xl:ml-20 2xl:ml-1">
             My Dashboard
           </h1>
-          <div className="flex gap-2 xl:gap-4">
-            {tabs.map((tab) => (
+          {/* <div className="flex gap-2 xl:gap-4 xl:max-w-xl"> */}
+            {tabs.map((tab,i) => (
               <button
                 key={tab.name}
                 onClick={() => setActiveTab(tab.name)}
-                className={`py-2 rounded-full font-semibold transition-colors whitespace-nowrap ${
+                className={`py-2 rounded-full font-semibold transition-colors whitespace-nowrap ${i === 0 ? 'lg:ml-12' : ''}  ${
                   activeTab === tab.name
                     ? "bg-[#E48D00] text-white/90 px-4 xl:px-10"
                     : "text-gray-600 hover:bg-gray-100 px-2 xl:px-6"
@@ -133,7 +133,7 @@ const TeacherDashboard = () => {
                 {tab.name}
               </button>
             ))}
-          </div>
+          {/* </div> */}
         </div>
       </div>
 
