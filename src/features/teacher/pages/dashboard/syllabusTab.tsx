@@ -63,14 +63,14 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
             <div key={i} className="flex items-center gap-2 group py-1">
               {/* Chapter Name */}
               <span
-                className={`min-w-[230px] flex-1 text-xs font-semibold leading-tight truncate ${chapter.completion_pct === 0 ? "text-primary opacity-70" : "text-primary"}`}
+                className={`min-w-[230px] flex-1 text-[13px] font-semibold leading-tight truncate ${chapter.completion_pct === 0 ? "text-primary opacity-50" : "text-primary"}`}
                 title={chapter.chapter_name}
               >
                 {chapter.chapter_name}
               </span>
 
               {/* Progress Bar Container */}
-              <div className="flex-[2] h-3 bg-gray-200 rounded-full relative overflow- shadow-inner">
+              <div className="flex-[2] h-4 bg-gray-200 rounded-full relative overflow- shadow-inner">
                 {chapter.completion_pct > 0 ? (
                   <div
                     className={`h-full rounded-full transition-all duration-1000 ${getStatusColor(chapter.status)}`}
@@ -78,7 +78,7 @@ const SyllabusTab = ({ data }: SyllabusTabProps) => {
                   />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center">
-                    <span className="text-[10px] text-secondary opacity-100 font-black tracking-widest">
+                    <span className="text-[13px] text-secondary opacity-100 font-black tracking-widest">
                       Not started
                     </span>
                   </div>
